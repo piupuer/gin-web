@@ -1,71 +1,57 @@
 package main
 
 import (
+	"context"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql" // mysql驱动
-	"github.com/jinzhu/gorm"
-	"go-shipment-api/models"
+	"go-shipment-api/initialize"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 func main() {
-	var err error
-	db, err := gorm.Open("mysql", "root:root@tcp(localserver:43306)/goshipment?charset=utf8&parseTime=True&loc=Local&timeout=1000ms")
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer db.Close()
-	// 自动迁移表
-	db.AutoMigrate(models.User{})
 
-	var user models.User
-	tableName := user.TableName()
-	// 查询表
-	table := db.Table(tableName)
+	// 初始化路由
+	r := initialize.Routers()
 
-	var user1 models.User
-	err = table.Where("id=?", 1).First(&user1).Error
-	if err != nil {
-		fmt.Println("查询user id=1的用户张三, 不存在创建新用户张三")
-		table.Create(&models.User{
-			Model: gorm.Model{
-				ID: 1,
-			},
-			Username: "张三",
-			Sex:      0,
-		})
-	} else {
-		fmt.Println(fmt.Printf("查询user id=1的用户: 用户名%s, 性别%d", user1.Username, user1.Sex))
+	host := "127.0.0.1"
+	port := 8888
+	// 服务器启动以及优雅的关闭
+	// 参考地址https://github.com/gin-gonic/examples/blob/master/graceful-shutdown/graceful-shutdown/server.go
+	srv := &http.Server{
+		Addr:    fmt.Sprintf("%s:%d", host, port),
+		Handler: r,
 	}
 
-	var user2 models.User
-	err = table.Where("id=?", 2).First(&user2).Error
-	if err != nil {
-		fmt.Println("查询user id=2的用户李四, 不存在创建新用户李四")
-		table.Create(&models.User{
-			Model: gorm.Model{
-				ID: 2,
-			},
-			Username: "李四",
-			Sex:      2,
-		})
-	} else {
-		fmt.Println(fmt.Printf("查询user id=2的用户: 用户名%s, 性别%d", user2.Username, user2.Sex))
+	// Initializing the server in a goroutine so that
+	// it won't block the graceful shutdown handling below
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			fmt.Println(fmt.Sprintf("listen: %s", err.Error()))
+		}
+	}()
+
+	fmt.Println(fmt.Sprintf("Server is running at %s:%d", host, port))
+
+	// Wait for interrupt signal to gracefully shutdown the server with
+	// a timeout of 5 seconds.
+	quit := make(chan os.Signal)
+	// kill (no param) default send syscall.SIGTERM
+	// kill -2 is syscall.SIGINT
+	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	fmt.Println("Shutting down server...")
+
+	// The context is used to inform the server it has 5 seconds to finish
+	// the request it is currently handling
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		fmt.Println("Server forced to shutdown:", err)
 	}
-	var users1 []models.User
-	var count1 int
-	table.Find(&users1).Count(&count1)
-	fmt.Println(fmt.Printf("第1次查询全部数据: 总条数%d, 集合%v", count1, users1))
 
-	// 更新数据
-	table.Where("id=?", 1).Update("username", "张五")
-	fmt.Println("更新张三的姓名为张五")
-
-	// 删除数据, 使用硬删除, 不保留记录
-	table.Unscoped().Where("id=?", 2).Delete(models.User{})
-	fmt.Println("删除李四")
-
-	var users2 []models.User
-	var count2 int
-	table.Find(&users2).Count(&count2)
-	fmt.Println(fmt.Printf("第2次查询全部数据: 总条数%d, 集合%v", count2, users2))
+	fmt.Println("Server exiting")
 }
