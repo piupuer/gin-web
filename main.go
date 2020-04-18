@@ -64,5 +64,8 @@ func main() {
 	table.Unscoped().Where("id=?", 2).Delete(models.User{})
 	fmt.Println("删除李四")
 
-	fmt.Println(fmt.Printf("第2次查询全部数据: 总条数%d, 集合%v", count1, users1))
+	var users2 []models.User
+	var count2 int
+	table.Find(&users2).Count(&count2)
+	fmt.Println(fmt.Printf("第2次查询全部数据: 总条数%d, 集合%v", count2, users2))
 }
