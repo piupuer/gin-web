@@ -1,9 +1,9 @@
 package initialize
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-shipment-api/api"
+	"go-shipment-api/pkg/global"
 	"go-shipment-api/router"
 )
 
@@ -22,6 +22,6 @@ func Routers() *gin.Engine {
 	group := r.Group("")
 	router.InitPublicRouter(group) // 注册公共路由
 
-	fmt.Println("初始化路由完成")
+	global.Log.Debug("初始化路由完成")
 	return r
 }
