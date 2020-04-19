@@ -32,7 +32,7 @@ var errorMsg = map[int]string{
 	EXCEPTION: "系统异常",
 }
 
-func Result(code int, msg string, data interface{}, c *gin.Context) {
+func Result(c *gin.Context, code int, msg string, data interface{}) {
 	c.JSON(http.StatusOK, Resp{
 		Code: code,
 		Data: data,
@@ -40,7 +40,7 @@ func Result(code int, msg string, data interface{}, c *gin.Context) {
 	})
 }
 
-func ResultPage(code int, msg string, data interface{}, total int, c *gin.Context) {
+func ResultPage(c *gin.Context, code int, msg string, data interface{}, total int) {
 	c.JSON(http.StatusOK, PageResp{
 		Code:  code,
 		Data:  data,
@@ -50,29 +50,29 @@ func ResultPage(code int, msg string, data interface{}, total int, c *gin.Contex
 }
 
 func Success(c *gin.Context) {
-	Result(SUCCESS, errorMsg[SUCCESS], map[string]interface{}{}, c)
+	Result(c, SUCCESS, errorMsg[SUCCESS], map[string]interface{}{})
 }
 
-func SuccessWithData(data interface{}, c *gin.Context) {
-	Result(SUCCESS, errorMsg[SUCCESS], data, c)
+func SuccessWithData(c *gin.Context, data interface{}) {
+	Result(c, SUCCESS, errorMsg[SUCCESS], data)
 }
 
-func SuccessWithMsg(msg string, c *gin.Context) {
-	Result(SUCCESS, msg, map[string]interface{}{}, c)
+func SuccessWithMsg(c *gin.Context, msg string) {
+	Result(c, SUCCESS, msg, map[string]interface{}{})
 }
 
-func SuccessPageWithData(data interface{}, total int, c *gin.Context) {
-	ResultPage(SUCCESS, errorMsg[SUCCESS], data, total, c)
+func SuccessPageWithData(c *gin.Context, data interface{}, total int) {
+	ResultPage(c, SUCCESS, errorMsg[SUCCESS], data, total)
 }
 
 func Fail(c *gin.Context) {
-	Result(FAIL, errorMsg[FAIL], map[string]interface{}{}, c)
+	Result(c, FAIL, errorMsg[FAIL], map[string]interface{}{})
 }
 
-func FailWithMsg(msg string, c *gin.Context) {
-	Result(FAIL, msg, map[string]interface{}{}, c)
+func FailWithMsg(c *gin.Context, msg string) {
+	Result(c, FAIL, msg, map[string]interface{}{})
 }
 
-func FailWithCode(code int, c *gin.Context) {
-	Result(code, errorMsg[code], map[string]interface{}{}, c)
+func FailWithCode(c *gin.Context, code int) {
+	Result(c, code, errorMsg[code], map[string]interface{}{})
 }

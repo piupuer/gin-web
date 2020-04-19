@@ -1,7 +1,11 @@
 package global
 
-import "go.uber.org/zap"
+import (
+	"github.com/jinzhu/gorm"
+	"go.uber.org/zap"
+)
 
 var (
 	Log *zap.SugaredLogger
+	Mysql *gorm.DB
 )

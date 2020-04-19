@@ -8,14 +8,27 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"runtime/debug"
 	"syscall"
 	"time"
 )
 
 func main() {
+	defer func() {
+		if err := recover(); err != nil {
+			// 将异常写入日志
+			global.Log.Error(fmt.Sprintf("项目启动失败: %v\n堆栈信息: %v", err, string(string(debug.Stack()))))
+		}
+	}()
 
 	// 初始化日志
 	initialize.Logger()
+
+	// 初始化数据库
+	initialize.Mysql()
+
+	// 结束后关闭数据库
+	defer global.Mysql.Close()
 
 	// 初始化路由
 	r := initialize.Routers()
@@ -33,7 +46,7 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			global.Log.Error(fmt.Sprintf("listen error: %s", err.Error()))
+			global.Log.Error("listen error: ", err)
 		}
 	}()
 
