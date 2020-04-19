@@ -16,6 +16,8 @@ func Routers() *gin.Engine {
 	// 创建不带中间件的路由:
 	r := gin.New()
 
+	// 添加全局异常处理中间件
+	r.Use(middleware.Exception)
 	// 添加跨域中间件, 让请求支持跨域
 	r.Use(middleware.Cors())
 	global.Log.Debug("请求已支持跨域")
