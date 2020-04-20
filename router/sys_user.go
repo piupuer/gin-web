@@ -11,6 +11,7 @@ func InitUserRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R
 	router := r.Group("user").Use(authMiddleware.MiddlewareFunc())
 	{
 		router.GET("/getUsers", v1.GetUsers)
+		router.PUT("/changePwd", v1.ChangePwd)
 	}
 	return router
 }
