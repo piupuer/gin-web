@@ -23,7 +23,7 @@ func InitAuth() (*jwt.GinJWTMiddleware, error) {
 		IdentityKey:     jwtSecret,                                          // jwt密钥
 		PayloadFunc:     payloadFunc,                                        // 有效载荷处理
 		IdentityHandler: identityHandler,                                    // 解析Claims
-		Authenticator:   authenticator,                                      // 校验token的正确性
+		Authenticator:   login,                                              // 校验token的正确性, 处理登录逻辑
 		Authorizator:    authorizator,                                       // 校验用户的正确性
 		Unauthorized:    unauthorized,                                       // 校验失败处理
 		LoginResponse:   loginResponse,                                      // 登录成功后的响应
@@ -56,7 +56,7 @@ func identityHandler(c *gin.Context) interface{} {
 	}
 }
 
-func authenticator(c *gin.Context) (interface{}, error) {
+func login(c *gin.Context) (interface{}, error) {
 	var req request.RegisterAndLoginStruct
 	// 请求json绑定
 	_ = c.ShouldBindJSON(&req)

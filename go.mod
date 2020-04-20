@@ -10,5 +10,6 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	go.uber.org/zap v1.14.1
+	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )
