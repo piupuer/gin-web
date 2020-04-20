@@ -3,13 +3,12 @@ package middleware
 import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
 	"go-shipment-api/pkg/response"
 	"go-shipment-api/pkg/service"
-	"strconv"
+	"go-shipment-api/pkg/utils"
 	"time"
 )
 
@@ -37,10 +36,12 @@ func InitAuth() (*jwt.GinJWTMiddleware, error) {
 
 func payloadFunc(data interface{}) jwt.MapClaims {
 	if v, ok := data.(map[string]interface{}); ok {
-		user, _ := v["user"].(models.SysUser)
+		var user models.SysUser
+		// 将用户json转为结构体
+		utils.JsonI2Struct(v["user"], &user)
 		return jwt.MapClaims{
 			jwt.IdentityKey: user.ID,
-			"user":          user,
+			"user":          v["user"],
 		}
 	}
 	return jwt.MapClaims{}
@@ -70,24 +71,17 @@ func authenticator(c *gin.Context) (interface{}, error) {
 	if err != nil {
 		return nil, jwt.ErrFailedAuthentication
 	}
-	// 写入用户, payloadFunc/authorizator会使用到
+	// 将用户以json格式写入, payloadFunc/authorizator会使用到
 	return map[string]interface{}{
-		"user": user,
+		"user": utils.Struct2Json(user),
 	}, nil
 }
 
 func authorizator(data interface{}, c *gin.Context) bool {
 	if v, ok := data.(map[string]interface{}); ok {
-		userMap, _ := v["user"].(map[string]interface{})
-		// id需要从float64转为uint
-		s := strconv.FormatFloat(userMap["ID"].(float64), 'f', -1, 64)
-		i, _ := strconv.Atoi(s)
-		user := &models.SysUser{
-			Model: gorm.Model{
-				ID: uint(i),
-			},
-			Username: userMap["username"].(string),
-		}
+		var user models.SysUser
+		// 将用户json转为结构体
+		utils.JsonI2Struct(v["user"], &user)
 		// 将用户保存到context, api调用时取数据方便
 		c.Set("user", user)
 		return true
