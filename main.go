@@ -33,6 +33,9 @@ func main() {
 	// 初始化路由
 	r := initialize.Routers()
 
+	// 初始化数据
+	initialize.InitData()
+
 	host := "127.0.0.1"
 	port := 9999
 	// 服务器启动以及优雅的关闭
