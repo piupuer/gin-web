@@ -34,7 +34,7 @@ func main() {
 	r := initialize.Routers()
 
 	host := "127.0.0.1"
-	port := 8888
+	port := 9999
 	// 服务器启动以及优雅的关闭
 	// 参考地址https://github.com/gin-gonic/examples/blob/master/graceful-shutdown/graceful-shutdown/server.go
 	srv := &http.Server{

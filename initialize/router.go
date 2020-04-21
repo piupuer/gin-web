@@ -18,6 +18,8 @@ func Routers() *gin.Engine {
 
 	// 添加全局异常处理中间件
 	r.Use(middleware.Exception)
+	// 添加访问记录
+	r.Use(middleware.AccessLog)
 	// 添加跨域中间件, 让请求支持跨域
 	r.Use(middleware.Cors())
 	global.Log.Debug("请求已支持跨域")
