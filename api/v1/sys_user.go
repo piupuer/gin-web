@@ -12,6 +12,23 @@ import (
 )
 
 // @Tags SysUser
+// @Summary 获取当前用户信息
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body true "分页获取用户列表"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /user/info [post]
+func GetUserInfo(c *gin.Context) {
+	user := GetCurrentUser(c)
+	// 将当前用户转换为用户响应结构体, 隐藏部分字段
+	userJson := utils.Struct2Json(user)
+	var userResp response.UserInfoResponseStruct
+	utils.Json2Struct(userJson, &userResp)
+	response.SuccessWithData(c, userResp)
+}
+
+// @Tags SysUser
 // @Summary 获取用户列表
 // @Security ApiKeyAuth
 // @accept application/json
