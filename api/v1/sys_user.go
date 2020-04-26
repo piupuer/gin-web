@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
@@ -21,11 +20,16 @@ import (
 // @Router /user/info [post]
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
-	// 将当前用户转换为用户响应结构体, 隐藏部分字段
-	userJson := utils.Struct2Json(user)
-	var userResp response.UserInfoResponseStruct
-	utils.Json2Struct(userJson, &userResp)
-	response.SuccessWithData(c, userResp)
+	// 转为UserInfoResponseStruct, 隐藏部分字段
+	var resp response.UserInfoResponseStruct
+	utils.Struct2StructByJson(user, &resp)
+	resp.Roles = []string{
+		"admin",
+	}
+	resp.Permissions = []string{
+		"***",
+	}
+	response.SuccessWithData(c, resp)
 }
 
 // @Tags SysUser
@@ -37,14 +41,15 @@ func GetUserInfo(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /user/getUsers [post]
 func GetUsers(c *gin.Context) {
-	user := GetCurrentUser(c)
-	global.Log.Debug(fmt.Sprintf("当前登录用户: %v", user))
 	users, err := service.GetUsers()
 	if err != nil {
 		response.Fail(c)
 		return
 	}
-	response.SuccessWithData(c, users)
+	// 转为UserInfoResponseStruct, 隐藏部分字段
+	var resp []response.UserInfoResponseStruct
+	utils.Struct2StructByJson(users, &resp)
+	response.SuccessWithData(c, resp)
 }
 
 // @Tags SysUser

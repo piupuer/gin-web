@@ -9,9 +9,11 @@ type LoginResponseStruct struct {
 
 // 用户信息响应
 type UserInfoResponseStruct struct {
-	Username     string `json:"username"`
-	Mobile       string `json:"mobile"`
-	Avatar       string `json:"avatar"`
-	Nickname     string `json:"nickname"`
-	Introduction string `json:"introduction"`
+	Username     string   `json:"username"`
+	Mobile       string   `json:"mobile"`
+	Avatar       string   `json:"avatar"`
+	Nickname     string   `json:"nickname"`
+	Introduction string   `json:"introduction"`
+	Roles        []string `json:"roles"`
+	Permissions  []string `json:"permissions"`
 }

@@ -24,5 +24,7 @@ func Mysql() {
 func autoMigrate() {
 	global.Mysql.AutoMigrate(
 		new(models.SysUser),
+		new(models.SysRole),
+		new(models.SysMenu),
 	)
 }
