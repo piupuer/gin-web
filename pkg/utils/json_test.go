@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"github.com/jinzhu/gorm"
 	"go-shipment-api/models"
 	"reflect"
 	"testing"
@@ -19,8 +18,8 @@ func TestStruct2Json(t *testing.T) {
 		{
 			name: "测试user转换为json case1",
 			args: args{obj: &models.SysUser{
-				Model: gorm.Model{
-					ID: 1,
+				Model: models.Model{
+					Id: 1,
 				},
 				Username: "张三",
 				Password: "123456",
@@ -30,8 +29,8 @@ func TestStruct2Json(t *testing.T) {
 		{
 			name: "测试user转换为json case2",
 			args: args{obj: &models.SysUser{
-				Model: gorm.Model{
-					ID: 2,
+				Model: models.Model{
+					Id: 2,
 				},
 				Username: "李四",
 				Password: "654321",

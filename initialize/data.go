@@ -9,6 +9,8 @@ import (
 // 初始化数据
 func InitData() {
 	// 1. 初始化角色
+	status := true
+	visible := true
 	roles := []models.SysRole{
 		{
 			Model: models.Model{
@@ -17,7 +19,7 @@ func InitData() {
 			Name:    "访客",
 			Keyword: "guest",
 			Desc:    "外来访问人员",
-			Status:  true,
+			Status:  &status,
 			Creator: "系统自动创建",
 		},
 		{
@@ -27,7 +29,7 @@ func InitData() {
 			Name:    "测试",
 			Keyword: "tester",
 			Desc:    "系统测试工程师",
-			Status:  true,
+			Status:  &status,
 			Creator: "系统自动创建",
 		},
 		{
@@ -37,50 +39,66 @@ func InitData() {
 			Name:    "管理员",
 			Keyword: "admin",
 			Desc:    "系统管理员",
-			Status:  true,
+			Status:  &status,
 			Creator: "系统自动创建",
 		},
 	}
 	for _, role := range roles {
 		oldRole := models.SysRole{}
-		notFound := global.Mysql.Where("keyword = ?", role.Keyword).First(&oldRole).RecordNotFound()
+		notFound := global.Mysql.Where("id = ?", role.Id).First(&oldRole).RecordNotFound()
 		if notFound {
 			global.Mysql.Create(&role)
-		} else {
-			_ = global.Mysql.Table(role.TableName()).Where("keyword = ?", role.Keyword).Update(&role).Error
 		}
 	}
 
 	// 2. 初始化菜单
+	noBreadcrumb := false
 	menus := []models.SysMenu{
 		{
 			Model: models.Model{
 				Id: 1,
 			},
+			Name:       "", // 对于想让子菜单显示在上层不显示的父级菜单不设置名字
+			Title:      "",
+			Icon:       "",
+			Path:       "/dashboard",
+			Component:  "", // 如果包含子菜单, Component为空
+			Sort:       0,
+			Status:     &status,
+			Visible:    &visible,
+			Breadcrumb: &noBreadcrumb, // 面包屑不可见
+			ParentId:   0,
+			Roles:      roles,
+		},
+		{
+			Model: models.Model{
+				Id: 7,
+			},
 			Name:      "dashboard",
-			Title:     "主页",
-			Icon:      "",
-			Path:      "/dashboard",
-			Component: "/dashboard",
+			Title:     "首页",
+			Icon:      "dashboard",
+			Path:      "index",
+			Component: "/dashboard/index",
 			Sort:      0,
-			Status:    true,
-			Visible:   true,
-			ParentId:  0,
+			Status:    &status,
+			Visible:   &visible,
+			ParentId:  1,
 			Roles:     roles,
 		},
 		{
 			Model: models.Model{
 				Id: 2,
 			},
-			Name:      "system",
-			Title:     "系统设置",
-			Icon:      "",
-			Path:      "/system",
-			Component: "/system",
-			Sort:      1,
-			Status:    true,
-			Visible:   true,
-			ParentId:  0,
+			Name:       "system",
+			Title:      "系统设置",
+			Icon:       "component",
+			Path:       "/system",
+			Component:  "",
+			Sort:       1,
+			Status:     &status,
+			Visible:    &visible,
+			Breadcrumb: &noBreadcrumb, // 面包屑不可见
+			ParentId:   0,
 			Roles: []models.SysRole{
 				roles[2],
 			},
@@ -89,15 +107,34 @@ func InitData() {
 			Model: models.Model{
 				Id: 3,
 			},
-			Name:      "example",
-			Title:     "示例菜单",
-			Icon:      "",
-			Path:      "/example",
-			Component: "/example",
-			Sort:      2,
-			Status:    true,
-			Visible:   true,
-			ParentId:  0,
+			Name:       "",
+			Title:      "",
+			Icon:       "",
+			Path:       "/test",
+			Component:  "",
+			Sort:       2,
+			Status:     &status,
+			Visible:    &visible,
+			Breadcrumb: &noBreadcrumb,
+			ParentId:   0,
+			Roles: []models.SysRole{
+				roles[1],
+				roles[2],
+			},
+		},
+		{
+			Model: models.Model{
+				Id: 8,
+			},
+			Name:      "test",
+			Title:     "测试用例",
+			Icon:      "bug",
+			Path:      "index",
+			Component: "/test/index",
+			Sort:      0,
+			Status:    &status,
+			Visible:   &visible,
+			ParentId:  3,
 			Roles: []models.SysRole{
 				roles[1],
 				roles[2],
@@ -109,12 +146,12 @@ func InitData() {
 			},
 			Name:      "menu",
 			Title:     "菜单管理",
-			Icon:      "",
-			Path:      "/system/menu",
-			Component: "/system/user",
+			Icon:      "tree-table",
+			Path:      "menu", // 子菜单不用全路径, 自动继承
+			Component: "/system/menu",
 			Sort:      0,
-			Status:    true,
-			Visible:   true,
+			Status:    &status,
+			Visible:   &visible,
 			ParentId:  2,
 			Roles: []models.SysRole{
 				roles[2],
@@ -126,12 +163,12 @@ func InitData() {
 			},
 			Name:      "role",
 			Title:     "角色管理",
-			Icon:      "",
-			Path:      "/system/role",
+			Icon:      "peoples",
+			Path:      "role",
 			Component: "/system/role",
 			Sort:      1,
-			Status:    true,
-			Visible:   true,
+			Status:    &status,
+			Visible:   &visible,
 			ParentId:  2,
 			Roles: []models.SysRole{
 				roles[2],
@@ -143,12 +180,12 @@ func InitData() {
 			},
 			Name:      "user",
 			Title:     "用户管理",
-			Icon:      "",
-			Path:      "/system/user",
+			Icon:      "user",
+			Path:      "user",
 			Component: "/system/user",
 			Sort:      2,
-			Status:    true,
-			Visible:   true,
+			Status:    &status,
+			Visible:   &visible,
 			ParentId:  2,
 			Roles: []models.SysRole{
 				roles[2],
@@ -157,13 +194,9 @@ func InitData() {
 	}
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
-		notFound := global.Mysql.Where("path = ?", menu.Path).First(&oldMenu).RecordNotFound()
+		notFound := global.Mysql.Where("id = ?", menu.Id).First(&oldMenu).RecordNotFound()
 		if notFound {
 			global.Mysql.Create(&menu)
-		} else {
-			// 角色不更新
-			menu.Roles = nil
-			_ = global.Mysql.Table(menu.TableName()).Where("path = ?", menu.Path).Update(&menu).Error
 		}
 	}
 

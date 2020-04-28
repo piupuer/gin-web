@@ -41,6 +41,7 @@ func Routers() *gin.Engine {
 	router.InitBaseRouter(group, authMiddleware) // 注册基础路由, 不会鉴权
 	router.InitUserRouter(group, authMiddleware) // 注册用户路由
 	router.InitMenuRouter(group, authMiddleware) // 注册菜单路由
+	router.InitRoleRouter(group, authMiddleware) // 注册菜单路由
 
 	global.Log.Debug("初始化路由完成")
 	return r

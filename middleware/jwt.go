@@ -18,8 +18,8 @@ func InitAuth() (*jwt.GinJWTMiddleware, error) {
 	return jwt.New(&jwt.GinJWTMiddleware{
 		Realm:           "test realm",
 		Key:             []byte("secret key"),
-		Timeout:         time.Hour,
-		MaxRefresh:      time.Hour,
+		Timeout:         time.Hour * 24,
+		MaxRefresh:      time.Hour * 24,
 		IdentityKey:     jwtSecret,                                          // jwt密钥
 		PayloadFunc:     payloadFunc,                                        // 有效载荷处理
 		IdentityHandler: identityHandler,                                    // 解析Claims
@@ -57,7 +57,7 @@ func identityHandler(c *gin.Context) interface{} {
 }
 
 func login(c *gin.Context) (interface{}, error) {
-	var req request.RegisterAndLoginStruct
+	var req request.RegisterAndLoginRequestStruct
 	// 请求json绑定
 	_ = c.ShouldBindJSON(&req)
 

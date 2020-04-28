@@ -39,7 +39,7 @@ func GetUserInfo(c *gin.Context) {
 // @Produce application/json
 // @Param data body true "分页获取用户列表"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /user/getUsers [post]
+// @Router /user/list [post]
 func GetUsers(c *gin.Context) {
 	users, err := service.GetUsers()
 	if err != nil {
@@ -63,7 +63,7 @@ func GetUsers(c *gin.Context) {
 func ChangePwd(c *gin.Context) {
 	var msg string
 	// 请求json绑定
-	var req request.ChangePwdStruct
+	var req request.ChangePwdRequestStruct
 	_ = c.ShouldBindJSON(&req)
 	// 获取当前用户
 	user := GetCurrentUser(c)

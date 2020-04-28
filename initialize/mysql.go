@@ -10,7 +10,7 @@ import (
 
 // 初始化mysql数据库
 func Mysql() {
-	db, err := gorm.Open("mysql", "root:root@tcp(localserver:43306)/goshipment?charset=utf8&parseTime=True&loc=Local&timeout=1000ms")
+	db, err := gorm.Open("mysql", "root:root@tcp(localserver:43306)/goshipment?charset=utf8&parseTime=True&loc=Local&timeout=10000ms")
 	if err != nil {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))
 	}
