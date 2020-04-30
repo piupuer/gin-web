@@ -11,6 +11,7 @@ func InitRoleRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R
 	router := r.Group("role").Use(authMiddleware.MiddlewareFunc())
 	{
 		router.GET("/list", v1.GetRoles)
+		router.POST("/create", v1.CreateRole)
 	}
 	return router
 }

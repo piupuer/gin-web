@@ -14,7 +14,7 @@ type SysMenu struct {
 	Status     *bool     `gorm:"type:tinyint;default:1;comment:'菜单状态(正常/禁用, 默认正常)'" json:"status"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
 	Visible    *bool     `gorm:"type:tinyint;default:1;comment:'菜单可见性(可见/隐藏, 默认可见)'" json:"visible"`
 	Breadcrumb *bool     `gorm:"type:tinyint;default:1;comment:'面包屑可见性(可见/隐藏, 默认可见)'" json:"breadcrumb"`
-	ParentId   uint      `gorm:"default:0;comment:'父菜单编号'" json:"parent_id"`
+	ParentId   uint      `gorm:"default:0;comment:'父菜单编号'" json:"parentId"`
 	Children   []SysMenu `gorm:"-" json:"children"`                          // 子菜单集合
 	Roles      []SysRole `gorm:"many2many:relation_role_menu;" json:"roles"` // 角色菜单多对多关系
 }

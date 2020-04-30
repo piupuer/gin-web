@@ -2,7 +2,6 @@ package response
 
 import (
 	"github.com/gin-gonic/gin"
-	"math"
 	"net/http"
 )
 
@@ -15,9 +14,9 @@ type Resp struct {
 
 // 分页封装
 type PageInfo struct {
-	PageNum  uint `json:"page_num" form:"page_num"`   // 当前页码
-	PageSize uint `json:"page_size" form:"page_size"` // 每页显示条数
-	Total    uint `json:"total"`                      // 数据总条数
+	PageNum  uint `json:"pageNum" form:"pageNum"`   // 当前页码
+	PageSize uint `json:"pageSize" form:"pageSize"` // 每页显示条数
+	Total    uint `json:"total"`                    // 数据总条数
 }
 
 // 带分页数据封装
@@ -38,30 +37,27 @@ func (s *PageInfo) GetLimit() (limit uint, offset uint) {
 		s.PageNum = 1
 	}
 
+	// 如果偏移量比总条数还多
+	if s.PageSize > s.Total {
+		s.PageSize = s.Total
+	}
+	if s.PageNum > s.Total {
+		s.PageNum = s.Total
+	}
+
+	// 计算最大页码
+	maxPageNum := s.Total/s.PageSize + 1
+	if s.Total%s.PageSize == 0 {
+		maxPageNum = s.Total / s.PageSize
+	}
+
+	// 超出最后一页
+	if s.PageNum > maxPageNum {
+		s.PageNum = maxPageNum
+	}
+
 	limit = s.PageSize
 	offset = limit * (s.PageNum - 1)
-
-	if s.Total > 0 {
-		// 如果偏移量比总条数还多
-		if limit > s.Total {
-			limit = s.Total
-		}
-		if offset > s.Total {
-			offset = s.Total
-		}
-		if offset+limit > s.Total {
-			if limit > s.Total {
-				offset = limit - s.Total
-			} else {
-				offset = s.Total - limit
-			}
-		}
-	}
-	// 恢复真实的页码和大小
-	if limit > 0 {
-		s.PageSize = limit
-		s.PageNum = uint(math.Ceil(float64(offset)/float64(limit))) + 1
-	}
 	return
 }
 
