@@ -1,6 +1,8 @@
 package request
 
-import "go-shipment-api/pkg/response"
+import (
+	"go-shipment-api/pkg/response"
+)
 
 // 获取角色列表结构体
 type RoleListRequestStruct struct {
@@ -10,9 +12,17 @@ type RoleListRequestStruct struct {
 
 // 创建角色结构体
 type CreateRoleRequestStruct struct {
-	Name    string `json:"name"`
-	Keyword string `json:"keyword"`
+	Name    string `json:"name" validate:"required"`
+	Keyword string `json:"keyword" validate:"required"`
 	Desc    string `json:"desc"`
 	Status  *bool  `json:"status"`
 	Creator string `json:"creator"`
+}
+
+// 翻译需要校验的字段名称
+func (s CreateRoleRequestStruct) FieldTrans() map[string]string {
+	m := make(map[string]string, 0)
+	m["Name"] = "角色名称"
+	m["Keyword"] = "角色关键字"
+	return m
 }

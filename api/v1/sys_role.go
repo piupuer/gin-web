@@ -2,6 +2,7 @@ package v1
 
 import (
 	"github.com/gin-gonic/gin"
+	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
 	"go-shipment-api/pkg/response"
 	"go-shipment-api/pkg/service"
@@ -50,9 +51,15 @@ func CreateRole(c *gin.Context) {
 	// 绑定参数
 	var req request.CreateRoleRequestStruct
 	_ = c.Bind(&req)
+	// 参数校验
+	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
 	// 记录当前创建人信息
 	req.Creator = user.Nickname + user.Username
-	err := service.CreateRole(&req)
+	err = service.CreateRole(&req)
 	if err != nil {
 		response.Fail(c)
 		return

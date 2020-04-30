@@ -27,6 +27,9 @@ func main() {
 	// 初始化数据库
 	initialize.Mysql()
 
+	// 初始校验器
+	initialize.Validate()
+
 	// 结束后关闭数据库
 	defer global.Mysql.Close()
 
