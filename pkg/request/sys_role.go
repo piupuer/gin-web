@@ -6,7 +6,10 @@ import (
 
 // 获取角色列表结构体
 type RoleListRequestStruct struct {
-	Name              string `json:"name" form:"name"` // 角色名称
+	Name              string `json:"name" form:"name"`
+	Keyword           string `json:"keyword" form:"keyword"`
+	Status            *bool  `json:"status" form:"status"`
+	Creator           string `json:"creator" form:"creator"`
 	response.PageInfo        // 分页参数
 }
 

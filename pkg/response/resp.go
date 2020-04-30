@@ -38,17 +38,23 @@ func (s *PageInfo) GetLimit() (limit uint, offset uint) {
 	}
 
 	// 如果偏移量比总条数还多
-	if s.PageSize > s.Total {
-		s.PageSize = s.Total
-	}
-	if s.PageNum > s.Total {
-		s.PageNum = s.Total
+	if s.Total > 0 {
+		if s.PageSize > s.Total {
+			s.PageSize = s.Total
+		}
+		if s.PageNum > s.Total {
+			s.PageNum = s.Total
+		}
 	}
 
 	// 计算最大页码
 	maxPageNum := s.Total/s.PageSize + 1
 	if s.Total%s.PageSize == 0 {
 		maxPageNum = s.Total / s.PageSize
+	}
+	// 页码不能小于1
+	if maxPageNum < 1 {
+		maxPageNum = 1
 	}
 
 	// 超出最后一页

@@ -61,7 +61,54 @@ func CreateRole(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	err = service.CreateRole(&req)
 	if err != nil {
-		response.Fail(c)
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.Success(c)
+}
+
+// @Tags SysRole
+// @Summary 更新角色
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body true "更新角色"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /role/:roleId [patch]
+func UpdateRoleById(c *gin.Context) {
+	// 绑定参数, 这里与创建角色用同一结构体即可
+	var req request.CreateRoleRequestStruct
+	_ = c.Bind(&req)
+	// 获取path中的roleId
+	roleId := utils.Str2Uint(c.Param("roleId"))
+	if roleId == 0 {
+		response.FailWithMsg(c, "角色编号不正确")
+		return
+	}
+	// 更新数据
+	err := service.UpdateRoleById(uint(roleId), &req)
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.Success(c)
+}
+
+// @Tags SysRole
+// @Summary 批量删除角色
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body true "批量删除角色"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /role/batch [delete]
+func BatchDeleteRoleByIds(c *gin.Context) {
+	var req request.Req
+	_ = c.Bind(&req)
+	// 删除数据
+	err := service.DeleteRoleByIds(req.GetUintIds())
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
 		return
 	}
 	response.Success(c)

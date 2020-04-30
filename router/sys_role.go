@@ -12,6 +12,8 @@ func InitRoleRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R
 	{
 		router.GET("/list", v1.GetRoles)
 		router.POST("/create", v1.CreateRole)
+		router.PATCH("/:roleId", v1.UpdateRoleById)
+		router.DELETE("/batch", v1.BatchDeleteRoleByIds)
 	}
 	return router
 }

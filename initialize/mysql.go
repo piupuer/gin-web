@@ -17,6 +17,8 @@ func Mysql() {
 	global.Mysql = db
 	// 表结构
 	autoMigrate()
+	// 打印所有执行的sql
+	db.LogMode(true)
 	global.Log.Debug("初始化mysql完成")
 }
 
