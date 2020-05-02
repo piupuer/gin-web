@@ -23,7 +23,7 @@ func GetRoles(c *gin.Context) {
 	_ = c.Bind(&req)
 	roles, err := service.GetRoles(&req)
 	if err != nil {
-		response.Fail(c)
+		response.FailWithMsg(c, err.Error())
 		return
 	}
 	// 转为ResponseStruct, 隐藏部分字段

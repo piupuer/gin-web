@@ -10,8 +10,17 @@ import (
 	"strings"
 )
 
+// 注意golang坑, 返回值有数组时, 不要为了return方便使用命名返回值
+// 如func GetRoles(req *request.RoleListRequestStruct) (roles []models.SysRole, err error) {
+// 这会导致roles被初始化无穷大的集合, 代码无法断点调试: collecting data..., 几秒后程序异常退出:
+// error layer=rpc writing response:write tcp xxx write: broken pipe
+// error layer=rpc rpc:read tcp xxx read: connection reset by peer
+// exit code 0
+// 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
 // 获取所有角色
-func GetRoles(req *request.RoleListRequestStruct) (list []models.SysRole, err error) {
+func GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
+	var err error
+	list := make([]models.SysRole, 0)
 	db := global.Mysql
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
@@ -39,7 +48,7 @@ func GetRoles(req *request.RoleListRequestStruct) (list []models.SysRole, err er
 		limit, offset := req.GetLimit()
 		err = db.Limit(limit).Offset(offset).Find(&list).Error
 	}
-	return
+	return list, err
 }
 
 // 创建角色

@@ -7,25 +7,27 @@ import (
 )
 
 // 获取菜单树
-func GetMenuTree(roleId uint) (tree []models.SysMenu, err error) {
+func GetMenuTree(roleId uint) ([]models.SysMenu, error) {
+	tree := make([]models.SysMenu, 0)
 	query := global.Mysql.First(&models.SysRole{
 		Model: models.Model{
 			Id: roleId,
 		},
 	})
 	if query.RecordNotFound() {
-		return nil, errors.New("菜单为空")
+		return tree, errors.New("菜单为空")
 	}
 	menus := make([]models.SysMenu, 0)
 	// 查询当前role关联的所有菜单
 	query.Association("menus").Find(&menus)
 	// 生成菜单树
 	tree = genMenuTree(nil, menus)
-	return
+	return tree, nil
 }
 
 // 生成菜单树
-func genMenuTree(parent *models.SysMenu, menus []models.SysMenu) (tree []models.SysMenu) {
+func genMenuTree(parent *models.SysMenu, menus []models.SysMenu) []models.SysMenu {
+	tree := make([]models.SysMenu, 0)
 	// parentId默认为0, 表示根菜单
 	var parentId uint
 	if parent != nil {
@@ -42,5 +44,5 @@ func genMenuTree(parent *models.SysMenu, menus []models.SysMenu) (tree []models.
 			tree = append(tree, menu)
 		}
 	}
-	return
+	return tree
 }

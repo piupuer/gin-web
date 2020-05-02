@@ -24,7 +24,7 @@ func LoginCheck(user *models.SysUser) (*models.SysUser, error) {
 
 // 获取所有用户
 func GetUsers() ([]models.SysUser, error) {
-	var users []models.SysUser
+	users := make([]models.SysUser, 0)
 	err := global.Mysql.Find(&users).Error
 	return users, err
 }
