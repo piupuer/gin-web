@@ -9,6 +9,7 @@ import (
 // 初始化数据
 func InitData() {
 	// 1. 初始化角色
+	creator := "系统自动创建"
 	status := true
 	visible := true
 	roles := []models.SysRole{
@@ -20,7 +21,7 @@ func InitData() {
 			Keyword: "guest",
 			Desc:    "外来访问人员",
 			Status:  &status,
-			Creator: "系统自动创建",
+			Creator: creator,
 		},
 		{
 			Model: models.Model{
@@ -30,7 +31,7 @@ func InitData() {
 			Keyword: "tester",
 			Desc:    "系统测试工程师",
 			Status:  &status,
-			Creator: "系统自动创建",
+			Creator: creator,
 		},
 		{
 			Model: models.Model{
@@ -40,7 +41,7 @@ func InitData() {
 			Keyword: "admin",
 			Desc:    "系统管理员",
 			Status:  &status,
-			Creator: "系统自动创建",
+			Creator: creator,
 		},
 	}
 	for _, role := range roles {
@@ -58,9 +59,9 @@ func InitData() {
 			Model: models.Model{
 				Id: 1,
 			},
-			Name:       "", // 对于想让子菜单显示在上层不显示的父级菜单不设置名字
-			Title:      "",
-			Icon:       "",
+			Name:       "dashboardRoot", // 对于想让子菜单显示在上层不显示的父级菜单不设置名字
+			Title:      "首页根目录",
+			Icon:       "dashboard",
 			Path:       "/dashboard",
 			Component:  "", // 如果包含子菜单, Component为空
 			Sort:       0,
@@ -68,6 +69,7 @@ func InitData() {
 			Visible:    &visible,
 			Breadcrumb: &noBreadcrumb, // 面包屑不可见
 			ParentId:   0,
+			Creator:    creator,
 			Roles:      roles,
 		},
 		{
@@ -83,14 +85,15 @@ func InitData() {
 			Status:    &status,
 			Visible:   &visible,
 			ParentId:  1,
+			Creator:   creator,
 			Roles:     roles,
 		},
 		{
 			Model: models.Model{
 				Id: 2,
 			},
-			Name:       "system",
-			Title:      "系统设置",
+			Name:       "systemRoot",
+			Title:      "系统设置根目录",
 			Icon:       "component",
 			Path:       "/system",
 			Component:  "",
@@ -99,6 +102,7 @@ func InitData() {
 			Visible:    &visible,
 			Breadcrumb: &noBreadcrumb, // 面包屑不可见
 			ParentId:   0,
+			Creator:    creator,
 			Roles: []models.SysRole{
 				roles[2],
 			},
@@ -107,9 +111,9 @@ func InitData() {
 			Model: models.Model{
 				Id: 3,
 			},
-			Name:       "",
-			Title:      "",
-			Icon:       "",
+			Name:       "testRoot",
+			Title:      "测试用例根目录",
+			Icon:       "bug",
 			Path:       "/test",
 			Component:  "",
 			Sort:       2,
@@ -117,6 +121,7 @@ func InitData() {
 			Visible:    &visible,
 			Breadcrumb: &noBreadcrumb,
 			ParentId:   0,
+			Creator:    creator,
 			Roles: []models.SysRole{
 				roles[1],
 				roles[2],
@@ -135,6 +140,7 @@ func InitData() {
 			Status:    &status,
 			Visible:   &visible,
 			ParentId:  3,
+			Creator:   creator,
 			Roles: []models.SysRole{
 				roles[1],
 				roles[2],
@@ -153,6 +159,7 @@ func InitData() {
 			Status:    &status,
 			Visible:   &visible,
 			ParentId:  2,
+			Creator:   creator,
 			Roles: []models.SysRole{
 				roles[2],
 			},
@@ -170,6 +177,7 @@ func InitData() {
 			Status:    &status,
 			Visible:   &visible,
 			ParentId:  2,
+			Creator:   creator,
 			Roles: []models.SysRole{
 				roles[2],
 			},
@@ -187,6 +195,7 @@ func InitData() {
 			Status:    &status,
 			Visible:   &visible,
 			ParentId:  2,
+			Creator:   creator,
 			Roles: []models.SysRole{
 				roles[2],
 			},

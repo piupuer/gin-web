@@ -3,7 +3,7 @@ package response
 import "time"
 
 // 角色信息响应, 字段含义见models.SysRole
-type MenuListResponseStruct struct {
+type RoleListResponseStruct struct {
 	Id        uint      `json:"id"`
 	Name      string    `json:"name"`
 	Keyword   string    `json:"keyword"`

@@ -16,7 +16,7 @@ import (
 // @Produce application/json
 // @Param data body true "分页获取角色列表"
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/list [post]
+// @Router /role/list [post]
 func GetRoles(c *gin.Context) {
 	// 绑定参数
 	var req request.RoleListRequestStruct
@@ -27,7 +27,7 @@ func GetRoles(c *gin.Context) {
 		return
 	}
 	// 转为ResponseStruct, 隐藏部分字段
-	var respStruct []response.MenuListResponseStruct
+	var respStruct []response.RoleListResponseStruct
 	utils.Struct2StructByJson(roles, &respStruct)
 	// 返回分页数据
 	var resp response.PageData

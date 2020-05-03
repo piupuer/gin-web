@@ -11,6 +11,10 @@ func InitMenuRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R
 	router := r.Group("menu").Use(authMiddleware.MiddlewareFunc())
 	{
 		router.GET("/tree", v1.GetMenuTree)
+		router.GET("/list", v1.GetMenus)
+		router.POST("/create", v1.CreateMenu)
+		router.PATCH("/:menuId", v1.UpdateMenuById)
+		router.DELETE("/batch", v1.BatchDeleteMenuByIds)
 	}
 	return router
 }
