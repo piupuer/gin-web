@@ -28,5 +28,6 @@ func autoMigrate() {
 		new(models.SysUser),
 		new(models.SysRole),
 		new(models.SysMenu),
+		new(models.SysApi),
 	)
 }

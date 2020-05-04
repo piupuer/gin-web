@@ -1,6 +1,7 @@
 package initialize
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-shipment-api/api"
 	"go-shipment-api/middleware"
@@ -28,7 +29,7 @@ func Routers() *gin.Engine {
 	authMiddleware, err := middleware.InitAuth()
 
 	if err != nil {
-		panic("初始化jwt auth中间件失败")
+		panic(fmt.Sprintf("初始化jwt auth中间件失败: %v", err))
 	}
 	global.Log.Debug("初始化jwt auth中间件完成")
 
@@ -42,6 +43,7 @@ func Routers() *gin.Engine {
 	router.InitUserRouter(group, authMiddleware) // 注册用户路由
 	router.InitMenuRouter(group, authMiddleware) // 注册菜单路由
 	router.InitRoleRouter(group, authMiddleware) // 注册角色路由
+	router.InitApiRouter(group, authMiddleware)  // 注册接口路由
 
 	global.Log.Debug("初始化路由完成")
 	return r

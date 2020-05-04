@@ -200,6 +200,24 @@ func InitData() {
 				roles[2],
 			},
 		},
+		{
+			Model: models.Model{
+				Id: 9,
+			},
+			Name:      "api",
+			Title:     "接口管理",
+			Icon:      "tree",
+			Path:      "api",
+			Component: "/system/api",
+			Sort:      3,
+			Status:    &status,
+			Visible:   &visible,
+			ParentId:  2,
+			Creator:   creator,
+			Roles: []models.SysRole{
+				roles[2],
+			},
+		},
 	}
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
@@ -249,6 +267,237 @@ func InitData() {
 		notFound := global.Mysql.Where("username = ?", user.Username).First(&oldUser).RecordNotFound()
 		if notFound {
 			global.Mysql.Create(&user)
+		}
+	}
+
+	// 4. 初始化接口
+	apis := []models.SysApi{
+		{
+			Model: models.Model{
+				Id: 1,
+			},
+			Method:   "POST",
+			Path:     "/base/login",
+			Category: "base",
+			Desc:     "用户登录",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 2,
+			},
+			Method:   "POST",
+			Path:     "/base/logout",
+			Category: "base",
+			Desc:     "用户登出",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 3,
+			},
+			Method:   "POST",
+			Path:     "/base/refresh_token",
+			Category: "base",
+			Desc:     "刷新JWT令牌",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 4,
+			},
+			Method:   "POST",
+			Path:     "/user/info",
+			Category: "user",
+			Desc:     "获取当前登录用户信息",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 5,
+			},
+			Method:   "GET",
+			Path:     "/user/list",
+			Category: "user",
+			Desc:     "获取用户列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 6,
+			},
+			Method:   "PUT",
+			Path:     "/user/changePwd",
+			Category: "user",
+			Desc:     "修改用户登录密码",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 7,
+			},
+			Method:   "POST",
+			Path:     "/user/create",
+			Category: "user",
+			Desc:     "创建用户",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 8,
+			},
+			Method:   "PATCH",
+			Path:     "/user/:userId",
+			Category: "user",
+			Desc:     "更新用户",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 9,
+			},
+			Method:   "DELETE",
+			Path:     "/user/batch",
+			Category: "user",
+			Desc:     "批量删除用户",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 10,
+			},
+			Method:   "GET",
+			Path:     "/menu/tree",
+			Category: "menu",
+			Desc:     "获取权限菜单",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 11,
+			},
+			Method:   "GET",
+			Path:     "/menu/list",
+			Category: "menu",
+			Desc:     "获取菜单列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 12,
+			},
+			Method:   "POST",
+			Path:     "/menu/create",
+			Category: "menu",
+			Desc:     "创建菜单",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 13,
+			},
+			Method:   "PATCH",
+			Path:     "/menu/:menuId",
+			Category: "menu",
+			Desc:     "更新菜单",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 14,
+			},
+			Method:   "DELETE",
+			Path:     "/menu/batch",
+			Category: "menu",
+			Desc:     "批量删除菜单",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 15,
+			},
+			Method:   "GET",
+			Path:     "/role/list",
+			Category: "role",
+			Desc:     "获取角色列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 16,
+			},
+			Method:   "POST",
+			Path:     "/role/create",
+			Category: "role",
+			Desc:     "创建角色",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 17,
+			},
+			Method:   "PATCH",
+			Path:     "/role/:roleId",
+			Category: "role",
+			Desc:     "更新角色",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 18,
+			},
+			Method:   "DELETE",
+			Path:     "/role/batch",
+			Category: "role",
+			Desc:     "批量删除角色",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 19,
+			},
+			Method:   "GET",
+			Path:     "/api/list",
+			Category: "api",
+			Desc:     "获取接口列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 20,
+			},
+			Method:   "POST",
+			Path:     "/api/create",
+			Category: "api",
+			Desc:     "创建接口",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 21,
+			},
+			Method:   "PATCH",
+			Path:     "/api/:roleId",
+			Category: "api",
+			Desc:     "更新接口",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 22,
+			},
+			Method:   "DELETE",
+			Path:     "/api/batch",
+			Category: "api",
+			Desc:     "批量删除接口",
+			Creator:  creator,
+		},
+	}
+	for _, api := range apis {
+		oldApi := models.SysApi{}
+		notFound := global.Mysql.Where("id = ?", api.Id).First(&oldApi).RecordNotFound()
+		if notFound {
+			global.Mysql.Create(&api)
 		}
 	}
 }
