@@ -41,14 +41,23 @@ func GetUserInfo(c *gin.Context) {
 // @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
 // @Router /user/list [post]
 func GetUsers(c *gin.Context) {
-	users, err := service.GetUsers()
+	// 绑定参数
+	var req request.UserListRequestStruct
+	_ = c.Bind(&req)
+	users, err := service.GetUsers(&req)
 	if err != nil {
-		response.Fail(c)
+		response.FailWithMsg(c, err.Error())
 		return
 	}
-	// 转为UserInfoResponseStruct, 隐藏部分字段
-	var resp []response.UserInfoResponseStruct
-	utils.Struct2StructByJson(users, &resp)
+	// 转为ResponseStruct, 隐藏部分字段
+	var respStruct []response.UserListResponseStruct
+	utils.Struct2StructByJson(users, &respStruct)
+	// 返回分页数据
+	var resp response.PageData
+	// 设置分页参数
+	resp.PageInfo = req.PageInfo
+	// 设置数据列表
+	resp.List = respStruct
 	response.SuccessWithData(c, resp)
 }
 
@@ -96,4 +105,80 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	user, _ := c.Get("user")
 	u, _ := user.(models.SysUser)
 	return u
+}
+
+// @Tags SysUser
+// @Summary 创建用户
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body true "创建用户"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /user/create [post]
+func CreateUser(c *gin.Context) {
+	user := GetCurrentUser(c)
+	// 绑定参数
+	var req request.CreateUserRequestStruct
+	_ = c.Bind(&req)
+	// 参数校验
+	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	// 记录当前创建人信息
+	req.Creator = user.Nickname + user.Username
+	err = service.CreateUser(&req)
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.Success(c)
+}
+
+// @Tags SysUser
+// @Summary 更新用户
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body true "更新用户"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /user/:userId [patch]
+func UpdateUserById(c *gin.Context) {
+	// 绑定参数, 这里与创建用户用同一结构体即可
+	var req request.CreateUserRequestStruct
+	_ = c.Bind(&req)
+	// 获取path中的userId
+	userId := utils.Str2Uint(c.Param("userId"))
+	if userId == 0 {
+		response.FailWithMsg(c, "用户编号不正确")
+		return
+	}
+	// 更新数据
+	err := service.UpdateUserById(userId, &req)
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.Success(c)
+}
+
+// @Tags SysUser
+// @Summary 批量删除用户
+// @Security ApiKeyAuth
+// @accept application/json
+// @Produce application/json
+// @Param data body true "批量删除用户"
+// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
+// @Router /user/batch [delete]
+func BatchDeleteUserByIds(c *gin.Context) {
+	var req request.Req
+	_ = c.Bind(&req)
+	// 删除数据
+	err := service.DeleteUserByIds(req.GetUintIds())
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.Success(c)
 }

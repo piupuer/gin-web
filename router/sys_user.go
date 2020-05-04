@@ -13,6 +13,9 @@ func InitUserRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R
 		router.POST("/info", v1.GetUserInfo)
 		router.GET("/list", v1.GetUsers)
 		router.PUT("/changePwd", v1.ChangePwd)
+		router.POST("/create", v1.CreateUser)
+		router.PATCH("/:userId", v1.UpdateUserById)
+		router.DELETE("/batch", v1.BatchDeleteUserByIds)
 	}
 	return router
 }

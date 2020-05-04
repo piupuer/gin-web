@@ -221,6 +221,7 @@ func InitData() {
 			Nickname:     "管理员",
 			Introduction: "妖怪, 哪里跑",
 			RoleId:       3,
+			Creator:      creator,
 		},
 		{
 			Username:     "zhangsan",
@@ -230,6 +231,7 @@ func InitData() {
 			Nickname:     "张三",
 			Introduction: "今天是个好日子",
 			RoleId:       2,
+			Creator:      creator,
 		},
 		{
 			Username:     "lisi",
@@ -239,6 +241,7 @@ func InitData() {
 			Nickname:     "李四",
 			Introduction: "这个人很懒, 什么也没留下",
 			RoleId:       1,
+			Creator:      creator,
 		},
 	}
 	for _, user := range users {
