@@ -16,5 +16,5 @@ type Model struct {
 // 表名设置
 func (Model) TableName(name string) string {
 	// 添加表前缀
-	return fmt.Sprintf("%s_%s", "tb_prefix", name)
+	return fmt.Sprintf("%s%s", "tb_prefix_", name)
 }

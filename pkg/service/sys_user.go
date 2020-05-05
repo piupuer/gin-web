@@ -13,8 +13,8 @@ import (
 // 登录校验
 func LoginCheck(user *models.SysUser) (*models.SysUser, error) {
 	var u models.SysUser
-	// 查询用户
-	err := global.Mysql.Where("username = ?", user.Username).First(&u).Error
+	// 查询用户及其角色
+	err := global.Mysql.Preload("Role").Where("username = ?", user.Username).First(&u).Error
 	if err != nil {
 		return nil, err
 	}

@@ -4,11 +4,12 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	v1 "go-shipment-api/api/v1"
+	"go-shipment-api/middleware"
 )
 
 // 用户路由
 func InitUserRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	router := r.Group("user").Use(authMiddleware.MiddlewareFunc())
+	router := r.Group("user").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
 		router.POST("/info", v1.GetUserInfo)
 		router.GET("/list", v1.GetUsers)
