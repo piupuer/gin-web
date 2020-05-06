@@ -9,6 +9,7 @@ type Configuration struct {
 	Logs   LogsConfiguration   `mapstructure:"logs" json:"logs"`
 	Mysql  MysqlConfiguration  `mapstructure:"mysql" json:"mysql"`
 	Casbin CasbinConfiguration `mapstructure:"casbin" json:"casbin"`
+	Jwt    JwtConfiguration    `mapstructure:"jwt" json:"jwt"`
 }
 
 type SystemConfiguration struct {
@@ -36,4 +37,11 @@ type MysqlConfiguration struct {
 
 type CasbinConfiguration struct {
 	ModelPath string `mapstructure:"model-path" json:"modelPath"`
+}
+
+type JwtConfiguration struct {
+	Realm      string `mapstructure:"realm" json:"realm"`
+	Key        string `mapstructure:"key" json:"key"`
+	Timeout    int    `mapstructure:"timeout" json:"timeout"`
+	MaxRefresh int    `mapstructure:"max-refresh" json:"maxRefresh"`
 }

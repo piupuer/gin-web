@@ -12,24 +12,21 @@ import (
 	"time"
 )
 
-var jwtSecret = "jwt-secret"
-
 func InitAuth() (*jwt.GinJWTMiddleware, error) {
 	return jwt.New(&jwt.GinJWTMiddleware{
-		Realm:           "test realm",
-		Key:             []byte("secret key"),
-		Timeout:         time.Hour * 24,
-		MaxRefresh:      time.Hour * 24,
-		IdentityKey:     jwtSecret,                                          // jwt密钥
-		PayloadFunc:     payloadFunc,                                        // 有效载荷处理
-		IdentityHandler: identityHandler,                                    // 解析Claims
-		Authenticator:   login,                                              // 校验token的正确性, 处理登录逻辑
-		Authorizator:    authorizator,                                       // 校验用户的正确性
-		Unauthorized:    unauthorized,                                       // 校验失败处理
-		LoginResponse:   loginResponse,                                      // 登录成功后的响应
-		LogoutResponse:  logoutResponse,                                     // 登出后的响应
-		TokenLookup:     "header: Authorization, query: token, cookie: jwt", // 自动在这几个地方寻找请求中的token
-		TokenHeadName:   "Bearer",                                           // header名称
+		Realm:           global.Conf.Jwt.Realm,                                 // jwt标识
+		Key:             []byte(global.Conf.Jwt.Key),                           // 服务端密钥
+		Timeout:         time.Hour * time.Duration(global.Conf.Jwt.Timeout),    // token过期时间
+		MaxRefresh:      time.Hour * time.Duration(global.Conf.Jwt.MaxRefresh), // token更新时间
+		PayloadFunc:     payloadFunc,                                           // 有效载荷处理
+		IdentityHandler: identityHandler,                                       // 解析Claims
+		Authenticator:   login,                                                 // 校验token的正确性, 处理登录逻辑
+		Authorizator:    authorizator,                                          // 校验用户的正确性
+		Unauthorized:    unauthorized,                                          // 校验失败处理
+		LoginResponse:   loginResponse,                                         // 登录成功后的响应
+		LogoutResponse:  logoutResponse,                                        // 登出后的响应
+		TokenLookup:     "header: Authorization, query: token, cookie: jwt",    // 自动在这几个地方寻找请求中的token
+		TokenHeadName:   "Bearer",                                              // header名称
 		TimeFunc:        time.Now,
 	})
 }

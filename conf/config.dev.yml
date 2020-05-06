@@ -37,3 +37,14 @@ mysql:
 casbin:
   # 模型配置文件, 默认以conf目录为根目录
   model-path: 'rbac_model.conf'
+
+# jwt配置
+jwt:
+  # jwt标识
+  realm: test jwt
+  # 服务端密钥
+  key: secret key
+  # token过期时间, 小时
+  timeout: 24
+  # token更新时间, 小时
+  max-refresh: 24
