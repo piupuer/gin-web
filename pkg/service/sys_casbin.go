@@ -37,3 +37,25 @@ func CreateCasbin(c models.SysCasbin) (bool, error) {
 	e, _ := Casbin()
 	return e.AddPolicy(c.V0, c.V1, c.V2)
 }
+
+// 根据权限编号读取casbin规则
+func GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
+	casbins := make([]models.SysCasbin, 0)
+	var role models.SysRole
+	err := global.Mysql.Where("id = ?", roleId).First(&role).Error
+	if err != nil {
+		return casbins, err
+	}
+	e, _ := Casbin()
+	// 查询符合字段v0=role.Keyword所有casbin规则
+	list := e.GetFilteredPolicy(0, role.Keyword)
+	for _, v := range list {
+		casbins = append(casbins, models.SysCasbin{
+			PType: "p",
+			V0:    v[0],
+			V1:    v[1],
+			V2:    v[2],
+		})
+	}
+	return casbins, nil
+}

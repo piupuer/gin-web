@@ -6,6 +6,7 @@ import (
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
+	"go-shipment-api/pkg/response"
 	"go-shipment-api/pkg/utils"
 	"strings"
 )
@@ -46,6 +47,49 @@ func GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
 		err = db.Limit(limit).Offset(offset).Find(&list).Error
 	}
 	return list, err
+}
+
+func GetRoleCategoryApisByRoleId(roleId uint) (map[string][]response.RoleApiListResponseStruct, error) {
+	roleApi := make(map[string][]response.RoleApiListResponseStruct, 0)
+	allApi := make([]models.SysApi, 0)
+	// 查询全部api
+	err := global.Mysql.Find(&allApi).Error
+	if err != nil {
+		return nil, err
+	}
+	// 查询当前角色拥有api访问权限的casbin规则
+	casbins, err := GetCasbinListByRoleId(roleId)
+	if err != nil {
+		return nil, err
+	}
+
+	// 通过分类进行归纳
+	for _, api := range allApi {
+		category := api.Category
+		path := api.Path
+		method := api.Method
+		access := false
+		for _, casbin := range casbins {
+			// 该api有权限
+			if path == casbin.V1 && method == casbin.V2 {
+				access = true
+				break
+			}
+		}
+		if _, ok := roleApi[category]; !ok {
+			// 该分类不存在, 初始化
+			roleApi[category] = make([]response.RoleApiListResponseStruct, 0)
+		}
+		// 当当前元素归入分类
+		roleApi[category] = append(roleApi[category], response.RoleApiListResponseStruct{
+			Id: api.Id,
+			Method: method,
+			Path: path,
+			Desc: api.Desc,
+			Access: access,
+		})
+	}
+	return roleApi, err
 }
 
 // 创建接口

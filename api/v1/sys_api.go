@@ -31,6 +31,17 @@ func GetApis(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
+// 根据权限编号获取以api分类分组的权限接口
+func GetRoleCategoryApisByRoleId(c *gin.Context) {
+	// 绑定参数
+	apis, err := service.GetRoleCategoryApisByRoleId(utils.Str2Uint(c.Param("roleId")))
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.SuccessWithData(c, apis)
+}
+
 // 创建接口
 func CreateApi(c *gin.Context) {
 	user := GetCurrentUser(c)
