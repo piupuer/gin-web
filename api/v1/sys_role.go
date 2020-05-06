@@ -9,14 +9,7 @@ import (
 	"go-shipment-api/pkg/utils"
 )
 
-// @Tags SysRole
-// @Summary 获取角色列表
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "分页获取角色列表"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /role/list [post]
+// 获取角色列表
 func GetRoles(c *gin.Context) {
 	// 绑定参数
 	var req request.RoleListRequestStruct
@@ -38,14 +31,7 @@ func GetRoles(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
-// @Tags SysRole
-// @Summary 创建角色
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "创建角色"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /role/create [post]
+// 创建角色
 func CreateRole(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
@@ -67,14 +53,7 @@ func CreateRole(c *gin.Context) {
 	response.Success(c)
 }
 
-// @Tags SysRole
-// @Summary 更新角色
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "更新角色"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /role/:roleId [patch]
+// 更新角色
 func UpdateRoleById(c *gin.Context) {
 	// 绑定参数, 这里与创建角色用同一结构体即可
 	var req request.CreateRoleRequestStruct
@@ -94,14 +73,7 @@ func UpdateRoleById(c *gin.Context) {
 	response.Success(c)
 }
 
-// @Tags SysRole
-// @Summary 批量删除角色
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "批量删除角色"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /role/batch [delete]
+// 批量删除角色
 func BatchDeleteRoleByIds(c *gin.Context) {
 	var req request.Req
 	_ = c.Bind(&req)

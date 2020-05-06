@@ -9,14 +9,7 @@ import (
 	"go-shipment-api/pkg/utils"
 )
 
-// @Tags SysApi
-// @Summary 获取接口列表
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "分页获取接口列表"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /api/list [post]
+// 获取接口列表
 func GetApis(c *gin.Context) {
 	// 绑定参数
 	var req request.ApiListRequestStruct
@@ -38,14 +31,7 @@ func GetApis(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
-// @Tags SysApi
-// @Summary 创建接口
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "创建接口"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /api/create [post]
+// 创建接口
 func CreateApi(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
@@ -67,14 +53,7 @@ func CreateApi(c *gin.Context) {
 	response.Success(c)
 }
 
-// @Tags SysApi
-// @Summary 更新接口
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "更新接口"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /api/:apiId [patch]
+// 更新接口
 func UpdateApiById(c *gin.Context) {
 	// 绑定参数, 这里与创建接口用同一结构体即可
 	var req request.CreateApiRequestStruct
@@ -94,14 +73,7 @@ func UpdateApiById(c *gin.Context) {
 	response.Success(c)
 }
 
-// @Tags SysApi
-// @Summary 批量删除接口
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "批量删除接口"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /api/batch [delete]
+// 批量删除接口
 func BatchDeleteApiByIds(c *gin.Context) {
 	var req request.Req
 	_ = c.Bind(&req)

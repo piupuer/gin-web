@@ -10,14 +10,7 @@ import (
 	"go-shipment-api/pkg/utils"
 )
 
-// @Tags SysUser
-// @Summary 获取当前用户信息
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "分页获取用户列表"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /user/info [post]
+// 获取当前用户信息
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 转为UserInfoResponseStruct, 隐藏部分字段
@@ -32,14 +25,7 @@ func GetUserInfo(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
-// @Tags SysUser
-// @Summary 获取用户列表
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "分页获取用户列表"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /user/list [post]
+// 获取用户列表
 func GetUsers(c *gin.Context) {
 	// 绑定参数
 	var req request.UserListRequestStruct
@@ -61,14 +47,7 @@ func GetUsers(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
-// @Tags SysUser
-// @Summary 修改密码
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "是否修改成功"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /user/changePwd [put]
+// 修改密码
 func ChangePwd(c *gin.Context) {
 	var msg string
 	// 请求json绑定
@@ -107,14 +86,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	return u
 }
 
-// @Tags SysUser
-// @Summary 创建用户
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "创建用户"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /user/create [post]
+// 创建用户
 func CreateUser(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
@@ -136,14 +108,7 @@ func CreateUser(c *gin.Context) {
 	response.Success(c)
 }
 
-// @Tags SysUser
-// @Summary 更新用户
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "更新用户"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /user/:userId [patch]
+// 更新用户
 func UpdateUserById(c *gin.Context) {
 	// 绑定参数, 这里与创建用户用同一结构体即可
 	var req request.CreateUserRequestStruct
@@ -163,14 +128,7 @@ func UpdateUserById(c *gin.Context) {
 	response.Success(c)
 }
 
-// @Tags SysUser
-// @Summary 批量删除用户
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "批量删除用户"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /user/batch [delete]
+// 批量删除用户
 func BatchDeleteUserByIds(c *gin.Context) {
 	var req request.Req
 	_ = c.Bind(&req)

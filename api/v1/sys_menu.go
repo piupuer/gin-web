@@ -10,14 +10,7 @@ import (
 	"go-shipment-api/pkg/utils"
 )
 
-// @Tags GetMenuTree
-// @Summary 查询当前用户菜单树
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "查询当前用户菜单树"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/tree [get]
+// 查询当前用户菜单树
 func GetMenuTree(c *gin.Context) {
 	user := GetCurrentUser(c)
 	var u models.SysUser
@@ -38,14 +31,7 @@ func GetMenuTree(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
-// @Tags GetMenus
-// @Summary 查询所有菜单
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "查询所有菜单"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/list [get]
+// 查询所有菜单
 func GetMenus(c *gin.Context) {
 	menus, err := service.GetMenus()
 	if err != nil {
@@ -58,14 +44,7 @@ func GetMenus(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
-// @Tags SysMenu
-// @Summary 创建菜单
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "创建菜单"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/create [get]
+// 创建菜单
 func CreateMenu(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
@@ -87,14 +66,7 @@ func CreateMenu(c *gin.Context) {
 	response.Success(c)
 }
 
-// @Tags SysRole
-// @Summary 更新菜单
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "更新菜单"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/:menuId [patch]
+// 更新菜单
 func UpdateMenuById(c *gin.Context) {
 	// 绑定参数
 	var req request.CreateMenuRequestStruct
@@ -114,14 +86,7 @@ func UpdateMenuById(c *gin.Context) {
 	response.Success(c)
 }
 
-// @Tags SysRole
-// @Summary 批量删除菜单
-// @Security ApiKeyAuth
-// @accept application/json
-// @Produce application/json
-// @Param data body true "批量删除菜单"
-// @Success 200 {string} string "{"success":true,"data":{},"msg":"获取成功"}"
-// @Router /menu/batch [delete]
+// 批量删除菜单
 func BatchDeleteMenuByIds(c *gin.Context) {
 	var req request.Req
 	_ = c.Bind(&req)
