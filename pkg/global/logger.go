@@ -22,13 +22,13 @@ import (
  */
 func InitLogger() {
 	now := time.Now()
-	filename := fmt.Sprintf("logs/%04d-%02d-%02d.log", now.Year(), now.Month(), now.Day())
+	filename := fmt.Sprintf("%s/%04d-%02d-%02d.log", Conf.Logs.Path, now.Year(), now.Month(), now.Day())
 	hook := &lumberjack.Logger{
-		Filename:   filename, // 日志文件路径
-		MaxSize:    50,       // 最大尺寸, M
-		MaxBackups: 100,      // 备份数
-		MaxAge:     30,       // 存放天数
-		Compress:   false,    // 是否压缩
+		Filename:   filename,             // 日志文件路径
+		MaxSize:    Conf.Logs.MaxSize,    // 最大尺寸, M
+		MaxBackups: Conf.Logs.MaxBackups, // 备份数
+		MaxAge:     Conf.Logs.MaxAge,     // 存放天数
+		Compress:   Conf.Logs.Compress,   // 是否压缩
 	}
 	defer hook.Close()
 	// zap 的 Config 非常的繁琐也非常强大，可以控制打印 log 的所有细节，因此对于我们开发者是友好的，有利于二次封装。
@@ -41,7 +41,7 @@ func InitLogger() {
 	core := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(enConfig),                                            // 编码器配置
 		zapcore.NewMultiWriteSyncer(zapcore.AddSync(os.Stdout), zapcore.AddSync(hook)), // 打印到控制台和文件
-		zap.DebugLevel,                                                                 // 日志等级
+		Conf.Logs.Level,                                                                // 日志等级
 	)
 
 	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))

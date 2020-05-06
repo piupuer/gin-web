@@ -3,6 +3,7 @@ package global
 import (
 	"errors"
 	ut "github.com/go-playground/universal-translator"
+	"github.com/gobuffalo/packr"
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v9"
@@ -10,9 +11,17 @@ import (
 )
 
 var (
-	Log        *zap.SugaredLogger
-	Mysql      *gorm.DB
-	Validate   *validator.Validate
+	// 系统配置
+	Conf Configuration
+	// packr盒子用于打包配置文件到golang编译后的二进制程序中
+	ConfBox packr.Box
+	// zap日志
+	Log *zap.SugaredLogger
+	// mysql实例
+	Mysql *gorm.DB
+	// validation.v9校验器
+	Validate *validator.Validate
+	// validation.v9相关翻译器
 	Translator ut.Translator
 )
 

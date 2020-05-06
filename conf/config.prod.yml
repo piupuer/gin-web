@@ -1,0 +1,6 @@
+# production
+system:
+  port: 80
+
+logs:
+  level: 0

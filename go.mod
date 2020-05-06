@@ -10,8 +10,10 @@ require (
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-sql-driver/mysql v1.4.1
+	github.com/gobuffalo/packr v1.30.1
 	github.com/jinzhu/gorm v1.9.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/spf13/viper v1.6.3
 	go.uber.org/zap v1.14.1
 	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
 	gopkg.in/go-playground/validator.v9 v9.31.0

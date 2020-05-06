@@ -1,0 +1,39 @@
+# development
+system:
+  # 程序监听端口
+  port: 9999
+
+logs:
+  # 日志等级(-1:Debug, 0:Info, -1<=level<=5, 参照zap.level源码)
+  level: -1
+  # 日志路径
+  path: logs
+  # 文件最大大小, M
+  max-size: 50
+  # 备份数
+  max-backups: 100
+  # 存放时间, 天
+  max-age: 30
+  # 是否压缩
+  compress: false
+
+mysql:
+  # 用户名
+  username: root
+  # 密码
+  password: root
+  # 数据库名
+  database: goshipment
+  # 主机地址
+  host: 127.0.0.1
+  # 端口
+  port: 43306
+  # 连接字符串查询参数
+  query: charset=utf8&parseTime=True&loc=Local&timeout=10000ms
+  # 是否打印日志
+  log-mode: true
+
+# casbin配置
+casbin:
+  # 模型配置文件, 默认以conf目录为根目录
+  model-path: 'rbac_model.conf'

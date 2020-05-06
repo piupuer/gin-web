@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/casbin/casbin/v2"
+	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v2"
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
@@ -15,7 +16,14 @@ func Casbin() (*casbin.Enforcer, error) {
 		return nil, err
 	}
 	// 读取配置文件
-	e, err := casbin.NewEnforcer("conf/rbac_model.conf", a)
+	config, err := global.ConfBox.Find(global.Conf.Casbin.ModelPath)
+	cabinModel := model.NewModel()
+	// 从字符串中加载casbin配置
+	err = cabinModel.LoadModelFromText(string(config))
+	if err != nil {
+		return nil, err
+	}
+	e, err := casbin.NewEnforcer(cabinModel, a)
 	if err != nil {
 		return nil, err
 	}

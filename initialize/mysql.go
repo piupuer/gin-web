@@ -10,7 +10,15 @@ import (
 
 // 初始化mysql数据库
 func Mysql() {
-	db, err := gorm.Open("mysql", "root:root@tcp(localserver:43306)/goshipment?charset=utf8&parseTime=True&loc=Local&timeout=10000ms")
+	db, err := gorm.Open("mysql", fmt.Sprintf(
+		"%s:%s@tcp(%s:%d)/%s?%s",
+		global.Conf.Mysql.Username,
+		global.Conf.Mysql.Password,
+		global.Conf.Mysql.Host,
+		global.Conf.Mysql.Port,
+		global.Conf.Mysql.Database,
+		global.Conf.Mysql.Query,
+	))
 	if err != nil {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))
 	}
@@ -18,7 +26,7 @@ func Mysql() {
 	// 表结构
 	autoMigrate()
 	// 打印所有执行的sql
-	db.LogMode(true)
+	db.LogMode(global.Conf.Mysql.LogMode)
 	global.Log.Debug("初始化mysql完成")
 }
 
