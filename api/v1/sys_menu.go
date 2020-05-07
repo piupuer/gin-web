@@ -31,6 +31,17 @@ func GetMenuTree(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
+// 查询当前用户菜单树
+func GetAllMenuByRoleId(c *gin.Context) {
+	// 绑定参数
+	menus, err := service.GetAllMenuByRoleId(utils.Str2Uint(c.Param("roleId")))
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.SuccessWithData(c, menus)
+}
+
 // 查询所有菜单
 func GetMenus(c *gin.Context) {
 	menus, err := service.GetMenus()

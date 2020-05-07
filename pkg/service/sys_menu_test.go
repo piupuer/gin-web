@@ -7,11 +7,13 @@ import (
 	"testing"
 )
 
-func TestGetRoleCategoryApisByRoleId(t *testing.T) {
+func TestGetAllMenuByRoleId(t *testing.T) {
 	tests.InitTestEnv()
 
-	fmt.Println(GetAllApiGroupByCategoryByRoleId(3))
-	fmt.Println(GetAllApiGroupByCategoryByRoleId(1))
+	m1, _ := GetAllMenuByRoleId(3)
+	m2, _ := GetAllMenuByRoleId(1)
+	fmt.Println(m1)
+	fmt.Println(m2)
 
 	defer global.Mysql.Close()
 }
