@@ -76,7 +76,7 @@ func UpdateApiById(c *gin.Context) {
 		return
 	}
 	// 更新数据
-	err := service.UpdateApiById(uint(apiId), &req)
+	err := service.UpdateApiById(apiId, &req)
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return

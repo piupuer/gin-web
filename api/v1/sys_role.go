@@ -65,7 +65,7 @@ func UpdateRoleById(c *gin.Context) {
 		return
 	}
 	// 更新数据
-	err := service.UpdateRoleById(uint(roleId), &req)
+	err := service.UpdateRoleById(roleId, &req)
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return

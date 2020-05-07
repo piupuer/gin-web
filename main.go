@@ -17,7 +17,7 @@ func main() {
 	defer func() {
 		if err := recover(); err != nil {
 			// 将异常写入日志
-			global.Log.Error(fmt.Sprintf("项目启动失败: %v\n堆栈信息: %v", err, string(string(debug.Stack()))))
+			global.Log.Error(fmt.Sprintf("项目启动失败: %v\n堆栈信息: %v", err, string(debug.Stack())))
 		}
 	}()
 

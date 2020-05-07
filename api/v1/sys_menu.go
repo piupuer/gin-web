@@ -78,7 +78,7 @@ func UpdateMenuById(c *gin.Context) {
 		return
 	}
 	// 更新数据
-	err := service.UpdateMenuById(uint(menuId), &req)
+	err := service.UpdateMenuById(menuId, &req)
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return
