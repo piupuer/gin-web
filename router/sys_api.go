@@ -11,7 +11,7 @@ func InitApiRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R 
 	router := r.Group("api").Use(authMiddleware.MiddlewareFunc())
 	{
 		router.GET("/list", v1.GetApis)
-		router.GET("/role/category/:roleId", v1.GetRoleCategoryApisByRoleId)
+		router.GET("/all/category/:roleId", v1.GetAllApiGroupByCategoryByRoleId)
 		router.POST("/create", v1.CreateApi)
 		router.PATCH("/:apiId", v1.UpdateApiById)
 		router.DELETE("/batch", v1.BatchDeleteApiByIds)

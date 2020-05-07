@@ -14,7 +14,7 @@ type ApiListResponseStruct struct {
 }
 
 // 权限接口信息响应, 字段含义见models.SysRole
-type RoleApiListResponseStruct struct {
+type AllApiGroupByCategoryResponseStruct struct {
 	Id     uint   `json:"id"`
 	Method string `json:"method"`
 	Path   string `json:"path"`

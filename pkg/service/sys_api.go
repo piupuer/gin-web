@@ -49,8 +49,9 @@ func GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
 	return list, err
 }
 
-func GetRoleCategoryApisByRoleId(roleId uint) (map[string][]response.RoleApiListResponseStruct, error) {
-	roleApi := make(map[string][]response.RoleApiListResponseStruct, 0)
+// 根据权限编号获取以api分类分组的权限接口
+func GetAllApiGroupByCategoryByRoleId(roleId uint) (map[string][]response.AllApiGroupByCategoryResponseStruct, error) {
+	roleApi := make(map[string][]response.AllApiGroupByCategoryResponseStruct, 0)
 	allApi := make([]models.SysApi, 0)
 	// 查询全部api
 	err := global.Mysql.Find(&allApi).Error
@@ -63,7 +64,7 @@ func GetRoleCategoryApisByRoleId(roleId uint) (map[string][]response.RoleApiList
 		return nil, err
 	}
 
-	// 通过分类进行归纳
+	// 通过分类进行分组归纳
 	for _, api := range allApi {
 		category := api.Category
 		path := api.Path
@@ -78,10 +79,10 @@ func GetRoleCategoryApisByRoleId(roleId uint) (map[string][]response.RoleApiList
 		}
 		if _, ok := roleApi[category]; !ok {
 			// 该分类不存在, 初始化
-			roleApi[category] = make([]response.RoleApiListResponseStruct, 0)
+			roleApi[category] = make([]response.AllApiGroupByCategoryResponseStruct, 0)
 		}
 		// 当当前元素归入分类
-		roleApi[category] = append(roleApi[category], response.RoleApiListResponseStruct{
+		roleApi[category] = append(roleApi[category], response.AllApiGroupByCategoryResponseStruct{
 			Id: api.Id,
 			Method: method,
 			Path: path,
