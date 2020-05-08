@@ -18,6 +18,8 @@ type CreateApiRequestStruct struct {
 	Method   string `json:"method" validate:"required"`
 	Path     string `json:"path" validate:"required"`
 	Category string `json:"category" validate:"required"`
+	Desc     string `json:"desc"`
+	Title    string `json:"title"`
 	Creator  string `json:"creator"`
 }
 
