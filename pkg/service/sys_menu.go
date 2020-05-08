@@ -5,7 +5,6 @@ import (
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
-	"go-shipment-api/pkg/response"
 	"go-shipment-api/pkg/utils"
 )
 
@@ -60,55 +59,31 @@ func genMenuTree(parent *models.SysMenu, menus []models.SysMenu) []models.SysMen
 	return tree
 }
 
-// 生成菜单树, 包含是否有访问权限字段
-func genMenuTreeWithAccess(parent *models.SysMenu, menus []models.SysMenu, roleMenus []models.SysMenu) []response.MenuTreeWithAccessResponseStruct {
-	tree := make([]response.MenuTreeWithAccessResponseStruct, 0)
-	// parentId默认为0, 表示根菜单
-	var parentId uint
-	if parent != nil {
-		parentId = parent.Id
-	}
-
-	for _, menu := range menus {
-		// 父菜单编号一致
-		if menu.ParentId == parentId {
-			// 判断是否有权限访问
-			access := false
-			for _, roleMenu := range roleMenus {
-				if menu.Id == roleMenu.Id {
-					access = true
-					break
-				}
-			}
-			var m response.MenuTreeWithAccessResponseStruct
-			// 结构体转换
-			utils.Struct2StructByJson(menu, &m)
-			// 设置访问权限
-			m.Access = access
-			// 递归获取子菜单
-			m.Children = genMenuTreeWithAccess(&menu, menus, roleMenus)
-			// 加入菜单树
-			tree = append(tree, m)
-		}
-	}
-	return tree
-}
-
 // 根据权限编号获取全部菜单
-func GetAllMenuByRoleId(roleId uint) ([]response.MenuTreeWithAccessResponseStruct, error) {
+func GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint, error) {
+	// 菜单树
+	tree := make([]models.SysMenu, 0)
+	// 有权限访问的id列表
+	accessIds := make([]uint, 0)
 	allMenu := make([]models.SysMenu, 0)
 	// 查询全部菜单
 	err := global.Mysql.Order("sort").Find(&allMenu).Error
 	if err != nil {
-		return nil, err
+		return tree, accessIds, err
 	}
 	// 查询角色拥有的全部菜单
 	var role models.SysRole
 	err = global.Mysql.Preload("Menus").Where("id = ?", roleId).First(&role).Error
 	if err != nil {
-		return nil, err
+		return tree, accessIds, err
 	}
-	return genMenuTreeWithAccess(nil, allMenu, role.Menus), nil
+	// 生成菜单树
+	tree = genMenuTree(nil, allMenu)
+	// 获取id列表
+	for _, menu := range role.Menus {
+		accessIds = append(accessIds, menu.Id)
+	}
+	return tree, accessIds, nil
 }
 
 // 创建菜单

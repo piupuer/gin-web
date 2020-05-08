@@ -31,15 +31,18 @@ func GetMenuTree(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
-// 查询当前用户菜单树
+// 查询指定角色的菜单树
 func GetAllMenuByRoleId(c *gin.Context) {
 	// 绑定参数
-	menus, err := service.GetAllMenuByRoleId(utils.Str2Uint(c.Param("roleId")))
+	menus, ids, err := service.GetAllMenuByRoleId(utils.Str2Uint(c.Param("roleId")))
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return
 	}
-	response.SuccessWithData(c, menus)
+	var resp response.MenuTreeWithAccessResponseStruct
+	resp.AccessIds = ids
+	utils.Struct2StructByJson(menus, &resp.List)
+	response.SuccessWithData(c, resp)
 }
 
 // 查询所有菜单

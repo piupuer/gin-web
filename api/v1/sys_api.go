@@ -31,15 +31,18 @@ func GetApis(c *gin.Context) {
 	response.SuccessWithData(c, resp)
 }
 
-// 根据权限编号获取以api分类分组的权限接口
+// 查询指定角色的接口(以分类分组)
 func GetAllApiGroupByCategoryByRoleId(c *gin.Context) {
 	// 绑定参数
-	apis, err := service.GetAllApiGroupByCategoryByRoleId(utils.Str2Uint(c.Param("roleId")))
+	apis, ids, err := service.GetAllApiGroupByCategoryByRoleId(utils.Str2Uint(c.Param("roleId")))
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return
 	}
-	response.SuccessWithData(c, apis)
+	var resp response.ApiTreeWithAccessResponseStruct
+	resp.AccessIds = ids
+	utils.Struct2StructByJson(apis, &resp.List)
+	response.SuccessWithData(c, resp)
 }
 
 // 创建接口

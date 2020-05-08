@@ -10,8 +10,10 @@ import (
 func TestGetRoleCategoryApisByRoleId(t *testing.T) {
 	tests.InitTestEnv()
 
-	fmt.Println(GetAllApiGroupByCategoryByRoleId(3))
-	fmt.Println(GetAllApiGroupByCategoryByRoleId(1))
+	m1, a1, _ := GetAllApiGroupByCategoryByRoleId(3)
+	m2, a2, _ := GetAllApiGroupByCategoryByRoleId(1)
+	fmt.Println(m1, a1)
+	fmt.Println(m2, a2)
 
 	defer global.Mysql.Close()
 }

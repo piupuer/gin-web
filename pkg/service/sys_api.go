@@ -50,18 +50,21 @@ func GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
 }
 
 // 根据权限编号获取以api分类分组的权限接口
-func GetAllApiGroupByCategoryByRoleId(roleId uint) (map[string][]response.AllApiGroupByCategoryResponseStruct, error) {
-	roleApi := make(map[string][]response.AllApiGroupByCategoryResponseStruct, 0)
+func GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
+	// 接口树
+	tree := make([]response.ApiGroupByCategoryResponseStruct, 0)
+	// 有权限访问的id列表
+	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
 	// 查询全部api
 	err := global.Mysql.Find(&allApi).Error
 	if err != nil {
-		return nil, err
+		return tree, accessIds, err
 	}
 	// 查询当前角色拥有api访问权限的casbin规则
 	casbins, err := GetCasbinListByRoleId(roleId)
 	if err != nil {
-		return nil, err
+		return tree, accessIds, err
 	}
 
 	// 通过分类进行分组归纳
@@ -77,20 +80,38 @@ func GetAllApiGroupByCategoryByRoleId(roleId uint) (map[string][]response.AllApi
 				break
 			}
 		}
-		if _, ok := roleApi[category]; !ok {
-			// 该分类不存在, 初始化
-			roleApi[category] = make([]response.AllApiGroupByCategoryResponseStruct, 0)
+		// 加入权限集合
+		if access {
+			accessIds = append(accessIds, api.Id)
 		}
-		// 当当前元素归入分类
-		roleApi[category] = append(roleApi[category], response.AllApiGroupByCategoryResponseStruct{
-			Id: api.Id,
-			Method: method,
-			Path: path,
-			Desc: api.Desc,
-			Access: access,
-		})
+		// 生成接口树
+		existIndex := -1
+		children := make([]response.ApiListResponseStruct, 0)
+		for index, leaf := range tree {
+			if leaf.Category == category {
+				children = leaf.Children
+				existIndex = index
+				break
+			}
+		}
+		// api结构转换
+		var item response.ApiListResponseStruct
+		utils.Struct2StructByJson(api, &item)
+		item.Title = fmt.Sprintf("%s %s[%s]", item.Desc, item.Path, item.Method)
+		children = append(children, item)
+		if existIndex != -1 {
+			// 更新元素
+			tree[existIndex].Children = children
+		} else {
+			// 新增元素
+			tree = append(tree, response.ApiGroupByCategoryResponseStruct{
+				Title:    category + "分组",
+				Category: category,
+				Children: children,
+			})
+		}
 	}
-	return roleApi, err
+	return tree, accessIds, err
 }
 
 // 创建接口

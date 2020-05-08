@@ -493,6 +493,26 @@ func InitData() {
 			Desc:     "批量删除接口",
 			Creator:  creator,
 		},
+		{
+			Model: models.Model{
+				Id: 23,
+			},
+			Method:   "GET",
+			Path:     "/menu/all/:roleId",
+			Category: "menu",
+			Desc:     "查询指定角色的菜单树",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 24,
+			},
+			Method:   "GET",
+			Path:     "/menu/all/:roleId",
+			Category: "api",
+			Desc:     "查询指定角色的接口(以分类分组)",
+			Creator:  creator,
+		},
 	}
 	for _, api := range apis {
 		oldApi := models.SysApi{}
