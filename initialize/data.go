@@ -520,22 +520,22 @@ func InitData() {
 		if notFound {
 			global.Mysql.Create(&api)
 			// 管理员拥有所有API权限role[2]
-			service.CreateCasbin(models.SysCasbin{
-				V0: roles[2].Keyword,
-				V1: api.Path,
-				V2: api.Method,
+			service.CreateRoleCasbin(models.SysRoleCasbin{
+				Keyword: roles[2].Keyword,
+				Path: api.Path,
+				Method: api.Method,
 			})
 			// 其他人暂时只有登录/获取用户信息的权限
 			if api.Id < 5 || api.Id == 10 {
-				service.CreateCasbin(models.SysCasbin{
-					V0: roles[0].Keyword,
-					V1: api.Path,
-					V2: api.Method,
+				service.CreateRoleCasbin(models.SysRoleCasbin{
+					Keyword: roles[0].Keyword,
+					Path: api.Path,
+					Method: api.Method,
 				})
-				service.CreateCasbin(models.SysCasbin{
-					V0: roles[1].Keyword,
-					V1: api.Path,
-					V2: api.Method,
+				service.CreateRoleCasbin(models.SysRoleCasbin{
+					Keyword: roles[1].Keyword,
+					Path: api.Path,
+					Method: api.Method,
 				})
 			}
 		}

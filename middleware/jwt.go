@@ -21,8 +21,8 @@ func InitAuth() (*jwt.GinJWTMiddleware, error) {
 		PayloadFunc:     payloadFunc,                                           // 有效载荷处理
 		IdentityHandler: identityHandler,                                       // 解析Claims
 		Authenticator:   login,                                                 // 校验token的正确性, 处理登录逻辑
-		Authorizator:    authorizator,                                          // 校验用户的正确性
-		Unauthorized:    unauthorized,                                          // 校验失败处理
+		Authorizator:    authorizator,                                          // 用户登录校验成功处理
+		Unauthorized:    unauthorized,                                          // 用户登录校验失败处理
 		LoginResponse:   loginResponse,                                         // 登录成功后的响应
 		LogoutResponse:  logoutResponse,                                        // 登出后的响应
 		TokenLookup:     "header: Authorization, query: token, cookie: jwt",    // 自动在这几个地方寻找请求中的token

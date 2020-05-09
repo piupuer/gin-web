@@ -32,10 +32,46 @@ func Casbin() (*casbin.Enforcer, error) {
 	return e, err
 }
 
-// 创建一条casbin规则
-func CreateCasbin(c models.SysCasbin) (bool, error) {
+// 创建一条casbin规则, 按角色
+func CreateRoleCasbin(c models.SysRoleCasbin) (bool, error) {
 	e, _ := Casbin()
-	return e.AddPolicy(c.V0, c.V1, c.V2)
+	return e.AddPolicy(c.Keyword, c.Path, c.Method)
+}
+
+// 批量创建多条casbin规则, 按角色
+func BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
+	e, _ := Casbin()
+	// 按角色构建
+	rules := make([][]string, 0)
+	for _, c := range cs {
+		rules = append(rules, []string{
+			c.Keyword,
+			c.Path,
+			c.Method,
+		})
+	}
+	return e.AddPolicies(rules)
+}
+
+// 删除一条casbin规则, 按角色
+func DeleteRoleCasbin(c models.SysRoleCasbin) (bool, error) {
+	e, _ := Casbin()
+	return e.RemovePolicy(c.Keyword, c.Path, c.Method)
+}
+
+// 批量删除多条casbin规则, 按角色
+func BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
+	e, _ := Casbin()
+	// 按角色构建
+	rules := make([][]string, 0)
+	for _, c := range cs {
+		rules = append(rules, []string{
+			c.Keyword,
+			c.Path,
+			c.Method,
+		})
+	}
+	return e.RemovePolicies(rules)
 }
 
 // 根据权限编号读取casbin规则
