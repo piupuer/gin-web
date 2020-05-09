@@ -513,6 +513,26 @@ func InitData() {
 			Desc:     "查询指定角色的接口(以分类分组)",
 			Creator:  creator,
 		},
+		{
+			Model: models.Model{
+				Id: 25,
+			},
+			Method:   "PATCH",
+			Path:     "/role/menus/update/:roleId",
+			Category: "role",
+			Desc:     "更新角色的权限菜单",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 26,
+			},
+			Method:   "PATCH",
+			Path:     "/role/apis/update/:roleId",
+			Category: "role",
+			Desc:     "更新角色的权限接口",
+			Creator:  creator,
+		},
 	}
 	for _, api := range apis {
 		oldApi := models.SysApi{}

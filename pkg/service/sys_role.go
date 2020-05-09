@@ -78,6 +78,80 @@ func UpdateRoleById(id uint, req gin.H) (err error) {
 	return
 }
 
+// 更新角色的权限菜单
+func UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+	var oldRole models.SysRole
+	query := global.Mysql.Model(&oldRole).Preload("Menus").Where("id = ?", id).First(&oldRole)
+	if query.RecordNotFound() {
+		return errors.New("记录不存在")
+	}
+	// 获取当前菜单编号集合
+	menuIds := make([]uint, 0)
+	for _, menu := range oldRole.Menus {
+		menuIds = append(menuIds, menu.Id)
+	}
+	// 获取菜单增量
+	incremental := req.GetIncremental(menuIds)
+	// 查询所有菜单
+	var incrementalMenus []models.SysMenu
+	err = global.Mysql.Where("id in (?)", incremental).Find(&incrementalMenus).Error
+	if err != nil {
+		return
+	}
+	// 替换菜单
+	err = query.Association("Menus").Replace(&incrementalMenus).Error
+	return
+}
+
+// 更新角色的权限接口
+func UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+	var oldRole models.SysRole
+	query := global.Mysql.Model(&oldRole).Where("id = ?", id).First(&oldRole)
+	if query.RecordNotFound() {
+		return errors.New("记录不存在")
+	}
+	if len(req.Delete) > 0 {
+		// 查询需要删除的api
+		deleteApis := make([]models.SysApi, 0)
+		err = global.Mysql.Where("id IN (?)", req.Delete).Find(&deleteApis).Error
+		if err != nil {
+			return
+		}
+		// 构建casbin规则
+		cs := make([]models.SysRoleCasbin, 0)
+		for _, api := range deleteApis {
+			cs = append(cs, models.SysRoleCasbin{
+				Keyword: oldRole.Keyword,
+				Path:    api.Path,
+				Method:  api.Method,
+			})
+		}
+		// 批量删除
+		_, err = BatchDeleteRoleCasbins(cs)
+	}
+	if len(req.Create) > 0 {
+		// 查询需要新增的api
+		createApis := make([]models.SysApi, 0)
+		err = global.Mysql.Where("id IN (?)", req.Create).Find(&createApis).Error
+		if err != nil {
+			return
+		}
+		// 构建casbin规则
+		cs := make([]models.SysRoleCasbin, 0)
+		for _, api := range createApis {
+			cs = append(cs, models.SysRoleCasbin{
+				Keyword: oldRole.Keyword,
+				Path:    api.Path,
+				Method:  api.Method,
+			})
+		}
+		// 批量创建
+		_, err = BatchCreateRoleCasbins(cs)
+
+	}
+	return
+}
+
 // 批量删除角色
 func DeleteRoleByIds(ids []uint) (err error) {
 	var roles []models.SysRole

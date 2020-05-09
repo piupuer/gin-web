@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
@@ -66,6 +67,54 @@ func UpdateRoleById(c *gin.Context) {
 	}
 	// 更新数据
 	err := service.UpdateRoleById(roleId, req)
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.Success(c)
+}
+
+// 更新角色的权限菜单
+func UpdateRoleMenusById(c *gin.Context) {
+	// 绑定参数
+	var req request.UpdateIncrementalIdsRequestStruct
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg(c, fmt.Sprintf("参数绑定失败, %v", err))
+		return
+	}
+	// 获取path中的roleId
+	roleId := utils.Str2Uint(c.Param("roleId"))
+	if roleId == 0 {
+		response.FailWithMsg(c, "角色编号不正确")
+		return
+	}
+	// 更新数据
+	err = service.UpdateRoleMenusById(roleId, req)
+	if err != nil {
+		response.FailWithMsg(c, err.Error())
+		return
+	}
+	response.Success(c)
+}
+
+// 更新角色的权限接口
+func UpdateRoleApisById(c *gin.Context) {
+	// 绑定参数
+	var req request.UpdateIncrementalIdsRequestStruct
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg(c, fmt.Sprintf("参数绑定失败, %v", err))
+		return
+	}
+	// 获取path中的roleId
+	roleId := utils.Str2Uint(c.Param("roleId"))
+	if roleId == 0 {
+		response.FailWithMsg(c, "角色编号不正确")
+		return
+	}
+	// 更新数据
+	err = service.UpdateRoleApisById(roleId, req)
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return
