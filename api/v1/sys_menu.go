@@ -83,7 +83,7 @@ func CreateMenu(c *gin.Context) {
 // 更新菜单
 func UpdateMenuById(c *gin.Context) {
 	// 绑定参数
-	var req request.CreateMenuRequestStruct
+	var req gin.H
 	_ = c.Bind(&req)
 	// 获取path中的menuId
 	menuId := utils.Str2Uint(c.Param("menuId"))
@@ -92,7 +92,7 @@ func UpdateMenuById(c *gin.Context) {
 		return
 	}
 	// 更新数据
-	err := service.UpdateMenuById(menuId, &req)
+	err := service.UpdateMenuById(menuId, req)
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return

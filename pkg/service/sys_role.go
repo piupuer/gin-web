@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
@@ -61,18 +62,19 @@ func CreateRole(req *request.CreateRoleRequestStruct) (err error) {
 }
 
 // 更新角色
-func UpdateRoleById(id uint, req *request.CreateRoleRequestStruct) (err error) {
+func UpdateRoleById(id uint, req gin.H) (err error) {
 	var oldRole models.SysRole
-	if global.Mysql.Where("id = ?", id).First(&oldRole).RecordNotFound() {
+	query := global.Mysql.Table(oldRole.TableName()).Where("id = ?", id).First(&oldRole)
+	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	var role models.SysRole
-	utils.CompareDifferenceStructByJson(req, oldRole, &role)
+	m := make(gin.H, 0)
+	utils.CompareDifferenceStructByJson(oldRole, req, &m)
 
 	// 更新指定列
-	err = global.Mysql.Model(&oldRole).UpdateColumns(role).Error
+	err = query.Updates(m).Error
 	return
 }
 

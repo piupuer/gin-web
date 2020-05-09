@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"github.com/gin-gonic/gin"
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
@@ -96,18 +97,19 @@ func CreateMenu(req *request.CreateMenuRequestStruct) (err error) {
 }
 
 // 更新菜单
-func UpdateMenuById(id uint, req *request.CreateMenuRequestStruct) (err error) {
+func UpdateMenuById(id uint, req gin.H) (err error) {
 	var oldMenu models.SysMenu
-	if global.Mysql.Where("id = ?", id).First(&oldMenu).RecordNotFound() {
+	query := global.Mysql.Table(oldMenu.TableName()).Where("id = ?", id).First(&oldMenu)
+	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	var menu models.SysMenu
-	utils.CompareDifferenceStructByJson(req, oldMenu, &menu)
+	m := make(gin.H, 0)
+	utils.CompareDifferenceStructByJson(oldMenu, req, &m)
 
 	// 更新指定列
-	err = global.Mysql.Model(&oldMenu).UpdateColumns(menu).Error
+	err = query.Updates(m).Error
 	return
 }
 

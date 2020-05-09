@@ -69,8 +69,8 @@ func CreateApi(c *gin.Context) {
 
 // 更新接口
 func UpdateApiById(c *gin.Context) {
-	// 绑定参数, 这里与创建接口用同一结构体即可
-	var req request.CreateApiRequestStruct
+	// 绑定参数
+	var req gin.H
 	_ = c.Bind(&req)
 	// 获取path中的apiId
 	apiId := utils.Str2Uint(c.Param("apiId"))
@@ -79,7 +79,7 @@ func UpdateApiById(c *gin.Context) {
 		return
 	}
 	// 更新数据
-	err := service.UpdateApiById(apiId, &req)
+	err := service.UpdateApiById(apiId, req)
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return

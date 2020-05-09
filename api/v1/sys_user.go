@@ -110,8 +110,8 @@ func CreateUser(c *gin.Context) {
 
 // 更新用户
 func UpdateUserById(c *gin.Context) {
-	// 绑定参数, 这里与创建用户用同一结构体即可
-	var req request.CreateUserRequestStruct
+	// 绑定参数
+	var req gin.H
 	_ = c.Bind(&req)
 	// 获取path中的userId
 	userId := utils.Str2Uint(c.Param("userId"))
@@ -120,7 +120,7 @@ func UpdateUserById(c *gin.Context) {
 		return
 	}
 	// 更新数据
-	err := service.UpdateUserById(userId, &req)
+	err := service.UpdateUserById(userId, req)
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return

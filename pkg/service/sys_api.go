@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
@@ -124,18 +125,19 @@ func CreateApi(req *request.CreateApiRequestStruct) (err error) {
 }
 
 // 更新接口
-func UpdateApiById(id uint, req *request.CreateApiRequestStruct) (err error) {
+func UpdateApiById(id uint, req gin.H) (err error) {
 	var oldApi models.SysApi
-	if global.Mysql.Where("id = ?", id).First(&oldApi).RecordNotFound() {
+	query := global.Mysql.Table(oldApi.TableName()).Where("id = ?", id).First(&oldApi)
+	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	var api models.SysApi
-	utils.CompareDifferenceStructByJson(req, oldApi, &api)
+	m := make(gin.H, 0)
+	utils.CompareDifferenceStructByJson(oldApi, req, &m)
 
 	// 更新指定列
-	err = global.Mysql.Model(&oldApi).UpdateColumns(api).Error
+	err = query.Updates(m).Error
 	return
 }
 

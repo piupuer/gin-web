@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"fmt"
+	"github.com/gin-gonic/gin"
 	"go-shipment-api/models"
 	"go-shipment-api/pkg/global"
 	"go-shipment-api/pkg/request"
@@ -73,18 +74,19 @@ func CreateUser(req *request.CreateUserRequestStruct) (err error) {
 }
 
 // 更新用户
-func UpdateUserById(id uint, req *request.CreateUserRequestStruct) (err error) {
+func UpdateUserById(id uint, req gin.H) (err error) {
 	var oldUser models.SysUser
-	if global.Mysql.Where("id = ?", id).First(&oldUser).RecordNotFound() {
+	query := global.Mysql.Table(oldUser.TableName()).Where("id = ?", id).First(&oldUser)
+	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	var user models.SysUser
-	utils.CompareDifferenceStructByJson(req, oldUser, &user)
+	m := make(gin.H, 0)
+	utils.CompareDifferenceStructByJson(oldUser, req, &m)
 
 	// 更新指定列
-	err = global.Mysql.Model(&oldUser).UpdateColumns(user).Error
+	err = query.Updates(m).Error
 	return
 }
 

@@ -55,8 +55,8 @@ func CreateRole(c *gin.Context) {
 
 // 更新角色
 func UpdateRoleById(c *gin.Context) {
-	// 绑定参数, 这里与创建角色用同一结构体即可
-	var req request.CreateRoleRequestStruct
+	// 绑定参数
+	var req gin.H
 	_ = c.Bind(&req)
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
@@ -65,7 +65,7 @@ func UpdateRoleById(c *gin.Context) {
 		return
 	}
 	// 更新数据
-	err := service.UpdateRoleById(roleId, &req)
+	err := service.UpdateRoleById(roleId, req)
 	if err != nil {
 		response.FailWithMsg(c, err.Error())
 		return
