@@ -29,7 +29,7 @@ func CasbinMiddleware(c *gin.Context) {
 	if pass {
 		c.Next()
 	} else {
-		response.FailWithMsg(c, "无权限访问该资源")
+		response.FailWithCode(c, response.Forbidden)
 		c.Abort()
 		return
 	}

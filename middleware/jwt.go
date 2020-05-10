@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"go-shipment-api/models"
@@ -66,7 +67,7 @@ func login(c *gin.Context) (interface{}, error) {
 	// 密码校验
 	user, err := service.LoginCheck(u)
 	if err != nil {
-		return nil, jwt.ErrFailedAuthentication
+		return nil, err
 	}
 	// 将用户以json格式写入, payloadFunc/authorizator会使用到
 	return map[string]interface{}{
@@ -87,8 +88,13 @@ func authorizator(data interface{}, c *gin.Context) bool {
 }
 
 func unauthorized(c *gin.Context, code int, message string) {
-	global.Log.Debug(message)
-	response.FailWithMsg(c, "jwt校验失败")
+	global.Log.Debug(fmt.Sprintf("JWT认证失败, 错误码%d, 错误信息%s", code, message))
+	if message == response.LoginCheckErrorMsg{
+		response.FailWithMsg(c, response.LoginCheckErrorMsg)
+		c.Abort()
+		return
+	}
+	response.FailWithCode(c, response.Unauthorized)
 }
 
 func loginResponse(c *gin.Context, code int, token string, expires time.Time) {

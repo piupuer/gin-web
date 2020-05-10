@@ -15,7 +15,7 @@ func Exception(c *gin.Context) {
 			// 将异常写入日志
 			global.Log.Error(fmt.Sprintf("未知异常: %v\n堆栈信息: %v", err, string(debug.Stack())))
 			// 响应服务器异常
-			response.FailWithCode(c, response.EXCEPTION)
+			response.FailWithCode(c, response.InternalServerError)
 			c.Abort()
 			return
 		}

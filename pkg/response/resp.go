@@ -67,18 +67,6 @@ func (s *PageInfo) GetLimit() (limit uint, offset uint) {
 	return
 }
 
-const (
-	SUCCESS   = 201
-	FAIL      = 405
-	EXCEPTION = 500
-)
-
-var errorMsg = map[int]string{
-	SUCCESS:   "操作成功",
-	FAIL:      "操作失败",
-	EXCEPTION: "系统异常",
-}
-
 func Result(c *gin.Context, code int, msg string, data interface{}) {
 	c.JSON(http.StatusOK, Resp{
 		Code: code,
@@ -88,25 +76,30 @@ func Result(c *gin.Context, code int, msg string, data interface{}) {
 }
 
 func Success(c *gin.Context) {
-	Result(c, SUCCESS, errorMsg[SUCCESS], map[string]interface{}{})
+	Result(c, Ok, CustomError[Ok], map[string]interface{}{})
 }
 
 func SuccessWithData(c *gin.Context, data interface{}) {
-	Result(c, SUCCESS, errorMsg[SUCCESS], data)
+	Result(c, Ok, CustomError[Ok], data)
 }
 
 func SuccessWithMsg(c *gin.Context, msg string) {
-	Result(c, SUCCESS, msg, map[string]interface{}{})
+	Result(c, Ok, msg, map[string]interface{}{})
 }
 
 func Fail(c *gin.Context) {
-	Result(c, FAIL, errorMsg[FAIL], map[string]interface{}{})
+	FailWithCode(c, NotOk)
 }
 
 func FailWithMsg(c *gin.Context, msg string) {
-	Result(c, FAIL, msg, map[string]interface{}{})
+	Result(c, NotOk, msg, map[string]interface{}{})
 }
 
 func FailWithCode(c *gin.Context, code int) {
-	Result(c, code, errorMsg[code], map[string]interface{}{})
+	// 查找给定的错误码存在对应的错误信息, 默认使用NotOk
+	msg := CustomError[NotOk]
+	if val, ok := CustomError[code]; ok {
+		msg = val
+	}
+	Result(c, code, msg, map[string]interface{}{})
 }
