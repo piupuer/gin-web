@@ -508,7 +508,7 @@ func InitData() {
 				Id: 24,
 			},
 			Method:   "GET",
-			Path:     "/all/category/:roleId",
+			Path:     "/api/all/category/:roleId",
 			Category: "api",
 			Desc:     "查询指定角色的接口(以分类分组)",
 			Creator:  creator,
