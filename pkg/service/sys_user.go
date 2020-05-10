@@ -64,6 +64,14 @@ func GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
 	return list, err
 }
 
+// 获取单个用户
+func GetUserById(id uint) (models.SysUser, error) {
+	var user models.SysUser
+	var err error
+	err = global.Mysql.Preload("Role").Where("id = ?", id).First(&user).Error
+	return user, err
+}
+
 // 创建用户
 func CreateUser(req *request.CreateUserRequestStruct) (err error) {
 	var user models.SysUser

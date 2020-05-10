@@ -83,7 +83,8 @@ func ChangePwd(c *gin.Context) {
 func GetCurrentUser(c *gin.Context) models.SysUser {
 	user, _ := c.Get("user")
 	u, _ := user.(models.SysUser)
-	return u
+	newUser, _ := service.GetUserById(u.Id)
+	return newUser
 }
 
 // 创建用户

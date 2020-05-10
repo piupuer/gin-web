@@ -10,8 +10,8 @@ type RegisterAndLoginRequestStruct struct {
 
 // 修改密码结构体
 type ChangePwdRequestStruct struct {
-	OldPassword string `json:"old_password"`
-	NewPassword string `json:"new_password"`
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
 }
 
 // 获取用户列表结构体
