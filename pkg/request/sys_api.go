@@ -21,6 +21,7 @@ type CreateApiRequestStruct struct {
 	Desc     string `json:"desc"`
 	Title    string `json:"title"`
 	Creator  string `json:"creator"`
+	RoleIds  []uint `json:"roleIds"` // 绑定可以访问该接口的角色
 }
 
 // 翻译需要校验的字段名称

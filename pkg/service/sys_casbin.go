@@ -32,6 +32,21 @@ func Casbin() (*casbin.Enforcer, error) {
 	return e, err
 }
 
+// 获取符合条件的casbin规则, 按角色
+func GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCasbin {
+	e, _ := Casbin()
+	policies := e.GetFilteredPolicy(0, c.Keyword, c.Path, c.Method)
+	cs := make([]models.SysRoleCasbin, 0)
+	for _, policy := range policies {
+		cs = append(cs, models.SysRoleCasbin{
+			Keyword: policy[0],
+			Path:    policy[1],
+			Method:  policy[2],
+		})
+	}
+	return cs
+}
+
 // 创建一条casbin规则, 按角色
 func CreateRoleCasbin(c models.SysRoleCasbin) (bool, error) {
 	e, _ := Casbin()

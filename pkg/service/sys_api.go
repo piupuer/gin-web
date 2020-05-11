@@ -126,27 +126,96 @@ func CreateApi(req *request.CreateApiRequestStruct) (err error) {
 	utils.Struct2StructByJson(req, &api)
 	// 创建数据
 	err = global.Mysql.Create(&api).Error
+	// 添加了角色
+	if len(req.RoleIds) > 0 {
+		// 查询角色关键字
+		var roles []models.SysRole
+		err = global.Mysql.Where("id IN (?)", req.RoleIds).Find(&roles).Error
+		if err != nil {
+			return
+		}
+		// 构建casbin规则
+		cs := make([]models.SysRoleCasbin, 0)
+		for _, role := range roles {
+			cs = append(cs, models.SysRoleCasbin{
+				Keyword: role.Keyword,
+				Path:    api.Path,
+				Method:  api.Method,
+			})
+		}
+		// 批量创建
+		_, err = BatchCreateRoleCasbins(cs)
+	}
 	return
 }
 
 // 更新接口
 func UpdateApiById(id uint, req gin.H) (err error) {
-	var oldApi models.SysApi
-	query := global.Mysql.Table(oldApi.TableName()).Where("id = ?", id).First(&oldApi)
+	var api models.SysApi
+	query := global.Mysql.Table(api.TableName()).Where("id = ?", id).First(&api)
 	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
 	m := make(gin.H, 0)
-	utils.CompareDifferenceStructByJson(oldApi, req, &m)
+	utils.CompareDifferenceStructByJson(api, req, &m)
 
+	// 记录update前的旧数据, 执行Updates后api会变成新数据
+	oldApi := api
 	// 更新指定列
 	err = query.Updates(m).Error
+
+	var diff models.SysApi
+	// 对比api发生了哪些变化
+	utils.CompareDifferenceStructByJson(oldApi, api, &diff)
+
+	if diff.Path != "" || diff.Method != "" {
+		// path或method变化, 需要更新casbin规则
+		// 查找当前接口都有哪些角色在使用
+		oldCasbins := GetRoleCasbins(models.SysRoleCasbin{
+			Path:   oldApi.Path,
+			Method: oldApi.Method,
+		})
+		if len(oldCasbins) > 0 {
+			keywords := make([]string, 0)
+			for _, oldCasbin := range oldCasbins {
+				keywords = append(keywords, oldCasbin.Keyword)
+			}
+			// 删除旧规则, 添加新规则
+			BatchDeleteRoleCasbins(oldCasbins)
+			// 构建新casbin规则
+			newCasbins := make([]models.SysRoleCasbin, 0)
+			for _, keyWord := range keywords {
+				newCasbins = append(newCasbins, models.SysRoleCasbin{
+					Keyword: keyWord,
+					Path:    api.Path,
+					Method:  api.Method,
+				})
+			}
+			// 批量创建
+			_, err = BatchCreateRoleCasbins(newCasbins)
+		}
+	}
 	return
 }
 
 // 批量删除接口
 func DeleteApiByIds(ids []uint) (err error) {
-	return global.Mysql.Where("id IN (?)", ids).Delete(models.SysApi{}).Error
+	var list []models.SysApi
+	query := global.Mysql.Where("id IN (?)", ids).Find(&list)
+	if query.Error != nil {
+		return
+	}
+	// 查找当前接口都有哪些角色在使用
+	casbins := make([]models.SysRoleCasbin, 0)
+	for _, api := range list {
+		casbins = append(casbins, GetRoleCasbins(models.SysRoleCasbin{
+			Path:   api.Path,
+			Method: api.Method,
+		})...)
+	}
+	// 删除所有规则
+	BatchDeleteRoleCasbins(casbins)
+	return query.Delete(models.SysApi{}).Error
 }
