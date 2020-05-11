@@ -14,9 +14,10 @@ type Resp struct {
 
 // 分页封装
 type PageInfo struct {
-	PageNum  uint `json:"pageNum" form:"pageNum"`   // 当前页码
-	PageSize uint `json:"pageSize" form:"pageSize"` // 每页显示条数
-	Total    uint `json:"total"`                    // 数据总条数
+	PageNum      uint `json:"pageNum" form:"pageNum"`           // 当前页码
+	PageSize     uint `json:"pageSize" form:"pageSize"`         // 每页显示条数
+	Total        uint `json:"total"`                            // 数据总条数
+	NoPagination bool `json:"noPagination" form:"noPagination"` // 不使用分页
 }
 
 // 带分页数据封装

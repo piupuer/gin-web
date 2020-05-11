@@ -58,9 +58,14 @@ func GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
 	// 查询条数
 	err = db.Find(&list).Count(&req.PageInfo.Total).Error
 	if err == nil {
-		// 获取分页参数
-		limit, offset := req.GetLimit()
-		err = db.Limit(limit).Offset(offset).Find(&list).Error
+		if req.PageInfo.NoPagination {
+			// 不使用分页
+			err = db.Find(&list).Error
+		} else {
+			// 获取分页参数
+			limit, offset := req.GetLimit()
+			err = db.Limit(limit).Offset(offset).Find(&list).Error
+		}
 	}
 	return list, err
 }
