@@ -30,6 +30,7 @@ type UserListResponseStruct struct {
 	Nickname     string    `json:"nickname"`
 	Introduction string    `json:"introduction"`
 	Status       *bool     `json:"status"`
+	RoleId       uint      `json:"roleId"`
 	Creator      string    `json:"creator"`
 	CreatedAt    time.Time `json:"createdAt"`
 }

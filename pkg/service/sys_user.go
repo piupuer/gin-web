@@ -82,25 +82,37 @@ func GetUserById(id uint) (models.SysUser, error) {
 func CreateUser(req *request.CreateUserRequestStruct) (err error) {
 	var user models.SysUser
 	utils.Struct2StructByJson(req, &user)
+	// 将初始密码转为密文
+	user.Password = utils.GenPwd(req.InitPassword)
 	// 创建数据
 	err = global.Mysql.Create(&user).Error
 	return
 }
 
 // 更新用户
-func UpdateUserById(id uint, req gin.H) (err error) {
+func UpdateUserById(id uint, newPassword string, req gin.H) (err error) {
 	var oldUser models.SysUser
 	query := global.Mysql.Table(oldUser.TableName()).Where("id = ?", id).First(&oldUser)
 	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
 
+	password := ""
+	// 填写了新密码
+	if strings.TrimSpace(newPassword) != "" {
+		password = utils.GenPwd(newPassword)
+	}
 	// 比对增量字段
 	m := make(gin.H, 0)
 	utils.CompareDifferenceStructByJson(oldUser, req, &m)
 
-	// 更新指定列
-	err = query.Updates(m).Error
+	if password != "" {
+		// 更新密码以及其他指定列
+		err = query.Update("password", password).Updates(m).Error
+	} else {
+		// 更新指定列
+		err = query.Updates(m).Error
+	}
 	return
 }
 
