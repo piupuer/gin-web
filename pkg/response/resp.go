@@ -1,10 +1,5 @@
 package response
 
-import (
-	"github.com/gin-gonic/gin"
-	"net/http"
-)
-
 // http请求响应封装
 type Resp struct {
 	Code int         `json:"code"` // 错误代码代码
@@ -68,39 +63,40 @@ func (s *PageInfo) GetLimit() (limit uint, offset uint) {
 	return
 }
 
-func Result(c *gin.Context, code int, msg string, data interface{}) {
-	c.JSON(http.StatusOK, Resp{
+func Result(code int, msg string, data interface{}) {
+	// 结果以panic异常的形式抛出, 交由异常处理中间件处理
+	panic(Resp{
 		Code: code,
 		Data: data,
 		Msg:  msg,
 	})
 }
 
-func Success(c *gin.Context) {
-	Result(c, Ok, CustomError[Ok], map[string]interface{}{})
+func Success() {
+	Result(Ok, CustomError[Ok], map[string]interface{}{})
 }
 
-func SuccessWithData(c *gin.Context, data interface{}) {
-	Result(c, Ok, CustomError[Ok], data)
+func SuccessWithData(data interface{}) {
+	Result(Ok, CustomError[Ok], data)
 }
 
-func SuccessWithMsg(c *gin.Context, msg string) {
-	Result(c, Ok, msg, map[string]interface{}{})
+func SuccessWithMsg(msg string) {
+	Result(Ok, msg, map[string]interface{}{})
 }
 
-func Fail(c *gin.Context) {
-	FailWithCode(c, NotOk)
+func Fail() {
+	FailWithCode(NotOk)
 }
 
-func FailWithMsg(c *gin.Context, msg string) {
-	Result(c, NotOk, msg, map[string]interface{}{})
+func FailWithMsg(msg string) {
+	Result(NotOk, msg, map[string]interface{}{})
 }
 
-func FailWithCode(c *gin.Context, code int) {
+func FailWithCode(code int) {
 	// 查找给定的错误码存在对应的错误信息, 默认使用NotOk
 	msg := CustomError[NotOk]
 	if val, ok := CustomError[code]; ok {
 		msg = val
 	}
-	Result(c, code, msg, map[string]interface{}{})
+	Result(code, msg, map[string]interface{}{})
 }

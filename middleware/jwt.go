@@ -64,8 +64,10 @@ func login(c *gin.Context) (interface{}, error) {
 		Password: req.Password,
 	}
 
+	// 创建服务
+	s := service.New(c)
 	// 密码校验
-	user, err := service.LoginCheck(u)
+	user, err := s.LoginCheck(u)
 	if err != nil {
 		return nil, err
 	}
@@ -89,21 +91,20 @@ func authorizator(data interface{}, c *gin.Context) bool {
 
 func unauthorized(c *gin.Context, code int, message string) {
 	global.Log.Debug(fmt.Sprintf("JWT认证失败, 错误码%d, 错误信息%s", code, message))
-	if message == response.LoginCheckErrorMsg{
-		response.FailWithMsg(c, response.LoginCheckErrorMsg)
-		c.Abort()
+	if message == response.LoginCheckErrorMsg {
+		response.FailWithMsg(response.LoginCheckErrorMsg)
 		return
 	}
-	response.FailWithCode(c, response.Unauthorized)
+	response.FailWithCode(response.Unauthorized)
 }
 
 func loginResponse(c *gin.Context, code int, token string, expires time.Time) {
-	response.SuccessWithData(c, map[string]interface{}{
+	response.SuccessWithData(map[string]interface{}{
 		"token":   token,
 		"expires": expires,
 	})
 }
 
 func logoutResponse(c *gin.Context, code int) {
-	response.Success(c)
+	response.Success()
 }

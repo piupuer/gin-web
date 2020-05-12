@@ -17,20 +17,19 @@ func CasbinMiddleware(c *gin.Context) {
 	obj := c.Request.URL.Path
 	// 请求方式作为casbin访问动作act
 	act := c.Request.Method
+	// 创建服务
+	s := service.New(c)
 	// 获取casbin策略管理器
-	e, err := service.Casbin()
+	e, err := s.Casbin()
 	if err != nil {
-		response.FailWithMsg(c, "获取资源访问策略失败")
-		c.Abort()
+		response.FailWithMsg("获取资源访问策略失败")
 		return
 	}
 	// 检查策略
 	pass, _ := e.Enforce(sub, obj, act)
-	if pass {
-		c.Next()
-	} else {
-		response.FailWithCode(c, response.Forbidden)
-		c.Abort()
-		return
+	if !pass {
+		response.FailWithCode(response.Forbidden)
 	}
+	// 处理请求
+	c.Next()
 }

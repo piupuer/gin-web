@@ -11,15 +11,8 @@ import (
 	"strings"
 )
 
-// 注意golang坑, 返回值有数组时, 不要为了return方便使用命名返回值
-// 如func GetRoles(req *request.RoleListRequestStruct) (roles []models.SysRole, err error) {
-// 这会导致roles被初始化无穷大的集合, 代码无法断点调试: collecting data..., 几秒后程序异常退出:
-// error layer=rpc writing response:write tcp xxx write: broken pipe
-// error layer=rpc rpc:read tcp xxx read: connection reset by peer
-// exit code 0
-// 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
 // 获取所有角色
-func GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
+func (s *CommonService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
 	db := global.Mysql
@@ -58,18 +51,18 @@ func GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
 }
 
 // 创建角色
-func CreateRole(req *request.CreateRoleRequestStruct) (err error) {
+func (s *CommonService) CreateRole(req *request.CreateRoleRequestStruct) (err error) {
 	var role models.SysRole
 	utils.Struct2StructByJson(req, &role)
 	// 创建数据
-	err = global.Mysql.Create(&role).Error
+	err = s.tx.Create(&role).Error
 	return
 }
 
 // 更新角色
-func UpdateRoleById(id uint, req gin.H) (err error) {
+func (s *CommonService) UpdateRoleById(id uint, req gin.H) (err error) {
 	var oldRole models.SysRole
-	query := global.Mysql.Table(oldRole.TableName()).Where("id = ?", id).First(&oldRole)
+	query := s.tx.Table(oldRole.TableName()).Where("id = ?", id).First(&oldRole)
 	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
@@ -84,9 +77,9 @@ func UpdateRoleById(id uint, req gin.H) (err error) {
 }
 
 // 更新角色的权限菜单
-func UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (s *CommonService) UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	var oldRole models.SysRole
-	query := global.Mysql.Model(&oldRole).Preload("Menus").Where("id = ?", id).First(&oldRole)
+	query := s.tx.Model(&oldRole).Preload("Menus").Where("id = ?", id).First(&oldRole)
 	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
@@ -99,7 +92,7 @@ func UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct)
 	incremental := req.GetIncremental(menuIds)
 	// 查询所有菜单
 	var incrementalMenus []models.SysMenu
-	err = global.Mysql.Where("id in (?)", incremental).Find(&incrementalMenus).Error
+	err = s.tx.Where("id in (?)", incremental).Find(&incrementalMenus).Error
 	if err != nil {
 		return
 	}
@@ -109,16 +102,16 @@ func UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct)
 }
 
 // 更新角色的权限接口
-func UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (s *CommonService) UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	var oldRole models.SysRole
-	query := global.Mysql.Model(&oldRole).Where("id = ?", id).First(&oldRole)
+	query := s.tx.Model(&oldRole).Where("id = ?", id).First(&oldRole)
 	if query.RecordNotFound() {
 		return errors.New("记录不存在")
 	}
 	if len(req.Delete) > 0 {
 		// 查询需要删除的api
 		deleteApis := make([]models.SysApi, 0)
-		err = global.Mysql.Where("id IN (?)", req.Delete).Find(&deleteApis).Error
+		err = s.tx.Where("id IN (?)", req.Delete).Find(&deleteApis).Error
 		if err != nil {
 			return
 		}
@@ -132,12 +125,12 @@ func UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) 
 			})
 		}
 		// 批量删除
-		_, err = BatchDeleteRoleCasbins(cs)
+		_, err = s.BatchDeleteRoleCasbins(cs)
 	}
 	if len(req.Create) > 0 {
 		// 查询需要新增的api
 		createApis := make([]models.SysApi, 0)
-		err = global.Mysql.Where("id IN (?)", req.Create).Find(&createApis).Error
+		err = s.tx.Where("id IN (?)", req.Create).Find(&createApis).Error
 		if err != nil {
 			return
 		}
@@ -151,17 +144,17 @@ func UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) 
 			})
 		}
 		// 批量创建
-		_, err = BatchCreateRoleCasbins(cs)
+		_, err = s.BatchCreateRoleCasbins(cs)
 
 	}
 	return
 }
 
 // 批量删除角色
-func DeleteRoleByIds(ids []uint) (err error) {
+func (s *CommonService) DeleteRoleByIds(ids []uint) (err error) {
 	var roles []models.SysRole
 	// 查询符合条件的角色, 以及关联的用户
-	err = global.Mysql.Preload("Users").Where("id IN (?)", ids).Find(&roles).Error
+	err = s.tx.Preload("Users").Where("id IN (?)", ids).Find(&roles).Error
 	if err != nil {
 		return
 	}
@@ -174,7 +167,7 @@ func DeleteRoleByIds(ids []uint) (err error) {
 	}
 	if len(newIds) > 0 {
 		// 执行删除
-		err = global.Mysql.Where("id IN (?)", newIds).Delete(models.SysRole{}).Error
+		err = s.tx.Where("id IN (?)", newIds).Delete(models.SysRole{}).Error
 	}
 	return
 }

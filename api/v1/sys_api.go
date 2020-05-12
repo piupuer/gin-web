@@ -14,9 +14,11 @@ func GetApis(c *gin.Context) {
 	// 绑定参数
 	var req request.ApiListRequestStruct
 	_ = c.Bind(&req)
-	apis, err := service.GetApis(&req)
+	// 创建服务
+	s := service.New(c)
+	apis, err := s.GetApis(&req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
 	// 转为ResponseStruct, 隐藏部分字段
@@ -28,21 +30,23 @@ func GetApis(c *gin.Context) {
 	resp.PageInfo = req.PageInfo
 	// 设置数据列表
 	resp.List = respStruct
-	response.SuccessWithData(c, resp)
+	response.SuccessWithData(resp)
 }
 
 // 查询指定角色的接口(以分类分组)
 func GetAllApiGroupByCategoryByRoleId(c *gin.Context) {
+	// 创建服务
+	s := service.New(c)
 	// 绑定参数
-	apis, ids, err := service.GetAllApiGroupByCategoryByRoleId(utils.Str2Uint(c.Param("roleId")))
+	apis, ids, err := s.GetAllApiGroupByCategoryByRoleId(utils.Str2Uint(c.Param("roleId")))
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
 	var resp response.ApiTreeWithAccessResponseStruct
 	resp.AccessIds = ids
 	utils.Struct2StructByJson(apis, &resp.List)
-	response.SuccessWithData(c, resp)
+	response.SuccessWithData(resp)
 }
 
 // 创建接口
@@ -54,17 +58,19 @@ func CreateApi(c *gin.Context) {
 	// 参数校验
 	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
 	// 记录当前创建人信息
 	req.Creator = user.Nickname + user.Username
-	err = service.CreateApi(&req)
+	// 创建服务
+	s := service.New(c)
+	err = s.CreateApi(&req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 更新接口
@@ -75,27 +81,31 @@ func UpdateApiById(c *gin.Context) {
 	// 获取path中的apiId
 	apiId := utils.Str2Uint(c.Param("apiId"))
 	if apiId == 0 {
-		response.FailWithMsg(c, "接口编号不正确")
+		response.FailWithMsg("接口编号不正确")
 		return
 	}
+	// 创建服务
+	s := service.New(c)
 	// 更新数据
-	err := service.UpdateApiById(apiId, req)
+	err := s.UpdateApiById(apiId, req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 批量删除接口
 func BatchDeleteApiByIds(c *gin.Context) {
 	var req request.Req
 	_ = c.Bind(&req)
+	// 创建服务
+	s := service.New(c)
 	// 删除数据
-	err := service.DeleteApiByIds(req.GetUintIds())
+	err := s.DeleteApiByIds(req.GetUintIds())
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }

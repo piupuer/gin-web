@@ -22,7 +22,7 @@ func GetUserInfo(c *gin.Context) {
 	resp.Permissions = []string{
 		"***",
 	}
-	response.SuccessWithData(c, resp)
+	response.SuccessWithData(resp)
 }
 
 // 获取用户列表
@@ -30,9 +30,11 @@ func GetUsers(c *gin.Context) {
 	// 绑定参数
 	var req request.UserListRequestStruct
 	_ = c.Bind(&req)
-	users, err := service.GetUsers(&req)
+	// 创建服务
+	s := service.New(c)
+	users, err := s.GetUsers(&req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
 	// 转为ResponseStruct, 隐藏部分字段
@@ -44,7 +46,7 @@ func GetUsers(c *gin.Context) {
 	resp.PageInfo = req.PageInfo
 	// 设置数据列表
 	resp.List = respStruct
-	response.SuccessWithData(c, resp)
+	response.SuccessWithData(resp)
 }
 
 // 修改密码
@@ -73,17 +75,19 @@ func ChangePwd(c *gin.Context) {
 		}
 	}
 	if msg != "" {
-		response.FailWithMsg(c, msg)
+		response.FailWithMsg(msg)
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 获取当前请求用户信息
 func GetCurrentUser(c *gin.Context) models.SysUser {
 	user, _ := c.Get("user")
 	u, _ := user.(models.SysUser)
-	newUser, _ := service.GetUserById(u.Id)
+	// 创建服务
+	s := service.New(c)
+	newUser, _ := s.GetUserById(u.Id)
 	return newUser
 }
 
@@ -96,17 +100,19 @@ func CreateUser(c *gin.Context) {
 	// 参数校验
 	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
 	// 记录当前创建人信息
 	req.Creator = user.Nickname + user.Username
-	err = service.CreateUser(&req)
+	// 创建服务
+	s := service.New(c)
+	err = s.CreateUser(&req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 更新用户
@@ -120,27 +126,31 @@ func UpdateUserById(c *gin.Context) {
 	// 获取path中的userId
 	userId := utils.Str2Uint(c.Param("userId"))
 	if userId == 0 {
-		response.FailWithMsg(c, "用户编号不正确")
+		response.FailWithMsg("用户编号不正确")
 		return
 	}
+	// 创建服务
+	s := service.New(c)
 	// 更新数据
-	err := service.UpdateUserById(userId, pwd.NewPassword, req)
+	err := s.UpdateUserById(userId, pwd.NewPassword, req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 批量删除用户
 func BatchDeleteUserByIds(c *gin.Context) {
 	var req request.Req
 	_ = c.Bind(&req)
+	// 创建服务
+	s := service.New(c)
 	// 删除数据
-	err := service.DeleteUserByIds(req.GetUintIds())
+	err := s.DeleteUserByIds(req.GetUintIds())
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }

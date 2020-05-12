@@ -539,20 +539,22 @@ func InitData() {
 		notFound := global.Mysql.Where("id = ?", api.Id).First(&oldApi).RecordNotFound()
 		if notFound {
 			global.Mysql.Create(&api)
+			// 创建服务
+			s := service.New(nil)
 			// 管理员拥有所有API权限role[2]
-			service.CreateRoleCasbin(models.SysRoleCasbin{
+			s.CreateRoleCasbin(models.SysRoleCasbin{
 				Keyword: roles[2].Keyword,
 				Path: api.Path,
 				Method: api.Method,
 			})
 			// 其他人暂时只有登录/获取用户信息的权限
 			if api.Id < 5 || api.Id == 10 {
-				service.CreateRoleCasbin(models.SysRoleCasbin{
+				s.CreateRoleCasbin(models.SysRoleCasbin{
 					Keyword: roles[0].Keyword,
 					Path: api.Path,
 					Method: api.Method,
 				})
-				service.CreateRoleCasbin(models.SysRoleCasbin{
+				s.CreateRoleCasbin(models.SysRoleCasbin{
 					Keyword: roles[1].Keyword,
 					Path: api.Path,
 					Method: api.Method,

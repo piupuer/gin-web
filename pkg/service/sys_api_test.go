@@ -15,5 +15,5 @@ func TestGetRoleCategoryApisByRoleId(t *testing.T) {
 	fmt.Println(m1, a1)
 	fmt.Println(m2, a2)
 
-	defer global.Mysql.Close()
+	defer s.tx.Close()
 }

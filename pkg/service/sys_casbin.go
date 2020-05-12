@@ -9,9 +9,9 @@ import (
 )
 
 // 获取casbin策略管理器
-func Casbin() (*casbin.Enforcer, error) {
-	// 初始化数据库适配器, 添加自定义表前缀
-	a, err := gormadapter.NewAdapterByDB(global.Mysql)
+func (s *CommonService) Casbin() (*casbin.Enforcer, error) {
+	// 初始化数据库适配器, 添加自定义表前缀, casbin不使用事务管理, 因为他内部使用到事务, 重复用会导致冲突
+	a, err := gormadapter.NewAdapterByDB(s.db)
 	if err != nil {
 		return nil, err
 	}
@@ -33,8 +33,8 @@ func Casbin() (*casbin.Enforcer, error) {
 }
 
 // 获取符合条件的casbin规则, 按角色
-func GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCasbin {
-	e, _ := Casbin()
+func (s *CommonService) GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCasbin {
+	e, _ := s.Casbin()
 	policies := e.GetFilteredPolicy(0, c.Keyword, c.Path, c.Method)
 	cs := make([]models.SysRoleCasbin, 0)
 	for _, policy := range policies {
@@ -48,14 +48,14 @@ func GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCasbin {
 }
 
 // 创建一条casbin规则, 按角色
-func CreateRoleCasbin(c models.SysRoleCasbin) (bool, error) {
-	e, _ := Casbin()
+func (s *CommonService) CreateRoleCasbin(c models.SysRoleCasbin) (bool, error) {
+	e, _ := s.Casbin()
 	return e.AddPolicy(c.Keyword, c.Path, c.Method)
 }
 
 // 批量创建多条casbin规则, 按角色
-func BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
-	e, _ := Casbin()
+func (s *CommonService) BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
+	e, _ := s.Casbin()
 	// 按角色构建
 	rules := make([][]string, 0)
 	for _, c := range cs {
@@ -69,14 +69,14 @@ func BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
 }
 
 // 删除一条casbin规则, 按角色
-func DeleteRoleCasbin(c models.SysRoleCasbin) (bool, error) {
-	e, _ := Casbin()
+func (s *CommonService) DeleteRoleCasbin(c models.SysRoleCasbin) (bool, error) {
+	e, _ := s.Casbin()
 	return e.RemovePolicy(c.Keyword, c.Path, c.Method)
 }
 
 // 批量删除多条casbin规则, 按角色
-func BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
-	e, _ := Casbin()
+func (s *CommonService) BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
+	e, _ := s.Casbin()
 	// 按角色构建
 	rules := make([][]string, 0)
 	for _, c := range cs {
@@ -90,14 +90,14 @@ func BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
 }
 
 // 根据权限编号读取casbin规则
-func GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
+func (s *CommonService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
 	casbins := make([]models.SysCasbin, 0)
 	var role models.SysRole
-	err := global.Mysql.Where("id = ?", roleId).First(&role).Error
+	err := s.tx.Where("id = ?", roleId).First(&role).Error
 	if err != nil {
 		return casbins, err
 	}
-	e, _ := Casbin()
+	e, _ := s.Casbin()
 	// 查询符合字段v0=role.Keyword所有casbin规则
 	list := e.GetFilteredPolicy(0, role.Keyword)
 	for _, v := range list {

@@ -15,9 +15,11 @@ func GetRoles(c *gin.Context) {
 	// 绑定参数
 	var req request.RoleListRequestStruct
 	_ = c.Bind(&req)
-	roles, err := service.GetRoles(&req)
+	// 创建服务
+	s := service.New(c)
+	roles, err := s.GetRoles(&req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
 	// 转为ResponseStruct, 隐藏部分字段
@@ -29,7 +31,7 @@ func GetRoles(c *gin.Context) {
 	resp.PageInfo = req.PageInfo
 	// 设置数据列表
 	resp.List = respStruct
-	response.SuccessWithData(c, resp)
+	response.SuccessWithData(resp)
 }
 
 // 创建角色
@@ -41,17 +43,19 @@ func CreateRole(c *gin.Context) {
 	// 参数校验
 	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
 	// 记录当前创建人信息
 	req.Creator = user.Nickname + user.Username
-	err = service.CreateRole(&req)
+	// 创建服务
+	s := service.New(c)
+	err = s.CreateRole(&req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 更新角色
@@ -62,16 +66,18 @@ func UpdateRoleById(c *gin.Context) {
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
 	if roleId == 0 {
-		response.FailWithMsg(c, "角色编号不正确")
+		response.FailWithMsg("角色编号不正确")
 		return
 	}
+	// 创建服务
+	s := service.New(c)
 	// 更新数据
-	err := service.UpdateRoleById(roleId, req)
+	err := s.UpdateRoleById(roleId, req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 更新角色的权限菜单
@@ -80,22 +86,24 @@ func UpdateRoleMenusById(c *gin.Context) {
 	var req request.UpdateIncrementalIdsRequestStruct
 	err := c.Bind(&req)
 	if err != nil {
-		response.FailWithMsg(c, fmt.Sprintf("参数绑定失败, %v", err))
+		response.FailWithMsg(fmt.Sprintf("参数绑定失败, %v", err))
 		return
 	}
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
 	if roleId == 0 {
-		response.FailWithMsg(c, "角色编号不正确")
+		response.FailWithMsg("角色编号不正确")
 		return
 	}
+	// 创建服务
+	s := service.New(c)
 	// 更新数据
-	err = service.UpdateRoleMenusById(roleId, req)
+	err = s.UpdateRoleMenusById(roleId, req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 更新角色的权限接口
@@ -104,33 +112,37 @@ func UpdateRoleApisById(c *gin.Context) {
 	var req request.UpdateIncrementalIdsRequestStruct
 	err := c.Bind(&req)
 	if err != nil {
-		response.FailWithMsg(c, fmt.Sprintf("参数绑定失败, %v", err))
+		response.FailWithMsg(fmt.Sprintf("参数绑定失败, %v", err))
 		return
 	}
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
 	if roleId == 0 {
-		response.FailWithMsg(c, "角色编号不正确")
+		response.FailWithMsg("角色编号不正确")
 		return
 	}
+	// 创建服务
+	s := service.New(c)
 	// 更新数据
-	err = service.UpdateRoleApisById(roleId, req)
+	err = s.UpdateRoleApisById(roleId, req)
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
 
 // 批量删除角色
 func BatchDeleteRoleByIds(c *gin.Context) {
 	var req request.Req
 	_ = c.Bind(&req)
+	// 创建服务
+	s := service.New(c)
 	// 删除数据
-	err := service.DeleteRoleByIds(req.GetUintIds())
+	err := s.DeleteRoleByIds(req.GetUintIds())
 	if err != nil {
-		response.FailWithMsg(c, err.Error())
+		response.FailWithMsg(err.Error())
 		return
 	}
-	response.Success(c)
+	response.Success()
 }
