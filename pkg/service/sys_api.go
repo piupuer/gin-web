@@ -185,9 +185,9 @@ func (s *CommonService) UpdateApiById(id uint, req gin.H) (err error) {
 			s.BatchDeleteRoleCasbins(oldCasbins)
 			// 构建新casbin规则
 			newCasbins := make([]models.SysRoleCasbin, 0)
-			for _, keyWord := range keywords {
+			for _, keyword := range keywords {
 				newCasbins = append(newCasbins, models.SysRoleCasbin{
-					Keyword: keyWord,
+					Keyword: keyword,
 					Path:    api.Path,
 					Method:  api.Method,
 				})

@@ -159,11 +159,19 @@ func (s *CommonService) DeleteRoleByIds(ids []uint) (err error) {
 		return
 	}
 	newIds := make([]uint, 0)
+	oldCasbins := make([]models.SysRoleCasbin, 0)
 	for _, v := range roles {
 		if len(v.Users) > 0 {
 			return errors.New(fmt.Sprintf("角色[%s]仍有%d位关联用户, 请先删除用户再删除角色", v.Name, len(v.Users)))
 		}
+		oldCasbins = append(oldCasbins, s.GetRoleCasbins(models.SysRoleCasbin{
+			Keyword: v.Keyword,
+		})...)
 		newIds = append(newIds, v.Id)
+	}
+	if len(oldCasbins) > 0 {
+		// 删除关联的casbin
+		s.BatchDeleteRoleCasbins(oldCasbins)
 	}
 	if len(newIds) > 0 {
 		// 执行删除
