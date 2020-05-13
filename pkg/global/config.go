@@ -5,11 +5,12 @@ import "go.uber.org/zap/zapcore"
 // 系统配置, 配置字段可参见yml注释
 // viper内置了mapstructure, yml文件用"-"区分单词, 转为驼峰方便
 type Configuration struct {
-	System SystemConfiguration `mapstructure:"system" json:"system"`
-	Logs   LogsConfiguration   `mapstructure:"logs" json:"logs"`
-	Mysql  MysqlConfiguration  `mapstructure:"mysql" json:"mysql"`
-	Casbin CasbinConfiguration `mapstructure:"casbin" json:"casbin"`
-	Jwt    JwtConfiguration    `mapstructure:"jwt" json:"jwt"`
+	System    SystemConfiguration    `mapstructure:"system" json:"system"`
+	Logs      LogsConfiguration      `mapstructure:"logs" json:"logs"`
+	Mysql     MysqlConfiguration     `mapstructure:"mysql" json:"mysql"`
+	Casbin    CasbinConfiguration    `mapstructure:"casbin" json:"casbin"`
+	Jwt       JwtConfiguration       `mapstructure:"jwt" json:"jwt"`
+	RateLimit RateLimitConfiguration `mapstructure:"rate-limit" json:"rateLimit"`
 }
 
 type SystemConfiguration struct {
@@ -45,4 +46,8 @@ type JwtConfiguration struct {
 	Key        string `mapstructure:"key" json:"key"`
 	Timeout    int    `mapstructure:"timeout" json:"timeout"`
 	MaxRefresh int    `mapstructure:"max-refresh" json:"maxRefresh"`
+}
+
+type RateLimitConfiguration struct {
+	Max int64 `mapstructure:"max" json:"max"`
 }

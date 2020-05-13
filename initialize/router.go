@@ -17,6 +17,8 @@ func Routers() *gin.Engine {
 	// 创建不带中间件的路由:
 	r := gin.New()
 
+	// 添加速率访问中间件
+	r.Use(middleware.RateLimiter())
 	// 添加全局异常处理中间件
 	r.Use(middleware.Exception)
 	// 添加访问记录

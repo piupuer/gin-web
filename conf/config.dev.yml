@@ -50,3 +50,8 @@ jwt:
   timeout: 24
   # token更新时间, 小时
   max-refresh: 24
+
+# 速率限制配置
+rate-limit:
+  # 访问最大限制, 次/秒
+  max: 50
