@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"fmt"
-	"go-shipment-api/pkg/global"
-	"go-shipment-api/tests"
+	"gin-web/pkg/global"
+	"gin-web/tests"
 	"sync"
 	"testing"
 )

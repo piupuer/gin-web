@@ -3,9 +3,9 @@ package initialize
 import (
 	"bytes"
 	"fmt"
+	"gin-web/pkg/global"
 	"github.com/gobuffalo/packr"
 	"github.com/spf13/viper"
-	"go-shipment-api/pkg/global"
 	"os"
 )
 

@@ -1,7 +1,7 @@
 package initialize
 
 import (
-	"go-shipment-api/pkg/global"
+	"gin-web/pkg/global"
 )
 
 // 初始化日志

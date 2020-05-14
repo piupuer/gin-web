@@ -25,7 +25,7 @@ mysql:
   # 密码
   password: root
   # 数据库名
-  database: goshipment
+  database: gin_web
   # 主机地址
   host: 127.0.0.1
   # 端口

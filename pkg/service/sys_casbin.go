@@ -1,11 +1,11 @@
 package service
 
 import (
+	"gin-web/models"
+	"gin-web/pkg/global"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v2"
-	"go-shipment-api/models"
-	"go-shipment-api/pkg/global"
 )
 
 // 获取casbin策略管理器

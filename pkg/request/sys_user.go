@@ -1,6 +1,6 @@
 package request
 
-import "go-shipment-api/pkg/response"
+import "gin-web/pkg/response"
 
 // User login structure
 type RegisterAndLoginRequestStruct struct {

@@ -2,8 +2,8 @@ package tests
 
 import (
 	"fmt"
+	"gin-web/pkg/global"
 	"github.com/natefinch/lumberjack"
-	"go-shipment-api/pkg/global"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 	"os"

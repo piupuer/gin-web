@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"go-shipment-api/models"
+	"gin-web/models"
 	"reflect"
 	"testing"
 )

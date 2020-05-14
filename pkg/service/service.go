@@ -1,9 +1,9 @@
 package service
 
 import (
+	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
-	"go-shipment-api/pkg/global"
 )
 
 type CommonService struct {

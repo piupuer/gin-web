@@ -2,10 +2,10 @@ package initialize
 
 import (
 	"fmt"
+	"gin-web/models"
+	"gin-web/pkg/global"
 	_ "github.com/go-sql-driver/mysql" // mysql驱动
 	"github.com/jinzhu/gorm"
-	"go-shipment-api/models"
-	"go-shipment-api/pkg/global"
 )
 
 // 初始化mysql数据库

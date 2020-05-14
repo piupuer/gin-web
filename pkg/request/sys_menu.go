@@ -1,6 +1,6 @@
 package request
 
-import "go-shipment-api/pkg/response"
+import "gin-web/pkg/response"
 
 // 获取菜单列表结构体
 type MenuListRequestStruct struct {

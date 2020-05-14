@@ -1,9 +1,9 @@
 package initialize
 
 import (
+	"gin-web/pkg/global"
 	"github.com/go-playground/locales/zh"
 	ut "github.com/go-playground/universal-translator"
-	"go-shipment-api/pkg/global"
 	"gopkg.in/go-playground/validator.v9"
 	translations "gopkg.in/go-playground/validator.v9/translations/zh"
 )

@@ -1,4 +1,4 @@
-module go-shipment-api
+module gin-web
 
 go 1.14
 

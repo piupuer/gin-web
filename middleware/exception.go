@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"fmt"
+	"gin-web/pkg/global"
+	"gin-web/pkg/response"
 	"github.com/gin-gonic/gin"
-	"go-shipment-api/pkg/global"
-	"go-shipment-api/pkg/response"
 	"net/http"
 	"runtime/debug"
 )

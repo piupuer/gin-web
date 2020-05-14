@@ -2,11 +2,11 @@ package initialize
 
 import (
 	"fmt"
+	"gin-web/api"
+	"gin-web/middleware"
+	"gin-web/pkg/global"
+	"gin-web/router"
 	"github.com/gin-gonic/gin"
-	"go-shipment-api/api"
-	"go-shipment-api/middleware"
-	"go-shipment-api/pkg/global"
-	"go-shipment-api/router"
 )
 
 // 初始化总路由

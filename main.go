@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
-	"go-shipment-api/initialize"
-	"go-shipment-api/pkg/global"
+	"gin-web/initialize"
+	"gin-web/pkg/global"
 	"net/http"
 	"os"
 	"os/signal"

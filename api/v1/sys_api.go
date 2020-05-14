@@ -1,12 +1,12 @@
 package v1
 
 import (
+	"gin-web/pkg/global"
+	"gin-web/pkg/request"
+	"gin-web/pkg/response"
+	"gin-web/pkg/service"
+	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"go-shipment-api/pkg/global"
-	"go-shipment-api/pkg/request"
-	"go-shipment-api/pkg/response"
-	"go-shipment-api/pkg/service"
-	"go-shipment-api/pkg/utils"
 )
 
 // 获取接口列表

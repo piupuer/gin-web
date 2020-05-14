@@ -2,8 +2,8 @@ package middleware
 
 import (
 	"fmt"
+	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
-	"go-shipment-api/pkg/global"
 	"time"
 )
 

@@ -1,10 +1,10 @@
 package middleware
 
 import (
+	v1 "gin-web/api/v1"
+	"gin-web/pkg/response"
+	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
-	v1 "go-shipment-api/api/v1"
-	"go-shipment-api/pkg/response"
-	"go-shipment-api/pkg/service"
 )
 
 // Casbin中间件, 基于RBAC的权限访问控制模型

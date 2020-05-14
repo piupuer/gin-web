@@ -2,10 +2,10 @@ package service
 
 import (
 	"errors"
+	"gin-web/models"
+	"gin-web/pkg/request"
+	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"go-shipment-api/models"
-	"go-shipment-api/pkg/request"
-	"go-shipment-api/pkg/utils"
 )
 
 // 获取权限菜单树

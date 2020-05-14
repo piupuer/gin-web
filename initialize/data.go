@@ -1,10 +1,10 @@
 package initialize
 
 import (
-	"go-shipment-api/models"
-	"go-shipment-api/pkg/global"
-	"go-shipment-api/pkg/service"
-	"go-shipment-api/pkg/utils"
+	"gin-web/models"
+	"gin-web/pkg/global"
+	"gin-web/pkg/service"
+	"gin-web/pkg/utils"
 )
 
 // 初始化数据
@@ -544,20 +544,20 @@ func InitData() {
 			// 管理员拥有所有API权限role[2]
 			s.CreateRoleCasbin(models.SysRoleCasbin{
 				Keyword: roles[2].Keyword,
-				Path: api.Path,
-				Method: api.Method,
+				Path:    api.Path,
+				Method:  api.Method,
 			})
 			// 其他人暂时只有登录/获取用户信息的权限
 			if api.Id < 5 || api.Id == 10 {
 				s.CreateRoleCasbin(models.SysRoleCasbin{
 					Keyword: roles[0].Keyword,
-					Path: api.Path,
-					Method: api.Method,
+					Path:    api.Path,
+					Method:  api.Method,
 				})
 				s.CreateRoleCasbin(models.SysRoleCasbin{
 					Keyword: roles[1].Keyword,
-					Path: api.Path,
-					Method: api.Method,
+					Path:    api.Path,
+					Method:  api.Method,
 				})
 			}
 		}

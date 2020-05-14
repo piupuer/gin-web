@@ -2,7 +2,7 @@ package service
 
 import (
 	"fmt"
-	"go-shipment-api/tests"
+	"gin-web/tests"
 	"testing"
 )
 

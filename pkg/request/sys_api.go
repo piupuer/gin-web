@@ -1,7 +1,7 @@
 package request
 
 import (
-	"go-shipment-api/pkg/response"
+	"gin-web/pkg/response"
 )
 
 // 获取接口列表结构体

@@ -2,14 +2,14 @@ package middleware
 
 import (
 	"fmt"
+	"gin-web/models"
+	"gin-web/pkg/global"
+	"gin-web/pkg/request"
+	"gin-web/pkg/response"
+	"gin-web/pkg/service"
+	"gin-web/pkg/utils"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"go-shipment-api/models"
-	"go-shipment-api/pkg/global"
-	"go-shipment-api/pkg/request"
-	"go-shipment-api/pkg/response"
-	"go-shipment-api/pkg/service"
-	"go-shipment-api/pkg/utils"
 	"time"
 )
 

@@ -1,7 +1,7 @@
 package request
 
 import (
-	"go-shipment-api/pkg/utils"
+	"gin-web/pkg/utils"
 )
 
 // 适用于大多数场景的请求参数绑定
