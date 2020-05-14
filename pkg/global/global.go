@@ -46,13 +46,15 @@ func NewValidatorError(err error, custom map[string]string) (e error) {
 
 // 获取事务对象
 func GetTx(c *gin.Context) *gorm.DB {
-	method := c.Request.Method
 	// 默认使用无事务的mysql
 	tx := Mysql
-	if c != nil && !(method == "OPTIONS" || method == "GET" || !Conf.System.Transaction) {
-		// 从context对象中读取事务对象
-		txKey, _ := c.Get("tx")
-		tx, _ = txKey.(*gorm.DB)
+	if c != nil {
+		method := c.Request.Method
+		if !(method == "OPTIONS" || method == "GET" || !Conf.System.Transaction) {
+			// 从context对象中读取事务对象
+			txKey, _ := c.Get("tx")
+			tx, _ = txKey.(*gorm.DB)
+		}
 	}
 	return tx
 }
