@@ -26,10 +26,10 @@ mysql:
   password: root
   # 数据库名
   database: gin_web
-  # 主机地址
-  host: 127.0.0.1
+  # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
+  host: docker-db
   # 端口
-  port: 43306
+  port: 3306
   # 连接字符串查询参数
   query: charset=utf8&parseTime=True&loc=Local&timeout=10000ms
   # 是否打印日志
