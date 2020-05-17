@@ -2,9 +2,11 @@ package middleware
 
 import (
 	v1 "gin-web/api/v1"
+	"gin-web/pkg/global"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 // Casbin中间件, 基于RBAC的权限访问控制模型
@@ -13,8 +15,8 @@ func CasbinMiddleware(c *gin.Context) {
 	user := v1.GetCurrentUser(c)
 	// 当前登录用户的角色关键字作为casbin访问实体sub
 	sub := user.Role.Keyword
-	// 请求URL路径作为casbin访问资源obj
-	obj := c.Request.URL.Path
+	// 请求URL路径作为casbin访问资源obj(需先清除path前缀)
+	obj := strings.Replace(c.Request.URL.Path, "/"+global.Conf.System.UrlPathPrefix, "", 1)
 	// 请求方式作为casbin访问动作act
 	act := c.Request.Method
 	// 创建服务

@@ -59,7 +59,7 @@ func main() {
 		}
 	}()
 
-	global.Log.Info(fmt.Sprintf("Server is running at %s:%d", host, port))
+	global.Log.Info(fmt.Sprintf("Server is running at %s:%d/%s", host, port, global.Conf.System.UrlPathPrefix))
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.

@@ -27,7 +27,7 @@ RUN go build -o main .
 
 #
 # 暴露端口
-EXPOSE 8080
+EXPOSE 10000
 
 # 启动应用
 CMD ["./main"]

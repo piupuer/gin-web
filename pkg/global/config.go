@@ -14,8 +14,9 @@ type Configuration struct {
 }
 
 type SystemConfiguration struct {
-	Port        int  `mapstructure:"port" json:"port"`
-	Transaction bool `mapstructure:"transaction" json:"transaction"`
+	UrlPathPrefix string `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
+	Port          int    `mapstructure:"port" json:"port"`
+	Transaction   bool   `mapstructure:"transaction" json:"transaction"`
 }
 
 type LogsConfiguration struct {

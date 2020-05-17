@@ -37,17 +37,18 @@ func Routers() *gin.Engine {
 	}
 	global.Log.Debug("初始化jwt auth中间件完成")
 
+	apiGroup := r.Group(global.Conf.System.UrlPathPrefix)
 	// ping
-	r.GET("/ping", api.Ping)
+	apiGroup.GET("/ping", api.Ping)
 
 	// 方便统一添加路由前缀
-	group := r.Group("")
-	router.InitPublicRouter(group)               // 注册公共路由
-	router.InitBaseRouter(group, authMiddleware) // 注册基础路由, 不会鉴权
-	router.InitUserRouter(group, authMiddleware) // 注册用户路由
-	router.InitMenuRouter(group, authMiddleware) // 注册菜单路由
-	router.InitRoleRouter(group, authMiddleware) // 注册角色路由
-	router.InitApiRouter(group, authMiddleware)  // 注册接口路由
+	v1Group := apiGroup.Group("v1")
+	router.InitPublicRouter(v1Group)               // 注册公共路由
+	router.InitBaseRouter(v1Group, authMiddleware) // 注册基础路由, 不会鉴权
+	router.InitUserRouter(v1Group, authMiddleware) // 注册用户路由
+	router.InitMenuRouter(v1Group, authMiddleware) // 注册菜单路由
+	router.InitRoleRouter(v1Group, authMiddleware) // 注册角色路由
+	router.InitApiRouter(v1Group, authMiddleware)  // 注册接口路由
 
 	global.Log.Debug("初始化路由完成")
 	return r

@@ -1,7 +1,9 @@
 # development
 system:
+  # url前缀
+  url-path-prefix: api
   # 程序监听端口
-  port: 9999
+  port: 10000
   # 开启全局事务管理器
   transaction: true
 
