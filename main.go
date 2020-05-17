@@ -42,7 +42,7 @@ func main() {
 	// 初始化数据
 	initialize.InitData()
 
-	host := "127.0.0.1"
+	host := "0.0.0.0"
 	port := global.Conf.System.Port
 	// 服务器启动以及优雅的关闭
 	// 参考地址https://github.com/gin-gonic/examples/blob/master/graceful-shutdown/graceful-shutdown/server.go
