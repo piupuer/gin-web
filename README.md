@@ -2,6 +2,12 @@
 
 <div align="center">
 由gin + gorm + jwt + casbin组合实现的RBAC权限管理脚手架Golang版, 搭建完成即可快速、高效投入业务开发
+<p align="center">
+<img src="https://img.shields.io/github/go-mod/go-version/piupuer/gin-web" alt="Go version"/>
+<img src="https://img.shields.io/badge/Gin-1.6.2-brightgreen" alt="Gin version"/>
+<img src="https://img.shields.io/badge/Gorm-1.9.12-brightgreen" alt="Gorm version"/>
+<img src="https://img.shields.io/github/license/piupuer/gin-web" alt="License"/>
+</p>
 </div>
 
 ## 特性
