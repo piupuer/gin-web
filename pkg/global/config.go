@@ -8,6 +8,7 @@ type Configuration struct {
 	System    SystemConfiguration    `mapstructure:"system" json:"system"`
 	Logs      LogsConfiguration      `mapstructure:"logs" json:"logs"`
 	Mysql     MysqlConfiguration     `mapstructure:"mysql" json:"mysql"`
+	Redis     RedisConfiguration     `mapstructure:"redis" json:"redis"`
 	Casbin    CasbinConfiguration    `mapstructure:"casbin" json:"casbin"`
 	Jwt       JwtConfiguration       `mapstructure:"jwt" json:"jwt"`
 	RateLimit RateLimitConfiguration `mapstructure:"rate-limit" json:"rateLimit"`
@@ -16,6 +17,7 @@ type Configuration struct {
 type SystemConfiguration struct {
 	UrlPathPrefix string `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
 	Port          int    `mapstructure:"port" json:"port"`
+	UseRedis      bool   `mapstructure:"use-redis" json:"useRedis"`
 	Transaction   bool   `mapstructure:"transaction" json:"transaction"`
 	InitData      bool   `mapstructure:"init-data" json:"initData"`
 }
@@ -37,6 +39,13 @@ type MysqlConfiguration struct {
 	Port     int    `mapstructure:"port" json:"port"`
 	Query    string `mapstructure:"query" json:"query"`
 	LogMode  bool   `mapstructure:"log-mode" json:"logMode"`
+}
+
+type RedisConfiguration struct {
+	Host     string `mapstructure:"host" json:"host"`
+	Port     int    `mapstructure:"port" json:"port"`
+	Password string `mapstructure:"password" json:"password"`
+	Database int    `mapstructure:"database" json:"database"`
 }
 
 type CasbinConfiguration struct {

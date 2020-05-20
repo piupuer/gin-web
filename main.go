@@ -30,6 +30,11 @@ func main() {
 	// 初始化数据库
 	initialize.Mysql()
 
+	if global.Conf.System.UseRedis {
+		// 初始化数据库
+		initialize.Redis()
+	}
+
 	// 初始校验器
 	initialize.Validate()
 

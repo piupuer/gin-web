@@ -4,6 +4,7 @@ import (
 	"errors"
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
+	"github.com/go-redis/redis"
 	"github.com/gobuffalo/packr"
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
@@ -20,6 +21,8 @@ var (
 	Log *zap.SugaredLogger
 	// mysql实例
 	Mysql *gorm.DB
+	// redis实例
+	Redis *redis.Client
 	// validation.v9校验器
 	Validate *validator.Validate
 	// validation.v9相关翻译器
