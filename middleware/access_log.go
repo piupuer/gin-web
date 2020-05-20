@@ -33,14 +33,27 @@ func AccessLog(c *gin.Context) {
 	// 请求IP
 	clientIP := c.ClientIP()
 
-	global.Log.Info(
-		fmt.Sprintf(
-			"%s %s %d %s %s",
-			reqMethod,
-			reqUri,
-			statusCode,
-			execTime.String(),
-			clientIP,
-		),
-	)
+	if reqMethod == "OPTIONS" {
+		global.Log.Debug(
+			fmt.Sprintf(
+				"%s %s %d %s %s",
+				reqMethod,
+				reqUri,
+				statusCode,
+				execTime.String(),
+				clientIP,
+			),
+		)
+	} else {
+		global.Log.Info(
+			fmt.Sprintf(
+				"%s %s %d %s %s",
+				reqMethod,
+				reqUri,
+				statusCode,
+				execTime.String(),
+				clientIP,
+			),
+		)
+	}
 }
