@@ -39,8 +39,10 @@ func main() {
 	// 初始化路由
 	r := initialize.Routers()
 
-	// 初始化数据
-	initialize.InitData()
+	if global.Conf.System.InitData {
+		// 初始化数据
+		initialize.InitData()
+	}
 
 	host := "0.0.0.0"
 	port := global.Conf.System.Port
