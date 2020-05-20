@@ -28,6 +28,8 @@ func Mysql() {
 	// 打印所有执行的sql
 	db.LogMode(global.Conf.Mysql.LogMode)
 	global.Log.Debug("初始化mysql完成")
+	// 初始化数据库日志监听器
+	binlog()
 }
 
 // 自动迁移表结构
@@ -39,4 +41,13 @@ func autoMigrate() {
 		new(models.SysApi),
 		new(models.SysCasbin),
 	)
+}
+
+func binlog() {
+	MysqlBinlog([]string{
+		new(models.SysUser).TableName(),
+		new(models.SysRole).TableName(),
+		new(models.SysMenu).TableName(),
+		new(models.SysApi).TableName(),
+	})
 }
