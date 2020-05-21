@@ -19,7 +19,7 @@ import (
 // exit code 0
 // 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
 // 获取所有接口
-func (s *CommonService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
+func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
 	query := s.tx
@@ -55,7 +55,7 @@ func (s *CommonService) GetApis(req *request.ApiListRequestStruct) ([]models.Sys
 }
 
 // 根据权限编号获取以api分类分组的权限接口
-func (s *CommonService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
+func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
 	// 接口树
 	tree := make([]response.ApiGroupByCategoryResponseStruct, 0)
 	// 有权限访问的id列表
@@ -120,7 +120,7 @@ func (s *CommonService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]respons
 }
 
 // 创建接口
-func (s *CommonService) CreateApi(req *request.CreateApiRequestStruct) (err error) {
+func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error) {
 	var api models.SysApi
 	utils.Struct2StructByJson(req, &api)
 	// 创建数据
@@ -149,7 +149,7 @@ func (s *CommonService) CreateApi(req *request.CreateApiRequestStruct) (err erro
 }
 
 // 更新接口
-func (s *CommonService) UpdateApiById(id uint, req gin.H) (err error) {
+func (s *MysqlService) UpdateApiById(id uint, req gin.H) (err error) {
 	var api models.SysApi
 	query := s.tx.Table(api.TableName()).Where("id = ?", id).First(&api)
 	if query.RecordNotFound() {
@@ -200,7 +200,7 @@ func (s *CommonService) UpdateApiById(id uint, req gin.H) (err error) {
 }
 
 // 批量删除接口
-func (s *CommonService) DeleteApiByIds(ids []uint) (err error) {
+func (s *MysqlService) DeleteApiByIds(ids []uint) (err error) {
 	var list []models.SysApi
 	query := s.tx.Where("id IN (?)", ids).Find(&list)
 	if query.Error != nil {

@@ -6,16 +6,16 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type CommonService struct {
+type MysqlService struct {
 	tx *gorm.DB // 事务对象实例
 	db *gorm.DB // 无事务对象实例
 }
 
 // 初始化服务
-func New(c *gin.Context) CommonService {
+func New(c *gin.Context) MysqlService {
 	// 获取事务对象
 	tx := global.GetTx(c)
-	return CommonService{
+	return MysqlService{
 		tx: tx,
 		db: global.Mysql,
 	}

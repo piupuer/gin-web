@@ -16,6 +16,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea
 	github.com/spf13/viper v1.6.3
+	github.com/thedevsaddam/gojsonq/v2 v2.5.2
 	github.com/thoas/go-funk v0.6.0
 	github.com/ulule/limiter/v3 v3.5.0
 	go.uber.org/zap v1.14.1

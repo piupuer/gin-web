@@ -9,5 +9,6 @@ func InitTestEnv() {
 	InitLogger()
 
 	// 初始化数据库
+	Redis()
 	Mysql()
 }

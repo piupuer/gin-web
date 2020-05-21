@@ -13,7 +13,7 @@ import (
 )
 
 // 登录校验
-func (s *CommonService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
+func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
 	var u models.SysUser
 	// 查询用户及其角色
 	err := s.tx.Preload("Role").Where("username = ?", user.Username).First(&u).Error
@@ -28,7 +28,7 @@ func (s *CommonService) LoginCheck(user *models.SysUser) (*models.SysUser, error
 }
 
 // 获取用户
-func (s *CommonService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
+func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
 	db := global.Mysql
@@ -71,7 +71,7 @@ func (s *CommonService) GetUsers(req *request.UserListRequestStruct) ([]models.S
 }
 
 // 获取单个用户
-func (s *CommonService) GetUserById(id uint) (models.SysUser, error) {
+func (s *MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	var user models.SysUser
 	var err error
 	err = s.tx.Preload("Role").Where("id = ?", id).First(&user).Error
@@ -79,7 +79,7 @@ func (s *CommonService) GetUserById(id uint) (models.SysUser, error) {
 }
 
 // 创建用户
-func (s *CommonService) CreateUser(req *request.CreateUserRequestStruct) (err error) {
+func (s *MysqlService) CreateUser(req *request.CreateUserRequestStruct) (err error) {
 	var user models.SysUser
 	utils.Struct2StructByJson(req, &user)
 	// 将初始密码转为密文
@@ -90,7 +90,7 @@ func (s *CommonService) CreateUser(req *request.CreateUserRequestStruct) (err er
 }
 
 // 更新用户
-func (s *CommonService) UpdateUserById(id uint, newPassword string, req gin.H) (err error) {
+func (s *MysqlService) UpdateUserById(id uint, newPassword string, req gin.H) (err error) {
 	var oldUser models.SysUser
 	query := s.tx.Table(oldUser.TableName()).Where("id = ?", id).First(&oldUser)
 	if query.RecordNotFound() {
@@ -117,6 +117,6 @@ func (s *CommonService) UpdateUserById(id uint, newPassword string, req gin.H) (
 }
 
 // 批量删除用户
-func (s *CommonService) DeleteUserByIds(ids []uint) (err error) {
+func (s *MysqlService) DeleteUserByIds(ids []uint) (err error) {
 	return s.tx.Where("id IN (?)", ids).Delete(models.SysUser{}).Error
 }

@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -15,7 +16,7 @@ func GetApis(c *gin.Context) {
 	var req request.ApiListRequestStruct
 	_ = c.Bind(&req)
 	// 创建服务
-	s := service.New(c)
+	s := cache_service.New(c)
 	apis, err := s.GetApis(&req)
 	if err != nil {
 		response.FailWithMsg(err.Error())

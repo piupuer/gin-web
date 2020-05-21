@@ -9,7 +9,7 @@ import (
 )
 
 // 获取权限菜单树
-func (s *CommonService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
+func (s *MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	tree := make([]models.SysMenu, 0)
 	query := s.tx.First(&models.SysRole{
 		Model: models.Model{
@@ -28,7 +28,7 @@ func (s *CommonService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 }
 
 // 获取所有菜单
-func (s *CommonService) GetMenus() ([]models.SysMenu, error) {
+func (s *MysqlService) GetMenus() ([]models.SysMenu, error) {
 	tree := make([]models.SysMenu, 0)
 	menus := make([]models.SysMenu, 0)
 	// 查询所有菜单
@@ -60,7 +60,7 @@ func genMenuTree(parent *models.SysMenu, menus []models.SysMenu) []models.SysMen
 }
 
 // 根据权限编号获取全部菜单
-func (s *CommonService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint, error) {
+func (s *MysqlService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint, error) {
 	// 菜单树
 	tree := make([]models.SysMenu, 0)
 	// 有权限访问的id列表
@@ -87,7 +87,7 @@ func (s *CommonService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uin
 }
 
 // 创建菜单
-func (s *CommonService) CreateMenu(req *request.CreateMenuRequestStruct) (err error) {
+func (s *MysqlService) CreateMenu(req *request.CreateMenuRequestStruct) (err error) {
 	var menu models.SysMenu
 	utils.Struct2StructByJson(req, &menu)
 	// 创建数据
@@ -96,7 +96,7 @@ func (s *CommonService) CreateMenu(req *request.CreateMenuRequestStruct) (err er
 }
 
 // 更新菜单
-func (s *CommonService) UpdateMenuById(id uint, req gin.H) (err error) {
+func (s *MysqlService) UpdateMenuById(id uint, req gin.H) (err error) {
 	var oldMenu models.SysMenu
 	query := s.tx.Table(oldMenu.TableName()).Where("id = ?", id).First(&oldMenu)
 	if query.RecordNotFound() {
@@ -113,7 +113,7 @@ func (s *CommonService) UpdateMenuById(id uint, req gin.H) (err error) {
 }
 
 // 批量删除菜单
-func (s *CommonService) DeleteMenuByIds(ids []uint) (err error) {
+func (s *MysqlService) DeleteMenuByIds(ids []uint) (err error) {
 	// 执行删除
 	return s.tx.Where("id IN (?)", ids).Delete(models.SysMenu{}).Error
 }

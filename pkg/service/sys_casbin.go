@@ -9,7 +9,7 @@ import (
 )
 
 // 获取casbin策略管理器
-func (s *CommonService) Casbin() (*casbin.Enforcer, error) {
+func (s *MysqlService) Casbin() (*casbin.Enforcer, error) {
 	// 初始化数据库适配器, 添加自定义表前缀, casbin不使用事务管理, 因为他内部使用到事务, 重复用会导致冲突
 	a, err := gormadapter.NewAdapterByDB(s.db)
 	if err != nil {
@@ -33,7 +33,7 @@ func (s *CommonService) Casbin() (*casbin.Enforcer, error) {
 }
 
 // 获取符合条件的casbin规则, 按角色
-func (s *CommonService) GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCasbin {
+func (s *MysqlService) GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCasbin {
 	e, _ := s.Casbin()
 	policies := e.GetFilteredPolicy(0, c.Keyword, c.Path, c.Method)
 	cs := make([]models.SysRoleCasbin, 0)
@@ -48,13 +48,13 @@ func (s *CommonService) GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleC
 }
 
 // 创建一条casbin规则, 按角色
-func (s *CommonService) CreateRoleCasbin(c models.SysRoleCasbin) (bool, error) {
+func (s *MysqlService) CreateRoleCasbin(c models.SysRoleCasbin) (bool, error) {
 	e, _ := s.Casbin()
 	return e.AddPolicy(c.Keyword, c.Path, c.Method)
 }
 
 // 批量创建多条casbin规则, 按角色
-func (s *CommonService) BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
+func (s *MysqlService) BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
 	e, _ := s.Casbin()
 	// 按角色构建
 	rules := make([][]string, 0)
@@ -69,13 +69,13 @@ func (s *CommonService) BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool,
 }
 
 // 删除一条casbin规则, 按角色
-func (s *CommonService) DeleteRoleCasbin(c models.SysRoleCasbin) (bool, error) {
+func (s *MysqlService) DeleteRoleCasbin(c models.SysRoleCasbin) (bool, error) {
 	e, _ := s.Casbin()
 	return e.RemovePolicy(c.Keyword, c.Path, c.Method)
 }
 
 // 批量删除多条casbin规则, 按角色
-func (s *CommonService) BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
+func (s *MysqlService) BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
 	e, _ := s.Casbin()
 	// 按角色构建
 	rules := make([][]string, 0)
@@ -90,7 +90,7 @@ func (s *CommonService) BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool,
 }
 
 // 根据权限编号读取casbin规则
-func (s *CommonService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
+func (s *MysqlService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
 	casbins := make([]models.SysCasbin, 0)
 	var role models.SysRole
 	err := s.tx.Where("id = ?", roleId).First(&role).Error

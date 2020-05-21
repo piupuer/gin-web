@@ -12,7 +12,7 @@ import (
 )
 
 // 获取所有角色
-func (s *CommonService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
+func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
 	db := global.Mysql
@@ -51,7 +51,7 @@ func (s *CommonService) GetRoles(req *request.RoleListRequestStruct) ([]models.S
 }
 
 // 创建角色
-func (s *CommonService) CreateRole(req *request.CreateRoleRequestStruct) (err error) {
+func (s *MysqlService) CreateRole(req *request.CreateRoleRequestStruct) (err error) {
 	var role models.SysRole
 	utils.Struct2StructByJson(req, &role)
 	// 创建数据
@@ -60,7 +60,7 @@ func (s *CommonService) CreateRole(req *request.CreateRoleRequestStruct) (err er
 }
 
 // 更新角色
-func (s *CommonService) UpdateRoleById(id uint, req gin.H) (err error) {
+func (s *MysqlService) UpdateRoleById(id uint, req gin.H) (err error) {
 	var oldRole models.SysRole
 	query := s.tx.Table(oldRole.TableName()).Where("id = ?", id).First(&oldRole)
 	if query.RecordNotFound() {
@@ -77,7 +77,7 @@ func (s *CommonService) UpdateRoleById(id uint, req gin.H) (err error) {
 }
 
 // 更新角色的权限菜单
-func (s *CommonService) UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	var oldRole models.SysRole
 	query := s.tx.Model(&oldRole).Preload("Menus").Where("id = ?", id).First(&oldRole)
 	if query.RecordNotFound() {
@@ -102,7 +102,7 @@ func (s *CommonService) UpdateRoleMenusById(id uint, req request.UpdateIncrement
 }
 
 // 更新角色的权限接口
-func (s *CommonService) UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (s *MysqlService) UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	var oldRole models.SysRole
 	query := s.tx.Model(&oldRole).Where("id = ?", id).First(&oldRole)
 	if query.RecordNotFound() {
@@ -151,7 +151,7 @@ func (s *CommonService) UpdateRoleApisById(id uint, req request.UpdateIncrementa
 }
 
 // 批量删除角色
-func (s *CommonService) DeleteRoleByIds(ids []uint) (err error) {
+func (s *MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	var roles []models.SysRole
 	// 查询符合条件的角色, 以及关联的用户
 	err = s.tx.Preload("Users").Where("id IN (?)", ids).Find(&roles).Error
