@@ -44,3 +44,32 @@ func TestStr2UintArr(t *testing.T) {
 		})
 	}
 }
+
+func TestCamelCaseLowerFirst(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "case1",
+			args: args{str: ""},
+			want: "",
+		},
+		{
+			name: "case2",
+			args: args{str: "a_bc_def"},
+			want: "aBcDef",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := CamelCaseLowerFirst(tt.args.str); got != tt.want {
+				t.Errorf("CamelCaseFirstLower() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
