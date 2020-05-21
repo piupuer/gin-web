@@ -1,17 +1,19 @@
 package response
 
-import "time"
+import (
+	"gin-web/models"
+)
 
 // 接口信息响应, 字段含义见models.SysRole
 type ApiListResponseStruct struct {
-	Id        uint      `json:"id"`
-	Method    string    `json:"method"`
-	Path      string    `json:"path"`
-	Category  string    `json:"category"`
-	Creator   string    `json:"creator"`
-	Desc      string    `json:"desc"`
-	Title     string    `json:"title"`
-	CreatedAt time.Time `json:"createdAt"`
+	Id        uint             `json:"id"`
+	Method    string           `json:"method"`
+	Path      string           `json:"path"`
+	Category  string           `json:"category"`
+	Creator   string           `json:"creator"`
+	Desc      string           `json:"desc"`
+	Title     string           `json:"title"`
+	CreatedAt models.LocalTime `json:"createdAt"`
 }
 
 // 权限接口信息响应, 字段含义见models.SysRole
