@@ -3,12 +3,17 @@ package initialize
 import (
 	"fmt"
 	"gin-web/pkg/global"
+	"gin-web/pkg/redis"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 )
 
 // 使用siddontang/go-mysql监听mysql binlog
 func MysqlBinlog(tables []string) {
+	if !global.Conf.System.UseRedis {
+		global.Log.Debug("未使用redis, 无需初始化mysql binlog监听器")
+		return
+	}
 	// 监听器配置
 	cfg := canal.NewDefaultConfig()
 	cfg.Addr = fmt.Sprintf(fmt.Sprintf("%s:%d", global.Conf.Mysql.Host, global.Conf.Mysql.Port))
@@ -30,7 +35,7 @@ func MysqlBinlog(tables []string) {
 	// 设置事件处理器
 	c.SetEventHandler(&BinlogEventHandler{})
 	// 从指定位置开始加载(go 后台运行)
-	go c.Run()
+	go c.RunFrom(redis.GetCurrentPos())
 	global.Log.Debug("初始化mysql binlog监听器完成")
 }
 
@@ -42,12 +47,15 @@ type BinlogEventHandler struct {
 // 数据行发生变化
 func (s *BinlogEventHandler) OnRow(e *canal.RowsEvent) error {
 	global.Log.Debug(fmt.Sprintf("行变化: %s %v", e.Action, e.Rows))
+	// 同步数据到redis
+	redis.RowChange(e)
 	return nil
 }
 
 // 日志位置发生变化
 func (s *BinlogEventHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
 	global.Log.Debug(fmt.Sprintf("日志位置变化: %s %v %t", pos, set, force))
+	redis.PosChange(pos)
 	return nil
 }
 

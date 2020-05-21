@@ -42,10 +42,11 @@ type MysqlConfiguration struct {
 }
 
 type RedisConfiguration struct {
-	Host     string `mapstructure:"host" json:"host"`
-	Port     int    `mapstructure:"port" json:"port"`
-	Password string `mapstructure:"password" json:"password"`
-	Database int    `mapstructure:"database" json:"database"`
+	Host      string `mapstructure:"host" json:"host"`
+	Port      int    `mapstructure:"port" json:"port"`
+	Password  string `mapstructure:"password" json:"password"`
+	Database  int    `mapstructure:"database" json:"database"`
+	BinlogPos string `mapstructure:"binlog-pos" json:"binlogPos"`
 }
 
 type CasbinConfiguration struct {

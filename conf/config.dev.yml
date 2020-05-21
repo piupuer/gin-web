@@ -50,6 +50,8 @@ redis:
   password:
   # 数据库编号
   database: 0
+  # binlog位置缓存键
+  binlog-pos: mysql_binlog_pos
 
 # casbin配置
 casbin:

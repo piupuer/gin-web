@@ -27,13 +27,13 @@ func main() {
 	// 初始化日志
 	initialize.Logger()
 
-	// 初始化数据库
-	initialize.Mysql()
-
 	if global.Conf.System.UseRedis {
 		// 初始化数据库
 		initialize.Redis()
 	}
+
+	// 初始化数据库
+	initialize.Mysql()
 
 	// 初始校验器
 	initialize.Validate()
