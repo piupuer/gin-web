@@ -40,6 +40,8 @@ mysql:
   query: charset=utf8&parseTime=True&loc=Local&timeout=10000ms
   # 是否打印日志
   log-mode: false
+  # 数据库表前缀
+  table-prefix: tb_
 
 redis:
   # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
