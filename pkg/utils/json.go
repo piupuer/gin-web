@@ -2,19 +2,27 @@ package utils
 
 import (
 	"encoding/json"
+	"fmt"
+	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 )
 
 // 结构体转为json
 func Struct2Json(obj interface{}) string {
-	str, _ := json.Marshal(obj)
+	str, err := json.Marshal(obj)
+	if err != nil {
+		global.Log.Debug(fmt.Sprintf("[Struct2Json]转换异常: %v", err))
+	}
 	return string(str)
 }
 
 // json转为结构体
 func Json2Struct(str string, obj interface{}) {
 	// 将json转为结构体
-	_ = json.Unmarshal([]byte(str), obj)
+	err := json.Unmarshal([]byte(str), obj)
+	if err != nil {
+		global.Log.Debug(fmt.Sprintf("[Json2Struct]转换异常: %v", err))
+	}
 }
 
 // json interface转为结构体

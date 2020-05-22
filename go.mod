@@ -6,11 +6,12 @@ require (
 	github.com/appleboy/gin-jwt/v2 v2.6.3
 	github.com/casbin/casbin/v2 v2.2.2
 	github.com/casbin/gorm-adapter/v2 v2.1.0
+	github.com/casbin/redis-adapter/v2 v2.0.1
 	github.com/gin-gonic/gin v1.6.2
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-redis/redis v6.15.7+incompatible
-	github.com/go-sql-driver/mysql v1.4.1
+	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/packr v1.30.1
 	github.com/jinzhu/gorm v1.9.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible

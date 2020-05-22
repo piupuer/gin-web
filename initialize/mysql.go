@@ -49,5 +49,6 @@ func binlog() {
 		new(models.SysRole).TableName(),
 		new(models.SysMenu).TableName(),
 		new(models.SysApi).TableName(),
+		new(models.SysCasbin).TableName(),
 	})
 }
