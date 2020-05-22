@@ -23,45 +23,48 @@ func (Model) TableName(name string) string {
 // 自定义时间json转换
 const TimeFormat = "2006-01-02 15:04:05"
 
-type LocalTime time.Time
+type LocalTime struct {
+	time.Time
+}
 
 func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
 	// 空值不进行解析
 	if len(data) == 2 {
-		*t = LocalTime(time.Time{})
+		*t = LocalTime{Time: time.Time{}}
 		return
 	}
 
 	// 指定解析的格式
 	now, err := time.Parse(`"`+TimeFormat+`"`, string(data))
-	*t = LocalTime(now)
+	*t = LocalTime{Time: now}
 	return
 }
 
 func (t LocalTime) MarshalJSON() ([]byte, error) {
-	b := make([]byte, 0, len(TimeFormat)+2)
-	b = append(b, '"')
-	b = time.Time(t).AppendFormat(b, TimeFormat)
-	b = append(b, '"')
-	return b, nil
+	output := fmt.Sprintf("\"%s\"", t.Format(TimeFormat))
+	return []byte(output), nil
 }
 
 // gorm 写入 mysql 时调用
 func (t LocalTime) Value() (driver.Value, error) {
-	if t.String() == "0001-01-01 00:00:00" {
+	var zeroTime time.Time
+	if t.UnixNano() == zeroTime.UnixNano() {
 		return nil, nil
 	}
-	return []byte(time.Time(t).Format(TimeFormat)), nil
+	return t.Time, nil
 }
 
 // gorm 检出 mysql 时调用
 func (t *LocalTime) Scan(v interface{}) error {
-	tTime, _ := time.Parse("2006-01-02 15:04:05 +0800 CST", v.(time.Time).String())
-	*t = LocalTime(tTime)
-	return nil
+	value, ok := v.(time.Time)
+	if ok {
+		*t = LocalTime{Time: value}
+		return nil
+	}
+	return fmt.Errorf("can not convert %v to timestamp", v)
 }
 
 // 用于 fmt.Println 和后续验证场景
 func (t LocalTime) String() string {
-	return time.Time(t).Format(TimeFormat)
+	return t.Format(TimeFormat)
 }
