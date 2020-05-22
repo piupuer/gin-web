@@ -38,7 +38,7 @@ func RowChange(e *canal.RowsEvent) {
 	switch e.Action {
 	case canal.InsertAction:
 		// 插入数据
-		newRows = append(newRows, getRow(changeRows[0], e.Table.Columns))
+		newRows = append(newRows, getRow(changeRows[0], e.Table))
 		break
 	case canal.UpdateAction:
 		// 更新数据
@@ -46,7 +46,7 @@ func RowChange(e *canal.RowsEvent) {
 			// 找到相同id
 			if row["id"] == changeRows[0][idIndex] {
 				// 直接替换原有元素, changeRows[0]表示改变前的元素, changeRows[1]表示改变后的元素
-				newRows[i] = getRow(changeRows[1], e.Table.Columns)
+				newRows[i] = getRow(changeRows[1], e.Table)
 				break
 			}
 		}
@@ -71,11 +71,22 @@ func RowChange(e *canal.RowsEvent) {
 }
 
 // 获取一列
-func getRow(data []interface{}, columns []schema.TableColumn) map[string]interface{} {
+func getRow(data []interface{}, table *schema.Table) map[string]interface{} {
 	row := make(map[string]interface{}, 0)
-	for i, column := range columns {
+	for i, column := range table.Columns {
+		var item interface{}
+		// canal没有对tinyint(1)做bool转换, 这里自行转换
+		if column.RawType == "tinyint(1)" {
+			if data[i] == 1 {
+				item = true
+			} else {
+				item = false
+			}
+		} else {
+			item = data[i]
+		}
 		// 由于gorm以驼峰命名, 这里将蛇形转为驼峰
-		row[utils.CamelCaseLowerFirst(column.Name)] = data[i]
+		row[utils.CamelCaseLowerFirst(column.Name)] = item
 	}
 	return row
 }
