@@ -9,16 +9,26 @@ import (
 	"github.com/siddontang/go-mysql/schema"
 )
 
+const (
+	idName        = "id"
+	deletedAtName = "deleted_at"
+)
+
 // mysql数据行发生变化, 同步数据到redis
 func RowChange(e *canal.RowsEvent) {
 	database := e.Table.Schema
 	table := e.Table.Name
 	// 默认以id为主键, 查找id的索引位置
-	idName := "id"
-	idIndex := 0
+	idIndex := -1
+	deletedAtIndex := -1
 	for i, column := range e.Table.Columns {
 		if column.Name == idName {
 			idIndex = i
+		}
+		if column.Name == deletedAtName {
+			deletedAtIndex = i
+		}
+		if idIndex >= 0 && deletedAtIndex >= 0 {
 			break
 		}
 	}
@@ -44,7 +54,12 @@ func RowChange(e *canal.RowsEvent) {
 		// 更新数据
 		for i, row := range newRows {
 			// 找到相同id
-			if row["id"] == changeRows[0][idIndex] {
+			if idIndex >= 0 && row[idName] == changeRows[0][idIndex] {
+				// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
+				if deletedAtIndex >= 0 && changeRows[0][deletedAtIndex] == nil && changeRows[1][deletedAtIndex] != nil {
+					newRows = append(newRows[:i], newRows[i+1:]...)
+					break
+				}
 				// 直接替换原有元素, changeRows[0]表示改变前的元素, changeRows[1]表示改变后的元素
 				newRows[i] = getRow(changeRows[1], e.Table)
 				break
@@ -77,10 +92,14 @@ func getRow(data []interface{}, table *schema.Table) map[string]interface{} {
 		var item interface{}
 		// canal没有对tinyint(1)做bool转换, 这里自行转换
 		if column.RawType == "tinyint(1)" {
-			if data[i] == 1 {
-				item = true
-			} else {
-				item = false
+			item = false
+			switch data[i].(type) {
+			// canal中的tinyint(1)为float64格式
+			case float64:
+				if int(data[i].(float64)) == 1 {
+					item = true
+				}
+				break
 			}
 		} else {
 			item = data[i]
