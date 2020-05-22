@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -16,7 +17,7 @@ func GetRoles(c *gin.Context) {
 	var req request.RoleListRequestStruct
 	_ = c.Bind(&req)
 	// 创建服务
-	s := service.New(c)
+	s := cache_service.New(c)
 	roles, err := s.GetRoles(&req)
 	if err != nil {
 		response.FailWithMsg(err.Error())

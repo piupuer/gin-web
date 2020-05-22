@@ -25,39 +25,49 @@ func New(c *gin.Context) RedisService {
 	}
 }
 
+// gojsonq.JSONQ不支持FindOne, 由于比较常用, 这里自行实现
+func JsonQueryFindOne(s *gojsonq.JSONQ) (interface{}, error) {
+	// 获取查询列表
+	res := s.Get()
+	switch res.(type) {
+	case []interface{}:
+		v, _ := res.([]interface{})
+		if len(v) > 0 {
+			// 只取第一条数据
+			return v[0], nil
+		}
+	}
+	return nil, gorm.ErrRecordNotFound
+}
+
 // jsonq需要每一次新建不同实例, 否则可能查询条件重叠, 找不到记录
 func (s RedisService) JsonQuery() *gojsonq.JSONQ {
 	return gojsonq.New()
 }
 
 // 从缓存中获取model全部数据, 返回json字符串, 参数list为结构体数组, 必须传地址否则可能没数据
-func (s RedisService) GetListFromCache(tableName string, list interface{}) (string, error) {
+func (s RedisService) GetListFromCache(list interface{}, tableName string) string {
 	// 缓存键由数据库名与表名组成
 	cacheKey := fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, tableName)
 	res, err := s.redis.Get(cacheKey).Result()
+	if err != nil {
+		global.Log.Debug(fmt.Sprintf("[GetListFromCache]读取redis缓存异常: %v", err))
+	}
 	if list != nil {
 		utils.Json2Struct(res, list)
 	}
-	return res, err
+	return res
 }
 
 // 从缓存中获取model全部数据, 返回json字符串, 参数m为结构体, 必须传地址否则可能没数据
 func (s RedisService) GetItemByIdFromCache(id uint, m interface{}, tableName string) error {
-	json, err := s.GetListFromCache(tableName, nil)
+	json := s.GetListFromCache(nil, tableName)
+	// id在JSONQ中以int存在
+	res, err := JsonQueryFindOne(s.JsonQuery().FromString(json).Where("id", "=", int(id)))
 	if err != nil {
 		return err
 	}
-	var list []interface{}
-	// id在JSONQ中以int存在
-	res := s.JsonQuery().FromString(json).Where("id", "=", int(id)).Get()
-	if m != nil {
-		// 转换为结构体
-		utils.Struct2StructByJson(res, &list)
-		if len(list) == 0 {
-			return gorm.ErrRecordNotFound
-		} else {
-			utils.Struct2StructByJson(list[0], m)
-		}
-	}
+	// 转换为结构体
+	utils.Struct2StructByJson(res, m)
 	return nil
 }

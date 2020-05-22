@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -13,7 +14,7 @@ import (
 func GetMenuTree(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 创建服务
-	s := service.New(c)
+	s := cache_service.New(c)
 	menus, err := s.GetMenuTree(user.RoleId)
 	if err != nil {
 		response.FailWithMsg(err.Error())
@@ -27,9 +28,8 @@ func GetMenuTree(c *gin.Context) {
 
 // 查询指定角色的菜单树
 func GetAllMenuByRoleId(c *gin.Context) {
-	// 绑定参数
 	// 创建服务
-	s := service.New(c)
+	s := cache_service.New(c)
 	menus, ids, err := s.GetAllMenuByRoleId(utils.Str2Uint(c.Param("roleId")))
 	if err != nil {
 		response.FailWithMsg(err.Error())
@@ -44,7 +44,7 @@ func GetAllMenuByRoleId(c *gin.Context) {
 // 查询所有菜单
 func GetMenus(c *gin.Context) {
 	// 创建服务
-	s := service.New(c)
+	s := cache_service.New(c)
 	menus, err := s.GetMenus()
 	if err != nil {
 		response.FailWithMsg(err.Error())

@@ -37,7 +37,7 @@ func GetApis(c *gin.Context) {
 // 查询指定角色的接口(以分类分组)
 func GetAllApiGroupByCategoryByRoleId(c *gin.Context) {
 	// 创建服务
-	s := service.New(c)
+	s := cache_service.New(c)
 	// 绑定参数
 	apis, ids, err := s.GetAllApiGroupByCategoryByRoleId(utils.Str2Uint(c.Param("roleId")))
 	if err != nil {

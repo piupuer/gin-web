@@ -23,7 +23,7 @@ func (s *MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	// 查询当前role关联的所有菜单
 	query.Where("status = ?", 1).Order("sort").Association("menus").Find(&menus)
 	// 生成菜单树
-	tree = genMenuTree(nil, menus)
+	tree = GenMenuTree(nil, menus)
 	return tree, nil
 }
 
@@ -34,12 +34,12 @@ func (s *MysqlService) GetMenus() ([]models.SysMenu, error) {
 	// 查询所有菜单
 	err := s.tx.Order("sort").Find(&menus).Error
 	// 生成菜单树
-	tree = genMenuTree(nil, menus)
+	tree = GenMenuTree(nil, menus)
 	return tree, err
 }
 
 // 生成菜单树
-func genMenuTree(parent *models.SysMenu, menus []models.SysMenu) []models.SysMenu {
+func GenMenuTree(parent *models.SysMenu, menus []models.SysMenu) []models.SysMenu {
 	tree := make([]models.SysMenu, 0)
 	// parentId默认为0, 表示根菜单
 	var parentId uint
@@ -51,7 +51,7 @@ func genMenuTree(parent *models.SysMenu, menus []models.SysMenu) []models.SysMen
 		// 父菜单编号一致
 		if menu.ParentId == parentId {
 			// 递归获取子菜单
-			menu.Children = genMenuTree(&menu, menus)
+			menu.Children = GenMenuTree(&menu, menus)
 			// 加入菜单树
 			tree = append(tree, menu)
 		}
@@ -78,7 +78,7 @@ func (s *MysqlService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint
 		return tree, accessIds, err
 	}
 	// 生成菜单树
-	tree = genMenuTree(nil, allMenu)
+	tree = GenMenuTree(nil, allMenu)
 	// 获取id列表
 	for _, menu := range role.Menus {
 		accessIds = append(accessIds, menu.Id)

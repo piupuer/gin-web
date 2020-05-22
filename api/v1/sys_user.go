@@ -2,6 +2,7 @@ package v1
 
 import (
 	"gin-web/models"
+	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -31,7 +32,7 @@ func GetUsers(c *gin.Context) {
 	var req request.UserListRequestStruct
 	_ = c.Bind(&req)
 	// 创建服务
-	s := service.New(c)
+	s := cache_service.New(c)
 	users, err := s.GetUsers(&req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
@@ -86,7 +87,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	user, _ := c.Get("user")
 	u, _ := user.(models.SysUser)
 	// 创建服务
-	s := service.New(c)
+	s := cache_service.New(c)
 	newUser, _ := s.GetUserById(u.Id)
 	return newUser
 }

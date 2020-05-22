@@ -19,10 +19,7 @@ func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 	var err error
 	list := make([]models.SysApi, 0)
 	// 查询接口表所有缓存
-	jsonApis, err := s.GetListFromCache(new(models.SysApi).TableName(), nil)
-	if err != nil {
-		return list, err
-	}
+	jsonApis := s.GetListFromCache(nil, new(models.SysApi).TableName())
 	query := s.JsonQuery().FromString(jsonApis)
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
@@ -68,10 +65,7 @@ func (s *RedisService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
 	// 查询接口表所有缓存
-	_, err := s.GetListFromCache(new(models.SysApi).TableName(), &allApi)
-	if err != nil {
-		return tree, accessIds, err
-	}
+	_ = s.GetListFromCache(&allApi, new(models.SysApi).TableName())
 	// 查询当前角色拥有api访问权限的casbin规则
 	casbins, err := s.GetCasbinListByRoleId(roleId)
 	if err != nil {
