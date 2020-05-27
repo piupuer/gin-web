@@ -88,24 +88,30 @@ func RowChange(e *canal.RowsEvent) {
 // 获取一列
 func getRow(data []interface{}, table *schema.Table) map[string]interface{} {
 	row := make(map[string]interface{}, 0)
+	count := len(data)
 	for i, column := range table.Columns {
 		var item interface{}
-		// canal没有对tinyint(1)做bool转换, 这里自行转换
-		if column.RawType == "tinyint(1)" {
-			item = false
-			switch data[i].(type) {
-			// canal中的tinyint(1)为float64格式
-			case float64:
-				if int(data[i].(float64)) == 1 {
-					item = true
+		if i < count {
+			// canal没有对tinyint(1)做bool转换, 这里自行转换
+			if column.RawType == "tinyint(1)" {
+				item = false
+				switch data[i].(type) {
+				// canal中的tinyint(1)为float64格式
+				case float64:
+					if int(data[i].(float64)) == 1 {
+						item = true
+					}
+					break
 				}
-				break
+			} else {
+				item = data[i]
 			}
-		} else {
-			item = data[i]
+			// 由于gorm以驼峰命名, 这里将蛇形转为驼峰
+			row[utils.CamelCaseLowerFirst(column.Name)] = item
 		}
-		// 由于gorm以驼峰命名, 这里将蛇形转为驼峰
-		row[utils.CamelCaseLowerFirst(column.Name)] = item
+	}
+	if count != len(table.Columns) {
+		global.Log.Warn(fmt.Sprintf("数据字段可能不匹配, columns: %v, data: %v", table.Columns, data))
 	}
 	return row
 }

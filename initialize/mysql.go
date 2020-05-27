@@ -22,11 +22,11 @@ func Mysql() {
 	if err != nil {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))
 	}
+	// 打印所有执行的sql
+	db.LogMode(global.Conf.Mysql.LogMode)
 	global.Mysql = db
 	// 表结构
 	autoMigrate()
-	// 打印所有执行的sql
-	db.LogMode(global.Conf.Mysql.LogMode)
 	global.Log.Debug("初始化mysql完成")
 	// 初始化数据库日志监听器
 	binlog()
