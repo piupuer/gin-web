@@ -15,6 +15,7 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/jinzhu/gorm v1.9.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/satori/go.uuid v1.2.0
 	github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea
 	github.com/spf13/viper v1.6.3
 	github.com/thedevsaddam/gojsonq/v2 v2.5.2

@@ -40,6 +40,12 @@ func autoMigrate() {
 		new(models.SysMenu),
 		new(models.SysApi),
 		new(models.SysCasbin),
+		new(models.SysWorkflow),
+		new(models.SysWorkflowNode),
+		new(models.SysWorkflowLine),
+		new(models.SysWorkflowLog),
+		new(models.RelationUserWorkflowNode),
+		new(models.RelationWorkflowLineNode),
 	)
 }
 
@@ -51,5 +57,11 @@ func binlog() {
 		new(models.SysApi).TableName(),
 		new(models.SysCasbin).TableName(),
 		new(models.RelationRoleMenu).TableName(),
+		new(models.SysWorkflow).TableName(),
+		new(models.SysWorkflowNode).TableName(),
+		new(models.SysWorkflowLine).TableName(),
+		new(models.SysWorkflowLog).TableName(),
+		new(models.RelationUserWorkflowNode).TableName(),
+		new(models.RelationWorkflowLineNode).TableName(),
 	})
 }
