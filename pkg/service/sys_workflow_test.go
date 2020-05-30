@@ -4,11 +4,20 @@ import (
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
+	"gin-web/pkg/response"
 	"gin-web/tests"
 	uuid "github.com/satori/go.uuid"
 	"math/rand"
 	"testing"
 	"time"
+)
+
+var (
+	approval = models.SysWorkflowLogStateApproval
+	deny     = models.SysWorkflowLogStateDeny
+	cancel   = models.SysWorkflowLogStateCancel
+	restart  = models.SysWorkflowLogStateRestart
+	end      = models.SysWorkflowLogStateEnd
 )
 
 func TestMysqlService_CreateWorkflow(t *testing.T) {
@@ -271,7 +280,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -283,7 +292,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("2级审批, 用户id", user7.Id, err)
@@ -295,7 +304,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级再次审批, 用户id", user3.Id, err)
@@ -307,7 +316,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -319,7 +328,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
@@ -551,7 +560,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -562,7 +571,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user4.Id,                              // 用户4审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user4.Id, err)
@@ -573,7 +582,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user1.Id,                              // 用户1审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user1.Id, err)
@@ -584,7 +593,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user3.Id, err)
@@ -596,7 +605,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("2级审批, 用户id", user7.Id, err)
@@ -608,7 +617,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级再次审批, 用户id", user3.Id, err)
@@ -619,7 +628,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户4审批
 		ApprovalOpinion: "1级再次通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级再次审批, 用户id", user2.Id, err)
@@ -630,7 +639,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user1.Id,                              // 用户4审批
 		ApprovalOpinion: "1级再次通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级再次审批, 用户id", user1.Id, err)
@@ -641,7 +650,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user4.Id,                              // 用户4审批
 		ApprovalOpinion: "1级再次通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级再次审批, 用户id", user4.Id, err)
@@ -653,7 +662,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user5.Id,                              // 用户5审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user5.Id, err)
@@ -664,7 +673,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -675,7 +684,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user7.Id, err)
@@ -687,7 +696,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
@@ -698,7 +707,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user8.Id,                              // 用户8审批
 		ApprovalOpinion: "3级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("3级审批, 用户id", user8.Id, err)
@@ -915,7 +924,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -927,7 +936,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -939,7 +948,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
@@ -951,7 +960,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user5.Id,                              // 用户5审批
 		ApprovalOpinion: "2级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("2级审批, 用户id", user5.Id, err)
@@ -963,7 +972,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user1.Id,                              // 用户1审批
 		ApprovalOpinion: "1级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("1级审批, 用户id", user1.Id, err)
@@ -975,7 +984,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("1级审批, 用户id", user3.Id, err)
@@ -1184,7 +1193,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -1196,7 +1205,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("2级审批, 用户id", user7.Id, err)
@@ -1208,7 +1217,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级再次审批, 用户id", user3.Id, err)
@@ -1220,7 +1229,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -1232,7 +1241,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
@@ -1243,7 +1252,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10确认
-		ApprovalStatus: &models.SysWorkflowLogStateDeny,       // 拒绝: 将会失败
+		ApprovalStatus: &deny,                                 // 拒绝: 将会失败
 	})
 
 	fmt.Println("提交人确认", err)
@@ -1253,7 +1262,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10确认
-		ApprovalStatus: &models.SysWorkflowLogStateApproval,   // 同意
+		ApprovalStatus: &approval,                             // 同意
 	})
 
 	fmt.Println("提交人确认", err)
@@ -1461,7 +1470,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -1473,7 +1482,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("2级审批, 用户id", user7.Id, err)
@@ -1485,7 +1494,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级再次审批, 用户id", user3.Id, err)
@@ -1497,7 +1506,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -1509,7 +1518,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
@@ -1521,7 +1530,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -1533,7 +1542,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级拒绝",
-		ApprovalStatus:  &models.SysWorkflowLogStateDeny,
+		ApprovalStatus:  &deny,
 	})
 
 	fmt.Println("1级审批, 用户id", user3.Id, err)
@@ -1543,7 +1552,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10确认
-		ApprovalStatus: &models.SysWorkflowLogStateApproval,   // 同意
+		ApprovalStatus: &approval,                             // 同意
 	})
 
 	fmt.Println("提交人确认", err)
@@ -1745,7 +1754,7 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user10.Id,                             // 用户10自我审批
 		ApprovalOpinion: "1级自我审批通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println(fmt.Sprintf("1级审批, 提交人自我审批, 是否开启自我审批: %v 用户id %d %v", truePtr, user10.Id, err))
@@ -1757,7 +1766,7 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -1769,7 +1778,7 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
@@ -1976,7 +1985,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -1987,7 +1996,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10提交
-		ApprovalStatus: &models.SysWorkflowLogStateCancel,     // 取消
+		ApprovalStatus: &cancel,                               // 取消
 	})
 
 	fmt.Println("提交人1级审批通过后主动取消", err)
@@ -1998,7 +2007,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10提交
-		ApprovalStatus: &models.SysWorkflowLogStateRestart,    // 重启
+		ApprovalStatus: &restart,                              // 重启
 	})
 
 	fmt.Println("提交人1级审批取消后主动重启", err)
@@ -2010,7 +2019,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过(取消后从头开始)",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -2022,7 +2031,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -2033,7 +2042,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10提交
-		ApprovalStatus: &models.SysWorkflowLogStateCancel,     // 取消
+		ApprovalStatus: &cancel,                               // 取消
 	})
 
 	fmt.Println("提交人2级审批通过后主动取消", err)
@@ -2044,7 +2053,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10提交
-		ApprovalStatus: &models.SysWorkflowLogStateCancel,     // 取消
+		ApprovalStatus: &cancel,                               // 取消
 	})
 
 	fmt.Println("提交人2级审批通过后再次主动取消", err)
@@ -2055,7 +2064,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10提交
-		ApprovalStatus: &models.SysWorkflowLogStateRestart,    // 重启
+		ApprovalStatus: &restart,                              // 重启
 	})
 
 	fmt.Println("提交人2级审批取消后主动重启", err)
@@ -2067,7 +2076,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过(取消后从头开始)",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -2079,7 +2088,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -2091,7 +2100,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
@@ -2102,7 +2111,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10提交
-		ApprovalStatus: &models.SysWorkflowLogStateCancel,     // 取消
+		ApprovalStatus: &cancel,                               // 取消
 	})
 
 	fmt.Println("提交人3级审批通过后主动取消", err)
@@ -2113,7 +2122,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
 		ApprovalId:     user10.Id,                             // 用户10提交
-		ApprovalStatus: &models.SysWorkflowLogStateRestart,    // 重启
+		ApprovalStatus: &restart,                              // 重启
 	})
 
 	fmt.Println("提交人3级审批取消后主动重启", err)
@@ -2125,7 +2134,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户10请假
 		ApprovalId:      user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过(取消后从头开始)",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
@@ -2137,7 +2146,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
@@ -2149,8 +2158,34 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		TargetId:        user10.Id,                             // 用户2请假
 		ApprovalId:      user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
-		ApprovalStatus:  &models.SysWorkflowLogStateApproval,
+		ApprovalStatus:  &approval,
 	})
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
+}
+
+func TestMysqlService_GetWorkflowLineLogs(t *testing.T) {
+	tests.InitTestEnv()
+
+	s := New(nil)
+	logs, err := s.GetWorkflowLogs(2, 13)
+	res := make([]response.WorkflowLogsListResponseStruct, 0)
+	for _, log := range logs {
+		res = append(res, response.WorkflowLogsListResponseStruct{
+			FlowName:              log.Flow.Name,
+			FlowUuid:              log.Flow.Uuid,
+			FlowCategoryStr:       models.SysWorkflowCategoryConst[log.Flow.Category],
+			FlowTargetCategoryStr: models.SysWorkflowTargetCategoryConst[log.Flow.TargetCategory],
+			Status:                log.Status,
+			StatusStr:             models.SysWorkflowLogStateConst[*log.Status],
+			SubmitUsername:        log.SubmitUser.Username,
+			SubmitUserNickname:    log.SubmitUser.Nickname,
+			ApprovalUsername:      log.ApprovalUser.Username,
+			ApprovalUserNickname:  log.ApprovalUser.Nickname,
+			ApprovalOpinion:       log.ApprovalOpinion,
+			CreatedAt:             log.Model.CreatedAt,
+			UpdatedAt:             log.Model.UpdatedAt,
+		})
+	}
+	fmt.Println(logs, res, err)
 }

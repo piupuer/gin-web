@@ -10,6 +10,19 @@ import (
 	"strings"
 )
 
+// 查询审批日志(指定目标)
+func (s *MysqlService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.SysWorkflowLog, error) {
+	// 查询已审核的日志
+	logs := make([]models.SysWorkflowLog, 0)
+	err := s.tx.Preload("ApprovalUser").Preload("SubmitUser").Preload("Flow").Where(&models.SysWorkflowLog{
+		FlowId:   flowId,   // 流程号一致
+		TargetId: targetId, // 目标一致
+	}).Where(
+		"status > ?", models.SysWorkflowLogStateSubmit, // 状态非提交
+	).Find(&logs).Error
+	return logs, err
+}
+
 // 查询下一流水线
 func (s *MysqlService) GetNextWorkflowLine(flowId uint, currentSort uint) (models.SysWorkflowLine, error) {
 	return s.GetPrevWorkflowLineBySort(flowId, currentSort+1)
@@ -163,8 +176,9 @@ func (s *MysqlService) first(req *request.WorkflowTransitionRequestStruct) error
 	var firstLog models.SysWorkflowLog
 	firstLog.FlowId = req.FlowId
 	firstLog.TargetId = req.TargetId
+	approvalStatus := models.SysWorkflowLogStateApproval
 	// 状态为自己批准
-	firstLog.Status = &models.SysWorkflowLogStateApproval
+	firstLog.Status = &approvalStatus
 	// 当前节点为开始节点
 	firstLog.SubmitUserId = submitUser.Id
 	firstLog.ApprovalId = submitUser.Id
@@ -471,257 +485,3 @@ func (s *MysqlService) getApprovalUsers(nodes []models.SysWorkflowNode) ([]uint,
 	}
 	return userIds, roleIds
 }
-
-// // 工作流转移(从一个状态转移到另一个状态)
-// func (s *MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequestStruct) error {
-// 	if req.FlowId == 0 {
-// 		return fmt.Errorf("流程号不存在, flowId=%d, 请检查参数", req.FlowId)
-// 	}
-// 	// 查询最后一条审批日志
-// 	var lastLog models.SysWorkflowLog
-// 	var newLog models.SysWorkflowLog
-// 	notFound := s.tx.Preload("CurrentNode").Preload("CurrentNode.Users").Preload("Flow").Where(&models.SysWorkflowLog{TargetId: req.TargetId, FlowId: req.FlowId}).Last(&lastLog).RecordNotFound()
-// 	if notFound {
-// 		if req.SubmitterId == 0 {
-// 			return fmt.Errorf("提交人不存在, submitterId=%d, 请检查参数", req.SubmitterId)
-// 		}
-// 		// 查询提交人是否存在
-// 		submitter, err := s.GetUserById(req.SubmitterId)
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 		// 获取下一节点, 当前节点为开始节点=0
-// 		nextNode, err := s.GetNextWorkflowLine(req.FlowId, 0)
-// 		if err != nil {
-// 			return err
-// 		}
-//
-// 		// 初次创建
-// 		var firstLog models.SysWorkflowLog
-// 		firstLog.FlowId = req.FlowId
-// 		firstLog.TargetId = req.TargetId
-// 		// 状态为自己批准
-// 		firstLog.Status = &models.SysWorkflowLogStateApproval
-// 		// 当前节点为开始节点
-// 		// lastLog.CurrentNodeId = 0
-// 		firstLog.SubmitterId = submitter.Id
-// 		firstLog.SubmitterName = submitter.Nickname
-// 		firstLog.ApprovalId = submitter.Id
-// 		firstLog.ApprovalName = submitter.Nickname
-// 		firstLog.ApprovalOpinion = "提交"
-// 		// 创建首条日志
-// 		s.tx.Create(&firstLog)
-// 		// 创建下一日志
-// 		newLog.FlowId = req.FlowId
-// 		newLog.TargetId = req.TargetId
-// 		// 状态为提交
-// 		newLog.Status = &models.SysWorkflowLogStateSubmit
-// 		newLog.SubmitterId = submitter.Id
-// 		newLog.SubmitterName = submitter.Nickname
-// 		// 当前节点指向下一节点
-// 		newLog.CurrentNodeId = &nextNode.Id
-// 	} else {
-// 		if req.ApprovalId == 0 {
-// 			return fmt.Errorf("审批人不存在, approvalId=%d, 请检查参数", req.ApprovalId)
-// 		}
-// 		if *lastLog.Status == models.SysWorkflowLogStateEnd {
-// 			return fmt.Errorf("流程已结束")
-// 		}
-// 		// 查询审批人是否存在
-// 		start, err := s.GetUserById(req.ApprovalId)
-// 		if err != nil {
-// 			return err
-// 		}
-// 		if lastLog.SubmitterId == start.Id {
-// 			var updateLog models.SysWorkflowLog
-// 			// 自我取消
-// 			if *req.ApprovalStatus == models.SysWorkflowLogStateCancel {
-// 				// 记录审批人以及审批意见
-// 				updateLog.FlowId = req.FlowId
-// 				updateLog.TargetId = req.TargetId
-// 				// 状态: 取消
-// 				updateLog.Status = req.ApprovalStatus
-// 				updateLog.SubmitterId = lastLog.SubmitterId
-// 				updateLog.SubmitterName = lastLog.SubmitterName
-// 				// 取消: 审批人是自己
-// 				updateLog.ApprovalId = lastLog.SubmitterId
-// 				updateLog.ApprovalName = lastLog.SubmitterName
-// 				approvalOpinion := req.ApprovalOpinion
-// 				if strings.TrimSpace(approvalOpinion) == "" {
-// 					approvalOpinion = "提交人主动取消"
-// 				}
-// 				updateLog.ApprovalOpinion = approvalOpinion
-// 				err = s.tx.Table(updateLog.TableName()).Where("id = ?", lastLog.Id).Update(&updateLog).Error
-// 				return err
-// 			}
-// 			// 自我重启
-// 			if *req.ApprovalStatus == models.SysWorkflowLogStateRestart {
-// 				if *lastLog.Status != models.SysWorkflowLogStateCancel {
-// 					return fmt.Errorf("流程正常, 无需重启")
-// 				}
-// 				// 获取下一节点, 当前节点为开始节点=0
-// 				nextNode, err := s.GetNextWorkflowLine(req.FlowId, 0)
-// 				if err != nil {
-// 					return err
-// 				}
-// 				// 流程从头开始
-// 				var firstLog models.SysWorkflowLog
-// 				firstLog.FlowId = req.FlowId
-// 				firstLog.TargetId = req.TargetId
-// 				// 状态为自己批准
-// 				firstLog.Status = &models.SysWorkflowLogStateApproval
-// 				firstLog.SubmitterId = lastLog.SubmitterId
-// 				firstLog.SubmitterName = lastLog.SubmitterName
-// 				firstLog.ApprovalId = lastLog.SubmitterId
-// 				firstLog.ApprovalName = lastLog.SubmitterName
-// 				firstLog.ApprovalOpinion = "重新提交"
-// 				// 创建首条日志
-// 				s.tx.Create(&firstLog)
-// 				// 创建下一日志
-// 				newLog.FlowId = req.FlowId
-// 				newLog.TargetId = req.TargetId
-// 				// 状态为提交
-// 				newLog.Status = &models.SysWorkflowLogStateSubmit
-// 				newLog.SubmitterId = lastLog.SubmitterId
-// 				newLog.SubmitterName = lastLog.SubmitterName
-// 				// 当前节点指向下一节点
-// 				newLog.CurrentNodeId = &nextNode.Id
-// 				// 创建新记录
-// 				err = s.tx.Create(&newLog).Error
-// 				return err
-// 			}
-// 		} else {
-// 			if *lastLog.Status == models.SysWorkflowLogStateCancel {
-// 				return fmt.Errorf("流程已被提交人主动取消")
-// 			}
-// 		}
-// 		// 是否有权限审批
-// 		if !checkNodePermission(start, lastLog) {
-// 			return fmt.Errorf("无权限审批或审批流程未创建")
-// 		}
-//
-// 		// 查询第一条审批日志
-// 		var firstLog models.SysWorkflowLog
-// 		notFound = s.tx.Where(&models.SysWorkflowLog{TargetId: req.TargetId}).First(&firstLog).RecordNotFound()
-// 		if notFound {
-// 			return fmt.Errorf("第一条流程日志不存在, targetId=%d, 请检查参数", req.TargetId)
-// 		}
-//
-// 		end := *lastLog.CurrentNodeIsEnd && *req.ApprovalStatus == models.SysWorkflowLogStateApproval
-// 		// 更新日志
-// 		var status *uint
-// 		if req.ApprovalStatus == nil {
-// 			// 默认批准
-// 			status = &models.SysWorkflowLogStateApproval
-// 		} else {
-// 			status = req.ApprovalStatus
-// 		}
-// 		if end {
-// 			// 结束节点, 批准
-// 			*status = models.SysWorkflowLogStateEnd
-// 		}
-// 		var updateLog models.SysWorkflowLog
-// 		// 记录审批人以及审批意见
-// 		updateLog.FlowId = req.FlowId
-// 		updateLog.TargetId = req.TargetId
-// 		// 状态为参数给定的状态
-// 		updateLog.Status = status
-// 		updateLog.SubmitterId = firstLog.SubmitterId
-// 		updateLog.SubmitterName = firstLog.SubmitterName
-// 		updateLog.ApprovalId = start.Id
-// 		updateLog.ApprovalName = start.Nickname
-// 		approvalOpinion := req.ApprovalOpinion
-// 		if end && strings.TrimSpace(approvalOpinion) == "" {
-// 			approvalOpinion = "提交人已确认"
-// 		}
-// 		updateLog.ApprovalOpinion = approvalOpinion
-// 		err = s.tx.Table(updateLog.TableName()).Where("id = ?", lastLog.Id).Update(&updateLog).Error
-// 		if err != nil {
-// 			return err
-// 		}
-// 		if end {
-// 			return nil
-// 		}
-// 		if *lastLog.CurrentNodeIsEnd {
-//
-// 		}
-// 		if *status == models.SysWorkflowLogStateDeny {
-// 			// 拒绝
-// 			newLog.Status = &models.SysWorkflowLogStateSubmit
-// 			// 当前节点指向上一节点
-// 			// 获取上一节点
-// 			prevNode, err := s.GetPrevWorkflowLine(req.FlowId, *lastLog.CurrentNodeId)
-// 			if err != nil {
-// 				return err
-// 			}
-// 			newLog.CurrentNodeId = &prevNode.Id
-// 		} else {
-// 			// 下一节点
-// 			var nextNode models.SysWorkflowNode
-// 			if !*lastLog.CurrentNodeIsEnd {
-// 				// 非末尾节点则获取下一节点
-// 				nextNode, err = s.GetNextWorkflowLine(req.FlowId, *lastLog.CurrentNodeId)
-// 				if err != nil {
-// 					return err
-// 				}
-// 			}
-// 			// 同意
-// 			if nextNode.Id == 0 {
-// 				// 下一节点为空
-// 				if *lastLog.Flow.SubmitterConfirm {
-// 					// 需要提交人确认
-// 					newLog.Status = &models.SysWorkflowLogStateSubmit
-// 					newLog.CurrentNodeIsEnd = lastLog.Flow.SubmitterConfirm
-// 				} else {
-// 					// 不需要提交人确认, 结束
-// 					newLog.Status = &models.SysWorkflowLogStateEnd
-// 				}
-// 			} else {
-// 				// 当前节点指向下一节点
-// 				newLog.CurrentNodeId = &nextNode.Id
-// 			}
-// 		}
-// 		// 创建新日志
-// 		newLog.FlowId = req.FlowId
-// 		newLog.TargetId = req.TargetId
-// 		// 状态为提交
-// 		newLog.SubmitterId = firstLog.SubmitterId
-// 		newLog.SubmitterName = firstLog.SubmitterName
-// 	}
-// 	// 创建新记录
-// 	err := s.tx.Create(&newLog).Error
-// 	return err
-// }
-//
-// // 校验节点是否有权限审批
-// func checkNodePermission(start models.SysUser, lastLog models.SysWorkflowLog) bool {
-// 	if !*lastLog.CurrentNodeIsEnd {
-// 		// 不是末尾节点
-// 		// 以用户优先
-// 		if len(lastLog.CurrentNode.Users) > 0 {
-// 			userIds := make([]uint, 0)
-// 			for _, user := range lastLog.CurrentNode.Users {
-// 				userIds = append(userIds, user.Id)
-// 			}
-// 			if utils.Contains(userIds, start.Id) {
-// 				// 审批人在列表中
-// 				if lastLog.SubmitterId == start.Id {
-// 					// 提交人也是审批人, 需要判断是否开启自我审批
-// 					return *lastLog.Flow.Self
-// 				}
-// 				return true
-// 			}
-// 		} else if lastLog.CurrentNode.RoleId == start.RoleId {
-// 			if lastLog.SubmitterId == start.Id {
-// 				// 提交人也是审批人, 需要判断是否开启自我审批
-// 				return *lastLog.Flow.Self
-// 			}
-// 			return true
-// 		}
-// 	} else {
-// 		// 末尾节点需要自己审批
-// 		return lastLog.SubmitterId == start.Id
-// 	}
-// 	return false
-// }

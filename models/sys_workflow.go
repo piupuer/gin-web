@@ -1,5 +1,51 @@
 package models
 
+// 流程相关的常量
+const (
+	// 流程类别
+	SysWorkflowCategoryOnlyOneApproval    uint   = 1 // 每个节点有一个人通过
+	SysWorkflowCategoryAllApproval        uint   = 2 // 每个节点必须所有人审批通过
+	SysWorkflowCategoryOnlyOneApprovalStr string = "只需一人通过"
+	SysWorkflowCategoryAllApprovalStr     string = "必须全部通过"
+
+	// 流程目标类别
+	SysWorkflowTargetCategoryLeave    uint   = 1 // 请假
+	SysWorkflowTargetCategoryLeaveStr string = "请假流程"
+
+	// 流程日志状态
+	SysWorkflowLogStateSubmit      uint   = 0 // 已提交
+	SysWorkflowLogStateApproval    uint   = 1 // 通过
+	SysWorkflowLogStateDeny        uint   = 2 // 拒绝
+	SysWorkflowLogStateCancel      uint   = 3 // 取消
+	SysWorkflowLogStateRestart     uint   = 4 // 重启
+	SysWorkflowLogStateEnd         uint   = 5 // 结束
+	SysWorkflowLogStateSubmitStr   string = "已提交"
+	SysWorkflowLogStateApprovalStr string = "通过"
+	SysWorkflowLogStateDenyStr     string = "拒绝"
+	SysWorkflowLogStateCancelStr   string = "取消"
+	SysWorkflowLogStateRestartStr  string = "重启"
+	SysWorkflowLogStateEndStr      string = "结束"
+)
+
+// 定义map方便取值
+var SysWorkflowCategoryConst = map[uint]string{
+	SysWorkflowCategoryOnlyOneApproval: SysWorkflowCategoryOnlyOneApprovalStr,
+	SysWorkflowCategoryAllApproval:     SysWorkflowCategoryAllApprovalStr,
+}
+
+var SysWorkflowTargetCategoryConst = map[uint]string{
+	SysWorkflowTargetCategoryLeave: SysWorkflowTargetCategoryLeaveStr,
+}
+
+var SysWorkflowLogStateConst = map[uint]string{
+	SysWorkflowLogStateSubmit:   SysWorkflowLogStateSubmitStr,
+	SysWorkflowLogStateApproval: SysWorkflowLogStateApprovalStr,
+	SysWorkflowLogStateDeny:     SysWorkflowLogStateDenyStr,
+	SysWorkflowLogStateCancel:   SysWorkflowLogStateCancelStr,
+	SysWorkflowLogStateRestart:  SysWorkflowLogStateRestartStr,
+	SysWorkflowLogStateEnd:      SysWorkflowLogStateEndStr,
+}
+
 // 流程
 type SysWorkflow struct {
 	Model
@@ -12,17 +58,6 @@ type SysWorkflow struct {
 	Desc             string `gorm:"comment:'说明'" json:"desc"`
 	Creator          string `gorm:"comment:'创建人'" json:"creator"`
 }
-
-// 流程类别
-var (
-	SysWorkflowCategoryOnlyOneApproval uint = 1 // 每个节点有一个人通过
-	SysWorkflowCategoryAllApproval     uint = 2 // 每个节点必须所有人审批通过
-)
-
-// 流程目标类别
-var (
-	SysWorkflowTargetCategoryLeave uint = 1 // 请假
-)
 
 func (m SysWorkflow) TableName() string {
 	return m.Model.TableName("sys_workflow")
@@ -97,16 +132,6 @@ type SysWorkflowLog struct {
 	ApprovalUser    SysUser         `gorm:"foreignkey:ApprovalId" json:"approvalId"`
 	ApprovalOpinion string          `gorm:"comment:'审批意见'" json:"approvalOpinion"`
 }
-
-// 流程日志状态
-var (
-	SysWorkflowLogStateSubmit   uint = 0
-	SysWorkflowLogStateApproval uint = 1
-	SysWorkflowLogStateDeny     uint = 2
-	SysWorkflowLogStateCancel   uint = 3
-	SysWorkflowLogStateRestart  uint = 4
-	SysWorkflowLogStateEnd      uint = 5
-)
 
 func (m SysWorkflowLog) TableName() string {
 	return m.Model.TableName("sys_workflow_log")
