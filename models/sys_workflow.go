@@ -84,7 +84,7 @@ func (m SysWorkflowNode) TableName() string {
 // 用户与工作流节点关联关系
 type RelationUserWorkflowNode struct {
 	SysUserId         uint `json:"sysUserId"`
-	SysWorkFlowNodeId uint `json:"sysWorkFlowNodeId"`
+	SysWorkflowNodeId uint `json:"sysWorkflowNodeId"`
 }
 
 func (m RelationUserWorkflowNode) TableName() string {
@@ -109,7 +109,7 @@ func (m SysWorkflowLine) TableName() string {
 // 流水线与节点多对多关系
 type RelationWorkflowLineNode struct {
 	SysWorkflowLineId uint `json:"sysWorkflowLineId"`
-	SysWorkFlowNodeId uint `json:"sysWorkFlowNodeId"`
+	SysWorkflowNodeId uint `json:"sysWorkflowNodeId"`
 }
 
 func (m RelationWorkflowLineNode) TableName() string {
