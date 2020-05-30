@@ -3,12 +3,78 @@ package service
 import (
 	"fmt"
 	"gin-web/models"
+	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 	"strings"
 )
+
+// 查询待审批目标列表(指定用户)
+func (s *MysqlService) GetWorkflowApprovingList(flowId uint, targetId uint, approvalId uint) ([]models.SysWorkflowLog, error) {
+	// 查询需要审核的日志
+	logs := make([]models.SysWorkflowLog, 0)
+	list := make([]models.SysWorkflowLog, 0)
+	if approvalId == 0 {
+		return list, fmt.Errorf("用户不存在, approvalId=%d", approvalId)
+	}
+	// 查询审批人
+	approval, err := s.GetUserById(approvalId)
+	if err != nil {
+		return list, err
+	}
+	// 查询日志
+	err = s.tx.
+		Preload("CurrentLine").
+		Preload("CurrentLine.Nodes").
+		Preload("CurrentLine.Nodes.Users").
+		Preload("CurrentLine.Nodes.Role").
+		Preload("CurrentLine.Nodes.Role.Users").
+		Where(&models.SysWorkflowLog{
+			FlowId:   flowId,   // 流程号一致
+			TargetId: targetId, // 目标一致
+		}).Where(
+		"status = ?", models.SysWorkflowLogStateSubmit, // 状态已提交
+	).Find(&logs).Error
+	if err != nil {
+		return list, err
+	}
+
+	for _, log := range logs {
+		// 获取当前待审批人
+		userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Nodes)
+		// 包含当前审批人
+		if utils.ContainsUint(userIds, approval.Id) {
+			list = append(list, log)
+		}
+	}
+	return list, err
+}
+
+// 查询下一审批人(指定目标)
+func (s *MysqlService) GetWorkflowNextApprovingUsers(flowId uint, targetId uint) ([]models.SysUser, error) {
+	// 查询需要审核的日志
+	var log models.SysWorkflowLog
+	users := make([]models.SysUser, 0)
+	err := s.tx.
+		Preload("CurrentLine").
+		Preload("CurrentLine.Nodes").
+		Preload("CurrentLine.Nodes.Users").
+		Preload("CurrentLine.Nodes.Role").
+		Preload("CurrentLine.Nodes.Role.Users").
+		Where(&models.SysWorkflowLog{
+			FlowId:   flowId,   // 流程号一致
+			TargetId: targetId, // 目标一致
+		}).Where(
+		"status = ?", models.SysWorkflowLogStateSubmit, // 状态已提交
+	).First(&log).Error
+
+	// 获取当前待审批人
+	userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Nodes)
+	err = s.tx.Where("id IN (?)", userIds).Find(&users).Error
+	return users, err
+}
 
 // 查询审批日志(指定目标)
 func (s *MysqlService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.SysWorkflowLog, error) {
@@ -148,10 +214,17 @@ func (s *MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequest
 	}
 	// 查询最后一条审批日志, 判断是否存在
 	var lastLog models.SysWorkflowLog
-	notFound := s.tx.Preload("CurrentLine").Preload("CurrentLine.Nodes").Preload("CurrentLine.Nodes.Users").Preload("Flow").Where(&models.SysWorkflowLog{
-		TargetId: req.TargetId,
-		FlowId:   req.FlowId,
-	}).Last(&lastLog).RecordNotFound()
+	notFound := s.tx.
+		Preload("CurrentLine").
+		Preload("CurrentLine.Nodes").
+		Preload("CurrentLine.Nodes.Users").
+		Preload("CurrentLine.Nodes.Role").
+		Preload("CurrentLine.Nodes.Role.Users").
+		Preload("Flow").
+		Where(&models.SysWorkflowLog{
+			TargetId: req.TargetId,
+			FlowId:   req.FlowId,
+		}).Last(&lastLog).RecordNotFound()
 	if notFound {
 		// 走提交逻辑
 		return s.first(req)
@@ -267,7 +340,7 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 				return s.deny(req, approval, lastLog)
 			}
 		}
-	} else if *lastLog.Flow.Self && s.checkPermission(approval, lastLog.CurrentLine.Nodes) {
+	} else if *lastLog.Flow.Self && s.checkPermission(approval.Id, lastLog) {
 		// 2. 开启自我审批 且 有权限审批
 		if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
 			// 通过
@@ -283,7 +356,7 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 // 开始正常审批
 func (s *MysqlService) start(req *request.WorkflowTransitionRequestStruct, approval models.SysUser, lastLog models.SysWorkflowLog) error {
 	// 当前状态已提交 且 必须有权限审批
-	if *lastLog.Status == models.SysWorkflowLogStateSubmit && s.checkPermission(approval, lastLog.CurrentLine.Nodes) {
+	if *lastLog.Status == models.SysWorkflowLogStateSubmit && s.checkPermission(approval.Id, lastLog) {
 		if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
 			// 通过
 			return s.approval(req, approval, lastLog)
@@ -299,7 +372,7 @@ func (s *MysqlService) start(req *request.WorkflowTransitionRequestStruct, appro
 func (s *MysqlService) approval(req *request.WorkflowTransitionRequestStruct, approval models.SysUser, lastLog models.SysWorkflowLog) error {
 	// 默认节点不变
 	lineId := lastLog.CurrentLineId
-	if s.checkNextLineSort(lastLog) {
+	if s.checkNextLineSort(approval.Id, lastLog) {
 		// 流转到下一节点
 		var err error
 		var nextLine models.SysWorkflowLine
@@ -414,74 +487,92 @@ func (s *MysqlService) newLog(status uint, lineId uint, lastLog models.SysWorkfl
 }
 
 // 检查当前审批人是否有权限
-func (s *MysqlService) checkPermission(approval models.SysUser, nodes []models.SysWorkflowNode) bool {
-	// 获取当前节点审批人
-	userIds, roleIds := s.getApprovalUsers(nodes)
-	// 配置了用户, 优先以用户为准
-	if len(userIds) > 0 {
-		return utils.ContainsUint(userIds, approval.Id)
-	}
-	return utils.ContainsUint(roleIds, approval.RoleId)
+func (s *MysqlService) checkPermission(approvalId uint, lastLog models.SysWorkflowLog) bool {
+	// 获取当前待审批人
+	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Nodes)
+	return utils.ContainsUint(userIds, approvalId)
 }
 
 // 检查是否可以切换流水线到下一个(通过审批会使用)
-func (s *MysqlService) checkNextLineSort(lastLog models.SysWorkflowLog) bool {
+func (s *MysqlService) checkNextLineSort(approvalId uint, lastLog models.SysWorkflowLog) bool {
+	// 获取当前待审批人
+	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Nodes)
 	// 判断流程类别
 	switch lastLog.Flow.Category {
 	case models.SysWorkflowCategoryOnlyOneApproval:
-		// 只需要1人通过
-		return true
+		// 只需要1人通过: 当前审批人在待审批列表中
+		return utils.ContainsUint(userIds, approvalId)
 	case models.SysWorkflowCategoryAllApproval:
-		// 需要全部人通过
-		// 查询当前流水线当前节点总共配置了多少人审核
-		userIds, roleIds := s.getApprovalUsers(lastLog.CurrentLine.Nodes)
-		// 查询已审核的日志
-		logs := make([]models.SysWorkflowLog, 0)
-		err := s.tx.Preload("ApprovalUser").Where(&models.SysWorkflowLog{
-			FlowId:   lastLog.FlowId,   // 流程号一致
-			TargetId: lastLog.TargetId, // 目标一致
-		}).Where(
-			"status > ?", models.SysWorkflowLogStateSubmit, // 状态非提交
-		).Order("id DESC").Find(&logs).Error
-		if err != nil {
-			return false
-		}
-		// 保留连续审核通过记录
-		l := len(logs)
-		historyUserIds := make([]uint, 0)
-		for i := 0; i < l; i++ {
-			log := logs[i]
-			// 如果不是通过立即结束, 必须保证连续的通过
-			if *log.Status != models.SysWorkflowLogStateApproval {
-				break
-			}
-			// 审批人为配置中的一人
-			if utils.ContainsUint(userIds, log.ApprovalId) && !utils.ContainsUint(historyUserIds, log.ApprovalId) {
-				historyUserIds = append(historyUserIds, log.ApprovalId)
-			}
-		}
-		// 配置了用户, 优先以用户为准(checkNextLineSort方法在更新审批前, 因此-1)
-		if len(userIds) > 0 {
-			return len(historyUserIds) >= len(userIds)-1
-		}
-		return len(historyUserIds) >= len(roleIds)-1
+		// 查询全部审批人数
+		allUserIds := s.getAllApprovalUsers(lastLog.CurrentLine.Nodes)
+		// 查询历史审批人数
+		historyUserIds := s.getHistoryApprovalUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId)
+		// 需要全部人通过: 当前审批人在待审批列表中 且 历史审批人+当前审批人刚好等于全部审批人
+		return utils.ContainsUint(userIds, approvalId) && len(historyUserIds) >= len(allUserIds)-1
 	}
 	return false
 }
 
-// 从节点中获取审批人
-func (s *MysqlService) getApprovalUsers(nodes []models.SysWorkflowNode) ([]uint, []uint) {
+// 获取待审批人(当前节点)
+func (s *MysqlService) getApprovingUsers(flowId uint, targetId uint, currentLineId uint, currentNodes []models.SysWorkflowNode) []uint {
 	userIds := make([]uint, 0)
-	roleIds := make([]uint, 0)
-	for _, node := range nodes {
+	allUserIds := s.getAllApprovalUsers(currentNodes)
+	historyUserIds := s.getHistoryApprovalUsers(flowId, targetId, currentLineId)
+	for _, allUserId := range allUserIds {
+		// 不在历史列表中
+		if !utils.ContainsUint(historyUserIds, allUserId) {
+			userIds = append(userIds, allUserId)
+		}
+	}
+	return userIds
+}
+
+// 获取历史审批人(最后一个节点, 主要用于判断是否审批完成)
+func (s *MysqlService) getHistoryApprovalUsers(flowId uint, targetId uint, currentLineId uint) []uint {
+	historyUserIds := make([]uint, 0)
+	// 查询已审核的日志
+	logs := make([]models.SysWorkflowLog, 0)
+	err := s.tx.Preload("ApprovalUser").Where(&models.SysWorkflowLog{
+		FlowId:   flowId,   // 流程号一致
+		TargetId: targetId, // 目标一致
+	}).Where(
+		"status > ?", models.SysWorkflowLogStateSubmit, // 状态非提交
+	).Order("id DESC").Find(&logs).Error
+	if err != nil {
+		global.Log.Warn("[getHistoryApprovalUsers]", err)
+	}
+	// 保留连续审核通过记录
+	l := len(logs)
+	for i := 0; i < l; i++ {
+		log := logs[i]
+		// 如果不是通过立即结束, 必须保证连续的通过 或 当前节点不一致
+		if *log.Status != models.SysWorkflowLogStateApproval || log.CurrentLineId != currentLineId {
+			break
+		}
+		// 审批人为配置中的一人
+		if !utils.ContainsUint(historyUserIds, log.ApprovalId) {
+			historyUserIds = append(historyUserIds, log.ApprovalId)
+		}
+	}
+	return historyUserIds
+}
+
+// 获取全部审批人(当前节点)
+func (s *MysqlService) getAllApprovalUsers(currentNodes []models.SysWorkflowNode) []uint {
+	userIds := make([]uint, 0)
+	for _, node := range currentNodes {
 		for _, user := range node.Users {
 			if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
 				userIds = append(userIds, user.Id)
 			}
 		}
-		if node.RoleId > 0 && !utils.ContainsUint(roleIds, node.RoleId) {
-			roleIds = append(roleIds, node.RoleId)
+		if node.RoleId > 0 {
+			for _, user := range node.Role.Users {
+				if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
+					userIds = append(userIds, user.Id)
+				}
+			}
 		}
 	}
-	return userIds, roleIds
+	return userIds
 }

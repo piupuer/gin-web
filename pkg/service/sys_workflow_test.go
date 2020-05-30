@@ -553,6 +553,18 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("提交人重复提交", err)
 
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user1.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user2.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user3.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user4.Id))
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	// user1,2,3,4挨个审批(不分顺序)
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
@@ -565,6 +577,18 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
 
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user1.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user2.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user3.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user4.Id))
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
@@ -575,6 +599,18 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	})
 
 	fmt.Println("1级审批, 用户id", user4.Id, err)
+
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user1.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user2.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user3.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user4.Id))
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
 
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
@@ -587,6 +623,18 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("1级审批, 用户id", user1.Id, err)
 
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user1.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user2.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user3.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user4.Id))
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
@@ -597,6 +645,18 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	})
 
 	fmt.Println("1级审批, 用户id", user3.Id, err)
+
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user1.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user2.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user3.Id))
+	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
+	fmt.Println(s.GetWorkflowApprovingList(flow.Id, user10.Id, user4.Id))
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
 
 	// user5,6,7其中一人审批
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
@@ -610,6 +670,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("2级审批, 用户id", user7.Id, err)
 
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	// user1,2,3,4再次全部审批
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
@@ -622,6 +685,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("1级再次审批, 用户id", user3.Id, err)
 
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
@@ -632,6 +698,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	})
 
 	fmt.Println("1级再次审批, 用户id", user2.Id, err)
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
 
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
@@ -644,6 +713,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("1级再次审批, 用户id", user1.Id, err)
 
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
@@ -654,6 +726,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	})
 
 	fmt.Println("1级再次审批, 用户id", user4.Id, err)
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
 
 	// user5,6,7全部审批
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
@@ -667,6 +742,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("2级审批, 用户id", user5.Id, err)
 
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
@@ -678,6 +756,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("2级审批, 用户id", user6.Id, err)
 
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
@@ -688,6 +769,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	})
 
 	fmt.Println("2级审批, 用户id", user7.Id, err)
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
 
 	// user8,9全部审批
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
@@ -701,6 +785,9 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("3级审批, 用户id", user9.Id, err)
 
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
@@ -711,6 +798,10 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	})
 
 	fmt.Println("3级审批, 用户id", user8.Id, err)
+
+	fmt.Println("下一审批人")
+	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
+
 }
 
 func TestMysqlService_WorkflowTransition3(t *testing.T) {
