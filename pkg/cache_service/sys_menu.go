@@ -31,13 +31,8 @@ func (s *RedisService) GetMenus() ([]models.SysMenu, error) {
 		return s.mysql.GetMenus()
 	}
 	tree := make([]models.SysMenu, 0)
-	menus := make([]models.SysMenu, 0)
-	jsonMenus := s.GetListFromCache(nil, new(models.SysMenu).TableName())
-	// 查询所有菜单, 根据sort字段排序
-	res := s.JsonQuery().FromString(jsonMenus).SortBy("sort").Get()
-	// 转换为结构体
-	utils.Struct2StructByJson(res, &menus)
-
+	// 获取全部菜单
+	menus := s.getAllMenu()
 	// 生成菜单树
 	tree = service.GenMenuTree(nil, menus)
 	return tree, nil
@@ -53,7 +48,8 @@ func (s *RedisService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint
 	tree := make([]models.SysMenu, 0)
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
-	allMenu, _ := s.GetMenus()
+	// 获取全部菜单
+	allMenu := s.getAllMenu()
 	// 查询角色拥有的全部菜单
 	roleMenus := s.getMenusByRoleId(roleId)
 	// 生成菜单树
@@ -80,6 +76,17 @@ func (s *RedisService) getMenusByRoleId(roleId uint) []models.SysMenu {
 	}
 	res := s.JsonQuery().FromString(jsonMenus).WhereIn("id", menuIds).Get()
 
+	// 转换为结构体
+	utils.Struct2StructByJson(res, &menus)
+	return menus
+}
+
+// 获取全部菜单, 非菜单树
+func (s *RedisService) getAllMenu() []models.SysMenu {
+	menus := make([]models.SysMenu, 0)
+	jsonMenus := s.GetListFromCache(nil, new(models.SysMenu).TableName())
+	// 查询所有菜单, 根据sort字段排序
+	res := s.JsonQuery().FromString(jsonMenus).SortBy("sort").Get()
 	// 转换为结构体
 	utils.Struct2StructByJson(res, &menus)
 	return menus
