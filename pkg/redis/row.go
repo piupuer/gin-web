@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/schema"
@@ -11,7 +12,7 @@ import (
 
 const (
 	idName        = "id"
-	deletedAtName = "deleted_at"
+	deletedAtName = "deletedAt"
 )
 
 // mysql数据行发生变化, 同步数据到redis
@@ -22,10 +23,11 @@ func RowChange(e *canal.RowsEvent) {
 	idIndex := -1
 	deletedAtIndex := -1
 	for i, column := range e.Table.Columns {
-		if column.Name == idName {
+		name := utils.CamelCaseLowerFirst(column.Name)
+		if name == idName {
 			idIndex = i
 		}
-		if column.Name == deletedAtName {
+		if name == deletedAtName {
 			deletedAtIndex = i
 		}
 		if idIndex >= 0 && deletedAtIndex >= 0 {
@@ -48,33 +50,38 @@ func RowChange(e *canal.RowsEvent) {
 	switch e.Action {
 	case canal.InsertAction:
 		// 插入数据
-		newRows = append(newRows, getRow(changeRows[0], e.Table))
+		row := getRow(changeRows[0], e.Table)
+		if row[deletedAtName] == nil {
+			// 由于gorm默认执行软删除, 当delete_at为空时才加入redis缓存
+			newRows = append(newRows, row)
+		}
 		break
 	case canal.UpdateAction:
 		// 更新数据
-		for i, row := range newRows {
-			// 找到相同id
-			if idIndex >= 0 && row[idName] == changeRows[0][idIndex] {
-				// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
-				if deletedAtIndex >= 0 && changeRows[0][deletedAtIndex] == nil && changeRows[1][deletedAtIndex] != nil {
-					newRows = append(newRows[:i], newRows[i+1:]...)
-					break
-				}
-				// 直接替换原有元素, changeRows[0]表示改变前的元素, changeRows[1]表示改变后的元素
-				newRows[i] = getRow(changeRows[1], e.Table)
-				break
-			}
+		// 通过历史数据changeRows[0]去匹配需要更新的数据所在索引
+		index := getOldRowIndex(newRows, changeRows[0], e.Table)
+		if deletedAtIndex >= 0 && changeRows[0][deletedAtIndex] == nil && changeRows[1][deletedAtIndex] != nil {
+			// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
+			newRows = append(newRows[:index], newRows[index+1:]...)
+		} else {
+			// 执行更新
+			newRows[index] = getRow(changeRows[1], e.Table)
 		}
 		break
 	case canal.DeleteAction:
 		// 删除数据
-		for i, row := range newRows {
-			// 找到相同id
-			if row[idName] == changeRows[0][idIndex] {
-				// 移除当前元素
-				newRows = append(newRows[:i], newRows[i+1:]...)
-				break
+		// 找到需要删除的索引
+		indexes := make([]int, 0)
+		for _, changeRow := range changeRows {
+			// 找到没有改变的数据所在索引
+			index := getOldRowIndex(newRows, changeRow, e.Table)
+			if index > -1 {
+				indexes = append(indexes, index)
 			}
+		}
+		// 删除对应数据
+		for _, index := range indexes {
+			newRows = append(newRows[:index], newRows[index+1:]...)
 		}
 		break
 	}
@@ -83,6 +90,21 @@ func RowChange(e *canal.RowsEvent) {
 	if err != nil {
 		global.Log.Error("同步binlog增量数据到redis失败: ", err, e)
 	}
+}
+
+// 获取旧数据所在行索引
+func getOldRowIndex(oldRows []map[string]interface{}, data []interface{}, table *schema.Table) int {
+	for i, row := range oldRows {
+		newRow := getRow(data, table)
+		// 比对增量字段
+		m := make(gin.H, 0)
+		utils.CompareDifferenceStructByJson(row, newRow, &m)
+		// 字段没有任何变化
+		if len(m) == 0 {
+			return i
+		}
+	}
+	return -1
 }
 
 // 获取一列
