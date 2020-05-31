@@ -23,6 +23,7 @@
 - `Viper` 配置管理工具, 支持多种配置文件类型
 - `Packr` 文件打包工具, 轻松将静态文件打包到编译后的二进制应用中
 - `GoFunk` 常用工具包, 某些方法无需重复造轮子
+- `Workflow` 工作流程管理(由于golang工作流相关轮子很少不太符合项目需要, 因此自己写了一个)
 - `testing` 测试标准包, 快速进行单元测试
 
 ## 中间件
@@ -44,7 +45,12 @@
   - 角色管理
   - 用户管理
   - 接口管理
+  - 工作流管理(后端接口基本完成, 等前端页面)
 - 测试用例
+
+## 在线演示
+
+即将上线, 敬请期待~
 
 ## 快速开始
 
@@ -83,7 +89,7 @@ go run main.go
 ## 前端
 
 - 项目地址: [gin-web-vue](https://github.com/piupuer/gin-web-vue)
-- 实现方式: Typescript
+- 实现方式: Typescript(为什么使用它, JS的弱类型带来的问题实在不想再吐槽, TS提高效率, 反正笔者作为一枚后端用起来很舒服~)
 
 ## 特别感谢
 
@@ -134,28 +140,14 @@ go run main.go
 
 ### 与作者对话
 
-> 该项目是利用业余时间进行开发的, 开发思路参考了很多优秀的前后端框架, 结合自己的理解和自身需求, 做了改进.
-> 您可以结合实际需要, 扩展业务需要, 如果您有好的idea请与我进行沟通, 一起探讨, 相互学习, 共同进步!
-> 如果此项目对您提供了帮助, 也可以请作者喝杯咖啡, 嘿嘿~
-
-<div>
-<img src="https://github.com/piupuer/gin-web/blob/contact/images/ali_pay.jpeg?raw=true" width="256" alt="支付宝打赏" />
-&nbsp;
-&nbsp;
-&nbsp;
-&nbsp;
-<img src="https://github.com/piupuer/gin-web/blob/contact/images/wechat_pay.jpeg?raw=true" width="256" alt="微信打赏" />
-</div>
+> 该项目是利用业余时间进行开发的, 开发思路参考了很多优秀的前后端框架, 结合自己的理解和实际需求, 做了改进.
+> 如果觉得项目有不懂的地方或需要改进的地方, 欢迎提issue或pr!
 
 ### QQ群：943724601
 
-<img src="https://github.com/piupuer/gin-web/blob/contact/images/qq.jpeg?raw=true" width="256" alt="QQ群" />
+<img src="https://github.com/piupuer/gin-web-images/blob/master/contact/qq_group.jpeg?raw=true" width="256" alt="QQ群" />
 
-## 提供一对一服务
-
-> 另外, 作者有多年后端开发经验, 对前后端技术都有少许研究. 
-> 如果想进一步学习但不知道怎么下手的童鞋, 在我工作之余, 可以有偿提供技术支持.
-> 包括：gin-web/golang/typescript/vue, 帮助大家快速掌握和入门！
+> 就不贴打赏二维码了, 不然显得项目很low, 如果您非要请我喝咖啡, 私信我, 哈哈哈~
 
 ## MIT License
 
