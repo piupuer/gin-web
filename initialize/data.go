@@ -219,6 +219,24 @@ func InitData() {
 				roles[2],
 			},
 		},
+		{
+			Model: models.Model{
+				Id: 10,
+			},
+			Name:      "workflow",
+			Title:     "工作流管理",
+			Icon:      "example",
+			Path:      "workflow",
+			Component: "/system/workflow",
+			Sort:      4,
+			Status:    &status,
+			Visible:   &visible,
+			ParentId:  2,
+			Creator:   creator,
+			Roles: []models.SysRole{
+				roles[2],
+			},
+		},
 	}
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
@@ -531,6 +549,46 @@ func InitData() {
 			Path:     "/v1/role/apis/update/:roleId",
 			Category: "role",
 			Desc:     "更新角色的权限接口",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 27,
+			},
+			Method:   "GET",
+			Path:     "/v1/workflow/list",
+			Category: "workflow",
+			Desc:     "获取工作流列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 28,
+			},
+			Method:   "POST",
+			Path:     "/v1/workflow/create",
+			Category: "workflow",
+			Desc:     "创建工作流",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 29,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/workflow/update/:roleId",
+			Category: "workflow",
+			Desc:     "更新工作流",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 30,
+			},
+			Method:   "DELETE",
+			Path:     "/v1/workflow/delete/batch",
+			Category: "workflow",
+			Desc:     "批量删除工作流",
 			Creator:  creator,
 		},
 	}

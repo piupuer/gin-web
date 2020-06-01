@@ -6,10 +6,74 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 	"strings"
 )
+
+// 获取所有工作流
+func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]models.SysWorkflow, error) {
+	var err error
+	list := make([]models.SysWorkflow, 0)
+	query := s.tx
+	name := strings.TrimSpace(req.Name)
+	if name != "" {
+		query = query.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
+	}
+	creator := strings.TrimSpace(req.Creator)
+	if creator != "" {
+		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
+	}
+	if req.Category > 0 {
+		query = query.Where("category = ?", req.Category)
+	}
+	if req.TargetCategory > 0 {
+		query = query.Where("targetCategory = ?", req.TargetCategory)
+	}
+	if req.Self != nil {
+		query = query.Where("self = ?", *req.Self)
+	}
+	if req.SubmitUserConfirm != nil {
+		query = query.Where("submitUserConfirm = ?", *req.SubmitUserConfirm)
+	}
+
+	// 查询条数
+	err = query.Find(&list).Count(&req.PageInfo.Total).Error
+	if err == nil {
+		if req.PageInfo.NoPagination {
+			// 不使用分页
+			err = query.Find(&list).Error
+		} else {
+			// 获取分页参数
+			limit, offset := req.GetLimit()
+			err = query.Limit(limit).Offset(offset).Find(&list).Error
+		}
+	}
+	return list, err
+}
+
+// 更新工作流
+func (s *MysqlService) UpdateWorkflowById(id uint, req gin.H) (err error) {
+	var oldWorkflow models.SysWorkflow
+	query := s.tx.Table(oldWorkflow.TableName()).Where("id = ?", id).First(&oldWorkflow)
+	if query.RecordNotFound() {
+		return fmt.Errorf("记录不存在")
+	}
+
+	// 比对增量字段
+	m := make(gin.H, 0)
+	utils.CompareDifferenceStructByJson(oldWorkflow, req, &m)
+
+	// 更新指定列
+	err = query.Updates(m).Error
+	return
+}
+
+// 批量删除工作流
+func (s *MysqlService) DeleteWorkflowByIds(ids []uint) (err error) {
+	return s.tx.Where("id IN (?)", ids).Delete(models.SysWorkflow{}).Error
+}
 
 // 查询待审批目标列表(指定用户)
 func (s *MysqlService) GetWorkflowApprovingList(flowId uint, targetId uint, approvalId uint) ([]models.SysWorkflowLog, error) {
@@ -236,11 +300,11 @@ func (s *MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequest
 
 // 初次提交流程工单
 func (s *MysqlService) first(req *request.WorkflowTransitionRequestStruct) error {
-	if req.SubmitterId == 0 {
-		return fmt.Errorf("提交人不存在, submitterId=%d", req.SubmitterId)
+	if req.SubmitUserId == 0 {
+		return fmt.Errorf("提交人不存在, submitUserId=%d", req.SubmitUserId)
 	}
 	// 查询提交人是否存在
-	submitUser, err := s.GetUserById(req.SubmitterId)
+	submitUser, err := s.GetUserById(req.SubmitUserId)
 	if err != nil {
 		return err
 	}
@@ -312,7 +376,7 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 		// 提交人再次重启
 		if *req.ApprovalStatus == models.SysWorkflowLogStateRestart {
 			// 从头开始创建新的
-			req.SubmitterId = req.ApprovalId
+			req.SubmitUserId = req.ApprovalId
 			if strings.TrimSpace(req.ApprovalOpinion) == "" {
 				req.ApprovalOpinion = "提交人再次重启"
 			}
@@ -321,7 +385,7 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 	}
 	var nextLine models.SysWorkflowLine
 	// 开启提交人确认是没有下一节点的
-	if !*lastLog.Flow.SubmitterConfirm && !*lastLog.CurrentLine.End {
+	if !*lastLog.Flow.SubmitUserConfirm && !*lastLog.CurrentLine.End {
 		// 判断是否末尾节点
 		nextLine, err = s.GetNextWorkflowLine(req.FlowId, lastLog.CurrentLine.Sort)
 		if err != nil {
@@ -335,7 +399,7 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 			if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
 				// 结束
 				return s.end(req.ApprovalOpinion, approval, lastLog)
-			} else if !*lastLog.Flow.SubmitterConfirm {
+			} else if !*lastLog.Flow.SubmitUserConfirm {
 				// 回退到上一节点(提交人确认是不允许被拒绝的)
 				return s.deny(req, approval, lastLog)
 			}
@@ -433,7 +497,7 @@ func (s *MysqlService) deny(req *request.WorkflowTransitionRequestStruct, approv
 func (s *MysqlService) end(approvalOpinion string, approval models.SysUser, lastLog models.SysWorkflowLog) error {
 	// 结束
 	status := models.SysWorkflowLogStateEnd
-	if *lastLog.Flow.SubmitterConfirm && approval.Id != lastLog.SubmitUserId {
+	if *lastLog.Flow.SubmitUserConfirm && approval.Id != lastLog.SubmitUserId {
 		// 开启了提交人确认则不能直接结束
 		status = models.SysWorkflowLogStateApproval
 	}

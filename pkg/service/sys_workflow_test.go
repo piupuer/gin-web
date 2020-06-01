@@ -179,13 +179,13 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 	falsePtr := false
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
-		Uuid:             uuid.NewV4().String(),
-		Category:         models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
-		SubmitterConfirm: &falsePtr,                                 // 不需要提交人确认
-		Self:             &falsePtr,                                 // 不能自我审批
-		Name:             fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
-		Creator:          "系统",
-		Desc:             "用于员工请假审批",
+		Uuid:              uuid.NewV4().String(),
+		Category:          models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
+		SubmitUserConfirm: &falsePtr,                                 // 不需要提交人确认
+		Self:              &falsePtr,                                 // 不能自我审批
+		Name:              fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
+		Creator:           "系统",
+		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
 	var node1 = models.SysWorkflowNode{
@@ -258,7 +258,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人初次提交", err)
@@ -268,7 +268,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人重复提交", err)
@@ -444,13 +444,13 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	falsePtr := false
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
-		Uuid:             uuid.NewV4().String(),
-		Category:         models.SysWorkflowCategoryAllApproval, // 全部人通过
-		SubmitterConfirm: &falsePtr,                             // 不需要提交人确认
-		Self:             &falsePtr,                             // 不能自我审批
-		Name:             fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
-		Creator:          "系统",
-		Desc:             "用于员工请假审批",
+		Uuid:              uuid.NewV4().String(),
+		Category:          models.SysWorkflowCategoryAllApproval, // 全部人通过
+		SubmitUserConfirm: &falsePtr,                             // 不需要提交人确认
+		Self:              &falsePtr,                             // 不能自我审批
+		Name:              fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
+		Creator:           "系统",
+		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
 	var node1 = models.SysWorkflowNode{
@@ -538,7 +538,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人初次提交", err)
@@ -548,7 +548,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人重复提交", err)
@@ -914,13 +914,13 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 	falsePtr := false
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
-		Uuid:             uuid.NewV4().String(),
-		Category:         models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
-		SubmitterConfirm: &falsePtr,                                 // 不需要提交人确认
-		Self:             &falsePtr,                                 // 不能自我审批
-		Name:             fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
-		Creator:          "系统",
-		Desc:             "用于员工请假审批",
+		Uuid:              uuid.NewV4().String(),
+		Category:          models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
+		SubmitUserConfirm: &falsePtr,                                 // 不需要提交人确认
+		Self:              &falsePtr,                                 // 不能自我审批
+		Name:              fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
+		Creator:           "系统",
+		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
 	var node1 = models.SysWorkflowNode{
@@ -993,7 +993,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人初次提交", err)
@@ -1003,7 +1003,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人重复提交", err)
@@ -1193,13 +1193,13 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 	falsePtr := false
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
-		Uuid:             uuid.NewV4().String(),
-		Category:         models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
-		SubmitterConfirm: &truePtr,                                  // 需要提交人确认
-		Self:             &falsePtr,                                 // 不能自我审批
-		Name:             fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
-		Creator:          "系统",
-		Desc:             "用于员工请假审批",
+		Uuid:              uuid.NewV4().String(),
+		Category:          models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
+		SubmitUserConfirm: &truePtr,                                  // 需要提交人确认
+		Self:              &falsePtr,                                 // 不能自我审批
+		Name:              fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
+		Creator:           "系统",
+		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
 	var node1 = models.SysWorkflowNode{
@@ -1272,7 +1272,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人初次提交", err)
@@ -1470,13 +1470,13 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 	falsePtr := false
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
-		Uuid:             uuid.NewV4().String(),
-		Category:         models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
-		SubmitterConfirm: &truePtr,                                  // 需要提交人确认
-		Self:             &falsePtr,                                 // 不能自我审批
-		Name:             fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
-		Creator:          "系统",
-		Desc:             "用于员工请假审批",
+		Uuid:              uuid.NewV4().String(),
+		Category:          models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
+		SubmitUserConfirm: &truePtr,                                  // 需要提交人确认
+		Self:              &falsePtr,                                 // 不能自我审批
+		Name:              fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
+		Creator:           "系统",
+		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
 	var node1 = models.SysWorkflowNode{
@@ -1549,7 +1549,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人初次提交", err)
@@ -1754,13 +1754,13 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 	falsePtr := false
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
-		Uuid:             uuid.NewV4().String(),
-		Category:         models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
-		SubmitterConfirm: &falsePtr,                                 // 需要提交人确认
-		Self:             &truePtr,                                  // 不能自我审批
-		Name:             fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
-		Creator:          "系统",
-		Desc:             "用于员工请假审批",
+		Uuid:              uuid.NewV4().String(),
+		Category:          models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
+		SubmitUserConfirm: &falsePtr,                                 // 需要提交人确认
+		Self:              &truePtr,                                  // 不能自我审批
+		Name:              fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
+		Creator:           "系统",
+		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
 	var node1 = models.SysWorkflowNode{
@@ -1833,7 +1833,7 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人初次提交", err)
@@ -1985,13 +1985,13 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 	falsePtr := false
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
-		Uuid:             uuid.NewV4().String(),
-		Category:         models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
-		SubmitterConfirm: &falsePtr,                                 // 不需要提交人确认
-		Self:             &falsePtr,                                 // 不能自我审批
-		Name:             fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
-		Creator:          "系统",
-		Desc:             "用于员工请假审批",
+		Uuid:              uuid.NewV4().String(),
+		Category:          models.SysWorkflowCategoryOnlyOneApproval, // 只需要有1个人通过
+		SubmitUserConfirm: &falsePtr,                                 // 不需要提交人确认
+		Self:              &falsePtr,                                 // 不能自我审批
+		Name:              fmt.Sprintf("%s工作流程%d", testName, r.Intn(1000000)),
+		Creator:           "系统",
+		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
 	var node1 = models.SysWorkflowNode{
@@ -2064,7 +2064,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		SubmitterId:    user10.Id,                             // 用户10提交
+		SubmitUserId:   user10.Id,                             // 用户10提交
 	})
 
 	fmt.Println("提交人初次提交", err)

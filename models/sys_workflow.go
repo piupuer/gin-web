@@ -49,14 +49,14 @@ var SysWorkflowLogStateConst = map[uint]string{
 // 流程
 type SysWorkflow struct {
 	Model
-	Uuid             string `gorm:"unique;comment:'唯一标识'" json:"uuid"`
-	Category         uint   `gorm:"default:1;comment:'类别(1:每个节点有一个人通过 2:每个节点必须所有人审批通过(指定了Users) 其他自行扩展)'" json:"category"`
-	SubmitterConfirm *bool  `gorm:"type:tinyint(1);default:0;comment:'是否需要提交人确认'" json:"submitterConfirm"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
-	TargetCategory   uint   `gorm:"default:1;comment:'目标类别(1:请假(需要关联SysUser表) 其他自行扩展)'" json:"targetCategory"`
-	Self             *bool  `gorm:"type:tinyint(1);default:0;comment:'是否可以自我审批(当前节点角色与可能提交人角色一致)'" json:"self"`
-	Name             string `gorm:"comment:'名称'" json:"name"`
-	Desc             string `gorm:"comment:'说明'" json:"desc"`
-	Creator          string `gorm:"comment:'创建人'" json:"creator"`
+	Uuid              string `gorm:"unique;comment:'唯一标识'" json:"uuid"`
+	Category          uint   `gorm:"default:1;comment:'类别(1:每个节点有一个人通过 2:每个节点必须所有人审批通过(指定了Users) 其他自行扩展)'" json:"category"`
+	SubmitUserConfirm *bool  `gorm:"type:tinyint(1);default:0;comment:'是否需要提交人确认'" json:"submitUserConfirm"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
+	TargetCategory    uint   `gorm:"default:1;comment:'目标类别(1:请假(需要关联SysUser表) 其他自行扩展)'" json:"targetCategory"`
+	Self              *bool  `gorm:"type:tinyint(1);default:0;comment:'是否可以自我审批(当前节点角色与可能提交人角色一致)'" json:"self"`
+	Name              string `gorm:"comment:'名称'" json:"name"`
+	Desc              string `gorm:"comment:'说明'" json:"desc"`
+	Creator           string `gorm:"comment:'创建人'" json:"creator"`
 }
 
 func (m SysWorkflow) TableName() string {

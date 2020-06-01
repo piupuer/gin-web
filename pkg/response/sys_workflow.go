@@ -18,3 +18,17 @@ type WorkflowLogsListResponseStruct struct {
 	CreatedAt             models.LocalTime `json:"createdAt"`
 	UpdatedAt             models.LocalTime `json:"updatedAt"`
 }
+
+// 工作流信息响应, 字段含义见models.Workflow
+type WorkflowListResponseStruct struct {
+	Id                uint             `json:"id"`
+	Uuid              string           `json:"uuid"`
+	Category          uint             `json:"category"`
+	SubmitUserConfirm *bool            `json:"submitUserConfirm"`
+	TargetCategory    uint             `json:"targetCategory"`
+	Self              *bool            `json:"self"`
+	Name              string           `json:"name"`
+	Desc              string           `json:"desc"`
+	Creator           string           `json:"creator"`
+	CreatedAt         models.LocalTime `json:"createdAt"`
+}
