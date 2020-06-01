@@ -53,6 +53,10 @@ func (s RedisService) GetListFromCache(list interface{}, tableName string) strin
 	if err != nil {
 		global.Log.Debug(fmt.Sprintf("[GetListFromCache]读取redis缓存异常: %v", err))
 	}
+	if res == "" {
+		// 如果是空字符串, 将其设置为空数组, 否则list会被转为nil
+		res = "[]"
+	}
 	if list != nil {
 		utils.Json2Struct(res, list)
 	}
