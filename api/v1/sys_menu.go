@@ -45,11 +45,7 @@ func GetAllMenuByRoleId(c *gin.Context) {
 func GetMenus(c *gin.Context) {
 	// 创建服务
 	s := cache_service.New(c)
-	menus, err := s.GetMenus()
-	if err != nil {
-		response.FailWithMsg(err.Error())
-		return
-	}
+	menus := s.GetMenus()
 	// 转为MenuTreeResponseStruct
 	var resp []response.MenuTreeResponseStruct
 	utils.Struct2StructByJson(menus, &resp)

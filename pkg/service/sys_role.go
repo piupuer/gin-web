@@ -78,18 +78,17 @@ func (s *MysqlService) UpdateRoleById(id uint, req gin.H) (err error) {
 
 // 更新角色的权限菜单
 func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
-	var oldRole models.SysRole
-	query := s.tx.Model(&oldRole).Preload("Menus").Where("id = ?", id).First(&oldRole)
-	if query.RecordNotFound() {
-		return errors.New("记录不存在")
-	}
+	// 查询全部菜单
+	allMenu := s.getAllMenu()
+	// 查询角色拥有菜单
+	roleMenus := s.getRoleMenus(id)
 	// 获取当前菜单编号集合
 	menuIds := make([]uint, 0)
-	for _, menu := range oldRole.Menus {
+	for _, menu := range roleMenus {
 		menuIds = append(menuIds, menu.Id)
 	}
 	// 获取菜单增量
-	incremental := req.GetIncremental(menuIds)
+	incremental := req.GetIncremental(menuIds, allMenu)
 	// 查询所有菜单
 	var incrementalMenus []models.SysMenu
 	err = s.tx.Where("id in (?)", incremental).Find(&incrementalMenus).Error
@@ -97,7 +96,7 @@ func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementa
 		return
 	}
 	// 替换菜单
-	err = query.Association("Menus").Replace(&incrementalMenus).Error
+	err = s.tx.Where("id = ?", id).First(&models.SysRole{}).Association("Menus").Replace(&incrementalMenus).Error
 	return
 }
 

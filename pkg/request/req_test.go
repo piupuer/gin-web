@@ -1,11 +1,20 @@
 package request
 
 import (
+	"gin-web/models"
 	"reflect"
 	"testing"
 )
 
 func TestUpdateIncrementalIdsRequestStruct_GetIncremental(t *testing.T) {
+	menus := make([]models.SysMenu, 0)
+	for i := 0; i < 10; i++ {
+		menus = append(menus, models.SysMenu{
+			Model: models.Model{
+				Id: uint(i + 1),
+			},
+		})
+	}
 	type fields struct {
 		Create []uint
 		Delete []uint
@@ -35,7 +44,7 @@ func TestUpdateIncrementalIdsRequestStruct_GetIncremental(t *testing.T) {
 				Create: tt.fields.Create,
 				Delete: tt.fields.Delete,
 			}
-			if got := s.GetIncremental(tt.args.oldList); !reflect.DeepEqual(got, tt.want) {
+			if got := s.GetIncremental(tt.args.oldList, menus); !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("GetIncremental() = %v, want %v", got, tt.want)
 			}
 		})
@@ -44,6 +53,14 @@ func TestUpdateIncrementalIdsRequestStruct_GetIncremental(t *testing.T) {
 
 // 性能测试
 func BenchmarkUpdateIncrementalIdsRequestStruct_GetIncremental(b *testing.B) {
+	menus := make([]models.SysMenu, 0)
+	for i := 0; i < 10; i++ {
+		menus = append(menus, models.SysMenu{
+			Model: models.Model{
+				Id: uint(i + 1),
+			},
+		})
+	}
 	s := &UpdateIncrementalIdsRequestStruct{
 		Create: []uint{1, 2, 3, 4, 5},
 		Delete: []uint{6, 7, 8, 9, 10},
@@ -51,6 +68,6 @@ func BenchmarkUpdateIncrementalIdsRequestStruct_GetIncremental(b *testing.B) {
 	oldList := []uint{6, 7, 8, 9, 10, 11, 12, 13, 14, 15}
 	b.ResetTimer()
 	for n := 0; n < b.N; n++ {
-		s.GetIncremental(oldList)
+		s.GetIncremental(oldList, menus)
 	}
 }

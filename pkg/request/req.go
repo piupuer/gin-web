@@ -1,6 +1,7 @@
 package request
 
 import (
+	"gin-web/models"
 	"gin-web/pkg/utils"
 )
 
@@ -21,7 +22,10 @@ type UpdateIncrementalIdsRequestStruct struct {
 }
 
 // 获取增量, 可直接更新的结果
-func (s *UpdateIncrementalIdsRequestStruct) GetIncremental(oldList []uint) []uint {
+func (s *UpdateIncrementalIdsRequestStruct) GetIncremental(oldList []uint, allMenu []models.SysMenu) []uint {
+	// 保留选中节点
+	s.Create = models.GetCheckedMenuIds(s.Create, allMenu)
+	s.Delete = models.GetCheckedMenuIds(s.Delete, allMenu)
 	newList := make([]uint, 0)
 	for _, oldItem := range oldList {
 		// 已删除数据不加入列表

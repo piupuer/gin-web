@@ -3,6 +3,7 @@ package service
 import (
 	"errors"
 	"gin-web/models"
+	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -28,14 +29,12 @@ func (s *MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 }
 
 // 获取所有菜单
-func (s *MysqlService) GetMenus() ([]models.SysMenu, error) {
+func (s *MysqlService) GetMenus() []models.SysMenu {
 	tree := make([]models.SysMenu, 0)
-	menus := make([]models.SysMenu, 0)
-	// 查询所有菜单
-	err := s.tx.Order("sort").Find(&menus).Error
+	menus := s.getAllMenu()
 	// 生成菜单树
 	tree = GenMenuTree(nil, menus)
-	return tree, err
+	return tree
 }
 
 // 生成菜单树
@@ -65,24 +64,18 @@ func (s *MysqlService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint
 	tree := make([]models.SysMenu, 0)
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
-	allMenu := make([]models.SysMenu, 0)
 	// 查询全部菜单
-	err := s.tx.Order("sort").Find(&allMenu).Error
-	if err != nil {
-		return tree, accessIds, err
-	}
-	// 查询角色拥有的全部菜单
-	var role models.SysRole
-	err = s.tx.Preload("Menus").Where("id = ?", roleId).First(&role).Error
-	if err != nil {
-		return tree, accessIds, err
-	}
+	allMenu := s.getAllMenu()
+	// 查询角色拥有菜单
+	roleMenus := s.getRoleMenus(roleId)
 	// 生成菜单树
 	tree = GenMenuTree(nil, allMenu)
 	// 获取id列表
-	for _, menu := range role.Menus {
+	for _, menu := range roleMenus {
 		accessIds = append(accessIds, menu.Id)
 	}
+	// 只保留选中项目
+	accessIds = models.GetCheckedMenuIds(accessIds, allMenu)
 	return tree, accessIds, nil
 }
 
@@ -116,4 +109,22 @@ func (s *MysqlService) UpdateMenuById(id uint, req gin.H) (err error) {
 func (s *MysqlService) DeleteMenuByIds(ids []uint) (err error) {
 	// 执行删除
 	return s.tx.Where("id IN (?)", ids).Delete(models.SysMenu{}).Error
+}
+
+// 获取权限菜单, 非菜单树
+func (s *MysqlService) getRoleMenus(roleId uint) []models.SysMenu {
+	var role models.SysRole
+	// 根据权限编号获取菜单
+	err := s.tx.Preload("Menus").Where("id = ?", roleId).First(&role).Error
+	global.Log.Warn("[getRoleMenu]", err)
+	return role.Menus
+}
+
+// 获取全部菜单, 非菜单树
+func (s *MysqlService) getAllMenu() []models.SysMenu {
+	menus := make([]models.SysMenu, 0)
+	// 查询所有菜单
+	err := s.tx.Order("sort").Find(&menus).Error
+	global.Log.Warn("[getAllMenu]", err)
+	return menus
 }

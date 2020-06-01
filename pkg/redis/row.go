@@ -44,6 +44,7 @@ func RowChange(e *canal.RowsEvent) {
 		// 将旧数据解析为对象
 		utils.Json2Struct(oldRows, &newRows)
 	}
+	rowCount := len(newRows)
 	// 将rows用json解析一下, 否则查找相同元素时可能出现类型不一致
 	utils.Struct2StructByJson(e.Rows, &changeRows)
 	// 选择事件类型
@@ -62,7 +63,11 @@ func RowChange(e *canal.RowsEvent) {
 		index := getOldRowIndex(newRows, changeRows[0], e.Table)
 		if deletedAtIndex >= 0 && changeRows[0][deletedAtIndex] == nil && changeRows[1][deletedAtIndex] != nil {
 			// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
-			newRows = append(newRows[:index], newRows[index+1:]...)
+			if index < rowCount-1 {
+				newRows = append(newRows[:index], newRows[index+1:]...)
+			} else {
+				newRows = append(newRows[:index])
+			}
 		} else {
 			// 执行更新
 			newRows[index] = getRow(changeRows[1], e.Table)
@@ -81,7 +86,11 @@ func RowChange(e *canal.RowsEvent) {
 		}
 		// 删除对应数据
 		for _, index := range indexes {
-			newRows = append(newRows[:index], newRows[index+1:]...)
+			if index < rowCount-1 {
+				newRows = append(newRows[:index], newRows[index+1:]...)
+			} else {
+				newRows = append(newRows[:index])
+			}
 		}
 		break
 	}

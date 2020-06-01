@@ -25,7 +25,7 @@ func (s *RedisService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 }
 
 // 获取所有菜单
-func (s *RedisService) GetMenus() ([]models.SysMenu, error) {
+func (s *RedisService) GetMenus() []models.SysMenu {
 	if !global.Conf.System.UseRedis {
 		// 不使用redis
 		return s.mysql.GetMenus()
@@ -35,7 +35,7 @@ func (s *RedisService) GetMenus() ([]models.SysMenu, error) {
 	menus := s.getAllMenu()
 	// 生成菜单树
 	tree = service.GenMenuTree(nil, menus)
-	return tree, nil
+	return tree
 }
 
 // 根据权限编号获取全部菜单
@@ -58,6 +58,8 @@ func (s *RedisService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint
 	for _, menu := range roleMenus {
 		accessIds = append(accessIds, menu.Id)
 	}
+	// 只保留选中项目
+	accessIds = models.GetCheckedMenuIds(accessIds, allMenu)
 	return tree, accessIds, nil
 }
 

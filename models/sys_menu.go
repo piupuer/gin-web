@@ -1,5 +1,7 @@
 package models
 
+import "gin-web/pkg/utils"
+
 // 系统菜单表
 type SysMenu struct {
 	Model
@@ -22,4 +24,39 @@ type SysMenu struct {
 
 func (m SysMenu) TableName() string {
 	return m.Model.TableName("sys_menu")
+}
+
+// 获取选中列表
+func GetCheckedMenuIds(list []uint, allMenu []SysMenu) []uint {
+	checked := make([]uint, 0)
+	for _, c := range list {
+		// 获取子节点
+		parent := SysMenu{
+			ParentId: c,
+		}
+		children := parent.GetChildrenIds(allMenu)
+		// 判断子节点是否全部在create中
+		count := 0
+		for _, child := range children {
+			if utils.ContainsUint(list, child) {
+				count++
+			}
+		}
+		if len(children) == count {
+			// 全部选中
+			checked = append(checked, c)
+		}
+	}
+	return checked
+}
+
+// 查找子菜单编号
+func (m SysMenu) GetChildrenIds(allMenu []SysMenu) []uint {
+	childrenIds := make([]uint, 0)
+	for _, menu := range allMenu {
+		if menu.ParentId == m.ParentId {
+			childrenIds = append(childrenIds, menu.Id)
+		}
+	}
+	return childrenIds
 }
