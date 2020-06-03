@@ -73,7 +73,6 @@ type SysWorkflowNode struct {
 	Users   []SysUser   `gorm:"many2many:relation_user_workflow_node;comment:'审批人列表(指定了具体审批人, 则不再使用角色判断)'" json:"users"`
 	Edit    *bool       `gorm:"type:tinyint(1);default:1;comment:'是否有编辑权限'" json:"edit"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
 	Name    string      `gorm:"comment:'名称'" json:"name"`
-	Desc    string      `gorm:"comment:'说明'" json:"desc"`
 	Creator string      `gorm:"comment:'创建人'" json:"creator"`
 }
 

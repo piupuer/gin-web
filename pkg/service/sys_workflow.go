@@ -53,6 +53,30 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 	return list, err
 }
 
+// 获取所有流水线
+func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
+	var err error
+	list := make([]models.SysWorkflowLine, 0)
+	query := s.tx
+	if req.FlowId > 0 {
+		query = query.Where("flow_id = ?", req.FlowId)
+	}
+
+	// 查询条数
+	err = query.Preload("Nodes").Find(&list).Count(&req.PageInfo.Total).Error
+	if err == nil {
+		if req.PageInfo.NoPagination {
+			// 不使用分页
+			err = query.Find(&list).Error
+		} else {
+			// 获取分页参数
+			limit, offset := req.GetLimit()
+			err = query.Limit(limit).Offset(offset).Find(&list).Error
+		}
+	}
+	return list, err
+}
+
 // 更新工作流
 func (s *MysqlService) UpdateWorkflowById(id uint, req gin.H) (err error) {
 	var oldWorkflow models.SysWorkflow
@@ -188,12 +212,31 @@ func (s *MysqlService) CreateWorkflow(req *request.CreateWorkflowRequestStruct) 
 	return
 }
 
+// 获取多个节点
+func (s *MysqlService) GetWorkflowNodesByIds(ids []uint) ([]models.SysWorkflowNode, error) {
+	var nodes []models.SysWorkflowNode
+	var err error
+	err = s.tx.Where("id IN (?)", ids).Find(&nodes).Error
+	return nodes, err
+}
+
 // 创建工作流节点
-func (s *MysqlService) CreateWorkflowNode(req *request.CreateWorkflowNodeRequestStruct) (err error) {
+func (s *MysqlService) CreateWorkflowNode(req *request.UpdateWorkflowNodeRequestStruct) (err error) {
 	var node models.SysWorkflowNode
+	if len(req.UserIds) > 0 {
+		// 查询所有用户
+		users := make([]models.SysUser, 0)
+		err = s.tx.Where("id IN (?)", req.UserIds).Find(&users).Error
+		if err != nil {
+			return
+		}
+		node.Users = users
+	}
 	utils.Struct2StructByJson(req, &node)
 	// 创建数据
 	err = s.tx.Create(&node).Error
+	// 获取id
+	req.Id = node.Id
 	return
 }
 
@@ -263,6 +306,163 @@ func (s *MysqlService) CreateWorkflowLine(nodeIds [][]uint) (err error) {
 		}
 		// gorm 1.x不支持批量插入, 这里单条插入
 		s.tx.Create(&line)
+		lines = append(lines, line)
+	}
+	return
+}
+
+// 更新流程流水线
+func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLineRequestStruct) (err error) {
+	// 查询流程以及流水线
+	var oldFlow models.SysWorkflow
+	oldLines := make([]models.SysWorkflowLine, 0)
+	noFlow := s.tx.Where("id = ?", req.FlowId).First(&oldFlow).RecordNotFound()
+	if noFlow {
+		return fmt.Errorf("流程不存在")
+	}
+	err = s.tx.Where(&models.SysWorkflowLine{FlowId: req.FlowId}).First(&oldLines).Error
+	if err != nil {
+		return
+	}
+	// 查询增改的所有用户/节点
+	userIds := make([]uint, 0)
+	for _, v1 := range req.Create {
+		for _, userId := range v1.UserIds {
+			if userId > 0 && !utils.ContainsUint(userIds, userId) {
+				userIds = append(userIds, userId)
+			}
+		}
+	}
+	for _, item := range req.Update {
+		for _, userId := range item.UserIds {
+			if userId > 0 && !utils.ContainsUint(userIds, userId) {
+				userIds = append(userIds, userId)
+			}
+		}
+	}
+	users, err := s.GetUsersByIds(userIds)
+	if err != nil {
+		return
+	}
+
+	nodeIds := make([]uint, 0)
+	lineNodeIds := make([][]uint, 0)
+	// 创建节点
+	for _, v1 := range req.Create {
+		var node models.SysWorkflowNode
+		utils.Struct2StructByJson(req, &node)
+		// 获取用户
+		us := make([]models.SysUser, 0)
+		if len(v1.UserIds) > 0 {
+			for _, userId := range v1.UserIds {
+				for _, user := range users {
+					if userId == user.Id {
+						us = append(us, user)
+						break
+					}
+				}
+			}
+		}
+		node.Users = us
+		// 创建数据
+		err = s.tx.Create(&node).Error
+		if err != nil {
+			return
+		}
+		// 保留id
+		ids := make([]uint, 0)
+		ids = append(ids, node.Id)
+		nodeIds = append(nodeIds, node.Id)
+		lineNodeIds = append(lineNodeIds, ids)
+	}
+	// 更新节点
+	for _, v1 := range req.Update {
+		var node models.SysWorkflowNode
+		utils.Struct2StructByJson(v1, &node)
+		// 获取用户
+		us := make([]models.SysUser, 0)
+		if len(v1.UserIds) > 0 {
+			for _, userId := range v1.UserIds {
+				for _, user := range users {
+					if userId == user.Id {
+						us = append(us, user)
+						break
+					}
+				}
+			}
+		}
+		query := s.tx.Model(&node)
+		if v1.RoleId != nil {
+			// 需要强制更新roleId
+			query = query.Update("role_id", v1.RoleId)
+		}
+		// 更新数据, 替换users
+		err = query.Update(&node).Association("Users").Replace(&us).Error
+		if err != nil {
+			return
+		}
+		// 保留id
+		ids := make([]uint, 0)
+		ids = append(ids, node.Id)
+		nodeIds = append(nodeIds, node.Id)
+		lineNodeIds = append(lineNodeIds, ids)
+	}
+	// 删除节点
+	for _, item := range req.Delete {
+		// 创建数据
+		err = s.tx.Where("id = ?", item.Id).Delete(models.SysWorkflowNode{}).Error
+		if err != nil {
+			return
+		}
+	}
+	nodes, err := s.GetWorkflowNodesByIds(nodeIds)
+	if err != nil {
+		return
+	}
+
+	lines := make([]models.SysWorkflowLine, 0)
+	count := len(nodeIds)
+	endPtr := true
+	for i, item := range lineNodeIds {
+		// 寻找当前level的所有节点
+		currentNodes := make([]models.SysWorkflowNode, 0)
+		for j, id := range item {
+			for _, node := range nodes {
+				// 所有节点必须属于同一流程号
+				if node.FlowId != oldFlow.Id {
+					return fmt.Errorf("第%d级第%d个节点所属流程[%s]与其他节点不一致", i+1, j+1, oldFlow.Name)
+				}
+				if node.Id == id {
+					currentNodes = append(currentNodes, node)
+				}
+			}
+		}
+		// 构造流程线
+		var line models.SysWorkflowLine
+		needCreate := false
+		if i < len(oldLines) {
+			line = oldLines[i]
+		} else {
+			line.FlowId = oldFlow.Id
+			needCreate = true
+		}
+		// 替换节点
+		line.Nodes = currentNodes
+		// 排序, 从1开始
+		line.Sort = uint(i + 1)
+		// 结束标识
+		if i == count-1 {
+			line.End = &endPtr
+		}
+		if needCreate {
+			// gorm 1.x不支持批量插入, 这里单条插入
+			err = s.tx.Create(&line).Error
+		} else {
+			err = s.tx.Model(&line).Update(&line).Error
+		}
+		if err != nil {
+			return
+		}
 		lines = append(lines, line)
 	}
 	return

@@ -32,3 +32,12 @@ type WorkflowListResponseStruct struct {
 	Creator           string           `json:"creator"`
 	CreatedAt         models.LocalTime `json:"createdAt"`
 }
+
+// 流水线信息响应, 字段含义见models.WorkflowLine
+type WorkflowLineListResponseStruct struct {
+	Id     uint                     `json:"id"`
+	FlowId uint                     `json:"flowId"`
+	Sort   uint                     `json:"sort"`
+	End    *bool                    `json:"end"`
+	Nodes  []models.SysWorkflowNode `json:"nodes"`
+}

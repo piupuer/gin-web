@@ -35,26 +35,23 @@ func TestMysqlService_CreateWorkflowNode(t *testing.T) {
 	tests.InitTestEnv()
 
 	s := New(nil)
-	var req1 request.CreateWorkflowNodeRequestStruct
+	var req1 request.UpdateWorkflowNodeRequestStruct
 	req1.FlowId = 1
 	req1.RoleId = 1
 	req1.Name = "主管审批"
 	req1.Creator = "系统"
-	req1.Desc = "主管[李四]审批请假单"
 	s.CreateWorkflowNode(&req1)
-	var req2 request.CreateWorkflowNodeRequestStruct
+	var req2 request.UpdateWorkflowNodeRequestStruct
 	req2.FlowId = 1
 	req2.RoleId = 2
 	req2.Name = "总经理审批"
 	req2.Creator = "系统"
-	req2.Desc = "总经理[张三]审批请假单"
 	s.CreateWorkflowNode(&req2)
-	var req3 request.CreateWorkflowNodeRequestStruct
+	var req3 request.UpdateWorkflowNodeRequestStruct
 	req3.FlowId = 1
 	req3.RoleId = 3
 	req3.Name = "董事长审批"
 	req3.Creator = "系统"
-	req3.Desc = "董事长[管理员]审批请假单"
 	s.CreateWorkflowNode(&req3)
 }
 
@@ -193,7 +190,6 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管1审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node1)
 	var node2 = models.SysWorkflowNode{
@@ -201,7 +197,6 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管2审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node2)
 	var node3 = models.SysWorkflowNode{
@@ -209,7 +204,6 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理1审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node3)
 	var node4 = models.SysWorkflowNode{
@@ -217,7 +211,6 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理2审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node4)
 	var node5 = models.SysWorkflowNode{
@@ -225,7 +218,6 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理3审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node5)
 	var node6 = models.SysWorkflowNode{
@@ -233,7 +225,6 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		RoleId:  role3.Id,
 		Name:    testName + "董事长审批",
 		Creator: "系统",
-		Desc:    "3级审批",
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
@@ -461,7 +452,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		},
 		Name:    testName + "主管1审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node1)
 	var node2 = models.SysWorkflowNode{
@@ -472,7 +462,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		},
 		Name:    testName + "主管2审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node2)
 	var node3 = models.SysWorkflowNode{
@@ -482,7 +471,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		},
 		Name:    testName + "总经理1审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node3)
 	var node4 = models.SysWorkflowNode{
@@ -492,7 +480,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		},
 		Name:    testName + "总经理2审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node4)
 	var node5 = models.SysWorkflowNode{
@@ -502,7 +489,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		},
 		Name:    testName + "总经理3审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node5)
 	var node6 = models.SysWorkflowNode{
@@ -513,7 +499,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		},
 		Name:    testName + "董事长审批",
 		Creator: "系统",
-		Desc:    "3级审批",
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
@@ -928,7 +913,6 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管1审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node1)
 	var node2 = models.SysWorkflowNode{
@@ -936,7 +920,6 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管2审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node2)
 	var node3 = models.SysWorkflowNode{
@@ -944,7 +927,6 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理1审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node3)
 	var node4 = models.SysWorkflowNode{
@@ -952,7 +934,6 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理2审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node4)
 	var node5 = models.SysWorkflowNode{
@@ -960,7 +941,6 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理3审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node5)
 	var node6 = models.SysWorkflowNode{
@@ -968,7 +948,6 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		RoleId:  role3.Id,
 		Name:    testName + "董事长审批",
 		Creator: "系统",
-		Desc:    "3级审批",
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
@@ -1207,7 +1186,6 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管1审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node1)
 	var node2 = models.SysWorkflowNode{
@@ -1215,7 +1193,6 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管2审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node2)
 	var node3 = models.SysWorkflowNode{
@@ -1223,7 +1200,6 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理1审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node3)
 	var node4 = models.SysWorkflowNode{
@@ -1231,7 +1207,6 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理2审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node4)
 	var node5 = models.SysWorkflowNode{
@@ -1239,7 +1214,6 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理3审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node5)
 	var node6 = models.SysWorkflowNode{
@@ -1247,7 +1221,6 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		RoleId:  role3.Id,
 		Name:    testName + "董事长审批",
 		Creator: "系统",
-		Desc:    "3级审批",
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
@@ -1484,7 +1457,6 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管1审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node1)
 	var node2 = models.SysWorkflowNode{
@@ -1492,7 +1464,6 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管2审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node2)
 	var node3 = models.SysWorkflowNode{
@@ -1500,7 +1471,6 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理1审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node3)
 	var node4 = models.SysWorkflowNode{
@@ -1508,7 +1478,6 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理2审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node4)
 	var node5 = models.SysWorkflowNode{
@@ -1516,7 +1485,6 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理3审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node5)
 	var node6 = models.SysWorkflowNode{
@@ -1524,7 +1492,6 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		RoleId:  role3.Id,
 		Name:    testName + "董事长审批",
 		Creator: "系统",
-		Desc:    "3级审批",
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
@@ -1768,7 +1735,6 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管1审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node1)
 	var node2 = models.SysWorkflowNode{
@@ -1776,7 +1742,6 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管2审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node2)
 	var node3 = models.SysWorkflowNode{
@@ -1784,7 +1749,6 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理1审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node3)
 	var node4 = models.SysWorkflowNode{
@@ -1792,7 +1756,6 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理2审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node4)
 	var node5 = models.SysWorkflowNode{
@@ -1800,7 +1763,6 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理3审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node5)
 	var node6 = models.SysWorkflowNode{
@@ -1808,7 +1770,6 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		RoleId:  role3.Id,
 		Name:    testName + "董事长审批",
 		Creator: "系统",
-		Desc:    "3级审批",
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
@@ -1999,7 +1960,6 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管1审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node1)
 	var node2 = models.SysWorkflowNode{
@@ -2007,7 +1967,6 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		RoleId:  role1.Id,
 		Name:    testName + "主管2审批",
 		Creator: "系统",
-		Desc:    "1级审批",
 	}
 	s.tx.Create(&node2)
 	var node3 = models.SysWorkflowNode{
@@ -2015,7 +1974,6 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理1审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node3)
 	var node4 = models.SysWorkflowNode{
@@ -2023,7 +1981,6 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理2审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node4)
 	var node5 = models.SysWorkflowNode{
@@ -2031,7 +1988,6 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		RoleId:  role2.Id,
 		Name:    testName + "总经理3审批",
 		Creator: "系统",
-		Desc:    "2级审批",
 	}
 	s.tx.Create(&node5)
 	var node6 = models.SysWorkflowNode{
@@ -2039,7 +1995,6 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		RoleId:  role3.Id,
 		Name:    testName + "董事长审批",
 		Creator: "系统",
-		Desc:    "3级审批",
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长

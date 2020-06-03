@@ -17,6 +17,12 @@ type WorkflowListRequestStruct struct {
 	response.PageInfo        // 分页参数
 }
 
+// 获取流水线结构体
+type WorkflowLineListRequestStruct struct {
+	FlowId            uint `json:"flowId" form:"flowId"`
+	response.PageInfo      // 分页参数
+}
+
 // 创建流程结构体
 type CreateWorkflowRequestStruct struct {
 	Category          uint   `json:"category"`
@@ -35,21 +41,42 @@ func (s CreateWorkflowRequestStruct) FieldTrans() map[string]string {
 	return m
 }
 
-// 创建流程节点结构体
-type CreateWorkflowNodeRequestStruct struct {
+// 更新流程节点结构体
+type UpdateWorkflowNodeRequestStruct struct {
+	Id      uint   `json:"id"`
 	FlowId  uint   `json:"flowId" validate:"required"`
-	RoleId  uint   `json:"roleId" validate:"required"`
+	RoleId  *uint  `json:"roleId"`
+	UserIds []uint `json:"userIds"`
 	Name    string `json:"name" validate:"required"`
-	Desc    string `json:"desc"`
-	Creator string `json:"creator"`
+	Edit    *bool  `json:"edit"`
+	Creator string `json:"-"`
 }
 
 // 翻译需要校验的字段名称
-func (s CreateWorkflowNodeRequestStruct) FieldTrans() map[string]string {
+func (s UpdateWorkflowNodeRequestStruct) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
+	m["Id"] = "节点"
 	m["FlowId"] = "流程"
-	m["RoleId"] = "审批人角色"
+	m["RoleId"] = "审批人所属角色"
+	m["UserIds"] = "审批人"
 	m["Name"] = "节点名称"
+	m["Edit"] = "编辑权限"
+	return m
+}
+
+// 更新流水线结构体
+type UpdateWorkflowLineRequestStruct struct {
+	FlowId  uint                              `json:"flowId" validate:"required"`
+	Create  []UpdateWorkflowNodeRequestStruct `json:"create"` // 需要新增的节点编号集合
+	Update  []UpdateWorkflowNodeRequestStruct `json:"update"` // 需要新增的节点编号集合
+	Delete  []UpdateWorkflowNodeRequestStruct `json:"delete"` // 需要删除的节点编号集合
+	Creator string                            `json:"creator"`
+}
+
+// 翻译需要校验的字段名称
+func (s UpdateWorkflowLineRequestStruct) FieldTrans() map[string]string {
+	m := make(map[string]string, 0)
+	m["FlowId"] = "流程号"
 	return m
 }
 

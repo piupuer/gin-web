@@ -591,6 +591,26 @@ func InitData() {
 			Desc:     "批量删除工作流",
 			Creator:  creator,
 		},
+		{
+			Model: models.Model{
+				Id: 31,
+			},
+			Method:   "GET",
+			Path:     "/v1/workflow/line/list",
+			Category: "workflow",
+			Desc:     "获取流水线列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 32,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/workflow/line/update",
+			Category: "workflow",
+			Desc:     "更新流水线",
+			Creator:  creator,
+		},
 	}
 	for _, api := range apis {
 		oldApi := models.SysApi{}

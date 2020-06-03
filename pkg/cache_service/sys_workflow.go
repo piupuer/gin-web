@@ -57,3 +57,103 @@ func (s *RedisService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 	utils.Struct2StructByJson(res, &list)
 	return list, err
 }
+
+// 获取所有流水线
+func (s *RedisService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
+	if !global.Conf.System.UseRedis {
+		// 不使用redis
+		return s.mysql.GetWorkflowLines(req)
+	}
+	var err error
+	list := make([]models.SysWorkflowLine, 0)
+	// 查询接口表所有缓存
+	jsonWorkflowLines := s.GetListFromCache(nil, new(models.SysWorkflowLine).TableName())
+	query := s.JsonQuery().FromString(jsonWorkflowLines)
+	if req.FlowId > 0 {
+		// redis存的json转换为int, 因此这里转一下类型
+		query = query.Where("flowId", "=", int(req.FlowId))
+	}
+
+	// 查询条数
+	req.PageInfo.Total = uint(query.Count())
+	var res interface{}
+	if req.PageInfo.NoPagination {
+		// 不使用分页
+		res = query.Get()
+	} else {
+		// 获取分页参数
+		limit, offset := req.GetLimit()
+		res = query.Limit(int(limit)).Offset(int(offset)).Get()
+	}
+	// 转换为结构体
+	utils.Struct2StructByJson(res, &list)
+	// 查询所有节点
+	nodeList := make([]models.SysWorkflowNode, 0)
+	jsonWorkflowNodes := s.GetListFromCache(nil, new(models.SysWorkflowNode).TableName())
+	nodeRes := s.JsonQuery().FromString(jsonWorkflowNodes).Get()
+	utils.Struct2StructByJson(nodeRes, &nodeList)
+	// 查询所有关联关系
+	relationList := make([]models.RelationWorkflowLineNode, 0)
+	// 查询所有节点
+	jsonWorkflowRelations := s.GetListFromCache(nil, new(models.RelationWorkflowLineNode).TableName())
+	relationRes := s.JsonQuery().FromString(jsonWorkflowRelations).Get()
+	utils.Struct2StructByJson(relationRes, &relationList)
+	for i, line := range list {
+		list[i].Nodes = s.getWorkflowNodesByLineId(line.Id)
+	}
+	return list, err
+}
+
+// 获取所有节点(根据流水线编号)
+func (s *RedisService) getWorkflowNodesByLineId(lineId uint) []models.SysWorkflowNode {
+	// 查询所有节点
+	nodeList := make([]models.SysWorkflowNode, 0)
+	jsonWorkflowNodes := s.GetListFromCache(nil, new(models.SysWorkflowNode).TableName())
+	nodeRes := s.JsonQuery().FromString(jsonWorkflowNodes).Get()
+	utils.Struct2StructByJson(nodeRes, &nodeList)
+	// 查询所有关联关系
+	relationList := make([]models.RelationWorkflowLineNode, 0)
+	// 查询所有节点
+	jsonWorkflowRelations := s.GetListFromCache(nil, new(models.RelationWorkflowLineNode).TableName())
+	relationRes := s.JsonQuery().FromString(jsonWorkflowRelations).Get()
+	utils.Struct2StructByJson(relationRes, &relationList)
+	nodes := make([]models.SysWorkflowNode, 0)
+	for _, relation := range relationList {
+		if lineId == relation.SysWorkflowLineId {
+			for _, node := range nodeList {
+				if node.Id == relation.SysWorkflowNodeId {
+					node.Users = s.getWorkflowUsersByNodeId(node.Id)
+					nodes = append(nodes, node)
+					break
+				}
+			}
+			break
+		}
+	}
+	return nodes
+}
+
+// 获取所有用户(根据节点编号)
+func (s *RedisService) getWorkflowUsersByNodeId(nodeId uint) []models.SysUser {
+	// 查询所有用户
+	userList := make([]models.SysUser, 0)
+	jsonWorkflowUsers := s.GetListFromCache(nil, new(models.SysUser).TableName())
+	userRes := s.JsonQuery().FromString(jsonWorkflowUsers).Get()
+	utils.Struct2StructByJson(userRes, &userList)
+	// 查询所有关联关系
+	relationList := make([]models.RelationUserWorkflowNode, 0)
+	// 查询所有节点
+	jsonWorkflowRelations := s.GetListFromCache(nil, new(models.RelationUserWorkflowNode).TableName())
+	relationRes := s.JsonQuery().FromString(jsonWorkflowRelations).Get()
+	utils.Struct2StructByJson(relationRes, &relationList)
+	users := make([]models.SysUser, 0)
+	for _, relation := range relationList {
+		for _, user := range userList {
+			if nodeId == relation.SysWorkflowNodeId && user.Id == relation.SysUserId {
+				users = append(users, user)
+				break
+			}
+		}
+	}
+	return users
+}

@@ -78,6 +78,14 @@ func (s *MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	return user, err
 }
 
+// 获取多个用户
+func (s *MysqlService) GetUsersByIds(ids []uint) ([]models.SysUser, error) {
+	var users []models.SysUser
+	var err error
+	err = s.tx.Preload("Role").Where("id IN (?)", ids).Find(&users).Error
+	return users, err
+}
+
 // 创建用户
 func (s *MysqlService) CreateUser(req *request.CreateUserRequestStruct) (err error) {
 	var user models.SysUser
