@@ -45,8 +45,10 @@
   - 角色管理
   - 用户管理
   - 接口管理
-  - 工作流管理(后端接口基本完成, 等前端页面)
-- 测试用例
+  - 工作流管理
+- 工作流测试(开发中, 主要以请假流程提交审批为例子)
+  - 待审批列表
+  - 提交请假审批单
 
 ## 在线演示
 
@@ -90,6 +92,8 @@ go run main.go
 
 - 项目地址: [gin-web-vue](https://github.com/piupuer/gin-web-vue)
 - 实现方式: Typescript(为什么使用它, JS的弱类型带来的问题实在不想再吐槽, TS提高效率, 反正笔者作为一枚后端用起来很舒服~)
+
+## [TODO](https://github.com/piupuer/gin-web/blob/master/TODO.md)
 
 ## 特别感谢
 
