@@ -94,26 +94,16 @@ func (m RelationUserWorkflowNode) TableName() string {
 // 流程流水线
 type SysWorkflowLine struct {
 	Model
-	FlowId uint              `gorm:"comment:'流程编号'" json:"flowId"`
-	Flow   SysWorkflow       `gorm:"foreignkey:FlowId" json:"flow"`
-	Sort   uint              `gorm:"comment:'排序'" json:"sort"`
-	End    *bool             `gorm:"default:0;comment:'是否到达末尾'" json:"end"`
-	Nodes  []SysWorkflowNode `gorm:"many2many:relation_workflow_line_node;comment:'审批节点列表(可能同一节点需多人无序审批)'" json:"nodes"`
+	FlowId uint            `gorm:"comment:'流程编号'" json:"flowId"`
+	Flow   SysWorkflow     `gorm:"foreignkey:FlowId" json:"flow"`
+	Sort   uint            `gorm:"comment:'排序'" json:"sort"`
+	End    *bool           `gorm:"default:0;comment:'是否到达末尾'" json:"end"`
+	NodeId uint            `gorm:"comment:'节点编号'" json:"nodeId"`
+	Node   SysWorkflowNode `gorm:"foreignkey:NodeId" json:"node"`
 }
 
 func (m SysWorkflowLine) TableName() string {
 	return m.Model.TableName("sys_workflow_line")
-}
-
-// 流水线与节点多对多关系
-type RelationWorkflowLineNode struct {
-	SysWorkflowLineId uint `json:"sysWorkflowLineId"`
-	SysWorkflowNodeId uint `json:"sysWorkflowNodeId"`
-}
-
-func (m RelationWorkflowLineNode) TableName() string {
-	// 多对多关系表在tag中写死, 不能加自定义表前缀
-	return "relation_workflow_line_node"
 }
 
 // 流程日志: 任何一种工作流程都会关联到某一张表, 需要targetId

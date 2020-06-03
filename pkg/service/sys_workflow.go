@@ -63,7 +63,7 @@ func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStru
 	}
 
 	// 查询条数
-	err = query.Preload("Nodes").Find(&list).Count(&req.PageInfo.Total).Error
+	err = query.Preload("Node").Find(&list).Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
@@ -115,10 +115,10 @@ func (s *MysqlService) GetWorkflowApprovingList(flowId uint, targetId uint, appr
 	// 查询日志
 	err = s.tx.
 		Preload("CurrentLine").
-		Preload("CurrentLine.Nodes").
-		Preload("CurrentLine.Nodes.Users").
-		Preload("CurrentLine.Nodes.Role").
-		Preload("CurrentLine.Nodes.Role.Users").
+		Preload("CurrentLine.Node").
+		Preload("CurrentLine.Node.Users").
+		Preload("CurrentLine.Node.Role").
+		Preload("CurrentLine.Node.Role.Users").
 		Where(&models.SysWorkflowLog{
 			FlowId:   flowId,   // 流程号一致
 			TargetId: targetId, // 目标一致
@@ -131,7 +131,7 @@ func (s *MysqlService) GetWorkflowApprovingList(flowId uint, targetId uint, appr
 
 	for _, log := range logs {
 		// 获取当前待审批人
-		userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Nodes)
+		userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Node)
 		// 包含当前审批人
 		if utils.ContainsUint(userIds, approval.Id) {
 			list = append(list, log)
@@ -147,19 +147,22 @@ func (s *MysqlService) GetWorkflowNextApprovingUsers(flowId uint, targetId uint)
 	users := make([]models.SysUser, 0)
 	err := s.tx.
 		Preload("CurrentLine").
-		Preload("CurrentLine.Nodes").
-		Preload("CurrentLine.Nodes.Users").
-		Preload("CurrentLine.Nodes.Role").
-		Preload("CurrentLine.Nodes.Role.Users").
+		Preload("CurrentLine.Node").
+		Preload("CurrentLine.Node.Users").
+		Preload("CurrentLine.Node.Role").
+		Preload("CurrentLine.Node.Role.Users").
 		Where(&models.SysWorkflowLog{
 			FlowId:   flowId,   // 流程号一致
 			TargetId: targetId, // 目标一致
 		}).Where(
 		"status = ?", models.SysWorkflowLogStateSubmit, // 状态已提交
 	).First(&log).Error
+	if err != nil {
+		return users, err
+	}
 
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Nodes)
+	userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Node)
 	err = s.tx.Where("id IN (?)", userIds).Find(&users).Error
 	return users, err
 }
@@ -194,7 +197,7 @@ func (s *MysqlService) GetPrevWorkflowLineBySort(flowId uint, sort uint) (models
 	if sort <= 0 {
 		return line, gorm.ErrRecordNotFound
 	}
-	err := s.tx.Preload("Nodes").Preload("Nodes.Users").Where(&models.SysWorkflowLine{
+	err := s.tx.Preload("Node").Preload("Node.Users").Where(&models.SysWorkflowLine{
 		FlowId: flowId,
 		Sort:   sort,
 	}).First(&line).Error
@@ -216,7 +219,7 @@ func (s *MysqlService) CreateWorkflow(req *request.CreateWorkflowRequestStruct) 
 func (s *MysqlService) GetWorkflowNodesByIds(ids []uint) ([]models.SysWorkflowNode, error) {
 	var nodes []models.SysWorkflowNode
 	var err error
-	err = s.tx.Where("id IN (?)", ids).Find(&nodes).Error
+	err = s.tx.Preload("Users").Where("id IN (?)", ids).Find(&nodes).Error
 	return nodes, err
 }
 
@@ -240,77 +243,6 @@ func (s *MysqlService) CreateWorkflowNode(req *request.UpdateWorkflowNodeRequest
 	return
 }
 
-// 创建流程流水线, 传入多个节点, 二维数组, 外层表示审批层级(顺序排列), 内层表示同级存在多个子节点
-func (s *MysqlService) CreateWorkflowLine(nodeIds [][]uint) (err error) {
-	// 拆分所有id
-	ids := make([]uint, 0)
-	for i, item := range nodeIds {
-		if len(item) == 0 {
-			return fmt.Errorf("第%d个节点为空", i)
-		}
-		for _, id := range item {
-			if !utils.ContainsUint(ids, id) {
-				ids = append(ids, id)
-			}
-		}
-	}
-	if len(ids) == 0 {
-		return fmt.Errorf("节点至少有一个")
-	}
-	// 查询所有节点明细
-	nodes := make([]models.SysWorkflowNode, 0)
-	err = s.tx.Preload("Flow").Where("id IN (?)", ids).Find(&nodes).Error
-	if err != nil {
-		return
-	}
-	if len(nodes) == 0 {
-		return gorm.ErrRecordNotFound
-	}
-	flowId := nodes[0].FlowId
-	flow := nodes[0].Flow
-	// 一个流程只能有一条线
-	var oldLine models.SysWorkflowLine
-	oldLine.FlowId = flowId
-	notFound := s.tx.Where(&oldLine).First(&oldLine).RecordNotFound()
-	if !notFound {
-		return fmt.Errorf("流程%s已存在一条流水线, 无法再创建新的, flowId=%d, line.id=%d", flow.Name, flowId, oldLine.Id)
-	}
-	lines := make([]models.SysWorkflowLine, 0)
-	count := len(nodeIds)
-	endPtr := true
-	for i, item := range nodeIds {
-		// 寻找当前level的所有节点
-		currentNodes := make([]models.SysWorkflowNode, 0)
-		for j, id := range item {
-			for _, node := range nodes {
-				// 所有节点必须属于同一流程号
-				if node.FlowId != flowId {
-					return fmt.Errorf("第%d级第%d个节点所属流程[%s]与其他节点不一致", i+1, j+1, flow.Name)
-				}
-				if node.Id == id {
-					currentNodes = append(currentNodes, node)
-				}
-			}
-		}
-		// 构造流程线
-		var line models.SysWorkflowLine
-		// 流程号
-		line.FlowId = flowId
-		// 节点
-		line.Nodes = currentNodes
-		// 排序, 从1开始
-		line.Sort = uint(i + 1)
-		// 结束标识
-		if i == count-1 {
-			line.End = &endPtr
-		}
-		// gorm 1.x不支持批量插入, 这里单条插入
-		s.tx.Create(&line)
-		lines = append(lines, line)
-	}
-	return
-}
-
 // 更新流程流水线
 func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLineRequestStruct) (err error) {
 	// 查询流程以及流水线
@@ -320,14 +252,14 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 	if noFlow {
 		return fmt.Errorf("流程不存在")
 	}
-	err = s.tx.Where(&models.SysWorkflowLine{FlowId: req.FlowId}).First(&oldLines).Error
+	err = s.tx.Where(&models.SysWorkflowLine{FlowId: req.FlowId}).Find(&oldLines).Error
 	if err != nil {
 		return
 	}
 	// 查询增改的所有用户/节点
 	userIds := make([]uint, 0)
-	for _, v1 := range req.Create {
-		for _, userId := range v1.UserIds {
+	for _, item := range req.Create {
+		for _, userId := range item.UserIds {
 			if userId > 0 && !utils.ContainsUint(userIds, userId) {
 				userIds = append(userIds, userId)
 			}
@@ -345,44 +277,44 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 		return
 	}
 
+	// 获取历史节点
 	nodeIds := make([]uint, 0)
-	lineNodeIds := make([][]uint, 0)
-	// 创建节点
-	for _, v1 := range req.Create {
-		var node models.SysWorkflowNode
-		utils.Struct2StructByJson(req, &node)
-		// 获取用户
-		us := make([]models.SysUser, 0)
-		if len(v1.UserIds) > 0 {
-			for _, userId := range v1.UserIds {
-				for _, user := range users {
-					if userId == user.Id {
-						us = append(us, user)
-						break
-					}
-				}
-			}
+	for _, line := range oldLines {
+		if line.NodeId > 0 && !utils.ContainsUint(nodeIds, line.NodeId) {
+			nodeIds = append(nodeIds, line.NodeId)
 		}
-		node.Users = us
-		// 创建数据
-		err = s.tx.Create(&node).Error
+	}
+	// 删除/更新/新增需要有序, 否则可能会打破流水线顺序
+	// 1. 删除节点
+	for _, item := range req.Delete {
+		// 删除节点
+		err = s.tx.Where("id = ?", item.Id).Delete(models.SysWorkflowNode{}).Error
 		if err != nil {
 			return
 		}
-		// 保留id
-		ids := make([]uint, 0)
-		ids = append(ids, node.Id)
-		nodeIds = append(nodeIds, node.Id)
-		lineNodeIds = append(lineNodeIds, ids)
+		// 删除流水线
+		err = s.tx.Where("node_id = ?", item.Id).Delete(models.SysWorkflowLine{}).Error
+		if err != nil {
+			return
+		}
+		// 删除节点
+		deleteIndex := utils.ContainsUintIndex(nodeIds, item.Id)
+		if deleteIndex > -1 {
+			if deleteIndex < len(nodeIds)-1 {
+				nodeIds = append(nodeIds[:deleteIndex], nodeIds[deleteIndex+1:]...)
+			} else {
+				nodeIds = append(nodeIds[:deleteIndex])
+			}
+		}
 	}
-	// 更新节点
-	for _, v1 := range req.Update {
+	// 2. 更新节点
+	for _, item := range req.Update {
 		var node models.SysWorkflowNode
-		utils.Struct2StructByJson(v1, &node)
+		utils.Struct2StructByJson(item, &node)
 		// 获取用户
 		us := make([]models.SysUser, 0)
-		if len(v1.UserIds) > 0 {
-			for _, userId := range v1.UserIds {
+		if len(item.UserIds) > 0 {
+			for _, userId := range item.UserIds {
 				for _, user := range users {
 					if userId == user.Id {
 						us = append(us, user)
@@ -392,28 +324,43 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 			}
 		}
 		query := s.tx.Model(&node)
-		if v1.RoleId != nil {
+		if item.RoleId != nil {
 			// 需要强制更新roleId
-			query = query.Update("role_id", v1.RoleId)
+			query = query.Update("role_id", item.RoleId)
 		}
 		// 更新数据, 替换users
 		err = query.Update(&node).Association("Users").Replace(&us).Error
 		if err != nil {
 			return
 		}
-		// 保留id
-		ids := make([]uint, 0)
-		ids = append(ids, node.Id)
-		nodeIds = append(nodeIds, node.Id)
-		lineNodeIds = append(lineNodeIds, ids)
 	}
-	// 删除节点
-	for _, item := range req.Delete {
+	// 2. 创建节点
+	for _, item := range req.Create {
+		var node models.SysWorkflowNode
+		utils.Struct2StructByJson(item, &node)
+		// 获取用户
+		us := make([]models.SysUser, 0)
+		if len(item.UserIds) > 0 {
+			for _, userId := range item.UserIds {
+				for _, user := range users {
+					if userId == user.Id {
+						us = append(us, user)
+						break
+					}
+				}
+			}
+		}
+		node.Users = us
+		// 设置flowId
+		node.FlowId = oldFlow.Id
+		node.Creator = req.Creator
 		// 创建数据
-		err = s.tx.Where("id = ?", item.Id).Delete(models.SysWorkflowNode{}).Error
+		err = s.tx.Create(&node).Error
 		if err != nil {
 			return
 		}
+		// 保留id
+		nodeIds = append(nodeIds, node.Id)
 	}
 	nodes, err := s.GetWorkflowNodesByIds(nodeIds)
 	if err != nil {
@@ -423,18 +370,17 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 	lines := make([]models.SysWorkflowLine, 0)
 	count := len(nodeIds)
 	endPtr := true
-	for i, item := range lineNodeIds {
-		// 寻找当前level的所有节点
-		currentNodes := make([]models.SysWorkflowNode, 0)
-		for j, id := range item {
-			for _, node := range nodes {
-				// 所有节点必须属于同一流程号
-				if node.FlowId != oldFlow.Id {
-					return fmt.Errorf("第%d级第%d个节点所属流程[%s]与其他节点不一致", i+1, j+1, oldFlow.Name)
-				}
-				if node.Id == id {
-					currentNodes = append(currentNodes, node)
-				}
+	for i, id := range nodeIds {
+		// 寻找当前level的节点
+		var currentNode models.SysWorkflowNode
+		// 所有节点必须属于同一流程号
+		for _, node := range nodes {
+			if node.FlowId != oldFlow.Id {
+				return fmt.Errorf("第%d级节点所属流程[%s]与其他节点不一致", i+1, oldFlow.Name)
+			}
+			if node.Id == id {
+				currentNode = node
+				break
 			}
 		}
 		// 构造流程线
@@ -447,7 +393,7 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 			needCreate = true
 		}
 		// 替换节点
-		line.Nodes = currentNodes
+		line.Node = currentNode
 		// 排序, 从1开始
 		line.Sort = uint(i + 1)
 		// 结束标识
@@ -480,10 +426,10 @@ func (s *MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequest
 	var lastLog models.SysWorkflowLog
 	notFound := s.tx.
 		Preload("CurrentLine").
-		Preload("CurrentLine.Nodes").
-		Preload("CurrentLine.Nodes.Users").
-		Preload("CurrentLine.Nodes.Role").
-		Preload("CurrentLine.Nodes.Role.Users").
+		Preload("CurrentLine.Node").
+		Preload("CurrentLine.Node.Users").
+		Preload("CurrentLine.Node.Role").
+		Preload("CurrentLine.Node.Role.Users").
 		Preload("Flow").
 		Where(&models.SysWorkflowLog{
 			TargetId: req.TargetId,
@@ -592,7 +538,7 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 			return err
 		}
 	}
-	if nextLine.Nodes == nil {
+	if nextLine.NodeId == 0 {
 		// 1. 下一节点为空
 		// 上一条没有被拒绝, 否则不允许自己通过
 		if *lastLog.Status != models.SysWorkflowLogStateDeny {
@@ -648,7 +594,7 @@ func (s *MysqlService) approval(req *request.WorkflowTransitionRequestStruct, ap
 			}
 		}
 		// 下一节点为空, 直接结束
-		if nextLine.Nodes == nil {
+		if nextLine.NodeId == 0 {
 			return s.end(req.ApprovalOpinion, approval, lastLog)
 		}
 		// 更新日志
@@ -753,14 +699,14 @@ func (s *MysqlService) newLog(status uint, lineId uint, lastLog models.SysWorkfl
 // 检查当前审批人是否有权限
 func (s *MysqlService) checkPermission(approvalId uint, lastLog models.SysWorkflowLog) bool {
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Nodes)
+	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Node)
 	return utils.ContainsUint(userIds, approvalId)
 }
 
 // 检查是否可以切换流水线到下一个(通过审批会使用)
 func (s *MysqlService) checkNextLineSort(approvalId uint, lastLog models.SysWorkflowLog) bool {
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Nodes)
+	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Node)
 	// 判断流程类别
 	switch lastLog.Flow.Category {
 	case models.SysWorkflowCategoryOnlyOneApproval:
@@ -768,7 +714,7 @@ func (s *MysqlService) checkNextLineSort(approvalId uint, lastLog models.SysWork
 		return utils.ContainsUint(userIds, approvalId)
 	case models.SysWorkflowCategoryAllApproval:
 		// 查询全部审批人数
-		allUserIds := s.getAllApprovalUsers(lastLog.CurrentLine.Nodes)
+		allUserIds := s.getAllApprovalUsers(lastLog.CurrentLine.Node)
 		// 查询历史审批人数
 		historyUserIds := s.getHistoryApprovalUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId)
 		// 需要全部人通过: 当前审批人在待审批列表中 且 历史审批人+当前审批人刚好等于全部审批人
@@ -778,9 +724,9 @@ func (s *MysqlService) checkNextLineSort(approvalId uint, lastLog models.SysWork
 }
 
 // 获取待审批人(当前节点)
-func (s *MysqlService) getApprovingUsers(flowId uint, targetId uint, currentLineId uint, currentNodes []models.SysWorkflowNode) []uint {
+func (s *MysqlService) getApprovingUsers(flowId uint, targetId uint, currentLineId uint, currentNode models.SysWorkflowNode) []uint {
 	userIds := make([]uint, 0)
-	allUserIds := s.getAllApprovalUsers(currentNodes)
+	allUserIds := s.getAllApprovalUsers(currentNode)
 	historyUserIds := s.getHistoryApprovalUsers(flowId, targetId, currentLineId)
 	for _, allUserId := range allUserIds {
 		// 不在历史列表中
@@ -822,19 +768,17 @@ func (s *MysqlService) getHistoryApprovalUsers(flowId uint, targetId uint, curre
 }
 
 // 获取全部审批人(当前节点)
-func (s *MysqlService) getAllApprovalUsers(currentNodes []models.SysWorkflowNode) []uint {
+func (s *MysqlService) getAllApprovalUsers(currentNode models.SysWorkflowNode) []uint {
 	userIds := make([]uint, 0)
-	for _, node := range currentNodes {
-		for _, user := range node.Users {
+	for _, user := range currentNode.Users {
+		if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
+			userIds = append(userIds, user.Id)
+		}
+	}
+	if currentNode.RoleId > 0 {
+		for _, user := range currentNode.Role.Users {
 			if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
 				userIds = append(userIds, user.Id)
-			}
-		}
-		if node.RoleId > 0 {
-			for _, user := range node.Role.Users {
-				if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
-					userIds = append(userIds, user.Id)
-				}
 			}
 		}
 	}

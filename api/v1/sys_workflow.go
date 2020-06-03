@@ -49,6 +49,16 @@ func GetWorkflowLines(c *gin.Context) {
 	// 转为ResponseStruct, 隐藏部分字段
 	var respStruct []response.WorkflowLineListResponseStruct
 	utils.Struct2StructByJson(workflowLines, &respStruct)
+	// 绑定流水线userIds
+	for i, line := range workflowLines {
+		userIds := make([]uint, 0)
+		if len(line.Node.Users) > 0 {
+			for _, user := range line.Node.Users {
+				userIds = append(userIds, user.Id)
+			}
+		}
+		respStruct[i].Node.UserIds = userIds
+	}
 	// 返回分页数据
 	var resp response.PageData
 	// 设置分页参数

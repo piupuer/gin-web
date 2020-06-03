@@ -34,36 +34,50 @@ func TestMysqlService_CreateWorkflow(t *testing.T) {
 func TestMysqlService_CreateWorkflowNode(t *testing.T) {
 	tests.InitTestEnv()
 
+	roleId1 := uint(1)
+	roleId2 := uint(2)
+	roleId3 := uint(3)
 	s := New(nil)
 	var req1 request.UpdateWorkflowNodeRequestStruct
 	req1.FlowId = 1
-	req1.RoleId = 1
+	req1.RoleId = &roleId1
 	req1.Name = "主管审批"
 	req1.Creator = "系统"
 	s.CreateWorkflowNode(&req1)
 	var req2 request.UpdateWorkflowNodeRequestStruct
 	req2.FlowId = 1
-	req2.RoleId = 2
+	req2.RoleId = &roleId2
 	req2.Name = "总经理审批"
 	req2.Creator = "系统"
 	s.CreateWorkflowNode(&req2)
 	var req3 request.UpdateWorkflowNodeRequestStruct
 	req3.FlowId = 1
-	req3.RoleId = 3
+	req3.RoleId = &roleId3
 	req3.Name = "董事长审批"
 	req3.Creator = "系统"
 	s.CreateWorkflowNode(&req3)
 }
 
-func TestMysqlService_CreateWorkflowLine(t *testing.T) {
+func TestMysqlService_UpdateWorkflowLineByNodes(t *testing.T) {
 	tests.InitTestEnv()
 
 	s := New(nil)
-	s.CreateWorkflowLine([][]uint{
-		{1, 3},
-		{2, 3},
-		{3},
-	})
+	req := request.UpdateWorkflowLineRequestStruct{
+		FlowId: 1,
+		Update: []request.UpdateWorkflowNodeRequestStruct{
+			{
+				Id: 1,
+			},
+			{
+				Id: 2,
+			},
+			{
+				Id: 3,
+			},
+		},
+	}
+	err := s.UpdateWorkflowLineByNodes(&req)
+	fmt.Println(err)
 }
 
 func TestMysqlService_WorkflowTransition(t *testing.T) {
@@ -228,24 +242,29 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	s.CreateWorkflowLine([][]uint{
-		{
-			node1.Id,
-			node2.Id,
+	req := request.UpdateWorkflowLineRequestStruct{
+		FlowId: flow.Id,
+		Update: []request.UpdateWorkflowNodeRequestStruct{
+			{
+				// 主管
+				Id: node1.Id,
+			},
+			{
+				// 总经理
+				Id: node4.Id,
+			},
+			{
+				// 董事长
+				Id: node6.Id,
+			},
 		},
-		{
-			node3.Id,
-			node4.Id,
-			node5.Id,
-		},
-		{
-			node6.Id,
-		},
-	})
+	}
+	err := s.UpdateWorkflowLineByNodes(&req)
+	fmt.Println(err)
 
 	// 7.构建审批单
 	// 提交一次
-	err := s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
+	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
@@ -502,24 +521,32 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	s.CreateWorkflowLine([][]uint{
-		{
-			node1.Id,
-			node2.Id,
+	req := request.UpdateWorkflowLineRequestStruct{
+		FlowId: flow.Id,
+		Update: []request.UpdateWorkflowNodeRequestStruct{
+			{
+				// 主管
+				Id:      node1.Id,
+				UserIds: getUserIds(node1),
+			},
+			{
+				// 总经理
+				Id:      node4.Id,
+				UserIds: getUserIds(node4),
+			},
+			{
+				// 董事长
+				Id:      node6.Id,
+				UserIds: getUserIds(node6),
+			},
 		},
-		{
-			node3.Id,
-			node4.Id,
-			node5.Id,
-		},
-		{
-			node6.Id,
-		},
-	})
+	}
+	err := s.UpdateWorkflowLineByNodes(&req)
+	fmt.Println(err)
 
 	// 7.构建审批单
 	// 提交一次
-	err := s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
+	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
@@ -951,24 +978,29 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	s.CreateWorkflowLine([][]uint{
-		{
-			node1.Id,
-			node2.Id,
+	req := request.UpdateWorkflowLineRequestStruct{
+		FlowId: flow.Id,
+		Update: []request.UpdateWorkflowNodeRequestStruct{
+			{
+				// 主管
+				Id: node1.Id,
+			},
+			{
+				// 总经理
+				Id: node4.Id,
+			},
+			{
+				// 董事长
+				Id: node6.Id,
+			},
 		},
-		{
-			node3.Id,
-			node4.Id,
-			node5.Id,
-		},
-		{
-			node6.Id,
-		},
-	})
+	}
+	err := s.UpdateWorkflowLineByNodes(&req)
+	fmt.Println(err)
 
 	// 7.构建审批单
 	// 提交一次
-	err := s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
+	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
@@ -1224,24 +1256,29 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	s.CreateWorkflowLine([][]uint{
-		{
-			node1.Id,
-			node2.Id,
+	req := request.UpdateWorkflowLineRequestStruct{
+		FlowId: flow.Id,
+		Update: []request.UpdateWorkflowNodeRequestStruct{
+			{
+				// 主管
+				Id: node1.Id,
+			},
+			{
+				// 总经理
+				Id: node4.Id,
+			},
+			{
+				// 董事长
+				Id: node6.Id,
+			},
 		},
-		{
-			node3.Id,
-			node4.Id,
-			node5.Id,
-		},
-		{
-			node6.Id,
-		},
-	})
+	}
+	err := s.UpdateWorkflowLineByNodes(&req)
+	fmt.Println(err)
 
 	// 7.构建审批单
 	// 提交一次
-	err := s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
+	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
@@ -1495,24 +1532,29 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	s.CreateWorkflowLine([][]uint{
-		{
-			node1.Id,
-			node2.Id,
+	req := request.UpdateWorkflowLineRequestStruct{
+		FlowId: flow.Id,
+		Update: []request.UpdateWorkflowNodeRequestStruct{
+			{
+				// 主管
+				Id: node1.Id,
+			},
+			{
+				// 总经理
+				Id: node4.Id,
+			},
+			{
+				// 董事长
+				Id: node6.Id,
+			},
 		},
-		{
-			node3.Id,
-			node4.Id,
-			node5.Id,
-		},
-		{
-			node6.Id,
-		},
-	})
+	}
+	err := s.UpdateWorkflowLineByNodes(&req)
+	fmt.Println(err)
 
 	// 7.构建审批单
 	// 提交一次
-	err := s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
+	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
@@ -1773,24 +1815,29 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	s.CreateWorkflowLine([][]uint{
-		{
-			node1.Id,
-			node2.Id,
+	req := request.UpdateWorkflowLineRequestStruct{
+		FlowId: flow.Id,
+		Update: []request.UpdateWorkflowNodeRequestStruct{
+			{
+				// 主管
+				Id: node1.Id,
+			},
+			{
+				// 总经理
+				Id: node4.Id,
+			},
+			{
+				// 董事长
+				Id: node6.Id,
+			},
 		},
-		{
-			node3.Id,
-			node4.Id,
-			node5.Id,
-		},
-		{
-			node6.Id,
-		},
-	})
+	}
+	err := s.UpdateWorkflowLineByNodes(&req)
+	fmt.Println(err)
 
 	// 7.构建审批单
 	// 提交一次
-	err := s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
+	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
@@ -1998,24 +2045,29 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 	}
 	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	s.CreateWorkflowLine([][]uint{
-		{
-			node1.Id,
-			node2.Id,
+	req := request.UpdateWorkflowLineRequestStruct{
+		FlowId: flow.Id,
+		Update: []request.UpdateWorkflowNodeRequestStruct{
+			{
+				// 主管
+				Id: node1.Id,
+			},
+			{
+				// 总经理
+				Id: node4.Id,
+			},
+			{
+				// 董事长
+				Id: node6.Id,
+			},
 		},
-		{
-			node3.Id,
-			node4.Id,
-			node5.Id,
-		},
-		{
-			node6.Id,
-		},
-	})
+	}
+	err := s.UpdateWorkflowLineByNodes(&req)
+	fmt.Println(err)
 
 	// 7.构建审批单
 	// 提交一次
-	err := s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
+	err = s.WorkflowTransition(&request.WorkflowTransitionRequestStruct{
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
@@ -2234,4 +2286,12 @@ func TestMysqlService_GetWorkflowLineLogs(t *testing.T) {
 		})
 	}
 	fmt.Println(logs, res, err)
+}
+
+func getUserIds(node models.SysWorkflowNode) []uint {
+	userIds := make([]uint, 0)
+	for _, user := range node.Users {
+		userIds = append(userIds, user.Id)
+	}
+	return userIds
 }

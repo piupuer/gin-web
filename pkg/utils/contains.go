@@ -55,3 +55,13 @@ func ContainsUint(arr []uint, item uint) bool {
 	}
 	return false
 }
+
+// 判断uint数组是否包含item元素, 返回index
+func ContainsUintIndex(arr []uint, item uint) int {
+	for i, v := range arr {
+		if v == item {
+			return i
+		}
+	}
+	return -1
+}
