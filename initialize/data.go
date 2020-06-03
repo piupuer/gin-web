@@ -3,8 +3,10 @@ package initialize
 import (
 	"gin-web/models"
 	"gin-web/pkg/global"
+	"gin-web/pkg/request"
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
+	uuid "github.com/satori/go.uuid"
 )
 
 // 初始化数据
@@ -13,6 +15,7 @@ func InitData() {
 	creator := "系统自动创建"
 	status := true
 	visible := true
+	edit := true
 	roles := []models.SysRole{
 		{
 			Model: models.Model{
@@ -638,6 +641,55 @@ func InitData() {
 					Method:  api.Method,
 				})
 			}
+		}
+	}
+
+	// 4. 初始化工作流
+	workflows := []models.SysWorkflow{
+		{
+			Model: models.Model{
+				Id: 1,
+			},
+			Uuid:     uuid.NewV4().String(),
+			Category: models.SysWorkflowTargetCategoryLeave,
+			Name:     "请假审批流程",
+			Desc:     "用于员工请假",
+			Creator:  creator,
+		},
+	}
+	for _, workflow := range workflows {
+		oldWorkflow := models.SysWorkflow{}
+		notFound := global.Mysql.Where("id = ?", workflow.Id).First(&oldWorkflow).RecordNotFound()
+		if notFound {
+			global.Mysql.Create(&workflow)
+			// 创建服务
+			s := service.New(nil)
+			// 设置张三和管理员审批
+			roleId := uint(3)
+			req := request.UpdateWorkflowLineRequestStruct{
+				FlowId: 1,
+				Create: []request.UpdateWorkflowNodeRequestStruct{
+					{
+						Id:     1,
+						FlowId: 1,
+						UserIds: []uint{
+							2,
+						},
+						Edit:    &edit,
+						Name:    "主管审批",
+						Creator: creator,
+					},
+					{
+						Id:      2,
+						FlowId:  1,
+						RoleId:  &roleId,
+						Edit:    &edit,
+						Name:    "总经理审批",
+						Creator: creator,
+					},
+				},
+			}
+			s.UpdateWorkflowLineByNodes(&req)
 		}
 	}
 }
