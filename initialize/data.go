@@ -240,6 +240,24 @@ func InitData() {
 				roles[2],
 			},
 		},
+		{
+			Model: models.Model{
+				Id: 11,
+			},
+			Name:      "leave",
+			Title:     "我的请假条",
+			Icon:      "skill",
+			Path:      "leave",
+			Component: "/test/leave",
+			Sort:      2,
+			Status:    &status,
+			Visible:   &visible,
+			ParentId:  3,
+			Creator:   creator,
+			Roles: []models.SysRole{
+				roles[2],
+			},
+		},
 	}
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
@@ -614,6 +632,46 @@ func InitData() {
 			Desc:     "更新流水线",
 			Creator:  creator,
 		},
+		{
+			Model: models.Model{
+				Id: 33,
+			},
+			Method:   "GET",
+			Path:     "/v1/leave/list",
+			Category: "menu",
+			Desc:     "获取请假单列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 34,
+			},
+			Method:   "POST",
+			Path:     "/v1/leave/create",
+			Category: "menu",
+			Desc:     "创建请假单",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 35,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/leave/update/:leaveId",
+			Category: "menu",
+			Desc:     "更新请假单",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 36,
+			},
+			Method:   "DELETE",
+			Path:     "/v1/leave/delete/batch",
+			Category: "menu",
+			Desc:     "批量删除请假单",
+			Creator:  creator,
+		},
 	}
 	for _, api := range apis {
 		oldApi := models.SysApi{}
@@ -644,7 +702,7 @@ func InitData() {
 		}
 	}
 
-	// 4. 初始化工作流
+	// 5. 初始化工作流
 	workflows := []models.SysWorkflow{
 		{
 			Model: models.Model{

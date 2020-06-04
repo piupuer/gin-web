@@ -49,7 +49,7 @@ type UpdateWorkflowNodeRequestStruct struct {
 	UserIds []uint `json:"userIds"`
 	Name    string `json:"name" validate:"required"`
 	Edit    *bool  `json:"edit"`
-	Creator string `json:"-"`
+	Creator string `json:"creator"`
 }
 
 // 翻译需要校验的字段名称
