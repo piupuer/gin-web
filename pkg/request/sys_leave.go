@@ -6,6 +6,7 @@ import (
 
 // 获取请假列表结构体
 type LeaveListRequestStruct struct {
+	UserId            uint   `json:"userId"`
 	Status            *uint  `json:"status" form:"status"`
 	ApprovalOpinion   string `json:"approvalOpinion" form:"approvalOpinion"`
 	Desc              string `json:"desc" form:"desc"`

@@ -117,8 +117,8 @@ type SysWorkflowLog struct {
 	Status          *uint           `gorm:"default:0;comment:'状态(0:提交 1:批准 2:拒绝 3:取消 4:重启 5:结束)'" json:"status"`
 	SubmitUserId    uint            `gorm:"comment:'提交人编号'" json:"submitUserId"`
 	SubmitUser      SysUser         `gorm:"foreignkey:SubmitUserId" json:"submitUser"`
-	ApprovalId      uint            `gorm:"comment:'审批人编号'" json:"approvalId"`
-	ApprovalUser    SysUser         `gorm:"foreignkey:ApprovalId" json:"approvalId"`
+	ApprovalUserId  uint            `gorm:"comment:'审批人编号'" json:"approvalUserId"`
+	ApprovalUser    SysUser         `gorm:"foreignkey:ApprovalUserId" json:"approvalUser"`
 	ApprovalOpinion string          `gorm:"comment:'审批意见'" json:"approvalOpinion"`
 }
 

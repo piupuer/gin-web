@@ -11,8 +11,8 @@ import (
 func InitLeaveRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
 	router := r.Group("leave").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
-		// 创建审批单相关
 		router.GET("/list", v1.GetLeaves)
+		router.GET("/approval/list/:leaveId", v1.GetLeaveApprovalLogs)
 		router.POST("/create", v1.CreateLeave)
 		router.PATCH("/update/:leaveId", v1.UpdateLeaveById)
 		router.DELETE("/delete/batch", v1.BatchDeleteLeaveByIds)

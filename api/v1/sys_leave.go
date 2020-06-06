@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
@@ -15,6 +16,9 @@ func GetLeaves(c *gin.Context) {
 	// 绑定参数
 	var req request.LeaveListRequestStruct
 	_ = c.Bind(&req)
+	// 获取当前登录用户
+	user := GetCurrentUser(c)
+	req.UserId = user.Id
 	// 创建服务
 	s := cache_service.New(c)
 	leaves, err := s.GetLeaves(&req)
@@ -25,6 +29,52 @@ func GetLeaves(c *gin.Context) {
 	// 转为ResponseStruct, 隐藏部分字段
 	var respStruct []response.LeaveListResponseStruct
 	utils.Struct2StructByJson(leaves, &respStruct)
+	// 返回分页数据
+	var resp response.PageData
+	// 设置分页参数
+	resp.PageInfo = req.PageInfo
+	// 设置数据列表
+	resp.List = respStruct
+	response.SuccessWithData(resp)
+}
+
+// 获取请假列表
+func GetLeaveApprovalLogs(c *gin.Context) {
+	// 绑定参数
+	var req request.LeaveListRequestStruct
+	_ = c.Bind(&req)
+	// 创建服务
+	s := cache_service.New(c)
+	// 获取path中的leaveId
+	leaveId := utils.Str2Uint(c.Param("leaveId"))
+	leaves, err := s.GetLeaveApprovalLogs(leaveId)
+	if err != nil {
+		response.FailWithMsg(err.Error())
+		return
+	}
+
+	// 将日志包装下
+	respStruct := make([]response.LeaveLogListResponseStruct, 0)
+	for _, log := range leaves {
+		respStruct = append(respStruct, response.LeaveLogListResponseStruct{
+			LeaveId: leaveId,
+			Log: response.WorkflowLogsListResponseStruct{
+				FlowName:              log.Flow.Name,
+				FlowUuid:              log.Flow.Uuid,
+				FlowCategoryStr:       models.SysWorkflowCategoryConst[log.Flow.Category],
+				FlowTargetCategoryStr: models.SysWorkflowTargetCategoryConst[log.Flow.TargetCategory],
+				Status:                log.Status,
+				StatusStr:             models.SysWorkflowLogStateConst[*log.Status],
+				SubmitUsername:        log.SubmitUser.Username,
+				SubmitUserNickname:    log.SubmitUser.Nickname,
+				ApprovalUsername:      log.ApprovalUser.Username,
+				ApprovalUserNickname:  log.ApprovalUser.Nickname,
+				ApprovalOpinion:       log.ApprovalOpinion,
+				CreatedAt:             log.Model.CreatedAt,
+				UpdatedAt:             log.Model.UpdatedAt,
+			},
+		})
+	}
 	// 返回分页数据
 	var resp response.PageData
 	// 设置分页参数

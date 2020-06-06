@@ -108,6 +108,74 @@ func (s *RedisService) GetWorkflowLines(req *request.WorkflowLineListRequestStru
 	return list, err
 }
 
+// 获取工作流(指定审批单类型)
+func (s *RedisService) GetWorkflowByTargetCategory(targetCategory uint) (models.SysWorkflow, error) {
+	var flow models.SysWorkflow
+	// 查询第一条记录即可
+	// id在JSONQ中以int存在
+	jsonWorkflows := s.GetListFromCache(nil, new(models.SysWorkflow).TableName())
+	res, err := JsonQueryFindOne(s.JsonQuery().FromString(jsonWorkflows).Where("targetCategory", "=", int(targetCategory)))
+	if err != nil {
+		return flow, err
+	}
+	utils.Struct2StructByJson(res, &flow)
+	return flow, err
+}
+
+// 查询审批日志(指定目标)
+func (s *RedisService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.SysWorkflowLog, error) {
+	if !global.Conf.System.UseRedis {
+		// 不使用redis
+		return s.mysql.GetWorkflowLogs(flowId, targetId)
+	}
+	var err error
+	// 查询所有用户
+	userList := make([]models.SysUser, 0)
+	jsonWorkflowUsers := s.GetListFromCache(nil, new(models.SysUser).TableName())
+	userRes := s.JsonQuery().FromString(jsonWorkflowUsers).Get()
+	utils.Struct2StructByJson(userRes, &userList)
+
+	// 查询所有工作流
+	workflowList := make([]models.SysWorkflow, 0)
+	jsonWorkflows := s.GetListFromCache(nil, new(models.SysWorkflow).TableName())
+	workflowRes := s.JsonQuery().FromString(jsonWorkflows).Get()
+	utils.Struct2StructByJson(workflowRes, &workflowList)
+
+	// 查询所有工作流日志
+	workflowLogList := make([]models.SysWorkflowLog, 0)
+	jsonWorkflowWorkflowLogs := s.GetListFromCache(nil, new(models.SysWorkflowLog).TableName())
+	workflowLogRes := s.JsonQuery().
+		FromString(jsonWorkflowWorkflowLogs).
+		// 流程号一致
+		Where("flowId", "=", int(flowId)).
+		// 目标一致
+		Where("targetId", "=", int(targetId)).
+		Get()
+	utils.Struct2StructByJson(workflowLogRes, &workflowLogList)
+
+	newLogs := make([]models.SysWorkflowLog, 0)
+	for _, workflowLog := range workflowLogList {
+		newLog := workflowLog
+		// 查找审批人/提交人
+		for _, user := range userList {
+			if workflowLog.ApprovalUserId == user.Id {
+				newLog.ApprovalUser = user
+			}
+			if workflowLog.SubmitUserId == user.Id {
+				newLog.SubmitUser = user
+			}
+		}
+		// 查找工作流
+		for _, flow := range workflowList {
+			if workflowLog.FlowId == flow.Id {
+				newLog.Flow = flow
+			}
+		}
+		newLogs = append(newLogs, newLog)
+	}
+	return newLogs, err
+}
+
 // 获取所有用户(根据节点编号)
 func (s *RedisService) getWorkflowUsersByNodeId(nodeId uint) []models.SysUser {
 	// 查询所有用户

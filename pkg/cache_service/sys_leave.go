@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// 获取所有请假
+// 获取所有请假(当前用户)
 func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.SysLeave, error) {
 	if !global.Conf.System.UseRedis {
 		// 不使用redis
@@ -19,6 +19,7 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	// 查询请假表所有缓存
 	jsonLeaves := s.GetListFromCache(nil, new(models.SysLeave).TableName())
 	query := s.JsonQuery().FromString(jsonLeaves)
+	query = query.Where("userId", "=", int(req.UserId))
 	if req.Status != nil {
 		// redis存的json转换为int, 因此这里转一下类型
 		query = query.Where("status", "=", int(*req.Status))
@@ -40,5 +41,22 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	}
 	// 转换为结构体
 	utils.Struct2StructByJson(res, &list)
+	return list, err
+}
+
+// 获取请假审批日志(指定请假编号)
+func (s *RedisService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowLog, error) {
+	if !global.Conf.System.UseRedis {
+		// 不使用redis
+		return s.mysql.GetLeaveApprovalLogs(leaveId)
+	}
+	list := make([]models.SysWorkflowLog, 0)
+	// 获取请假对应的工作流
+	flow, err := s.GetWorkflowByTargetCategory(models.SysWorkflowTargetCategoryLeave)
+	if err != nil {
+		return list, err
+	}
+	// 获取工作流日志
+	list, err = s.GetWorkflowLogs(flow.Id, leaveId)
 	return list, err
 }

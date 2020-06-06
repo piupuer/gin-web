@@ -12,6 +12,13 @@ import (
 	"strings"
 )
 
+// 获取工作流(指定审批单类型)
+func (s *MysqlService) GetWorkflowByTargetCategory(targetCategory uint) (models.SysWorkflow, error) {
+	var flow models.SysWorkflow
+	err := s.tx.Where("target_category = ?", targetCategory).First(&flow).Error
+	return flow, err
+}
+
 // 获取所有工作流
 func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]models.SysWorkflow, error) {
 	var err error
@@ -100,15 +107,15 @@ func (s *MysqlService) DeleteWorkflowByIds(ids []uint) (err error) {
 }
 
 // 查询待审批目标列表(指定用户)
-func (s *MysqlService) GetWorkflowApprovingList(flowId uint, targetId uint, approvalId uint) ([]models.SysWorkflowLog, error) {
+func (s *MysqlService) GetWorkflowApprovingList(flowId uint, targetId uint, approvalUserId uint) ([]models.SysWorkflowLog, error) {
 	// 查询需要审核的日志
 	logs := make([]models.SysWorkflowLog, 0)
 	list := make([]models.SysWorkflowLog, 0)
-	if approvalId == 0 {
-		return list, fmt.Errorf("用户不存在, approvalId=%d", approvalId)
+	if approvalUserId == 0 {
+		return list, fmt.Errorf("用户不存在, approvalUserId=%d", approvalUserId)
 	}
 	// 查询审批人
-	approval, err := s.GetUserById(approvalId)
+	approval, err := s.GetUserById(approvalUserId)
 	if err != nil {
 		return list, err
 	}
@@ -464,7 +471,7 @@ func (s *MysqlService) first(req *request.WorkflowTransitionRequestStruct) error
 	firstLog.Status = &approvalStatus
 	// 当前节点为开始节点
 	firstLog.SubmitUserId = submitUser.Id
-	firstLog.ApprovalId = submitUser.Id
+	firstLog.ApprovalUserId = submitUser.Id
 	approvalOpinion := req.ApprovalOpinion
 	if strings.TrimSpace(approvalOpinion) == "" {
 		approvalOpinion = "初次提交"
@@ -487,11 +494,11 @@ func (s *MysqlService) next(req *request.WorkflowTransitionRequestStruct, lastLo
 	if *lastLog.Status == models.SysWorkflowLogStateEnd {
 		return fmt.Errorf("流程已结束")
 	}
-	if req.ApprovalId == 0 {
-		return fmt.Errorf("审批人不存在, approvalId=%d", req.ApprovalId)
+	if req.ApprovalUserId == 0 {
+		return fmt.Errorf("审批人不存在, approvalUserId=%d", req.ApprovalUserId)
 	}
 	// 查询审批人是否存在
-	approval, err := s.GetUserById(req.ApprovalId)
+	approval, err := s.GetUserById(req.ApprovalUserId)
 	if err != nil {
 		return err
 	}
@@ -522,7 +529,7 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 		// 提交人再次重启
 		if *req.ApprovalStatus == models.SysWorkflowLogStateRestart {
 			// 从头开始创建新的
-			req.SubmitUserId = req.ApprovalId
+			req.SubmitUserId = req.ApprovalUserId
 			if strings.TrimSpace(req.ApprovalOpinion) == "" {
 				req.ApprovalOpinion = "提交人再次重启"
 			}
@@ -673,7 +680,7 @@ func (s *MysqlService) updateLog(status uint, approvalOpinion string, approval m
 	// 提交人
 	updateLog.SubmitUserId = lastLog.SubmitUserId
 	// 审批人以及意见
-	updateLog.ApprovalId = approval.Id
+	updateLog.ApprovalUserId = approval.Id
 	updateLog.ApprovalOpinion = approvalOpinion
 	err := s.tx.Table(updateLog.TableName()).Where("id = ?", lastLog.Id).Update(&updateLog).Error
 	return err
@@ -697,28 +704,28 @@ func (s *MysqlService) newLog(status uint, lineId uint, lastLog models.SysWorkfl
 }
 
 // 检查当前审批人是否有权限
-func (s *MysqlService) checkPermission(approvalId uint, lastLog models.SysWorkflowLog) bool {
+func (s *MysqlService) checkPermission(approvalUserId uint, lastLog models.SysWorkflowLog) bool {
 	// 获取当前待审批人
 	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Node)
-	return utils.ContainsUint(userIds, approvalId)
+	return utils.ContainsUint(userIds, approvalUserId)
 }
 
 // 检查是否可以切换流水线到下一个(通过审批会使用)
-func (s *MysqlService) checkNextLineSort(approvalId uint, lastLog models.SysWorkflowLog) bool {
+func (s *MysqlService) checkNextLineSort(approvalUserId uint, lastLog models.SysWorkflowLog) bool {
 	// 获取当前待审批人
 	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Node)
 	// 判断流程类别
 	switch lastLog.Flow.Category {
 	case models.SysWorkflowCategoryOnlyOneApproval:
 		// 只需要1人通过: 当前审批人在待审批列表中
-		return utils.ContainsUint(userIds, approvalId)
+		return utils.ContainsUint(userIds, approvalUserId)
 	case models.SysWorkflowCategoryAllApproval:
 		// 查询全部审批人数
 		allUserIds := s.getAllApprovalUsers(lastLog.CurrentLine.Node)
 		// 查询历史审批人数
 		historyUserIds := s.getHistoryApprovalUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId)
 		// 需要全部人通过: 当前审批人在待审批列表中 且 历史审批人+当前审批人刚好等于全部审批人
-		return utils.ContainsUint(userIds, approvalId) && len(historyUserIds) >= len(allUserIds)-1
+		return utils.ContainsUint(userIds, approvalUserId) && len(historyUserIds) >= len(allUserIds)-1
 	}
 	return false
 }
@@ -760,8 +767,8 @@ func (s *MysqlService) getHistoryApprovalUsers(flowId uint, targetId uint, curre
 			break
 		}
 		// 审批人为配置中的一人
-		if !utils.ContainsUint(historyUserIds, log.ApprovalId) {
-			historyUserIds = append(historyUserIds, log.ApprovalId)
+		if !utils.ContainsUint(historyUserIds, log.ApprovalUserId) {
+			historyUserIds = append(historyUserIds, log.ApprovalUserId)
 		}
 	}
 	return historyUserIds

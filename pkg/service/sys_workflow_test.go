@@ -288,7 +288,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -300,7 +300,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user7.Id,                              // 用户7审批
+		ApprovalUserId:  user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -312,7 +312,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user3.Id,                              // 用户3审批
+		ApprovalUserId:  user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次通过",
 		ApprovalStatus:  &approval,
 	})
@@ -324,7 +324,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -336,7 +336,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user9.Id,                              // 用户9审批
+		ApprovalUserId:  user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -582,7 +582,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -605,7 +605,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user4.Id,                              // 用户4审批
+		ApprovalUserId:  user4.Id,                              // 用户4审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -628,7 +628,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user1.Id,                              // 用户1审批
+		ApprovalUserId:  user1.Id,                              // 用户1审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -651,7 +651,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user3.Id,                              // 用户3审批
+		ApprovalUserId:  user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -675,7 +675,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user7.Id,                              // 用户7审批
+		ApprovalUserId:  user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -690,7 +690,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user3.Id,                              // 用户3审批
+		ApprovalUserId:  user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次通过",
 		ApprovalStatus:  &approval,
 	})
@@ -704,7 +704,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户4审批
+		ApprovalUserId:  user2.Id,                              // 用户4审批
 		ApprovalOpinion: "1级再次通过",
 		ApprovalStatus:  &approval,
 	})
@@ -718,7 +718,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user1.Id,                              // 用户4审批
+		ApprovalUserId:  user1.Id,                              // 用户4审批
 		ApprovalOpinion: "1级再次通过",
 		ApprovalStatus:  &approval,
 	})
@@ -732,7 +732,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user4.Id,                              // 用户4审批
+		ApprovalUserId:  user4.Id,                              // 用户4审批
 		ApprovalOpinion: "1级再次通过",
 		ApprovalStatus:  &approval,
 	})
@@ -747,7 +747,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user5.Id,                              // 用户5审批
+		ApprovalUserId:  user5.Id,                              // 用户5审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -761,7 +761,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -775,7 +775,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user7.Id,                              // 用户7审批
+		ApprovalUserId:  user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -790,7 +790,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user9.Id,                              // 用户9审批
+		ApprovalUserId:  user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -804,7 +804,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user8.Id,                              // 用户8审批
+		ApprovalUserId:  user8.Id,                              // 用户8审批
 		ApprovalOpinion: "3级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1024,7 +1024,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1036,7 +1036,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1048,7 +1048,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user9.Id,                              // 用户9审批
+		ApprovalUserId:  user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1060,7 +1060,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user5.Id,                              // 用户5审批
+		ApprovalUserId:  user5.Id,                              // 用户5审批
 		ApprovalOpinion: "2级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1072,7 +1072,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user1.Id,                              // 用户1审批
+		ApprovalUserId:  user1.Id,                              // 用户1审批
 		ApprovalOpinion: "1级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1084,7 +1084,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user3.Id,                              // 用户3审批
+		ApprovalUserId:  user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1292,7 +1292,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1304,7 +1304,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user7.Id,                              // 用户7审批
+		ApprovalUserId:  user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1316,7 +1316,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user3.Id,                              // 用户3审批
+		ApprovalUserId:  user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1328,7 +1328,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1340,7 +1340,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user9.Id,                              // 用户9审批
+		ApprovalUserId:  user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1352,7 +1352,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10确认
+		ApprovalUserId: user10.Id,                             // 用户10确认
 		ApprovalStatus: &deny,                                 // 拒绝: 将会失败
 	})
 
@@ -1362,7 +1362,7 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10确认
+		ApprovalUserId: user10.Id,                             // 用户10确认
 		ApprovalStatus: &approval,                             // 同意
 	})
 
@@ -1568,7 +1568,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1580,7 +1580,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user7.Id,                              // 用户7审批
+		ApprovalUserId:  user7.Id,                              // 用户7审批
 		ApprovalOpinion: "2级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1592,7 +1592,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user3.Id,                              // 用户3审批
+		ApprovalUserId:  user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级再次通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1604,7 +1604,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1616,7 +1616,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user9.Id,                              // 用户9审批
+		ApprovalUserId:  user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1628,7 +1628,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1640,7 +1640,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user3.Id,                              // 用户3审批
+		ApprovalUserId:  user3.Id,                              // 用户3审批
 		ApprovalOpinion: "1级拒绝",
 		ApprovalStatus:  &deny,
 	})
@@ -1651,7 +1651,7 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10确认
+		ApprovalUserId: user10.Id,                             // 用户10确认
 		ApprovalStatus: &approval,                             // 同意
 	})
 
@@ -1851,7 +1851,7 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user10.Id,                             // 用户10自我审批
+		ApprovalUserId:  user10.Id,                             // 用户10自我审批
 		ApprovalOpinion: "1级自我审批通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1863,7 +1863,7 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -1875,7 +1875,7 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user9.Id,                              // 用户9审批
+		ApprovalUserId:  user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -2081,7 +2081,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -2093,7 +2093,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10提交
+		ApprovalUserId: user10.Id,                             // 用户10提交
 		ApprovalStatus: &cancel,                               // 取消
 	})
 
@@ -2104,7 +2104,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10提交
+		ApprovalUserId: user10.Id,                             // 用户10提交
 		ApprovalStatus: &restart,                              // 重启
 	})
 
@@ -2115,7 +2115,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过(取消后从头开始)",
 		ApprovalStatus:  &approval,
 	})
@@ -2127,7 +2127,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -2139,7 +2139,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10提交
+		ApprovalUserId: user10.Id,                             // 用户10提交
 		ApprovalStatus: &cancel,                               // 取消
 	})
 
@@ -2150,7 +2150,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10提交
+		ApprovalUserId: user10.Id,                             // 用户10提交
 		ApprovalStatus: &cancel,                               // 取消
 	})
 
@@ -2161,7 +2161,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10提交
+		ApprovalUserId: user10.Id,                             // 用户10提交
 		ApprovalStatus: &restart,                              // 重启
 	})
 
@@ -2172,7 +2172,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过(取消后从头开始)",
 		ApprovalStatus:  &approval,
 	})
@@ -2184,7 +2184,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -2196,7 +2196,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user9.Id,                              // 用户9审批
+		ApprovalUserId:  user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -2208,7 +2208,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10提交
+		ApprovalUserId: user10.Id,                             // 用户10提交
 		ApprovalStatus: &cancel,                               // 取消
 	})
 
@@ -2219,7 +2219,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       user10.Id,                             // 用户10请假
-		ApprovalId:     user10.Id,                             // 用户10提交
+		ApprovalUserId: user10.Id,                             // 用户10提交
 		ApprovalStatus: &restart,                              // 重启
 	})
 
@@ -2230,7 +2230,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户10请假
-		ApprovalId:      user2.Id,                              // 用户2审批
+		ApprovalUserId:  user2.Id,                              // 用户2审批
 		ApprovalOpinion: "1级通过(取消后从头开始)",
 		ApprovalStatus:  &approval,
 	})
@@ -2242,7 +2242,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user6.Id,                              // 用户6审批
+		ApprovalUserId:  user6.Id,                              // 用户6审批
 		ApprovalOpinion: "2级通过",
 		ApprovalStatus:  &approval,
 	})
@@ -2254,7 +2254,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		FlowId:          flow.Id,
 		TargetCategory:  models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:        user10.Id,                             // 用户2请假
-		ApprovalId:      user9.Id,                              // 用户9审批
+		ApprovalUserId:  user9.Id,                              // 用户9审批
 		ApprovalOpinion: "3级通过",
 		ApprovalStatus:  &approval,
 	})

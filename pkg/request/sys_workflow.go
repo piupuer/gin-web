@@ -86,7 +86,7 @@ type WorkflowTransitionRequestStruct struct {
 	TargetCategory  uint   `json:"targetCategory" validate:"required"`
 	TargetId        uint   `json:"targetId" validate:"required"`
 	SubmitUserId    uint   `json:"submitUserId"`
-	ApprovalId      uint   `json:"approvalId"`
+	ApprovalUserId  uint   `json:"approvalUserId"`
 	ApprovalOpinion string `json:"approvalOpinion" validate:"required"`
 	ApprovalStatus  *uint  `json:"status" validate:"required||in=0,1,2,3,4"`
 }
