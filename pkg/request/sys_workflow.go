@@ -23,6 +23,12 @@ type WorkflowLineListRequestStruct struct {
 	response.PageInfo      // 分页参数
 }
 
+// 获取待审批列表结构体
+type WorkflowApprovingListRequestStruct struct {
+	ApprovalUserId    uint `json:"approvalUserId"`
+	response.PageInfo      // 分页参数
+}
+
 // 创建流程结构体
 type CreateWorkflowRequestStruct struct {
 	Category          uint   `json:"category"`
@@ -82,21 +88,22 @@ func (s UpdateWorkflowLineRequestStruct) FieldTrans() map[string]string {
 
 // 工作流转移结构体
 type WorkflowTransitionRequestStruct struct {
-	FlowId          uint   `json:"targetId"`
+	FlowId          uint   `json:"flowId" validate:"required"`
 	TargetCategory  uint   `json:"targetCategory" validate:"required"`
 	TargetId        uint   `json:"targetId" validate:"required"`
 	SubmitUserId    uint   `json:"submitUserId"`
+	SubmitDetail    string `json:"submitDetail"`
 	ApprovalUserId  uint   `json:"approvalUserId"`
-	ApprovalOpinion string `json:"approvalOpinion" validate:"required"`
-	ApprovalStatus  *uint  `json:"status" validate:"required||in=0,1,2,3,4"`
+	ApprovalOpinion string `json:"approvalOpinion"`
+	ApprovalStatus  *uint  `json:"approvalStatus" validate:"required,min=1,max=4"`
 }
 
 // 翻译需要校验的字段名称
 func (s WorkflowTransitionRequestStruct) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
+	m["FlowId"] = "流程"
 	m["TargetCategory"] = "目标类别"
 	m["TargetId"] = "目标编号"
-	m["ApprovalOpinion"] = "审批意见"
 	m["ApprovalStatus"] = "审批状态"
 	return m
 }

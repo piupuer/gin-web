@@ -28,6 +28,8 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	if desc != "" {
 		query = query.Where("desc", "contains", desc)
 	}
+	// 按id逆序
+	query = query.SortBy("id", "desc")
 	// 查询条数
 	req.PageInfo.Total = uint(query.Count())
 	var res interface{}

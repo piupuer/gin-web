@@ -1,6 +1,7 @@
 package request
 
 import (
+	"gin-web/models"
 	"gin-web/pkg/response"
 )
 
@@ -15,8 +16,8 @@ type LeaveListRequestStruct struct {
 
 // 创建请假结构体
 type CreateLeaveRequestStruct struct {
-	UserId uint   `json:"userId"`
-	Desc   string `json:"desc" validate:"required"`
+	User models.SysUser `json:"user"`
+	Desc string         `json:"desc" validate:"required"`
 }
 
 // 翻译需要校验的字段名称

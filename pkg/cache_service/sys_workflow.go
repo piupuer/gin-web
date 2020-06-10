@@ -1,6 +1,7 @@
 package cache_service
 
 import (
+	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
@@ -176,6 +177,149 @@ func (s *RedisService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.Sys
 	return newLogs, err
 }
 
+// 查询待审批目标列表(指定用户)
+func (s *RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingListRequestStruct) ([]models.SysWorkflowLog, error) {
+	if !global.Conf.System.UseRedis {
+		// 不使用redis
+		return s.mysql.GetWorkflowApprovings(req)
+	}
+	list := make([]models.SysWorkflowLog, 0)
+	if req.ApprovalUserId == 0 {
+		return list, fmt.Errorf("用户不存在, approvalUserId=%d", req.ApprovalUserId)
+	}
+	// 查询审批人
+	approval, err := s.GetUserById(req.ApprovalUserId)
+	if err != nil {
+		return list, err
+	}
+	// 查询所有日志
+	workflowLogList := make([]models.SysWorkflowLog, 0)
+	jsonWorkflowLogs := s.GetListFromCache(nil, new(models.SysWorkflowLog).TableName())
+	// 由于还需判断是否包含当前审批人, 因此无法直接分页
+	workflowLogRes := s.JsonQuery().FromString(jsonWorkflowLogs).
+		Where("status", "=", int(models.SysWorkflowLogStateSubmit)). // 状态已提交
+		Get()
+	utils.Struct2StructByJson(workflowLogRes, &workflowLogList)
+
+	// 查询所有工作流
+	workflowList := make([]models.SysWorkflow, 0)
+	jsonWorkflows := s.GetListFromCache(nil, new(models.SysWorkflow).TableName())
+	workflowRes := s.JsonQuery().FromString(jsonWorkflows).Get()
+	utils.Struct2StructByJson(workflowRes, &workflowList)
+
+	// 查询所有流水线
+	workflowLineList := make([]models.SysWorkflowLine, 0)
+	jsonWorkflowLines := s.GetListFromCache(nil, new(models.SysWorkflowLine).TableName())
+	workflowLineRes := s.JsonQuery().FromString(jsonWorkflowLines).Get()
+	utils.Struct2StructByJson(workflowLineRes, &workflowLineList)
+
+	// 查询所有节点
+	workflowNodeList := make([]models.SysWorkflowNode, 0)
+	jsonWorkflowNodes := s.GetListFromCache(nil, new(models.SysWorkflowNode).TableName())
+	workflowNodeRes := s.JsonQuery().FromString(jsonWorkflowNodes).Get()
+	utils.Struct2StructByJson(workflowNodeRes, &workflowNodeList)
+
+	// 查询所有角色
+	roleList := make([]models.SysRole, 0)
+	jsonRoles := s.GetListFromCache(nil, new(models.SysRole).TableName())
+	roleRes := s.JsonQuery().FromString(jsonRoles).Get()
+	utils.Struct2StructByJson(roleRes, &roleList)
+
+	// 查询所有用户
+	userList := make([]models.SysUser, 0)
+	jsonUsers := s.GetListFromCache(nil, new(models.SysUser).TableName())
+	userRes := s.JsonQuery().FromString(jsonUsers).Get()
+	utils.Struct2StructByJson(userRes, &userList)
+
+	// 加载日志的关联对象
+	for i, log := range workflowLogList {
+		if log.CurrentLineId > 0 {
+			for _, line := range workflowLineList {
+				if line.Id == log.CurrentLineId {
+					// 查找节点
+					var currentNode models.SysWorkflowNode
+					for _, node := range workflowNodeList {
+						if node.Id == line.NodeId {
+							// 查找节点角色
+							for _, role := range roleList {
+								if node.RoleId == role.Id {
+									// 加载角色关联的用户
+									users := make([]models.SysUser, 0)
+									for _, user := range userList {
+										if role.Id == user.RoleId {
+											users = append(users, user)
+											break
+										}
+									}
+									role.Users = users
+									node.Role = role
+									break
+								}
+							}
+							currentNode = node
+							break
+						}
+					}
+					// 查找节点用户
+					currentNode.Users = s.getWorkflowUsersByNodeId(line.NodeId)
+					line.Node = currentNode
+					log.CurrentLine = line
+					break
+				}
+			}
+		}
+		// 查找提交人
+		if log.SubmitUserId > 0 {
+			for _, user := range userList {
+				if log.SubmitUserId == user.Id {
+					log.SubmitUser = user
+					break
+				}
+			}
+		}
+		// 查找审批人
+		if log.ApprovalUserId > 0 {
+			for _, user := range userList {
+				if log.ApprovalUserId == user.Id {
+					log.ApprovalUser = user
+					break
+				}
+			}
+		}
+		// 查找工作流
+		if log.FlowId > 0 {
+			for _, flow := range workflowList {
+				if log.FlowId == flow.Id {
+					log.Flow = flow
+					break
+				}
+			}
+		}
+		workflowLogList[i] = log
+	}
+
+	for _, log := range workflowLogList {
+		// 获取当前待审批人
+		userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Node)
+		log.ApprovingUserIds = userIds
+		// 包含当前审批人
+		if utils.ContainsUint(userIds, approval.Id) {
+			list = append(list, log)
+		}
+	}
+	// 处理分页(转为json)
+	query := s.JsonQuery().FromString(utils.Struct2Json(list))
+	req.PageInfo.Total = uint(query.Count())
+	if !req.PageInfo.NoPagination {
+		// 获取分页参数
+		limit, offset := req.GetLimit()
+		res := query.Limit(int(limit)).Offset(int(offset)).Get()
+		// 转换为结构体
+		utils.Struct2StructByJson(res, &list)
+	}
+	return list, err
+}
+
 // 获取所有用户(根据节点编号)
 func (s *RedisService) getWorkflowUsersByNodeId(nodeId uint) []models.SysUser {
 	// 查询所有用户
@@ -199,4 +343,65 @@ func (s *RedisService) getWorkflowUsersByNodeId(nodeId uint) []models.SysUser {
 		}
 	}
 	return users
+}
+
+// 获取待审批人(当前节点)
+func (s *RedisService) getApprovingUsers(flowId uint, targetId uint, currentLineId uint, currentNode models.SysWorkflowNode) []uint {
+	userIds := make([]uint, 0)
+	allUserIds := s.getAllApprovalUsers(currentNode)
+	historyUserIds := s.getHistoryApprovalUsers(flowId, targetId, currentLineId)
+	for _, allUserId := range allUserIds {
+		// 不在历史列表中
+		if !utils.ContainsUint(historyUserIds, allUserId) {
+			userIds = append(userIds, allUserId)
+		}
+	}
+	return userIds
+}
+
+// 获取历史审批人(最后一个节点, 主要用于判断是否审批完成)
+func (s *RedisService) getHistoryApprovalUsers(flowId uint, targetId uint, currentLineId uint) []uint {
+	historyUserIds := make([]uint, 0)
+	// 查询已审核的日志
+	logs := make([]models.SysWorkflowLog, 0)
+	jsonWorkflowLogs := s.GetListFromCache(nil, new(models.SysWorkflowLog).TableName())
+	workflowLogRes := s.JsonQuery().FromString(jsonWorkflowLogs).
+		Where("flowId", "=", int(flowId)).
+		Where("targetId", "=", int(targetId)).
+		Where("status", ">", models.SysWorkflowLogStateSubmit). // 状态非提交
+		Get()
+	utils.Struct2StructByJson(workflowLogRes, &logs)
+
+	// 保留连续审核通过记录
+	l := len(logs)
+	for i := 0; i < l; i++ {
+		log := logs[i]
+		// 如果不是通过立即结束, 必须保证连续的通过 或 当前节点不一致
+		if *log.Status != models.SysWorkflowLogStateApproval || log.CurrentLineId != currentLineId {
+			break
+		}
+		// 审批人为配置中的一人
+		if !utils.ContainsUint(historyUserIds, log.ApprovalUserId) {
+			historyUserIds = append(historyUserIds, log.ApprovalUserId)
+		}
+	}
+	return historyUserIds
+}
+
+// 获取全部审批人(当前节点)
+func (s *RedisService) getAllApprovalUsers(currentNode models.SysWorkflowNode) []uint {
+	userIds := make([]uint, 0)
+	for _, user := range currentNode.Users {
+		if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
+			userIds = append(userIds, user.Id)
+		}
+	}
+	if currentNode.RoleId > 0 {
+		for _, user := range currentNode.Role.Users {
+			if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
+				userIds = append(userIds, user.Id)
+			}
+		}
+	}
+	return userIds
 }

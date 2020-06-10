@@ -5,10 +5,12 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
+	"gin-web/pkg/service/strategy"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
+	"github.com/thedevsaddam/gojsonq/v2"
 	"strings"
 )
 
@@ -84,54 +86,28 @@ func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStru
 	return list, err
 }
 
-// 更新工作流
-func (s *MysqlService) UpdateWorkflowById(id uint, req gin.H) (err error) {
-	var oldWorkflow models.SysWorkflow
-	query := s.tx.Table(oldWorkflow.TableName()).Where("id = ?", id).First(&oldWorkflow)
-	if query.RecordNotFound() {
-		return fmt.Errorf("记录不存在")
-	}
-
-	// 比对增量字段
-	m := make(gin.H, 0)
-	utils.CompareDifferenceStructByJson(oldWorkflow, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	return
-}
-
-// 批量删除工作流
-func (s *MysqlService) DeleteWorkflowByIds(ids []uint) (err error) {
-	return s.tx.Where("id IN (?)", ids).Delete(models.SysWorkflow{}).Error
-}
-
 // 查询待审批目标列表(指定用户)
-func (s *MysqlService) GetWorkflowApprovingList(flowId uint, targetId uint, approvalUserId uint) ([]models.SysWorkflowLog, error) {
+func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingListRequestStruct) ([]models.SysWorkflowLog, error) {
 	// 查询需要审核的日志
 	logs := make([]models.SysWorkflowLog, 0)
 	list := make([]models.SysWorkflowLog, 0)
-	if approvalUserId == 0 {
-		return list, fmt.Errorf("用户不存在, approvalUserId=%d", approvalUserId)
+	if req.ApprovalUserId == 0 {
+		return list, fmt.Errorf("用户不存在, approvalUserId=%d", req.ApprovalUserId)
 	}
 	// 查询审批人
-	approval, err := s.GetUserById(approvalUserId)
+	approval, err := s.GetUserById(req.ApprovalUserId)
 	if err != nil {
 		return list, err
 	}
-	// 查询日志
+	// 由于还需判断是否包含当前审批人, 因此无法直接分页
 	err = s.tx.
 		Preload("CurrentLine").
 		Preload("CurrentLine.Node").
 		Preload("CurrentLine.Node.Users").
 		Preload("CurrentLine.Node.Role").
 		Preload("CurrentLine.Node.Role.Users").
-		Where(&models.SysWorkflowLog{
-			FlowId:   flowId,   // 流程号一致
-			TargetId: targetId, // 目标一致
-		}).Where(
-		"status = ?", models.SysWorkflowLogStateSubmit, // 状态已提交
-	).Find(&logs).Error
+		Where("status = ?", models.SysWorkflowLogStateSubmit). // 状态已提交
+		Find(&logs).Error
 	if err != nil {
 		return list, err
 	}
@@ -139,10 +115,21 @@ func (s *MysqlService) GetWorkflowApprovingList(flowId uint, targetId uint, appr
 	for _, log := range logs {
 		// 获取当前待审批人
 		userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Node)
+		log.ApprovingUserIds = userIds
 		// 包含当前审批人
 		if utils.ContainsUint(userIds, approval.Id) {
 			list = append(list, log)
 		}
+	}
+	// 处理分页(转为json)
+	query := gojsonq.New().FromString(utils.Struct2Json(list))
+	req.PageInfo.Total = uint(query.Count())
+	if !req.PageInfo.NoPagination {
+		// 获取分页参数
+		limit, offset := req.GetLimit()
+		res := query.Limit(int(limit)).Offset(int(offset)).Get()
+		// 转换为结构体
+		utils.Struct2StructByJson(res, &list)
 	}
 	return list, err
 }
@@ -220,6 +207,28 @@ func (s *MysqlService) CreateWorkflow(req *request.CreateWorkflowRequestStruct) 
 	// 创建数据
 	err = s.tx.Create(&flow).Error
 	return
+}
+
+// 更新工作流
+func (s *MysqlService) UpdateWorkflowById(id uint, req gin.H) (err error) {
+	var oldWorkflow models.SysWorkflow
+	query := s.tx.Table(oldWorkflow.TableName()).Where("id = ?", id).First(&oldWorkflow)
+	if query.RecordNotFound() {
+		return fmt.Errorf("记录不存在")
+	}
+
+	// 比对增量字段
+	m := make(gin.H, 0)
+	utils.CompareDifferenceStructByJson(oldWorkflow, req, &m)
+
+	// 更新指定列
+	err = query.Updates(m).Error
+	return
+}
+
+// 批量删除工作流
+func (s *MysqlService) DeleteWorkflowByIds(ids []uint) (err error) {
+	return s.tx.Where("id IN (?)", ids).Delete(models.SysWorkflow{}).Error
 }
 
 // 获取多个节点
@@ -431,6 +440,7 @@ func (s *MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequest
 	}
 	// 查询最后一条审批日志, 判断是否存在
 	var lastLog models.SysWorkflowLog
+	var err error
 	notFound := s.tx.
 		Preload("CurrentLine").
 		Preload("CurrentLine.Node").
@@ -444,11 +454,36 @@ func (s *MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequest
 		}).Last(&lastLog).RecordNotFound()
 	if notFound {
 		// 走提交逻辑
-		return s.first(req)
+		err = s.first(req)
+		if err != nil {
+			return err
+		}
 	} else {
 		// 走审批逻辑
-		return s.next(req, lastLog)
+		err = s.next(req, lastLog)
+		if err != nil {
+			return err
+		}
 	}
+
+	// 查询最后一条审批日志
+	var newLastLog models.SysWorkflowLog
+	err = s.tx.
+		Where(&models.SysWorkflowLog{
+			TargetId: req.TargetId,
+			FlowId:   req.FlowId,
+		}).Last(&newLastLog).Error
+	if err != nil {
+		return err
+	}
+
+	// 查询最后一条日志状态, 回写到对应的目标表中
+	ctx, err := strategy.NewAfterTransitionContext(s.tx, req.TargetCategory, req.TargetId, newLastLog)
+	if err != nil {
+		return err
+	}
+	// 执行更新策略
+	return ctx.Strategy.UpdateTarget()
 }
 
 // 初次提交流程工单
@@ -466,6 +501,7 @@ func (s *MysqlService) first(req *request.WorkflowTransitionRequestStruct) error
 	var firstLog models.SysWorkflowLog
 	firstLog.FlowId = req.FlowId
 	firstLog.TargetId = req.TargetId
+	firstLog.SubmitDetail = req.SubmitDetail
 	approvalStatus := models.SysWorkflowLogStateApproval
 	// 状态为自己批准
 	firstLog.Status = &approvalStatus
@@ -545,29 +581,33 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 			return err
 		}
 	}
-	if nextLine.NodeId == 0 {
-		// 1. 下一节点为空
-		// 上一条没有被拒绝, 否则不允许自己通过
-		if *lastLog.Status != models.SysWorkflowLogStateDeny {
+	if *lastLog.Flow.SubmitUserConfirm {
+		// 1.开启提交人确认
+		// 下一节点为空 且 上一条记录为通过
+		if nextLine.NodeId == 0 && *lastLog.Status == models.SysWorkflowLogStateApproval {
 			if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
-				// 结束
 				return s.end(req.ApprovalOpinion, approval, lastLog)
-			} else if !*lastLog.Flow.SubmitUserConfirm {
+			} else {
 				// 回退到上一节点(提交人确认是不允许被拒绝的)
 				return s.deny(req, approval, lastLog)
 			}
 		}
-	} else if *lastLog.Flow.Self && s.checkPermission(approval.Id, lastLog) {
+	} else {
 		// 2. 开启自我审批 且 有权限审批
-		if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
-			// 通过
-			return s.approval(req, approval, lastLog)
-		} else {
-			// 回退到上一节点
-			return s.deny(req, approval, lastLog)
+		if *lastLog.Flow.Self && s.checkPermission(approval.Id, lastLog) {
+			if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
+				if nextLine.NodeId == 0 {
+					return s.end(req.ApprovalOpinion, approval, lastLog)
+				}
+				// 通过
+				return s.approval(req, approval, lastLog)
+			} else {
+				// 回退到上一节点
+				return s.deny(req, approval, lastLog)
+			}
 		}
 	}
-	return fmt.Errorf("无权限审批或审批流程未创建")
+	return fmt.Errorf("无权限自我审批, 请查看是否开启自我审批或提交人确认")
 }
 
 // 开始正常审批
@@ -679,6 +719,8 @@ func (s *MysqlService) updateLog(status uint, approvalOpinion string, approval m
 	updateLog.Status = &status
 	// 提交人
 	updateLog.SubmitUserId = lastLog.SubmitUserId
+	// 提交明细
+	updateLog.SubmitDetail = lastLog.SubmitDetail
 	// 审批人以及意见
 	updateLog.ApprovalUserId = approval.Id
 	updateLog.ApprovalOpinion = approvalOpinion
@@ -698,6 +740,8 @@ func (s *MysqlService) newLog(status uint, lineId uint, lastLog models.SysWorkfl
 	newLog.Status = &status
 	// 提交人
 	newLog.SubmitUserId = lastLog.SubmitUserId
+	// 提交人
+	newLog.SubmitDetail = lastLog.SubmitDetail
 	// 创建数据
 	err := s.tx.Create(&newLog).Error
 	return err
@@ -749,7 +793,7 @@ func (s *MysqlService) getHistoryApprovalUsers(flowId uint, targetId uint, curre
 	historyUserIds := make([]uint, 0)
 	// 查询已审核的日志
 	logs := make([]models.SysWorkflowLog, 0)
-	err := s.tx.Preload("ApprovalUser").Where(&models.SysWorkflowLog{
+	err := s.tx.Where(&models.SysWorkflowLog{
 		FlowId:   flowId,   // 流程号一致
 		TargetId: targetId, // 目标一致
 	}).Where(

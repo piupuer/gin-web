@@ -97,7 +97,7 @@ func CreateLeave(c *gin.Context) {
 		return
 	}
 	// 记录当前用户
-	req.UserId = user.Id
+	req.User = user
 	// 创建服务
 	s := service.New(c)
 	err = s.CreateLeave(&req)

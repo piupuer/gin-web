@@ -13,8 +13,10 @@ func InitWorkflowRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware
 	{
 		router.GET("/list", v1.GetWorkflows)
 		router.GET("/line/list", v1.GetWorkflowLines)
+		router.GET("/approving/list", v1.GetWorkflowApprovings)
 		router.POST("/create", v1.CreateWorkflow)
 		router.PATCH("/update/:workflowId", v1.UpdateWorkflowById)
+		router.PATCH("/log/approval", v1.UpdateWorkflowLogApproval)
 		router.DELETE("/delete/batch", v1.BatchDeleteWorkflowByIds)
 		router.PATCH("/line/update", v1.UpdateWorkflowLineByNodes)
 	}

@@ -22,6 +22,8 @@ func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	if desc != "" {
 		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
+	// 按id逆序
+	query = query.Order("id DESC")
 	// 查询条数
 	err = query.Find(&list).Count(&req.PageInfo.Total).Error
 	if err == nil {
@@ -70,7 +72,13 @@ func (s *MysqlService) CreateLeave(req *request.CreateLeaveRequestStruct) (err e
 		FlowId:         flow.Id,
 		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
 		TargetId:       leave.Id,                              // 请假编号
-		SubmitUserId:   req.UserId,                            // 提交人编号
+		SubmitUserId:   req.User.Id,                           // 提交人编号
+		SubmitDetail: fmt.Sprintf(
+			"请假单[申请人: %s(%s), 申请说明: %s]",
+			req.User.Nickname,
+			req.User.Username,
+			leave.Desc,
+		), // 提交明细
 	})
 	return
 }

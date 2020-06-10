@@ -109,17 +109,19 @@ func (m SysWorkflowLine) TableName() string {
 // 流程日志: 任何一种工作流程都会关联到某一张表, 需要targetId
 type SysWorkflowLog struct {
 	Model
-	FlowId          uint            `gorm:"comment:'流程编号'" json:"flowId"`
-	Flow            SysWorkflow     `gorm:"foreignkey:FlowId" json:"flow"`
-	TargetId        uint            `gorm:"comment:'目标表编号'" json:"targetId"`
-	CurrentLineId   uint            `gorm:"comment:'当前审批线编号'" json:"currentLineId"`
-	CurrentLine     SysWorkflowLine `gorm:"foreignkey:CurrentLineId" json:"currentLine"`
-	Status          *uint           `gorm:"default:0;comment:'状态(0:提交 1:批准 2:拒绝 3:取消 4:重启 5:结束)'" json:"status"`
-	SubmitUserId    uint            `gorm:"comment:'提交人编号'" json:"submitUserId"`
-	SubmitUser      SysUser         `gorm:"foreignkey:SubmitUserId" json:"submitUser"`
-	ApprovalUserId  uint            `gorm:"comment:'审批人编号'" json:"approvalUserId"`
-	ApprovalUser    SysUser         `gorm:"foreignkey:ApprovalUserId" json:"approvalUser"`
-	ApprovalOpinion string          `gorm:"comment:'审批意见'" json:"approvalOpinion"`
+	FlowId           uint            `gorm:"comment:'流程编号'" json:"flowId"`
+	Flow             SysWorkflow     `gorm:"foreignkey:FlowId" json:"flow"`
+	TargetId         uint            `gorm:"comment:'目标表编号'" json:"targetId"`
+	CurrentLineId    uint            `gorm:"comment:'当前审批线编号'" json:"currentLineId"`
+	CurrentLine      SysWorkflowLine `gorm:"foreignkey:CurrentLineId" json:"currentLine"`
+	Status           *uint           `gorm:"default:0;comment:'状态(0:提交 1:批准 2:拒绝 3:取消 4:重启 5:结束)'" json:"status"`
+	SubmitUserId     uint            `gorm:"comment:'提交人编号'" json:"submitUserId"`
+	SubmitUser       SysUser         `gorm:"foreignkey:SubmitUserId" json:"submitUser"`
+	SubmitDetail     string          `gorm:"comment:'提交明细(待审批可避免二次查询)'" json:"submitDetail"`
+	ApprovalUserId   uint            `gorm:"comment:'审批人编号'" json:"approvalUserId"`
+	ApprovalUser     SysUser         `gorm:"foreignkey:ApprovalUserId" json:"approvalUser"`
+	ApprovalOpinion  string          `gorm:"comment:'审批意见'" json:"approvalOpinion"`
+	ApprovingUserIds []uint          `gorm:"-" json:"approvingUserIds"` // status为0提交时有效, 表示审批人列表, 无需保存到数据库
 }
 
 func (m SysWorkflowLog) TableName() string {
