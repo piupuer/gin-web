@@ -272,8 +272,6 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 			return
 		}
 	}
-	// 序号重排
-	sort := uint(1)
 	// 2. 更新流水线
 	for _, item := range req.Update {
 		var line models.SysWorkflowLine
@@ -295,9 +293,6 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 			// 需要强制更新roleId
 			query = query.Update("role_id", item.RoleId)
 		}
-		// 更新序号
-		line.Sort = sort
-		sort += 1
 		// 更新数据, 替换users
 		err = query.Update(&line).Association("Users").Replace(&us).Error
 		if err != nil {
@@ -305,9 +300,7 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 		}
 	}
 	// 2. 创建流水线
-	count := len(req.Create)
-	endPtr := true
-	for i, item := range req.Create {
+	for _, item := range req.Create {
 		var line models.SysWorkflowLine
 		utils.Struct2StructByJson(item, &line)
 		// 获取用户
@@ -325,18 +318,34 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 		line.Users = us
 		// 设置flowId
 		line.FlowId = oldFlow.Id
-		// 设置序号
-		line.Sort = sort
-		sort += 1
-		// 结束标识
-		if i == count-1 {
-			line.End = &endPtr
-		}
 		// 创建数据
 		err = s.tx.Create(&line).Error
 		if err != nil {
 			return
 		}
+	}
+	newLines := make([]models.SysWorkflowLine, 0)
+	err = s.tx.Where(&models.SysWorkflowLine{FlowId: req.FlowId}).Find(&newLines).Error
+	if err != nil {
+		return
+	}
+	// 序号重排
+	count := len(newLines)
+	endPtr := true
+	sort := uint(1)
+	for i, line := range newLines {
+		var attr models.SysWorkflowLine
+		// 结束标识
+		if i == count-1 {
+			attr.End = &endPtr
+		}
+		// 序号
+		attr.Sort = sort
+		err = s.tx.Model(&line).Update(&attr).Error
+		if err != nil {
+			return
+		}
+		sort += 1
 	}
 	return
 }
