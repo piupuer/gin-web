@@ -74,7 +74,7 @@ func (s *MysqlService) CreateLeave(req *request.CreateLeaveRequestStruct) (err e
 		TargetId:       leave.Id,                              // 请假编号
 		SubmitUserId:   req.User.Id,                           // 提交人编号
 		SubmitDetail: fmt.Sprintf(
-			"请假单[申请人: %s(%s), 申请说明: %s]",
+			"请假条[申请人: %s(%s), 申请说明: %s]",
 			req.User.Nickname,
 			req.User.Username,
 			leave.Desc,

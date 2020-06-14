@@ -11,7 +11,7 @@ type AfterTransitionStrategy interface {
 	UpdateTarget() error
 }
 
-// 请假单审批
+// 请假条审批
 type LeaveApproval struct {
 	tx       *gorm.DB
 	targetId uint

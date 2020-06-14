@@ -47,6 +47,16 @@ func InitData() {
 			Status:  &status,
 			Creator: creator,
 		},
+		{
+			Model: models.Model{
+				Id: 4,
+			},
+			Name:    "请假条提交员",
+			Keyword: "leave",
+			Desc:    "请假条提交员",
+			Status:  &status,
+			Creator: creator,
+		},
 	}
 	for _, role := range roles {
 		oldRole := models.SysRole{}
@@ -129,6 +139,7 @@ func InitData() {
 			Roles: []models.SysRole{
 				roles[1],
 				roles[2],
+				roles[3],
 			},
 		},
 		{
@@ -148,6 +159,7 @@ func InitData() {
 			Roles: []models.SysRole{
 				roles[1],
 				roles[2],
+				roles[3],
 			},
 		},
 		{
@@ -255,7 +267,9 @@ func InitData() {
 			ParentId:  3,
 			Creator:   creator,
 			Roles: []models.SysRole{
+				roles[1],
 				roles[2],
+				roles[3],
 			},
 		},
 		{
@@ -273,7 +287,9 @@ func InitData() {
 			ParentId:  3,
 			Creator:   creator,
 			Roles: []models.SysRole{
+				roles[1],
 				roles[2],
+				roles[3],
 			},
 		},
 	}
@@ -288,7 +304,7 @@ func InitData() {
 	// 3. 初始化用户
 	// 默认头像
 	avatar := "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif"
-	users := [3]models.SysUser{
+	users := [4]models.SysUser{
 		{
 			Username:     "admin",
 			Password:     utils.GenPwd("123456"),
@@ -317,6 +333,16 @@ func InitData() {
 			Nickname:     "李四",
 			Introduction: "这个人很懒, 什么也没留下",
 			RoleId:       1,
+			Creator:      creator,
+		},
+		{
+			Username:     "wangwu",
+			Password:     utils.GenPwd("123456"),
+			Mobile:       "13999999999",
+			Avatar:       avatar,
+			Nickname:     "王武",
+			Introduction: "这个人很懒, 什么也没留下",
+			RoleId:       4,
 			Creator:      creator,
 		},
 	}
@@ -656,8 +682,8 @@ func InitData() {
 			},
 			Method:   "GET",
 			Path:     "/v1/leave/list",
-			Category: "menu",
-			Desc:     "获取请假单列表",
+			Category: "leave",
+			Desc:     "获取请假条列表",
 			Creator:  creator,
 		},
 		{
@@ -666,8 +692,8 @@ func InitData() {
 			},
 			Method:   "POST",
 			Path:     "/v1/leave/create",
-			Category: "menu",
-			Desc:     "创建请假单",
+			Category: "leave",
+			Desc:     "创建请假条",
 			Creator:  creator,
 		},
 		{
@@ -676,8 +702,8 @@ func InitData() {
 			},
 			Method:   "PATCH",
 			Path:     "/v1/leave/update/:leaveId",
-			Category: "menu",
-			Desc:     "更新请假单",
+			Category: "leave",
+			Desc:     "更新请假条",
 			Creator:  creator,
 		},
 		{
@@ -686,8 +712,38 @@ func InitData() {
 			},
 			Method:   "DELETE",
 			Path:     "/v1/leave/delete/batch",
-			Category: "menu",
-			Desc:     "批量删除请假单",
+			Category: "leave",
+			Desc:     "批量删除请假条",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 37,
+			},
+			Method:   "GET",
+			Path:     "/v1/leave/approval/list/:leaveId",
+			Category: "leave",
+			Desc:     "获取请假条审批记录",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 38,
+			},
+			Method:   "GET",
+			Path:     "/v1/workflow/approving/list",
+			Category: "workflow",
+			Desc:     "获取当前登录用户待审批记录",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 39,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/workflow/log/approval",
+			Category: "workflow",
+			Desc:     "审批工作流日志",
 			Creator:  creator,
 		},
 	}
@@ -704,6 +760,19 @@ func InitData() {
 				Path:    api.Path,
 				Method:  api.Method,
 			})
+			// 测试/请假条测试员: 拥有请假条与审批请假条权限
+			if api.Id >= 33 && api.Id <= 39 {
+				s.CreateRoleCasbin(models.SysRoleCasbin{
+					Keyword: roles[1].Keyword,
+					Path:    api.Path,
+					Method:  api.Method,
+				})
+				s.CreateRoleCasbin(models.SysRoleCasbin{
+					Keyword: roles[3].Keyword,
+					Path:    api.Path,
+					Method:  api.Method,
+				})
+			}
 			// 其他人暂时只有登录/获取用户信息的权限
 			if api.Id < 5 || api.Id == 10 {
 				s.CreateRoleCasbin(models.SysRoleCasbin{
@@ -713,6 +782,11 @@ func InitData() {
 				})
 				s.CreateRoleCasbin(models.SysRoleCasbin{
 					Keyword: roles[1].Keyword,
+					Path:    api.Path,
+					Method:  api.Method,
+				})
+				s.CreateRoleCasbin(models.SysRoleCasbin{
+					Keyword: roles[3].Keyword,
 					Path:    api.Path,
 					Method:  api.Method,
 				})
