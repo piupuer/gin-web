@@ -30,12 +30,12 @@ func (m SysMenu) TableName() string {
 func GetCheckedMenuIds(list []uint, allMenu []SysMenu) []uint {
 	checked := make([]uint, 0)
 	for _, c := range list {
-		// 获取子节点
+		// 获取子流水线
 		parent := SysMenu{
 			ParentId: c,
 		}
 		children := parent.GetChildrenIds(allMenu)
-		// 判断子节点是否全部在create中
+		// 判断子流水线是否全部在create中
 		count := 0
 		for _, child := range children {
 			if utils.ContainsUint(list, child) {

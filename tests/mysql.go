@@ -39,7 +39,6 @@ func autoMigrate() {
 		new(models.SysApi),
 		new(models.SysCasbin),
 		new(models.SysWorkflow),
-		new(models.SysWorkflowNode),
 		new(models.SysWorkflowLine),
 		new(models.SysWorkflowLog),
 	)

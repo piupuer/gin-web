@@ -88,23 +88,10 @@ func (s *RedisService) GetWorkflowLines(req *request.WorkflowLineListRequestStru
 	}
 	// 转换为结构体
 	utils.Struct2StructByJson(res, &list)
-	// 查询所有节点
-	nodeList := make([]models.SysWorkflowNode, 0)
-	jsonWorkflowNodes := s.GetListFromCache(nil, new(models.SysWorkflowNode).TableName())
-	nodeRes := s.JsonQuery().FromString(jsonWorkflowNodes).Get()
-	utils.Struct2StructByJson(nodeRes, &nodeList)
 	for i, line := range list {
-		var node models.SysWorkflowNode
-		// 查找节点
-		for _, item := range nodeList {
-			if item.Id == line.NodeId {
-				node = item
-				break
-			}
-		}
-		// 查找节点用户
-		node.Users = s.getWorkflowUsersByNodeId(line.NodeId)
-		list[i].Node = node
+		// 查找流水线用户
+		line.Users = s.getWorkflowUsersByLineId(line.Id)
+		list[i] = line
 	}
 	return list, err
 }
@@ -213,12 +200,6 @@ func (s *RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 	workflowLineRes := s.JsonQuery().FromString(jsonWorkflowLines).Get()
 	utils.Struct2StructByJson(workflowLineRes, &workflowLineList)
 
-	// 查询所有节点
-	workflowNodeList := make([]models.SysWorkflowNode, 0)
-	jsonWorkflowNodes := s.GetListFromCache(nil, new(models.SysWorkflowNode).TableName())
-	workflowNodeRes := s.JsonQuery().FromString(jsonWorkflowNodes).Get()
-	utils.Struct2StructByJson(workflowNodeRes, &workflowNodeList)
-
 	// 查询所有角色
 	roleList := make([]models.SysRole, 0)
 	jsonRoles := s.GetListFromCache(nil, new(models.SysRole).TableName())
@@ -236,33 +217,8 @@ func (s *RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 		if log.CurrentLineId > 0 {
 			for _, line := range workflowLineList {
 				if line.Id == log.CurrentLineId {
-					// 查找节点
-					var currentNode models.SysWorkflowNode
-					for _, node := range workflowNodeList {
-						if node.Id == line.NodeId {
-							// 查找节点角色
-							for _, role := range roleList {
-								if node.RoleId == role.Id {
-									// 加载角色关联的用户
-									users := make([]models.SysUser, 0)
-									for _, user := range userList {
-										if role.Id == user.RoleId {
-											users = append(users, user)
-											break
-										}
-									}
-									role.Users = users
-									node.Role = role
-									break
-								}
-							}
-							currentNode = node
-							break
-						}
-					}
-					// 查找节点用户
-					currentNode.Users = s.getWorkflowUsersByNodeId(line.NodeId)
-					line.Node = currentNode
+					// 查找流水线用户
+					line.Users = s.getWorkflowUsersByLineId(line.Id)
 					log.CurrentLine = line
 					break
 				}
@@ -300,7 +256,7 @@ func (s *RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 
 	for _, log := range workflowLogList {
 		// 获取当前待审批人
-		userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Node)
+		userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine)
 		log.ApprovingUserIds = userIds
 		// 包含当前审批人
 		if utils.ContainsUint(userIds, approval.Id) {
@@ -320,23 +276,23 @@ func (s *RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 	return list, err
 }
 
-// 获取所有用户(根据节点编号)
-func (s *RedisService) getWorkflowUsersByNodeId(nodeId uint) []models.SysUser {
+// 获取所有用户(根据流水线编号)
+func (s *RedisService) getWorkflowUsersByLineId(lineId uint) []models.SysUser {
 	// 查询所有用户
 	userList := make([]models.SysUser, 0)
 	jsonWorkflowUsers := s.GetListFromCache(nil, new(models.SysUser).TableName())
 	userRes := s.JsonQuery().FromString(jsonWorkflowUsers).Get()
 	utils.Struct2StructByJson(userRes, &userList)
 	// 查询所有关联关系
-	relationList := make([]models.RelationUserWorkflowNode, 0)
-	// 查询所有节点
-	jsonWorkflowRelations := s.GetListFromCache(nil, new(models.RelationUserWorkflowNode).TableName())
+	relationList := make([]models.RelationUserWorkflowLine, 0)
+	// 查询所有流水线
+	jsonWorkflowRelations := s.GetListFromCache(nil, new(models.RelationUserWorkflowLine).TableName())
 	relationRes := s.JsonQuery().FromString(jsonWorkflowRelations).Get()
 	utils.Struct2StructByJson(relationRes, &relationList)
 	users := make([]models.SysUser, 0)
 	for _, relation := range relationList {
 		for _, user := range userList {
-			if nodeId == relation.SysWorkflowNodeId && user.Id == relation.SysUserId {
+			if lineId == relation.SysWorkflowLineId && user.Id == relation.SysUserId {
 				users = append(users, user)
 				break
 			}
@@ -345,10 +301,10 @@ func (s *RedisService) getWorkflowUsersByNodeId(nodeId uint) []models.SysUser {
 	return users
 }
 
-// 获取待审批人(当前节点)
-func (s *RedisService) getApprovingUsers(flowId uint, targetId uint, currentLineId uint, currentNode models.SysWorkflowNode) []uint {
+// 获取待审批人(当前流水线)
+func (s *RedisService) getApprovingUsers(flowId uint, targetId uint, currentLineId uint, currentLine models.SysWorkflowLine) []uint {
 	userIds := make([]uint, 0)
-	allUserIds := s.getAllApprovalUsers(currentNode)
+	allUserIds := s.getAllApprovalUsers(currentLine)
 	historyUserIds := s.getHistoryApprovalUsers(flowId, targetId, currentLineId)
 	for _, allUserId := range allUserIds {
 		// 不在历史列表中
@@ -359,7 +315,7 @@ func (s *RedisService) getApprovingUsers(flowId uint, targetId uint, currentLine
 	return userIds
 }
 
-// 获取历史审批人(最后一个节点, 主要用于判断是否审批完成)
+// 获取历史审批人(最后一个流水线, 主要用于判断是否审批完成)
 func (s *RedisService) getHistoryApprovalUsers(flowId uint, targetId uint, currentLineId uint) []uint {
 	historyUserIds := make([]uint, 0)
 	// 查询已审核的日志
@@ -376,7 +332,7 @@ func (s *RedisService) getHistoryApprovalUsers(flowId uint, targetId uint, curre
 	l := len(logs)
 	for i := 0; i < l; i++ {
 		log := logs[i]
-		// 如果不是通过立即结束, 必须保证连续的通过 或 当前节点不一致
+		// 如果不是通过立即结束, 必须保证连续的通过 或 当前流水线不一致
 		if *log.Status != models.SysWorkflowLogStateApproval || log.CurrentLineId != currentLineId {
 			break
 		}
@@ -388,16 +344,16 @@ func (s *RedisService) getHistoryApprovalUsers(flowId uint, targetId uint, curre
 	return historyUserIds
 }
 
-// 获取全部审批人(当前节点)
-func (s *RedisService) getAllApprovalUsers(currentNode models.SysWorkflowNode) []uint {
+// 获取全部审批人(当前流水线)
+func (s *RedisService) getAllApprovalUsers(currentLine models.SysWorkflowLine) []uint {
 	userIds := make([]uint, 0)
-	for _, user := range currentNode.Users {
+	for _, user := range currentLine.Users {
 		if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
 			userIds = append(userIds, user.Id)
 		}
 	}
-	if currentNode.RoleId > 0 {
-		for _, user := range currentNode.Role.Users {
+	if currentLine.RoleId > 0 {
+		for _, user := range currentLine.Role.Users {
 			if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
 				userIds = append(userIds, user.Id)
 			}

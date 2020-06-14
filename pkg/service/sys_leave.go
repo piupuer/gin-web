@@ -14,7 +14,7 @@ import (
 func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.SysLeave, error) {
 	var err error
 	list := make([]models.SysLeave, 0)
-	query := s.tx.Where("user_id", req.UserId)
+	query := s.tx.Where("user_id = ?", req.UserId)
 	desc := strings.TrimSpace(req.Desc)
 	if req.Status != nil {
 		query = query.Where("status = ?", *req.Status)

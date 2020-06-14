@@ -20,51 +20,13 @@ var (
 	end      = models.SysWorkflowLogStateEnd
 )
 
-func TestMysqlService_CreateWorkflow(t *testing.T) {
+func TestMysqlService_UpdateWorkflowLineByIncremental(t *testing.T) {
 	tests.InitTestEnv()
 
 	s := New(nil)
-	var req request.CreateWorkflowRequestStruct
-	req.Name = "请假流程"
-	req.Creator = "系统"
-	req.Desc = "用于员工请假审批"
-	s.CreateWorkflow(&req)
-}
-
-func TestMysqlService_CreateWorkflowNode(t *testing.T) {
-	tests.InitTestEnv()
-
-	roleId1 := uint(1)
-	roleId2 := uint(2)
-	roleId3 := uint(3)
-	s := New(nil)
-	var req1 request.UpdateWorkflowNodeRequestStruct
-	req1.FlowId = 1
-	req1.RoleId = &roleId1
-	req1.Name = "主管审批"
-	req1.Creator = "系统"
-	s.CreateWorkflowNode(&req1)
-	var req2 request.UpdateWorkflowNodeRequestStruct
-	req2.FlowId = 1
-	req2.RoleId = &roleId2
-	req2.Name = "总经理审批"
-	req2.Creator = "系统"
-	s.CreateWorkflowNode(&req2)
-	var req3 request.UpdateWorkflowNodeRequestStruct
-	req3.FlowId = 1
-	req3.RoleId = &roleId3
-	req3.Name = "董事长审批"
-	req3.Creator = "系统"
-	s.CreateWorkflowNode(&req3)
-}
-
-func TestMysqlService_UpdateWorkflowLineByNodes(t *testing.T) {
-	tests.InitTestEnv()
-
-	s := New(nil)
-	req := request.UpdateWorkflowLineRequestStruct{
+	req := request.UpdateWorkflowLineIncrementalRequestStruct{
 		FlowId: 1,
-		Update: []request.UpdateWorkflowNodeRequestStruct{
+		Update: []request.UpdateWorkflowLineRequestStruct{
 			{
 				Id: 1,
 			},
@@ -76,7 +38,7 @@ func TestMysqlService_UpdateWorkflowLineByNodes(t *testing.T) {
 			},
 		},
 	}
-	err := s.UpdateWorkflowLineByNodes(&req)
+	err := s.UpdateWorkflowLineByIncremental(&req)
 	fmt.Println(err)
 }
 
@@ -199,67 +161,37 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
-	var node1 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node1)
-	var node2 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node2)
-	var node3 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node3)
-	var node4 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node4)
-	var node5 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理3审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node5)
-	var node6 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role3.Id,
-		Name:    testName + "董事长审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	req := request.UpdateWorkflowLineRequestStruct{
+	req := request.UpdateWorkflowLineIncrementalRequestStruct{
 		FlowId: flow.Id,
-		Update: []request.UpdateWorkflowNodeRequestStruct{
+		Create: []request.UpdateWorkflowLineRequestStruct{
 			{
 				// 主管
-				Id: node1.Id,
+				UserIds: []uint{
+					user1.Id,
+					user2.Id,
+					user3.Id,
+					user4.Id,
+				},
 			},
 			{
 				// 总经理
-				Id: node4.Id,
+				UserIds: []uint{
+					user5.Id,
+					user6.Id,
+					user7.Id,
+				},
 			},
 			{
 				// 董事长
-				Id: node6.Id,
+				UserIds: []uint{
+					user8.Id,
+					user9.Id,
+				},
 			},
 		},
 	}
-	err := s.UpdateWorkflowLineByNodes(&req)
+	err := s.UpdateWorkflowLineByIncremental(&req)
 	fmt.Println(err)
 
 	// 7.构建审批单
@@ -463,85 +395,37 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
-	var node1 = models.SysWorkflowNode{
-		FlowId: flow.Id,
-		Users: []models.SysUser{
-			user1,
-			user2,
-		},
-		Name:    testName + "主管1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node1)
-	var node2 = models.SysWorkflowNode{
-		FlowId: flow.Id,
-		Users: []models.SysUser{
-			user3,
-			user4,
-		},
-		Name:    testName + "主管2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node2)
-	var node3 = models.SysWorkflowNode{
-		FlowId: flow.Id,
-		Users: []models.SysUser{
-			user6,
-		},
-		Name:    testName + "总经理1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node3)
-	var node4 = models.SysWorkflowNode{
-		FlowId: flow.Id,
-		Users: []models.SysUser{
-			user5,
-		},
-		Name:    testName + "总经理2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node4)
-	var node5 = models.SysWorkflowNode{
-		FlowId: flow.Id,
-		Users: []models.SysUser{
-			user7,
-		},
-		Name:    testName + "总经理3审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node5)
-	var node6 = models.SysWorkflowNode{
-		FlowId: flow.Id,
-		Users: []models.SysUser{
-			user8,
-			user9,
-		},
-		Name:    testName + "董事长审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	req := request.UpdateWorkflowLineRequestStruct{
+	req := request.UpdateWorkflowLineIncrementalRequestStruct{
 		FlowId: flow.Id,
-		Update: []request.UpdateWorkflowNodeRequestStruct{
+		Create: []request.UpdateWorkflowLineRequestStruct{
 			{
 				// 主管
-				Id:      node1.Id,
-				UserIds: getUserIds(node1),
+				UserIds: []uint{
+					user1.Id,
+					user2.Id,
+					user3.Id,
+					user4.Id,
+				},
 			},
 			{
 				// 总经理
-				Id:      node4.Id,
-				UserIds: getUserIds(node4),
+				UserIds: []uint{
+					user5.Id,
+					user6.Id,
+					user7.Id,
+				},
 			},
 			{
 				// 董事长
-				Id:      node6.Id,
-				UserIds: getUserIds(node6),
+				UserIds: []uint{
+					user8.Id,
+					user9.Id,
+				},
 			},
 		},
 	}
-	err := s.UpdateWorkflowLineByNodes(&req)
+	err := s.UpdateWorkflowLineByIncremental(&req)
 	fmt.Println(err)
 
 	// 7.构建审批单
@@ -565,15 +449,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("提交人重复提交", err)
 
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user1.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user2.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user3.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user4.Id))
-
 	fmt.Println("下一审批人")
 	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
 
@@ -589,15 +464,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("1级审批, 用户id", user2.Id, err)
 
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user1.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user2.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user3.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user4.Id))
-
 	fmt.Println("下一审批人")
 	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
 
@@ -611,15 +477,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	})
 
 	fmt.Println("1级审批, 用户id", user4.Id, err)
-
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user1.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user2.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user3.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user4.Id))
 
 	fmt.Println("下一审批人")
 	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
@@ -635,15 +492,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 
 	fmt.Println("1级审批, 用户id", user1.Id, err)
 
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user1.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user2.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user3.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user4.Id))
-
 	fmt.Println("下一审批人")
 	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
 
@@ -657,15 +505,6 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	})
 
 	fmt.Println("1级审批, 用户id", user3.Id, err)
-
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user1.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user1.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user2.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user2.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user3.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user3.Id))
-	fmt.Println(fmt.Sprintf("用户%d待审批列表", user4.Id))
-	fmt.Println(s.GetWorkflowApprovings(flow.Id, user4.Id))
 
 	fmt.Println("下一审批人")
 	fmt.Println(s.GetWorkflowNextApprovingUsers(flow.Id, user10.Id))
@@ -935,67 +774,37 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
-	var node1 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node1)
-	var node2 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node2)
-	var node3 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node3)
-	var node4 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node4)
-	var node5 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理3审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node5)
-	var node6 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role3.Id,
-		Name:    testName + "董事长审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	req := request.UpdateWorkflowLineRequestStruct{
+	req := request.UpdateWorkflowLineIncrementalRequestStruct{
 		FlowId: flow.Id,
-		Update: []request.UpdateWorkflowNodeRequestStruct{
+		Create: []request.UpdateWorkflowLineRequestStruct{
 			{
 				// 主管
-				Id: node1.Id,
+				UserIds: []uint{
+					user1.Id,
+					user2.Id,
+					user3.Id,
+					user4.Id,
+				},
 			},
 			{
 				// 总经理
-				Id: node4.Id,
+				UserIds: []uint{
+					user5.Id,
+					user6.Id,
+					user7.Id,
+				},
 			},
 			{
 				// 董事长
-				Id: node6.Id,
+				UserIds: []uint{
+					user8.Id,
+					user9.Id,
+				},
 			},
 		},
 	}
-	err := s.UpdateWorkflowLineByNodes(&req)
+	err := s.UpdateWorkflowLineByIncremental(&req)
 	fmt.Println(err)
 
 	// 7.构建审批单
@@ -1213,67 +1022,37 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
-	var node1 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node1)
-	var node2 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node2)
-	var node3 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node3)
-	var node4 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node4)
-	var node5 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理3审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node5)
-	var node6 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role3.Id,
-		Name:    testName + "董事长审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	req := request.UpdateWorkflowLineRequestStruct{
+	req := request.UpdateWorkflowLineIncrementalRequestStruct{
 		FlowId: flow.Id,
-		Update: []request.UpdateWorkflowNodeRequestStruct{
+		Create: []request.UpdateWorkflowLineRequestStruct{
 			{
 				// 主管
-				Id: node1.Id,
+				UserIds: []uint{
+					user1.Id,
+					user2.Id,
+					user3.Id,
+					user4.Id,
+				},
 			},
 			{
 				// 总经理
-				Id: node4.Id,
+				UserIds: []uint{
+					user5.Id,
+					user6.Id,
+					user7.Id,
+				},
 			},
 			{
 				// 董事长
-				Id: node6.Id,
+				UserIds: []uint{
+					user8.Id,
+					user9.Id,
+				},
 			},
 		},
 	}
-	err := s.UpdateWorkflowLineByNodes(&req)
+	err := s.UpdateWorkflowLineByIncremental(&req)
 	fmt.Println(err)
 
 	// 7.构建审批单
@@ -1489,67 +1268,37 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
-	var node1 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node1)
-	var node2 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node2)
-	var node3 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node3)
-	var node4 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node4)
-	var node5 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理3审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node5)
-	var node6 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role3.Id,
-		Name:    testName + "董事长审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	req := request.UpdateWorkflowLineRequestStruct{
+	req := request.UpdateWorkflowLineIncrementalRequestStruct{
 		FlowId: flow.Id,
-		Update: []request.UpdateWorkflowNodeRequestStruct{
+		Create: []request.UpdateWorkflowLineRequestStruct{
 			{
 				// 主管
-				Id: node1.Id,
+				UserIds: []uint{
+					user1.Id,
+					user2.Id,
+					user3.Id,
+					user4.Id,
+				},
 			},
 			{
 				// 总经理
-				Id: node4.Id,
+				UserIds: []uint{
+					user5.Id,
+					user6.Id,
+					user7.Id,
+				},
 			},
 			{
 				// 董事长
-				Id: node6.Id,
+				UserIds: []uint{
+					user8.Id,
+					user9.Id,
+				},
 			},
 		},
 	}
-	err := s.UpdateWorkflowLineByNodes(&req)
+	err := s.UpdateWorkflowLineByIncremental(&req)
 	fmt.Println(err)
 
 	// 7.构建审批单
@@ -1772,67 +1521,32 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
-	var node1 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node1)
-	var node2 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node2)
-	var node3 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node3)
-	var node4 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node4)
-	var node5 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理3审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node5)
-	var node6 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role3.Id,
-		Name:    testName + "董事长审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	req := request.UpdateWorkflowLineRequestStruct{
+	req := request.UpdateWorkflowLineIncrementalRequestStruct{
 		FlowId: flow.Id,
-		Update: []request.UpdateWorkflowNodeRequestStruct{
+		Create: []request.UpdateWorkflowLineRequestStruct{
 			{
 				// 主管
-				Id: node1.Id,
+				RoleId: &role1.Id,
 			},
 			{
 				// 总经理
-				Id: node4.Id,
+				UserIds: []uint{
+					user5.Id,
+					user6.Id,
+					user7.Id,
+				},
 			},
 			{
 				// 董事长
-				Id: node6.Id,
+				UserIds: []uint{
+					user8.Id,
+					user9.Id,
+				},
 			},
 		},
 	}
-	err := s.UpdateWorkflowLineByNodes(&req)
+	err := s.UpdateWorkflowLineByIncremental(&req)
 	fmt.Println(err)
 
 	// 7.构建审批单
@@ -2002,67 +1716,37 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 		Desc:              "用于员工请假审批",
 	}
 	s.tx.Create(&flow)
-	var node1 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node1)
-	var node2 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role1.Id,
-		Name:    testName + "主管2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node2)
-	var node3 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理1审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node3)
-	var node4 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理2审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node4)
-	var node5 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role2.Id,
-		Name:    testName + "总经理3审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node5)
-	var node6 = models.SysWorkflowNode{
-		FlowId:  flow.Id,
-		RoleId:  role3.Id,
-		Name:    testName + "董事长审批",
-		Creator: "系统",
-	}
-	s.tx.Create(&node6)
 	// 2个主管/3个总经理/1个董事长
-	req := request.UpdateWorkflowLineRequestStruct{
+	req := request.UpdateWorkflowLineIncrementalRequestStruct{
 		FlowId: flow.Id,
-		Update: []request.UpdateWorkflowNodeRequestStruct{
+		Create: []request.UpdateWorkflowLineRequestStruct{
 			{
 				// 主管
-				Id: node1.Id,
+				UserIds: []uint{
+					user1.Id,
+					user2.Id,
+					user3.Id,
+					user4.Id,
+				},
 			},
 			{
 				// 总经理
-				Id: node4.Id,
+				UserIds: []uint{
+					user5.Id,
+					user6.Id,
+					user7.Id,
+				},
 			},
 			{
 				// 董事长
-				Id: node6.Id,
+				UserIds: []uint{
+					user8.Id,
+					user9.Id,
+				},
 			},
 		},
 	}
-	err := s.UpdateWorkflowLineByNodes(&req)
+	err := s.UpdateWorkflowLineByIncremental(&req)
 	fmt.Println(err)
 
 	// 7.构建审批单
@@ -2286,12 +1970,4 @@ func TestMysqlService_GetWorkflowLineLogs(t *testing.T) {
 		})
 	}
 	fmt.Println(logs, res, err)
-}
-
-func getUserIds(node models.SysWorkflowNode) []uint {
-	userIds := make([]uint, 0)
-	for _, user := range node.Users {
-		userIds = append(userIds, user.Id)
-	}
-	return userIds
 }

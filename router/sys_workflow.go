@@ -18,7 +18,7 @@ func InitWorkflowRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware
 		router.PATCH("/update/:workflowId", v1.UpdateWorkflowById)
 		router.PATCH("/log/approval", v1.UpdateWorkflowLogApproval)
 		router.DELETE("/delete/batch", v1.BatchDeleteWorkflowByIds)
-		router.PATCH("/line/update", v1.UpdateWorkflowLineByNodes)
+		router.PATCH("/line/update", v1.UpdateWorkflowLineIncremental)
 	}
 	return router
 }

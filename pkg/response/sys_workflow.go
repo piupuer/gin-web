@@ -42,20 +42,12 @@ type WorkflowListResponseStruct struct {
 
 // 流水线信息响应, 字段含义见models.WorkflowLine
 type WorkflowLineListResponseStruct struct {
-	Id     uint                       `json:"id"`
-	FlowId uint                       `json:"flowId"`
-	Sort   uint                       `json:"sort"`
-	End    *bool                      `json:"end"`
-	Node   WorkflowNodeResponseStruct `json:"node"`
-}
-
-// 节点响应, 字段含义见models.WorkflowNode
-type WorkflowNodeResponseStruct struct {
 	Id      uint   `json:"id"`
 	FlowId  uint   `json:"flowId"`
+	Sort    uint   `json:"sort"`
+	End     *bool  `json:"end"`
 	RoleId  uint   `json:"roleId"`
 	UserIds []uint `json:"userIds"`
 	Edit    *bool  `json:"edit"`
 	Name    string `json:"name"`
-	Creator string `json:"creator"`
 }

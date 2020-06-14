@@ -66,13 +66,13 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
-	query := s.tx
+	query := s.tx.Preload("Users").Model(&models.SysWorkflowLine{})
 	if req.FlowId > 0 {
 		query = query.Where("flow_id = ?", req.FlowId)
 	}
 
 	// 查询条数
-	err = query.Preload("Node").Find(&list).Count(&req.PageInfo.Total).Error
+	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
@@ -101,11 +101,11 @@ func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 	}
 	// 由于还需判断是否包含当前审批人, 因此无法直接分页
 	err = s.tx.
+		Preload("Flow").
 		Preload("CurrentLine").
-		Preload("CurrentLine.Node").
-		Preload("CurrentLine.Node.Users").
-		Preload("CurrentLine.Node.Role").
-		Preload("CurrentLine.Node.Role.Users").
+		Preload("CurrentLine.Users").
+		Preload("CurrentLine.Role").
+		Preload("CurrentLine.Role.Users").
 		Where("status = ?", models.SysWorkflowLogStateSubmit). // 状态已提交
 		Find(&logs).Error
 	if err != nil {
@@ -114,7 +114,7 @@ func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 
 	for _, log := range logs {
 		// 获取当前待审批人
-		userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Node)
+		userIds := s.getApprovingUsers(log)
 		log.ApprovingUserIds = userIds
 		// 包含当前审批人
 		if utils.ContainsUint(userIds, approval.Id) {
@@ -141,10 +141,9 @@ func (s *MysqlService) GetWorkflowNextApprovingUsers(flowId uint, targetId uint)
 	users := make([]models.SysUser, 0)
 	err := s.tx.
 		Preload("CurrentLine").
-		Preload("CurrentLine.Node").
-		Preload("CurrentLine.Node.Users").
-		Preload("CurrentLine.Node.Role").
-		Preload("CurrentLine.Node.Role.Users").
+		Preload("CurrentLine.Users").
+		Preload("CurrentLine.Role").
+		Preload("CurrentLine.Role.Users").
 		Where(&models.SysWorkflowLog{
 			FlowId:   flowId,   // 流程号一致
 			TargetId: targetId, // 目标一致
@@ -156,7 +155,7 @@ func (s *MysqlService) GetWorkflowNextApprovingUsers(flowId uint, targetId uint)
 	}
 
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(log.FlowId, log.TargetId, log.CurrentLineId, log.CurrentLine.Node)
+	userIds := s.getApprovingUsers(log)
 	err = s.tx.Where("id IN (?)", userIds).Find(&users).Error
 	return users, err
 }
@@ -168,30 +167,28 @@ func (s *MysqlService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.Sys
 	err := s.tx.Preload("ApprovalUser").Preload("SubmitUser").Preload("Flow").Where(&models.SysWorkflowLog{
 		FlowId:   flowId,   // 流程号一致
 		TargetId: targetId, // 目标一致
-	}).Where(
-		"status > ?", models.SysWorkflowLogStateSubmit, // 状态非提交
-	).Find(&logs).Error
+	}).Find(&logs).Error
 	return logs, err
 }
 
 // 查询下一流水线
 func (s *MysqlService) GetNextWorkflowLine(flowId uint, currentSort uint) (models.SysWorkflowLine, error) {
-	return s.GetPrevWorkflowLineBySort(flowId, currentSort+1)
+	return s.GetWorkflowLineBySort(flowId, currentSort+1)
 }
 
 // 查询上一流水线
 func (s *MysqlService) GetPrevWorkflowLine(flowId uint, currentSort uint) (models.SysWorkflowLine, error) {
-	return s.GetPrevWorkflowLineBySort(flowId, currentSort-1)
+	return s.GetWorkflowLineBySort(flowId, currentSort-1)
 }
 
 // 查询指定sort流水线
-func (s *MysqlService) GetPrevWorkflowLineBySort(flowId uint, sort uint) (models.SysWorkflowLine, error) {
+func (s *MysqlService) GetWorkflowLineBySort(flowId uint, sort uint) (models.SysWorkflowLine, error) {
 	// 查询流程线
 	var line models.SysWorkflowLine
 	if sort <= 0 {
 		return line, gorm.ErrRecordNotFound
 	}
-	err := s.tx.Preload("Node").Preload("Node.Users").Where(&models.SysWorkflowLine{
+	err := s.tx.Preload("Users").Where(&models.SysWorkflowLine{
 		FlowId: flowId,
 		Sort:   sort,
 	}).First(&line).Error
@@ -231,36 +228,8 @@ func (s *MysqlService) DeleteWorkflowByIds(ids []uint) (err error) {
 	return s.tx.Where("id IN (?)", ids).Delete(models.SysWorkflow{}).Error
 }
 
-// 获取多个节点
-func (s *MysqlService) GetWorkflowNodesByIds(ids []uint) ([]models.SysWorkflowNode, error) {
-	var nodes []models.SysWorkflowNode
-	var err error
-	err = s.tx.Preload("Users").Where("id IN (?)", ids).Find(&nodes).Error
-	return nodes, err
-}
-
-// 创建工作流节点
-func (s *MysqlService) CreateWorkflowNode(req *request.UpdateWorkflowNodeRequestStruct) (err error) {
-	var node models.SysWorkflowNode
-	if len(req.UserIds) > 0 {
-		// 查询所有用户
-		users := make([]models.SysUser, 0)
-		err = s.tx.Where("id IN (?)", req.UserIds).Find(&users).Error
-		if err != nil {
-			return
-		}
-		node.Users = users
-	}
-	utils.Struct2StructByJson(req, &node)
-	// 创建数据
-	err = s.tx.Create(&node).Error
-	// 获取id
-	req.Id = node.Id
-	return
-}
-
 // 更新流程流水线
-func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLineRequestStruct) (err error) {
+func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkflowLineIncrementalRequestStruct) (err error) {
 	// 查询流程以及流水线
 	var oldFlow models.SysWorkflow
 	oldLines := make([]models.SysWorkflowLine, 0)
@@ -272,7 +241,7 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 	if err != nil {
 		return
 	}
-	// 查询增改的所有用户/节点
+	// 查询增改的所有用户/流水线
 	userIds := make([]uint, 0)
 	for _, item := range req.Create {
 		for _, userId := range item.UserIds {
@@ -288,45 +257,27 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 			}
 		}
 	}
+	// 批量查找所有用户
 	users, err := s.GetUsersByIds(userIds)
 	if err != nil {
 		return
 	}
 
-	// 获取历史节点
-	nodeIds := make([]uint, 0)
-	for _, line := range oldLines {
-		if line.NodeId > 0 && !utils.ContainsUint(nodeIds, line.NodeId) {
-			nodeIds = append(nodeIds, line.NodeId)
-		}
-	}
 	// 删除/更新/新增需要有序, 否则可能会打破流水线顺序
-	// 1. 删除节点
+	// 1. 删除流水线
 	for _, item := range req.Delete {
-		// 删除节点
-		err = s.tx.Where("id = ?", item.Id).Delete(models.SysWorkflowNode{}).Error
-		if err != nil {
-			return
-		}
 		// 删除流水线
-		err = s.tx.Where("node_id = ?", item.Id).Delete(models.SysWorkflowLine{}).Error
+		err = s.tx.Where("id = ?", item.Id).Delete(models.SysWorkflowLine{}).Error
 		if err != nil {
 			return
-		}
-		// 删除节点
-		deleteIndex := utils.ContainsUintIndex(nodeIds, item.Id)
-		if deleteIndex > -1 {
-			if deleteIndex < len(nodeIds)-1 {
-				nodeIds = append(nodeIds[:deleteIndex], nodeIds[deleteIndex+1:]...)
-			} else {
-				nodeIds = append(nodeIds[:deleteIndex])
-			}
 		}
 	}
-	// 2. 更新节点
+	// 序号重排
+	sort := uint(1)
+	// 2. 更新流水线
 	for _, item := range req.Update {
-		var node models.SysWorkflowNode
-		utils.Struct2StructByJson(item, &node)
+		var line models.SysWorkflowLine
+		utils.Struct2StructByJson(item, &line)
 		// 获取用户
 		us := make([]models.SysUser, 0)
 		if len(item.UserIds) > 0 {
@@ -339,21 +290,26 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 				}
 			}
 		}
-		query := s.tx.Model(&node)
+		query := s.tx.Model(&line)
 		if item.RoleId != nil {
 			// 需要强制更新roleId
 			query = query.Update("role_id", item.RoleId)
 		}
+		// 更新序号
+		line.Sort = sort
+		sort += 1
 		// 更新数据, 替换users
-		err = query.Update(&node).Association("Users").Replace(&us).Error
+		err = query.Update(&line).Association("Users").Replace(&us).Error
 		if err != nil {
 			return
 		}
 	}
-	// 2. 创建节点
-	for _, item := range req.Create {
-		var node models.SysWorkflowNode
-		utils.Struct2StructByJson(item, &node)
+	// 2. 创建流水线
+	count := len(req.Create)
+	endPtr := true
+	for i, item := range req.Create {
+		var line models.SysWorkflowLine
+		utils.Struct2StructByJson(item, &line)
 		// 获取用户
 		us := make([]models.SysUser, 0)
 		if len(item.UserIds) > 0 {
@@ -366,66 +322,21 @@ func (s *MysqlService) UpdateWorkflowLineByNodes(req *request.UpdateWorkflowLine
 				}
 			}
 		}
-		node.Users = us
+		line.Users = us
 		// 设置flowId
-		node.FlowId = oldFlow.Id
-		node.Creator = req.Creator
-		// 创建数据
-		err = s.tx.Create(&node).Error
-		if err != nil {
-			return
-		}
-		// 保留id
-		nodeIds = append(nodeIds, node.Id)
-	}
-	nodes, err := s.GetWorkflowNodesByIds(nodeIds)
-	if err != nil {
-		return
-	}
-
-	lines := make([]models.SysWorkflowLine, 0)
-	count := len(nodeIds)
-	endPtr := true
-	for i, id := range nodeIds {
-		// 寻找当前level的节点
-		var currentNode models.SysWorkflowNode
-		// 所有节点必须属于同一流程号
-		for _, node := range nodes {
-			if node.FlowId != oldFlow.Id {
-				return fmt.Errorf("第%d级节点所属流程[%s]与其他节点不一致", i+1, oldFlow.Name)
-			}
-			if node.Id == id {
-				currentNode = node
-				break
-			}
-		}
-		// 构造流程线
-		var line models.SysWorkflowLine
-		needCreate := false
-		if i < len(oldLines) {
-			line = oldLines[i]
-		} else {
-			line.FlowId = oldFlow.Id
-			needCreate = true
-		}
-		// 替换节点
-		line.Node = currentNode
-		// 排序, 从1开始
-		line.Sort = uint(i + 1)
+		line.FlowId = oldFlow.Id
+		// 设置序号
+		line.Sort = sort
+		sort += 1
 		// 结束标识
 		if i == count-1 {
 			line.End = &endPtr
 		}
-		if needCreate {
-			// gorm 1.x不支持批量插入, 这里单条插入
-			err = s.tx.Create(&line).Error
-		} else {
-			err = s.tx.Model(&line).Update(&line).Error
-		}
+		// 创建数据
+		err = s.tx.Create(&line).Error
 		if err != nil {
 			return
 		}
-		lines = append(lines, line)
 	}
 	return
 }
@@ -443,10 +354,9 @@ func (s *MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequest
 	var err error
 	notFound := s.tx.
 		Preload("CurrentLine").
-		Preload("CurrentLine.Node").
-		Preload("CurrentLine.Node.Users").
-		Preload("CurrentLine.Node.Role").
-		Preload("CurrentLine.Node.Role.Users").
+		Preload("CurrentLine.Users").
+		Preload("CurrentLine.Role").
+		Preload("CurrentLine.Role.Users").
 		Preload("Flow").
 		Where(&models.SysWorkflowLog{
 			TargetId: req.TargetId,
@@ -505,7 +415,7 @@ func (s *MysqlService) first(req *request.WorkflowTransitionRequestStruct) error
 	approvalStatus := models.SysWorkflowLogStateApproval
 	// 状态为自己批准
 	firstLog.Status = &approvalStatus
-	// 当前节点为开始节点
+	// 当前流水线为开始流水线
 	firstLog.SubmitUserId = submitUser.Id
 	firstLog.ApprovalUserId = submitUser.Id
 	approvalOpinion := req.ApprovalOpinion
@@ -520,7 +430,7 @@ func (s *MysqlService) first(req *request.WorkflowTransitionRequestStruct) error
 	if err != nil {
 		return err
 	}
-	// 状态为提交, 当前节点指向下一节点, 创建新日志
+	// 状态为提交, 当前流水线指向下一流水线, 创建新日志
 	err = s.newLog(models.SysWorkflowLogStateSubmit, nextLine.Id, firstLog)
 	return err
 }
@@ -573,37 +483,45 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 		}
 	}
 	var nextLine models.SysWorkflowLine
-	// 开启提交人确认是没有下一节点的
-	if !*lastLog.Flow.SubmitUserConfirm && !*lastLog.CurrentLine.End {
-		// 判断是否末尾节点
+	// 获取下一流水线
+	if lastLog.CurrentLineId > 0 && !*lastLog.CurrentLine.End {
 		nextLine, err = s.GetNextWorkflowLine(req.FlowId, lastLog.CurrentLine.Sort)
 		if err != nil {
 			return err
 		}
 	}
-	if *lastLog.Flow.SubmitUserConfirm {
-		// 1.开启提交人确认
-		// 下一节点为空 且 上一条记录为通过
-		if nextLine.NodeId == 0 && *lastLog.Status == models.SysWorkflowLogStateApproval {
-			if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
-				return s.end(req.ApprovalOpinion, approval, lastLog)
-			} else {
-				// 回退到上一节点(提交人确认是不允许被拒绝的)
-				return s.deny(req, approval, lastLog)
+	// 1. 未结束 且 开启自我审批 且 有权限审批
+	if !*lastLog.End && *lastLog.Flow.Self && s.checkPermission(approval.Id, lastLog) {
+		if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
+			if nextLine.Id == 0 {
+				return s.end(false, req.ApprovalOpinion, approval, lastLog)
 			}
+			// 通过
+			return s.approval(req, approval, lastLog)
+		} else {
+			// 回退到上一流水线
+			return s.deny(req, approval, lastLog)
 		}
-	} else {
-		// 2. 开启自我审批 且 有权限审批
-		if *lastLog.Flow.Self && s.checkPermission(approval.Id, lastLog) {
-			if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
-				if nextLine.NodeId == 0 {
-					return s.end(req.ApprovalOpinion, approval, lastLog)
-				}
-				// 通过
-				return s.approval(req, approval, lastLog)
-			} else {
-				// 回退到上一节点
-				return s.deny(req, approval, lastLog)
+	}
+	// 2.开启提交人确认
+	if *lastLog.Flow.SubmitUserConfirm {
+		// 下一流水线为空
+		if nextLine.Id == 0 {
+			var log models.SysWorkflowLog
+			err = s.tx.
+				Where(&models.SysWorkflowLog{
+					FlowId:   req.FlowId,   // 流程号一致
+					TargetId: req.TargetId, // 目标一致
+				}).
+				Where("status > ?", models.SysWorkflowLogStateSubmit). // 状态非提交
+				Last(&log).Error
+
+			if err != nil {
+				return err
+			}
+			// 最后审批为通过 且 当前也为通过, 直接结束
+			if *log.Status == models.SysWorkflowLogStateApproval && *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
+				return s.end(true, req.ApprovalOpinion, approval, lastLog)
 			}
 		}
 	}
@@ -618,41 +536,41 @@ func (s *MysqlService) start(req *request.WorkflowTransitionRequestStruct, appro
 			// 通过
 			return s.approval(req, approval, lastLog)
 		} else {
-			// 回退到上一节点
+			// 回退到上一流水线
 			return s.deny(req, approval, lastLog)
 		}
 	}
 	return fmt.Errorf("无权限审批或审批流程未创建")
 }
 
-// 通过审批, 流转到下一节点
+// 通过审批, 流转到下一流水线
 func (s *MysqlService) approval(req *request.WorkflowTransitionRequestStruct, approval models.SysUser, lastLog models.SysWorkflowLog) error {
-	// 默认节点不变
+	// 默认流水线不变
 	lineId := lastLog.CurrentLineId
 	if s.checkNextLineSort(approval.Id, lastLog) {
-		// 流转到下一节点
+		// 流转到下一流水线
 		var err error
 		var nextLine models.SysWorkflowLine
 		if !*lastLog.CurrentLine.End {
-			// 获取下一节点
+			// 获取下一流水线
 			nextLine, err = s.GetNextWorkflowLine(req.FlowId, lastLog.CurrentLine.Sort)
 			if err != nil {
 				return err
 			}
 		}
-		// 下一节点为空, 直接结束
-		if nextLine.NodeId == 0 {
-			return s.end(req.ApprovalOpinion, approval, lastLog)
+		// 下一流水线为空, 直接结束
+		if nextLine.Id == 0 {
+			return s.end(false, req.ApprovalOpinion, approval, lastLog)
 		}
 		// 更新日志
 		err = s.updateLog(models.SysWorkflowLogStateApproval, req.ApprovalOpinion, approval, lastLog)
 		if err != nil {
 			return err
 		}
-		// 当前节点指向下一节点
+		// 当前流水线指向下一流水线
 		lineId = nextLine.Id
 	} else {
-		// 保留当前节点, 还需其他人继续审批
+		// 保留当前流水线, 还需其他人继续审批
 		err := s.updateLog(models.SysWorkflowLogStateApproval, req.ApprovalOpinion, approval, lastLog)
 		if err != nil {
 			return err
@@ -663,12 +581,12 @@ func (s *MysqlService) approval(req *request.WorkflowTransitionRequestStruct, ap
 	return err
 }
 
-// 拒绝审批, 回退到上一节点
+// 拒绝审批, 回退到上一流水线
 func (s *MysqlService) deny(req *request.WorkflowTransitionRequestStruct, approval models.SysUser, lastLog models.SysWorkflowLog) error {
-	// 流转到上一节点
-	// 获取上一节点
+	// 流转到上一流水线
+	// 获取上一流水线
 	if lastLog.CurrentLine.Sort <= 1 {
-		// 上一节点不存在, 说明拒绝到最初提交状态
+		// 上一流水线不存在, 说明拒绝到最初提交状态
 		err := s.updateLog(models.SysWorkflowLogStateDeny, req.ApprovalOpinion, approval, lastLog)
 		return err
 	}
@@ -681,30 +599,36 @@ func (s *MysqlService) deny(req *request.WorkflowTransitionRequestStruct, approv
 	if err != nil {
 		return err
 	}
-	// 状态为提交,当前节点指向上一节点, 创建新日志
+	// 状态为提交,当前流水线指向上一流水线, 创建新日志
 	err = s.newLog(models.SysWorkflowLogStateSubmit, prevLine.Id, lastLog)
 	return err
 }
 
-// 结束审批, 末尾节点
-func (s *MysqlService) end(approvalOpinion string, approval models.SysUser, lastLog models.SysWorkflowLog) error {
+// 结束审批, 末尾流水线
+func (s *MysqlService) end(submitConfirm bool, approvalOpinion string, approval models.SysUser, lastLog models.SysWorkflowLog) error {
 	// 结束
 	status := models.SysWorkflowLogStateEnd
-	if *lastLog.Flow.SubmitUserConfirm && approval.Id != lastLog.SubmitUserId {
+	// 状态为结束
+	end := true
+	if *lastLog.Flow.SubmitUserConfirm && !submitConfirm {
 		// 开启了提交人确认则不能直接结束
 		status = models.SysWorkflowLogStateApproval
+		end = false
 	}
-	// 提交人确认节点
-	if approval.Id == lastLog.SubmitUserId && strings.TrimSpace(approvalOpinion) == "" {
+	lastLog.End = &end
+	// 提交人确认流水线
+	if end && lastLog.SubmitUserId == approval.Id && strings.TrimSpace(approvalOpinion) == "" {
 		approvalOpinion = "提交人已确认"
 	}
 	err := s.updateLog(status, approvalOpinion, approval, lastLog)
 	if err != nil {
 		return err
 	}
-	if status == models.SysWorkflowLogStateEnd {
+	if end {
 		return nil
 	}
+	end = true
+	lastLog.End = &end
 	// 创建新记录
 	return s.newLog(models.SysWorkflowLogStateSubmit, 0, lastLog)
 }
@@ -717,6 +641,8 @@ func (s *MysqlService) updateLog(status uint, approvalOpinion string, approval m
 	updateLog.TargetId = lastLog.TargetId
 	// 状态
 	updateLog.Status = &status
+	// 是否结束
+	updateLog.End = lastLog.End
 	// 提交人
 	updateLog.SubmitUserId = lastLog.SubmitUserId
 	// 提交明细
@@ -738,6 +664,8 @@ func (s *MysqlService) newLog(status uint, lineId uint, lastLog models.SysWorkfl
 	newLog.CurrentLineId = lineId
 	// 状态
 	newLog.Status = &status
+	// 是否结束
+	newLog.End = lastLog.End
 	// 提交人
 	newLog.SubmitUserId = lastLog.SubmitUserId
 	// 提交人
@@ -750,14 +678,14 @@ func (s *MysqlService) newLog(status uint, lineId uint, lastLog models.SysWorkfl
 // 检查当前审批人是否有权限
 func (s *MysqlService) checkPermission(approvalUserId uint, lastLog models.SysWorkflowLog) bool {
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Node)
+	userIds := s.getApprovingUsers(lastLog)
 	return utils.ContainsUint(userIds, approvalUserId)
 }
 
 // 检查是否可以切换流水线到下一个(通过审批会使用)
 func (s *MysqlService) checkNextLineSort(approvalUserId uint, lastLog models.SysWorkflowLog) bool {
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId, lastLog.CurrentLine.Node)
+	userIds := s.getApprovingUsers(lastLog)
 	// 判断流程类别
 	switch lastLog.Flow.Category {
 	case models.SysWorkflowCategoryOnlyOneApproval:
@@ -765,20 +693,20 @@ func (s *MysqlService) checkNextLineSort(approvalUserId uint, lastLog models.Sys
 		return utils.ContainsUint(userIds, approvalUserId)
 	case models.SysWorkflowCategoryAllApproval:
 		// 查询全部审批人数
-		allUserIds := s.getAllApprovalUsers(lastLog.CurrentLine.Node)
+		allUserIds := s.getAllApprovalUsers(lastLog)
 		// 查询历史审批人数
-		historyUserIds := s.getHistoryApprovalUsers(lastLog.FlowId, lastLog.TargetId, lastLog.CurrentLineId)
+		historyUserIds := s.getHistoryApprovalUsers(lastLog)
 		// 需要全部人通过: 当前审批人在待审批列表中 且 历史审批人+当前审批人刚好等于全部审批人
 		return utils.ContainsUint(userIds, approvalUserId) && len(historyUserIds) >= len(allUserIds)-1
 	}
 	return false
 }
 
-// 获取待审批人(当前节点)
-func (s *MysqlService) getApprovingUsers(flowId uint, targetId uint, currentLineId uint, currentNode models.SysWorkflowNode) []uint {
+// 获取待审批人(当前流水线)
+func (s *MysqlService) getApprovingUsers(log models.SysWorkflowLog) []uint {
 	userIds := make([]uint, 0)
-	allUserIds := s.getAllApprovalUsers(currentNode)
-	historyUserIds := s.getHistoryApprovalUsers(flowId, targetId, currentLineId)
+	allUserIds := s.getAllApprovalUsers(log)
+	historyUserIds := s.getHistoryApprovalUsers(log)
 	for _, allUserId := range allUserIds {
 		// 不在历史列表中
 		if !utils.ContainsUint(historyUserIds, allUserId) {
@@ -788,14 +716,14 @@ func (s *MysqlService) getApprovingUsers(flowId uint, targetId uint, currentLine
 	return userIds
 }
 
-// 获取历史审批人(最后一个节点, 主要用于判断是否审批完成)
-func (s *MysqlService) getHistoryApprovalUsers(flowId uint, targetId uint, currentLineId uint) []uint {
+// 获取历史审批人(最后一个流水线, 主要用于判断是否审批完成)
+func (s *MysqlService) getHistoryApprovalUsers(log models.SysWorkflowLog) []uint {
 	historyUserIds := make([]uint, 0)
 	// 查询已审核的日志
 	logs := make([]models.SysWorkflowLog, 0)
 	err := s.tx.Where(&models.SysWorkflowLog{
-		FlowId:   flowId,   // 流程号一致
-		TargetId: targetId, // 目标一致
+		FlowId:   log.FlowId,   // 流程号一致
+		TargetId: log.TargetId, // 目标一致
 	}).Where(
 		"status > ?", models.SysWorkflowLogStateSubmit, // 状态非提交
 	).Order("id DESC").Find(&logs).Error
@@ -805,31 +733,36 @@ func (s *MysqlService) getHistoryApprovalUsers(flowId uint, targetId uint, curre
 	// 保留连续审核通过记录
 	l := len(logs)
 	for i := 0; i < l; i++ {
-		log := logs[i]
-		// 如果不是通过立即结束, 必须保证连续的通过 或 当前节点不一致
-		if *log.Status != models.SysWorkflowLogStateApproval || log.CurrentLineId != currentLineId {
+		item := logs[i]
+		// 如果不是通过立即结束, 必须保证连续的通过 或 当前流水线不一致
+		if *item.Status != models.SysWorkflowLogStateApproval || item.CurrentLineId != log.CurrentLineId {
 			break
 		}
 		// 审批人为配置中的一人
-		if !utils.ContainsUint(historyUserIds, log.ApprovalUserId) {
-			historyUserIds = append(historyUserIds, log.ApprovalUserId)
+		if !utils.ContainsUint(historyUserIds, item.ApprovalUserId) {
+			historyUserIds = append(historyUserIds, item.ApprovalUserId)
 		}
 	}
 	return historyUserIds
 }
 
-// 获取全部审批人(当前节点)
-func (s *MysqlService) getAllApprovalUsers(currentNode models.SysWorkflowNode) []uint {
+// 获取全部审批人(当前流水线)
+func (s *MysqlService) getAllApprovalUsers(log models.SysWorkflowLog) []uint {
 	userIds := make([]uint, 0)
-	for _, user := range currentNode.Users {
-		if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
-			userIds = append(userIds, user.Id)
-		}
-	}
-	if currentNode.RoleId > 0 {
-		for _, user := range currentNode.Role.Users {
+	if log.CurrentLineId == 0 && *log.Flow.SubmitUserConfirm {
+		// 末尾节点 且 开启提交人确认
+		userIds = append(userIds, log.SubmitUserId)
+	} else {
+		for _, user := range log.CurrentLine.Users {
 			if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
 				userIds = append(userIds, user.Id)
+			}
+		}
+		if log.CurrentLine.RoleId > 0 {
+			for _, user := range log.CurrentLine.Role.Users {
+				if user.Id > 0 && !utils.ContainsUint(userIds, user.Id) {
+					userIds = append(userIds, user.Id)
+				}
 			}
 		}
 	}

@@ -742,30 +742,28 @@ func InitData() {
 			s := service.New(nil)
 			// 设置张三和管理员审批
 			roleId := uint(3)
-			req := request.UpdateWorkflowLineRequestStruct{
+			req := request.UpdateWorkflowLineIncrementalRequestStruct{
 				FlowId: 1,
-				Create: []request.UpdateWorkflowNodeRequestStruct{
+				Create: []request.UpdateWorkflowLineRequestStruct{
 					{
 						Id:     1,
 						FlowId: 1,
 						UserIds: []uint{
 							2,
 						},
-						Edit:    &edit,
-						Name:    "主管审批",
-						Creator: creator,
+						Edit: &edit,
+						Name: "主管审批",
 					},
 					{
-						Id:      2,
-						FlowId:  1,
-						RoleId:  &roleId,
-						Edit:    &edit,
-						Name:    "总经理审批",
-						Creator: creator,
+						Id:     2,
+						FlowId: 1,
+						RoleId: &roleId,
+						Edit:   &edit,
+						Name:   "总经理审批",
 					},
 				},
 			}
-			s.UpdateWorkflowLineByNodes(&req)
+			s.UpdateWorkflowLineByIncremental(&req)
 		}
 	}
 }

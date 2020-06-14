@@ -23,7 +23,7 @@ type UpdateIncrementalIdsRequestStruct struct {
 
 // 获取增量, 可直接更新的结果
 func (s *UpdateIncrementalIdsRequestStruct) GetIncremental(oldMenuIds []uint, allMenu []models.SysMenu) []uint {
-	// 保留选中节点
+	// 保留选中流水线
 	s.Create = models.GetCheckedMenuIds(s.Create, allMenu)
 	s.Delete = models.GetCheckedMenuIds(s.Delete, allMenu)
 	newList := make([]uint, 0)
