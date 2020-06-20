@@ -26,7 +26,7 @@ func Mysql() {
 	db.LogMode(global.Conf.Mysql.LogMode)
 	global.Mysql = db
 	// 表结构
-	autoMigrate()
+	// autoMigrate()
 	global.Log.Debug("[单元测试]初始化mysql完成")
 }
 
