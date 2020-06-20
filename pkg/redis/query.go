@@ -105,20 +105,20 @@ func (s *QueryRedis) First(out interface{}) *QueryRedis {
 }
 
 // 获取总数
-func (s *QueryRedis) Count(out *int) *QueryRedis {
+func (s *QueryRedis) Count(out *uint) *QueryRedis {
 	s.out = out
 	s.count(out)
 	return s
 }
 
 // 分页
-func (s *QueryRedis) Limit(limit int) *QueryRedis {
-	s.limit = limit
+func (s *QueryRedis) Limit(limit uint) *QueryRedis {
+	s.limit = int(limit)
 	return s
 }
 
-func (s *QueryRedis) Offset(offset int) *QueryRedis {
-	s.offset = offset
+func (s *QueryRedis) Offset(offset uint) *QueryRedis {
+	s.offset = int(offset)
 	return s
 }
 
@@ -161,12 +161,12 @@ func (s *QueryRedis) where(key, cond string, val interface{}) *QueryRedis {
 }
 
 // 获取总数
-func (s *QueryRedis) count(value *int) *QueryRedis {
+func (s *QueryRedis) count(value *uint) *QueryRedis {
 	if !s.check() {
 		*value = 0
 	}
 	// 读取某个表的数据总数
-	*value = s.get(s.tableName).Count()
+	*value = uint(s.get(s.tableName).Count())
 	return s
 }
 

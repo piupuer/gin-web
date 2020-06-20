@@ -18,9 +18,7 @@ func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 	}
 	var err error
 	list := make([]models.SysApi, 0)
-	// 查询接口表所有缓存
-	jsonApis := s.GetListFromCache(nil, new(models.SysApi).TableName())
-	query := s.JsonQuery().FromString(jsonApis)
+	query := s.redis.Table(new(models.SysApi).TableName())
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
 		query = query.Where("method", "contains", method)
@@ -38,18 +36,17 @@ func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 		query = query.Where("creator", "contains", creator)
 	}
 	// 查询条数
-	req.PageInfo.Total = uint(query.Count())
-	var res interface{}
-	if req.PageInfo.NoPagination {
-		// 不使用分页
-		res = query.Get()
-	} else {
-		// 获取分页参数
-		limit, offset := req.GetLimit()
-		res = query.Limit(int(limit)).Offset(int(offset)).Get()
+	err = query.Count(&req.PageInfo.Total).Error
+	if err == nil {
+		if req.PageInfo.NoPagination {
+			// 不使用分页
+			err = query.Find(&list).Error
+		} else {
+			// 获取分页参数
+			limit, offset := req.GetLimit()
+			err = query.Limit(limit).Offset(offset).Find(&list).Error
+		}
 	}
-	// 转换为结构体
-	utils.Struct2StructByJson(res, &list)
 	return list, err
 }
 
@@ -64,8 +61,11 @@ func (s *RedisService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
-	// 查询接口表所有缓存
-	_ = s.GetListFromCache(&allApi, new(models.SysApi).TableName())
+	// 查询全部api
+	err := s.redis.Find(&allApi).Error
+	if err != nil {
+		return tree, accessIds, err
+	}
 	// 查询当前角色拥有api访问权限的casbin规则
 	casbins, err := s.GetCasbinListByRoleId(roleId)
 	if err != nil {

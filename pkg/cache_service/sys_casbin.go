@@ -69,7 +69,7 @@ func (s *RedisService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, e
 	casbins := make([]models.SysCasbin, 0)
 	// 读取角色缓存
 	var role models.SysRole
-	err := s.GetItemByIdFromCache(roleId, &role, role.TableName())
+	err := s.redis.Table(new(models.SysRole).TableName()).Where("id", "=", roleId).First(&role).Error
 	if err != nil {
 		return casbins, err
 	}

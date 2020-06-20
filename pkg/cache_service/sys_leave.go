@@ -4,7 +4,6 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
-	"gin-web/pkg/utils"
 	"strings"
 )
 
@@ -16,9 +15,7 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	}
 	var err error
 	list := make([]models.SysLeave, 0)
-	// 查询请假表所有缓存
-	jsonLeaves := s.GetListFromCache(nil, new(models.SysLeave).TableName())
-	query := s.JsonQuery().FromString(jsonLeaves)
+	query := s.redis.Table(new(models.SysLeave).TableName())
 	query = query.Where("userId", "=", int(req.UserId))
 	if req.Status != nil {
 		// redis存的json转换为int, 因此这里转一下类型
@@ -28,21 +25,20 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	if desc != "" {
 		query = query.Where("desc", "contains", desc)
 	}
-	// 按id逆序
-	query = query.SortBy("id", "desc")
+	// TODO 按id逆序
+	// query = query.SortBy("id", "desc")
 	// 查询条数
-	req.PageInfo.Total = uint(query.Count())
-	var res interface{}
-	if req.PageInfo.NoPagination {
-		// 不使用分页
-		res = query.Get()
-	} else {
-		// 获取分页参数
-		limit, offset := req.GetLimit()
-		res = query.Limit(int(limit)).Offset(int(offset)).Get()
+	err = query.Count(&req.PageInfo.Total).Error
+	if err == nil {
+		if req.PageInfo.NoPagination {
+			// 不使用分页
+			err = query.Find(&list).Error
+		} else {
+			// 获取分页参数
+			limit, offset := req.GetLimit()
+			err = query.Limit(limit).Offset(offset).Find(&list).Error
+		}
 	}
-	// 转换为结构体
-	utils.Struct2StructByJson(res, &list)
 	return list, err
 }
 
@@ -53,6 +49,7 @@ func (s *RedisService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowL
 		return s.mysql.GetLeaveApprovalLogs(leaveId)
 	}
 	list := make([]models.SysWorkflowLog, 0)
+
 	// 获取请假对应的工作流
 	flow, err := s.GetWorkflowByTargetCategory(models.SysWorkflowTargetCategoryLeave)
 	if err != nil {

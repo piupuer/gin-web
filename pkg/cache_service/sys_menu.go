@@ -4,7 +4,6 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/service"
-	"gin-web/pkg/utils"
 )
 
 // 获取权限菜单树
@@ -15,12 +14,13 @@ func (s *RedisService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	}
 	tree := make([]models.SysMenu, 0)
 	var role models.SysRole
-	err := s.GetItemByIdFromCache(roleId, &role, role.TableName())
+	err := s.redis.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id", "=", roleId).Find(&role).Error
+	menus := make([]models.SysMenu, 0)
 	if err != nil {
-		return tree, err
+		return menus, err
 	}
-	// 当前角色拥有的全部菜单, 生成菜单树
-	tree = service.GenMenuTree(nil, s.getMenusByRoleId(roleId))
+	// 生成菜单树
+	tree = service.GenMenuTree(nil, role.Menus)
 	return tree, nil
 }
 
@@ -48,10 +48,10 @@ func (s *RedisService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint
 	tree := make([]models.SysMenu, 0)
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
-	// 获取全部菜单
+	// 查询全部菜单
 	allMenu := s.getAllMenu()
-	// 查询角色拥有的全部菜单
-	roleMenus := s.getMenusByRoleId(roleId)
+	// 查询角色拥有菜单
+	roleMenus := s.getRoleMenus(roleId)
 	// 生成菜单树
 	tree = service.GenMenuTree(nil, allMenu)
 	// 获取id列表
@@ -63,33 +63,21 @@ func (s *RedisService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint
 	return tree, accessIds, nil
 }
 
-// 获取当前角色拥有的全部菜单
-func (s *RedisService) getMenusByRoleId(roleId uint) []models.SysMenu {
-	menus := make([]models.SysMenu, 0)
-	relations := make([]models.RelationRoleMenu, 0)
-	_ = s.GetListFromCache(&relations, new(models.RelationRoleMenu).TableName())
-	jsonMenus := s.GetListFromCache(nil, new(models.SysMenu).TableName())
-	// JsonQuery只支持int数组, 不支持uint
-	menuIds := make([]int, 0)
-	for _, relation := range relations {
-		if relation.SysRoleId == roleId {
-			menuIds = append(menuIds, int(relation.SysMenuId))
-		}
-	}
-	res := s.JsonQuery().FromString(jsonMenus).WhereIn("id", menuIds).Get()
-
-	// 转换为结构体
-	utils.Struct2StructByJson(res, &menus)
-	return menus
+// 获取权限菜单, 非菜单树
+func (s *RedisService) getRoleMenus(roleId uint) []models.SysMenu {
+	var role models.SysRole
+	// 根据权限编号获取菜单
+	err := s.redis.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id", "=", roleId).First(&role).Error
+	global.Log.Warn("[getRoleMenu]", err)
+	return role.Menus
 }
 
 // 获取全部菜单, 非菜单树
 func (s *RedisService) getAllMenu() []models.SysMenu {
 	menus := make([]models.SysMenu, 0)
-	jsonMenus := s.GetListFromCache(nil, new(models.SysMenu).TableName())
-	// 查询所有菜单, 根据sort字段排序
-	res := s.JsonQuery().FromString(jsonMenus).SortBy("sort").Get()
-	// 转换为结构体
-	utils.Struct2StructByJson(res, &menus)
+	// TODO 查询所有菜单
+	// err := s.redis.Table(new(models.SysMenu).TableName()).Order("sort").Find(&menus).Error
+	err := s.redis.Table(new(models.SysMenu).TableName()).Find(&menus).Error
+	global.Log.Warn("[getAllMenu]", err)
 	return menus
 }

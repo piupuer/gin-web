@@ -12,19 +12,14 @@ import (
 // 获取权限菜单树
 func (s *MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	tree := make([]models.SysMenu, 0)
-	query := s.tx.First(&models.SysRole{
-		Model: models.Model{
-			Id: roleId,
-		},
-	})
-	if query.RecordNotFound() {
-		return tree, errors.New("菜单为空")
-	}
+	var role models.SysRole
+	err := s.tx.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id", "=", roleId).Find(&role).Error
 	menus := make([]models.SysMenu, 0)
-	// 查询当前role关联的所有菜单
-	query.Where("status = ?", 1).Order("sort").Association("menus").Find(&menus)
+	if err != nil {
+		return menus, err
+	}
 	// 生成菜单树
-	tree = GenMenuTree(nil, menus)
+	tree = GenMenuTree(nil, role.Menus)
 	return tree, nil
 }
 

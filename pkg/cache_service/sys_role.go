@@ -4,7 +4,6 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
-	"gin-web/pkg/utils"
 	"strings"
 )
 
@@ -16,9 +15,7 @@ func (s *RedisService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 	}
 	var err error
 	list := make([]models.SysRole, 0)
-	// 查询接口表所有缓存
-	jsonRoles := s.GetListFromCache(nil, new(models.SysRole).TableName())
-	query := s.JsonQuery().FromString(jsonRoles)
+	query := s.redis.Table(new(models.SysRole).TableName())
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		query = query.Where("name", "contains", name)
@@ -34,18 +31,16 @@ func (s *RedisService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
-	// 查询条数
-	req.PageInfo.Total = uint(query.Count())
-	var res interface{}
-	if req.PageInfo.NoPagination {
-		// 不使用分页
-		res = query.Get()
-	} else {
-		// 获取分页参数
-		limit, offset := req.GetLimit()
-		res = query.Limit(int(limit)).Offset(int(offset)).Get()
+	err = query.Count(&req.PageInfo.Total).Error
+	if err == nil {
+		if req.PageInfo.NoPagination {
+			// 不使用分页
+			err = query.Find(&list).Error
+		} else {
+			// 获取分页参数
+			limit, offset := req.GetLimit()
+			err = query.Limit(limit).Offset(offset).Find(&list).Error
+		}
 	}
-	// 转换为结构体
-	utils.Struct2StructByJson(res, &list)
 	return list, err
 }

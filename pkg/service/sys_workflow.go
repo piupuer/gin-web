@@ -114,7 +114,7 @@ func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 
 	for _, log := range logs {
 		// 获取当前待审批人
-		userIds := s.getApprovingUsers(log)
+		userIds := s.GetApprovingUsers(log)
 		log.ApprovingUserIds = userIds
 		// 包含当前审批人
 		if utils.ContainsUint(userIds, approval.Id) {
@@ -155,7 +155,7 @@ func (s *MysqlService) GetWorkflowNextApprovingUsers(flowId uint, targetId uint)
 	}
 
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(log)
+	userIds := s.GetApprovingUsers(log)
 	err = s.tx.Where("id IN (?)", userIds).Find(&users).Error
 	return users, err
 }
@@ -687,14 +687,14 @@ func (s *MysqlService) newLog(status uint, lineId uint, lastLog models.SysWorkfl
 // 检查当前审批人是否有权限
 func (s *MysqlService) checkPermission(approvalUserId uint, lastLog models.SysWorkflowLog) bool {
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(lastLog)
+	userIds := s.GetApprovingUsers(lastLog)
 	return utils.ContainsUint(userIds, approvalUserId)
 }
 
 // 检查是否可以切换流水线到下一个(通过审批会使用)
 func (s *MysqlService) checkNextLineSort(approvalUserId uint, lastLog models.SysWorkflowLog) bool {
 	// 获取当前待审批人
-	userIds := s.getApprovingUsers(lastLog)
+	userIds := s.GetApprovingUsers(lastLog)
 	// 判断流程类别
 	switch lastLog.Flow.Category {
 	case models.SysWorkflowCategoryOnlyOneApproval:
@@ -712,7 +712,7 @@ func (s *MysqlService) checkNextLineSort(approvalUserId uint, lastLog models.Sys
 }
 
 // 获取待审批人(当前流水线)
-func (s *MysqlService) getApprovingUsers(log models.SysWorkflowLog) []uint {
+func (s *MysqlService) GetApprovingUsers(log models.SysWorkflowLog) []uint {
 	userIds := make([]uint, 0)
 	allUserIds := s.getAllApprovalUsers(log)
 	historyUserIds := s.getHistoryApprovalUsers(log)
