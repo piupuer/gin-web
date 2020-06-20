@@ -25,7 +25,7 @@ func (s *MysqlService) GetWorkflowByTargetCategory(targetCategory uint) (models.
 func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]models.SysWorkflow, error) {
 	var err error
 	list := make([]models.SysWorkflow, 0)
-	query := s.tx
+	query := s.tx.Table(new(models.SysWorkflow).TableName())
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		query = query.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
@@ -48,7 +48,7 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 	}
 
 	// 查询条数
-	err = query.Find(&list).Count(&req.PageInfo.Total).Error
+	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页

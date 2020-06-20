@@ -14,7 +14,7 @@ import (
 func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.SysLeave, error) {
 	var err error
 	list := make([]models.SysLeave, 0)
-	query := s.tx.Where("user_id = ?", req.UserId)
+	query := s.tx.Table(new(models.SysLeave).TableName()).Where("user_id = ?", req.UserId)
 	desc := strings.TrimSpace(req.Desc)
 	if req.Status != nil {
 		query = query.Where("status = ?", *req.Status)
@@ -25,7 +25,7 @@ func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	// 按id逆序
 	query = query.Order("id DESC")
 	// 查询条数
-	err = query.Find(&list).Count(&req.PageInfo.Total).Error
+	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页

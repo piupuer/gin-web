@@ -22,7 +22,7 @@ import (
 func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
-	query := s.tx
+	query := s.tx.Table(new(models.SysApi).TableName())
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
 		query = query.Where("method LIKE ?", fmt.Sprintf("%%%s%%", method))
@@ -40,7 +40,7 @@ func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	// 查询条数
-	err = query.Find(&list).Count(&req.PageInfo.Total).Error
+	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
