@@ -48,11 +48,11 @@ func TestQueryRedis_First(t *testing.T) {
 	tests.InitTestEnv()
 	query := New()
 	var u models.SysUser
-	var us []models.SysUser
+	var us models.SysUser
 	tableName := u.TableName()
 	err := global.Mysql.Table(tableName).Where("id > ?", uint(0)).First(&us).Error
 	fmt.Println(err, us)
-	var us2 []models.SysUser
+	var us2 models.SysUser
 	err2 := query.Table(tableName).Where("id", ">", 0).First(&us2).Error
 	fmt.Println(err2, us2)
 }

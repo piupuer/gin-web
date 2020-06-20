@@ -34,6 +34,8 @@ type QueryRedis struct {
 	offset int
 	// 输出值
 	out interface{}
+	// 是否只取一条数据
+	first bool
 }
 
 // 单次查询域
@@ -97,6 +99,7 @@ func (s *QueryRedis) Find(out interface{}) *QueryRedis {
 // 查询一条
 func (s *QueryRedis) First(out interface{}) *QueryRedis {
 	s.limit = 1
+	s.first = true
 	s.Find(out)
 	return s
 }
@@ -181,9 +184,19 @@ func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
 		res = "[]"
 	}
 	query := s.jsonQuery(res)
-	fmt.Println(query.Get())
+	list := query.Get()
+	if s.first {
+		// 取第一条数据
+		switch list.(type) {
+		case []interface{}:
+			v, _ := list.([]interface{})
+			if len(v) > 0 {
+				list = v[0]
+			}
+		}
+	}
 	// 获取json结果并转换为结构体
-	utils.Struct2StructByJson(query.Get(), s.out)
+	utils.Struct2StructByJson(list, s.out)
 
 	// 处理预加载
 	s.processPreload()
