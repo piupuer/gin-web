@@ -11,7 +11,7 @@ import (
 func TestQueryRedis_Count(t *testing.T) {
 	tests.InitTestEnv()
 	query := New()
-	count := 0
+	var count uint
 	err := global.Mysql.Count(&count).Error
 	fmt.Println(err)
 	err2 := query.Count(&count).Error
@@ -23,10 +23,10 @@ func TestQueryRedis_Table(t *testing.T) {
 	query := New()
 	var u models.SysUser
 	tableName := u.TableName()
-	count := 0
+	var count uint
 	err := global.Mysql.Table(tableName).Count(&count).Error
 	fmt.Println(err, count)
-	count2 := 0
+	var count2 uint
 	err2 := query.Table(tableName).Count(&count2).Error
 	fmt.Println(err2, count2)
 }
@@ -72,7 +72,7 @@ func TestQueryRedis_Preload(t *testing.T) {
 }
 
 func TestQueryRedis_Preload1(t *testing.T) {
-	// 测试preload many2many关联
+	// 测试preload hasMany关联
 	tests.InitTestEnv()
 	query := New()
 	var u models.SysRole
@@ -96,5 +96,19 @@ func TestQueryRedis_Preload2(t *testing.T) {
 	fmt.Println(err, us)
 	var us2 []models.SysUser
 	err2 := query.Table(tableName).Preload("Role").Preload("Role.Users").Find(&us2).Error
+	fmt.Println(err2, us2)
+}
+
+func TestQueryRedis_Preload3(t *testing.T) {
+	// 测试preload many2many关联
+	tests.InitTestEnv()
+	query := New()
+	var u models.SysRole
+	var us models.SysRole
+	tableName := u.TableName()
+	err := global.Mysql.Table(tableName).Preload("Menus").Where("id = ?", 1).First(&us).Error
+	fmt.Println(err, us)
+	var us2 models.SysRole
+	err2 := query.Table(tableName).Preload("Menus").Where("id", "=", 1).First(&us2).Error
 	fmt.Println(err2, us2)
 }

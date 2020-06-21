@@ -3,12 +3,14 @@ package redis
 import (
 	"database/sql/driver"
 	"fmt"
+	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/go-redis/redis"
 	"github.com/jinzhu/gorm"
 	"github.com/thedevsaddam/gojsonq/v2"
 	"reflect"
+	"sort"
 	"strings"
 )
 
@@ -184,6 +186,7 @@ func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
 		res = "[]"
 	}
 	query := s.jsonQuery(res)
+	var nullList interface{}
 	list := query.Get()
 	if s.first {
 		// 取第一条数据
@@ -192,6 +195,9 @@ func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
 			v, _ := list.([]interface{})
 			if len(v) > 0 {
 				list = v[0]
+			} else {
+				// 设置为空元素
+				list = nullList
 			}
 		}
 	}
@@ -238,6 +244,160 @@ func (s QueryRedis) check() bool {
 	return true
 }
 
+// 通过反射获取元素真实种类, 支持指针元素
+func getRealKind(v interface{}) (reflect.Value, reflect.Kind) {
+	rv := reflect.ValueOf(v)
+	// 指针类型/接口类型需要继续获取元素值再判断
+	for rv.Kind() == reflect.Ptr || rv.Kind() == reflect.Interface {
+		rv = rv.Elem()
+	}
+	return rv, rv.Kind()
+}
+
+// 类型转换(redis查询如果指定interface会将数字类型默认转为float64)
+func convertTypeFromKind(source reflect.Value, target reflect.Value) interface{} {
+	switch source.Kind() {
+	case reflect.Float64:
+		var v float64
+		v = source.Float()
+		return convertFloat64TypeFormKind(v, target)
+	case reflect.Int:
+		var v int64
+		v = source.Int()
+		return convertIntTypeFormKind(int(v), target)
+	case reflect.Uint:
+		var v uint64
+		v = source.Uint()
+		return convertUintTypeFormKind(uint(v), target)
+	case reflect.String:
+		var v string
+		v = source.String()
+		return convertStringTypeFormKind(v, target)
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertTypeFromKind]类型转换失败, %v", target.Kind()))
+	return nil
+}
+
+// float64转为target类型
+func convertFloat64TypeFormKind(source float64, target reflect.Value) interface{} {
+	switch target.Kind() {
+	case reflect.Float64:
+		return source
+	case reflect.Uint:
+		var v uint
+		return convertFloat64Type(source, v)
+	case reflect.Int:
+		var v int
+		return convertFloat64Type(source, v)
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertFloat64TypeFormKind]类型转换失败, %v", target.Kind()))
+	return nil
+}
+
+// int转为target类型
+func convertIntTypeFormKind(source int, target reflect.Value) interface{} {
+	switch target.Kind() {
+	case reflect.Float64:
+		return source
+	case reflect.Uint:
+		var v uint
+		return convertIntType(source, v)
+	case reflect.Int:
+		var v int
+		return convertIntType(source, v)
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertIntTypeFormKind]类型转换失败, %v", target.Kind()))
+	return nil
+}
+
+// int转为target类型
+func convertUintTypeFormKind(source uint, target reflect.Value) interface{} {
+	switch target.Kind() {
+	case reflect.Float64:
+		return source
+	case reflect.Uint:
+		var v uint
+		return convertUintType(source, v)
+	case reflect.Int:
+		var v int
+		return convertUintType(source, v)
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertUintTypeFormKind]类型转换失败, %v", target.Kind()))
+	return nil
+}
+
+// string转为target类型
+func convertStringTypeFormKind(source string, target reflect.Value) interface{} {
+	switch target.Kind() {
+	case reflect.Struct:
+		switch target.Interface().(type) {
+		// 自定义日期转换
+		case models.LocalTime:
+			var time models.LocalTime
+			_ = time.UnmarshalJSON([]byte(fmt.Sprintf("\"%s\"", source)))
+			return time
+		}
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertStringTypeFormKind]类型转换失败, %v", target.Kind()))
+	return nil
+}
+
+// 类型转换(redis查询如果指定interface会将数字类型默认转为float64)
+func convertType(source interface{}, target interface{}) interface{} {
+	switch source.(type) {
+	case float64:
+		return convertFloat64Type(source.(float64), target)
+	case int:
+		return convertIntType(source.(int), target)
+	case uint:
+		return convertUintType(source.(uint), target)
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertType]类型转换失败, %v", target))
+	return nil
+}
+
+// float64转为target类型
+func convertFloat64Type(source float64, target interface{}) interface{} {
+	switch target.(type) {
+	case float64:
+		return source
+	case uint:
+		return uint(source)
+	case int:
+		return int(source)
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertFloat64Type]类型转换失败, %v", target))
+	return nil
+}
+
+// int转为target类型
+func convertIntType(source int, target interface{}) interface{} {
+	switch target.(type) {
+	case int:
+		return source
+	case uint:
+		return uint(source)
+	case float64:
+		return float64(source)
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertIntType]类型转换失败, %v", target))
+	return nil
+}
+
+// uint转为target类型
+func convertUintType(source uint, target interface{}) interface{} {
+	switch target.(type) {
+	case uint:
+		return source
+	case int:
+		return int(source)
+	case float64:
+		return float64(source)
+	}
+	global.Log.Warn(fmt.Sprintf("[QueryRedis.convertUintType]类型转换失败, %v", target))
+	return nil
+}
+
 // //////////////////////////////////////////////////////////////////////////////
 // Private Methods For QueryRedisScope. From gorm.scope
 // //////////////////////////////////////////////////////////////////////////////
@@ -269,18 +429,17 @@ func (s *QueryRedis) processPreload() {
 					if field.Name != preloadField || field.Relationship == nil {
 						continue
 					}
-					fmt.Println(field.Relationship.Kind)
 					// 根据关联字段不同类型处理
 					switch field.Relationship.Kind {
-					// TODO 项目中暂时没有用到has_one/many_to_many
+					// TODO 项目中暂时没有用到has_one
 					// case "has_one":
 					// 	currentScope.handleHasOnePreload(field)
 					case "has_many":
 						currentScope.handleHasManyPreload(field)
 					case "belongs_to":
 						currentScope.handleBelongsToPreload(field)
-					// case "many_to_many":
-					// 	currentScope.handleManyToManyPreload(field)
+					case "many_to_many":
+						currentScope.handleManyToManyPreload(field)
 					default:
 						s.Error = fmt.Errorf("unsupported relation: %s", field.Relationship.Kind)
 					}
@@ -410,9 +569,254 @@ func (s *QueryRedisScope) handleBelongsToPreload(field *gorm.Field) {
 			s.scope.Err(field.Set(result))
 		}
 	}
+}
 
-	fmt.Println(results, preloadDB)
+// handleManyToManyPreload used to preload many to many associations
+func (s *QueryRedisScope) handleManyToManyPreload(field *gorm.Field) {
+	var (
+		relation         = field.Relationship
+		joinTableHandler = relation.JoinTableHandler
+		fieldType        = field.Struct.Type.Elem()
+		linkHash         = map[string][]reflect.Value{}
+		isPtr            bool
+	)
 
+	if fieldType.Kind() == reflect.Ptr {
+		isPtr = true
+		fieldType = fieldType.Elem()
+	}
+
+	var sourceKeys []string
+	for _, key := range joinTableHandler.SourceForeignKeys() {
+		sourceKeys = append(sourceKeys, key.DBName)
+	}
+	var destinationKeys []string
+	var destinationCamelKeys []string
+	for _, key := range joinTableHandler.DestinationForeignKeys() {
+		destinationKeys = append(destinationKeys, key.DBName)
+		destinationCamelKeys = append(destinationCamelKeys, utils.CamelCaseLowerFirst(key.DBName))
+	}
+
+	// 查询关系表
+	relationRows := make([]map[string]interface{}, 0)
+	if many2many, _ := field.TagSettingsGet("MANY2MANY"); many2many != "" {
+		many2manyDB := New().Table(many2many)
+		// 找到对应字段名, 组成查询条件
+		for _, key := range sourceKeys {
+			// get relations's primary keys
+			primaryKeys := s.getColumnAsArray(relation.ForeignFieldNames, s.scope.Value)
+			if len(primaryKeys) == 0 {
+				return
+			}
+
+			many2manyDB = many2manyDB.Where(
+				// 转为驼峰命名
+				utils.CamelCaseLowerFirst(key),
+				"in",
+				toQueryValues(primaryKeys),
+			)
+		}
+		err := many2manyDB.Find(&relationRows).Error
+		if s.scope.Err(err) != nil {
+			return
+		}
+	}
+
+	sourceIds := make([][]interface{}, 0)
+	// 取出符合关系的关联表数据id
+	for _, row := range relationRows {
+		for k, v := range row {
+			for _, key := range destinationKeys {
+				if k == utils.CamelCaseLowerFirst(key) {
+					// redis查询如果指定interface会将数字类型默认转为float64
+					var target int
+					sourceIds = append(sourceIds, []interface{}{convertType(v, target)})
+				}
+			}
+		}
+	}
+	if len(sourceIds) == 0 {
+		return
+	}
+
+	// 查询需要关联的表
+	foreignScope := s.scope.New(reflect.New(fieldType).Interface())
+	foreignRows := make([]map[string]interface{}, 0)
+	foreignDB := New().Table(foreignScope.TableName())
+	// 找到对应字段名, 组成查询条件
+	for _, key := range relation.AssociationForeignFieldNames {
+		foreignDB = foreignDB.Where(
+			// 转为驼峰命名
+			utils.CamelCaseLowerFirst(key),
+			"in",
+			toQueryValues(sourceIds),
+		)
+	}
+	err := foreignDB.Find(&foreignRows).Error
+
+	if s.scope.Err(err) != nil {
+		return
+	}
+
+	// 获取外键对应的全部值
+	foreignKeys := s.getColumnAsArray(relation.ForeignFieldNames, s.scope.Value)
+	hashedSourceKeys := toString(foreignKeys[0])
+
+	// 将数据暂存至linkHash
+	for _, row := range foreignRows {
+		var (
+			elem   = reflect.New(fieldType).Elem()
+			fields = s.scope.New(elem.Addr().Interface()).Fields()
+		)
+
+		// 将每一行的数据写入结果集
+		s.scan(row, append(fields))
+
+		// 暂存hash
+		if isPtr {
+			linkHash[hashedSourceKeys] = append(linkHash[hashedSourceKeys], elem.Addr())
+		} else {
+			linkHash[hashedSourceKeys] = append(linkHash[hashedSourceKeys], elem)
+		}
+	}
+
+	// assign find results
+	var (
+		indirectScopeValue = s.scope.IndirectValue()
+		fieldsSourceMap    = map[string][]reflect.Value{}
+		foreignFieldNames  []string
+	)
+
+	for _, dbName := range relation.ForeignFieldNames {
+		if field, ok := s.scope.FieldByName(dbName); ok {
+			foreignFieldNames = append(foreignFieldNames, field.Name)
+		}
+	}
+
+	if indirectScopeValue.Kind() == reflect.Slice {
+		for j := 0; j < indirectScopeValue.Len(); j++ {
+			object := indirect(indirectScopeValue.Index(j))
+			key := toString(getValueFromFields(object, foreignFieldNames))
+			fieldsSourceMap[key] = append(fieldsSourceMap[key], object.FieldByName(field.Name))
+		}
+	} else if indirectScopeValue.IsValid() {
+		key := toString(getValueFromFields(indirectScopeValue, foreignFieldNames))
+		fieldsSourceMap[key] = append(fieldsSourceMap[key], indirectScopeValue.FieldByName(field.Name))
+	}
+
+	for source, fields := range fieldsSourceMap {
+		for _, f := range fields {
+			// If not 0 this means Value is a pointer and we already added preloaded models to it
+			if f.Len() != 0 {
+				continue
+			}
+
+			v := reflect.MakeSlice(f.Type(), 0, 0)
+			if len(linkHash[source]) > 0 {
+				v = reflect.Append(f, linkHash[source]...)
+			}
+
+			f.Set(v)
+		}
+	}
+}
+
+func (s *QueryRedisScope) scan(row map[string]interface{}, fields []*gorm.Field) {
+	// 从row中读取列
+	columns := make([]string, 0)
+	for key := range row {
+		columns = append(columns, key)
+	}
+	// 统一排序
+	sort.Strings(columns)
+	var (
+		ignored            interface{}
+		values             = make([]interface{}, len(columns))
+		selectFields       []*gorm.Field
+		selectedColumnsMap = map[string]int{}
+		resetFields        = map[int]*gorm.Field{}
+	)
+
+	for index, column := range columns {
+		values[index] = &ignored
+
+		selectFields = fields
+		offset := 0
+		if idx, ok := selectedColumnsMap[column]; ok {
+			offset = idx + 1
+			selectFields = selectFields[offset:]
+		}
+
+		for fieldIndex, field := range selectFields {
+			// 转为驼峰命名
+			if utils.CamelCaseLowerFirst(field.DBName) == column {
+				if field.Field.Kind() == reflect.Ptr {
+					values[index] = field.Field.Addr().Interface()
+				} else {
+					reflectValue := reflect.New(reflect.PtrTo(field.Struct.Type))
+					reflectValue.Elem().Set(field.Field.Addr())
+					values[index] = reflectValue.Interface()
+					resetFields[index] = field
+				}
+
+				selectedColumnsMap[column] = offset + fieldIndex
+
+				if field.IsNormal {
+					break
+				}
+			}
+		}
+	}
+
+	for i, v := range values {
+		// 通过反射赋值
+		// 获取元素真实类型
+		reflectV, reflectVKind := getRealKind(v)
+		item := row[columns[i]]
+		reflectRow, reflectRowKind := getRealKind(item)
+
+		// row数据为无效直接跳过
+		if reflectRowKind == reflect.Invalid {
+			continue
+		}
+
+		// 类型相同 或 类型不同但v值有效(说明不是空指针)
+		if reflectVKind == reflectRowKind || reflectV.IsValid() {
+			if reflectVKind != reflectRowKind {
+				// redis查询如果指定interface会将数字类型默认转为float64
+				newVal := convertTypeFromKind(reflectRow, reflectV)
+				if newVal != nil {
+					reflectV.Set(reflect.ValueOf(newVal))
+				}
+			} else {
+				// 类型一致
+				reflectV.Set(reflectRow)
+			}
+		} else {
+			// v的类型为无效, 可能当前为空指针
+			if reflectVKind == reflect.Invalid {
+				// 寻址只需1层Elem(v默认2层Elem才能找到最后的值类型)
+				elem := reflect.ValueOf(v).Elem()
+				kind := elem.Kind()
+				if kind == reflect.Ptr || kind == reflect.Interface {
+					// 以当前row的值类型为基础创建新对象, 指针类型, 类似于new(xxx)
+					rowPtr := reflect.New(reflectRow.Type()).Elem()
+					// 将当前row值写入rowPtr
+					rowPtr.Set(reflectRow)
+					// 将rowPtr写入v
+					elem.Set(rowPtr.Addr())
+				}
+			} else {
+				global.Log.Warn(fmt.Sprintf("[QueryRedisScope.scan]类型不匹配, row type: %v, value type: %v", reflectRowKind, reflectVKind))
+			}
+		}
+	}
+
+	for index, field := range resetFields {
+		if v := reflect.ValueOf(values[index]).Elem().Elem(); v.IsValid() {
+			field.Field.Set(v)
+		}
+	}
 }
 
 func (s *QueryRedisScope) getColumnAsArray(columns []string, values ...interface{}) (results [][]interface{}) {
@@ -427,7 +831,8 @@ func (s *QueryRedisScope) getColumnAsArray(columns []string, values ...interface
 				var object = indirect(indirectValue.Index(i))
 				var hasValue = false
 				for _, column := range columns {
-					field := object.FieldByName(column)
+					// 忽略字段大小写
+					field := object.FieldByNameFunc(func(n string) bool { return strings.ToLower(n) == column })
 					if hasValue || !isBlank(field) {
 						hasValue = true
 					}
@@ -445,7 +850,8 @@ func (s *QueryRedisScope) getColumnAsArray(columns []string, values ...interface
 			var result []interface{}
 			var hasValue = false
 			for _, column := range columns {
-				field := indirectValue.FieldByName(column)
+				// 忽略字段大小写
+				field := indirectValue.FieldByNameFunc(func(n string) bool { return strings.ToLower(n) == column })
 				if hasValue || !isBlank(field) {
 					hasValue = true
 				}
