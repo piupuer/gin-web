@@ -832,7 +832,9 @@ func (s *QueryRedisScope) getColumnAsArray(columns []string, values ...interface
 				var hasValue = false
 				for _, column := range columns {
 					// 忽略字段大小写
-					field := object.FieldByNameFunc(func(n string) bool { return strings.ToLower(n) == column })
+					field := object.FieldByNameFunc(func(n string) bool {
+						return strings.ToLower(n) == strings.ToLower(column)
+					})
 					if hasValue || !isBlank(field) {
 						hasValue = true
 					}
@@ -851,7 +853,9 @@ func (s *QueryRedisScope) getColumnAsArray(columns []string, values ...interface
 			var hasValue = false
 			for _, column := range columns {
 				// 忽略字段大小写
-				field := indirectValue.FieldByNameFunc(func(n string) bool { return strings.ToLower(n) == column })
+				field := indirectValue.FieldByNameFunc(func(n string) bool {
+					return strings.ToLower(n) == strings.ToLower(column)
+				})
 				if hasValue || !isBlank(field) {
 					hasValue = true
 				}
