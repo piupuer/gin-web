@@ -204,8 +204,10 @@ func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
 	// 获取json结果并转换为结构体
 	utils.Struct2StructByJson(list, s.out)
 
-	// 处理预加载
-	s.processPreload()
+	if list != nil {
+		// 处理预加载
+		s.processPreload()
+	}
 	return query
 }
 
