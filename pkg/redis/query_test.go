@@ -112,3 +112,20 @@ func TestQueryRedis_Preload3(t *testing.T) {
 	err2 := query.Table(tableName).Preload("Menus").Where("id", "=", 1).First(&us2).Error
 	fmt.Println(err2, us2)
 }
+
+func TestQueryRedis_Multi(t *testing.T) {
+	// 测试多次查询
+	tests.InitTestEnv()
+	query := New()
+	var us []models.SysUser
+	var us2 []models.SysUser
+	var us3 []models.SysUser
+	var us4 []models.SysUser
+	var us5 []models.SysUser
+	query.Table(new(models.SysUser).TableName()).Where("id", "=", 1).Find(&us)
+	query.Table(new(models.SysUser).TableName()).Where("mobile", "=", "13888888888").Find(&us2)
+	query.Table(new(models.SysUser).TableName()).Where("id", "=", 3).Where("mobile", "=", "13888888888").Find(&us3)
+	query.mysql.Table(new(models.SysUser).TableName()).Where("id = ?", 1).Find(&us4)
+	query.mysql.Table(new(models.SysUser).TableName()).Where("mobile = ?", "13888888888").Find(&us5)
+	fmt.Println(us, us2, us3, us4, us5)
+}

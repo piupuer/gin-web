@@ -24,40 +24,13 @@ type QueryRedis struct {
 	redis *redis.Client
 	// mysql对象, 主要作用是映射相关字段
 	mysql *gorm.DB
-	// 表名称
-	tableName string
-	// 记录需要preload的所有字段信息
-	preloads []preload
-	// where条件
-	whereConditions []whereCondition
-	// 分页
-	limit int
-	// 偏移量
-	offset int
-	// 输出值
-	out interface{}
-	// 是否只取一条数据
-	first bool
+	// 查询条件
+	search *search
 }
 
 // 单次查询域
 type QueryRedisScope struct {
 	scope *gorm.Scope
-}
-
-// 预加载
-type preload struct {
-	schema string
-}
-
-// where条件(与jsonq Where参数一致)
-type whereCondition struct {
-	// 键名称
-	key string
-	// 条件
-	cond string
-	// 值
-	val interface{}
 }
 
 // 初始化服务
@@ -70,96 +43,83 @@ func New() *QueryRedis {
 
 // 指定表名称
 func (s *QueryRedis) Table(name string) *QueryRedis {
-	s.tableName = name
-	return s
+	clone := s.clone()
+	clone.search.Table(name)
+	clone.search.out = nil
+	return clone
 }
 
 // 预先加载某一列
 func (s *QueryRedis) Preload(column string) *QueryRedis {
-	s.preload(column)
-	return s
+	return s.clone().search.Preload(column).query
 }
 
 // 查询条件
 func (s *QueryRedis) Where(key, cond string, val interface{}) *QueryRedis {
-	s.where(key, cond, val)
-	return s
+	return s.clone().search.Where(key, cond, val).query
 }
 
 // 查询列表
 func (s *QueryRedis) Find(out interface{}) *QueryRedis {
-	if !s.check() {
-		return s
+	clone := s.clone()
+	if !clone.check() {
+		return clone
 	}
 	// 记录输出值
-	s.out = out
+	clone.search.out = out
 	// 获取数据
-	s.get(s.tableName)
+	clone.get(clone.search.tableName)
 	return s
 }
 
 // 查询一条
 func (s *QueryRedis) First(out interface{}) *QueryRedis {
-	s.limit = 1
-	s.first = true
-	s.Find(out)
-	return s
+	clone := s.clone()
+	clone.search.limit = 1
+	clone.search.first = true
+	clone.Find(out)
+	return clone
 }
 
 // 获取总数
 func (s *QueryRedis) Count(out *uint) *QueryRedis {
-	s.out = out
-	s.count(out)
-	return s
+	clone := s.clone()
+	clone.search.out = out
+	clone.count(out)
+	return clone
 }
 
 // 分页
 func (s *QueryRedis) Limit(limit uint) *QueryRedis {
-	s.limit = int(limit)
-	return s
+	clone := s.clone()
+	clone.search.limit = int(limit)
+	return clone
 }
 
 func (s *QueryRedis) Offset(offset uint) *QueryRedis {
-	s.offset = int(offset)
-	return s
+	clone := s.clone()
+	clone.search.offset = int(offset)
+	return clone
 }
 
 // //////////////////////////////////////////////////////////////////////////////
 // Private Methods For QueryRedis
 // //////////////////////////////////////////////////////////////////////////////
 
-// 预加载
-func (s *QueryRedis) preload(schema string) *QueryRedis {
-	var preloads []preload
-	// 保留旧数据
-	for _, preload := range s.preloads {
-		if preload.schema != schema {
-			preloads = append(preloads, preload)
-		}
+func (s *QueryRedis) clone() *QueryRedis {
+	query := &QueryRedis{
+		redis: s.redis,
+		mysql: s.mysql,
 	}
-	// 添加新数据
-	preloads = append(preloads, preload{schema: schema})
-	s.preloads = preloads
-	return s
-}
 
-// where条件
-func (s *QueryRedis) where(key, cond string, val interface{}) *QueryRedis {
-	var whereConditions []whereCondition
-	// 保留旧数据
-	for _, condition := range s.whereConditions {
-		if condition.key != key {
-			whereConditions = append(whereConditions, condition)
-		}
+	if s.search == nil {
+		query.search = &search{limit: -1, offset: -1}
+	} else {
+		query.search = s.search.clone()
 	}
-	// 添加新数据
-	whereConditions = append(whereConditions, whereCondition{
-		key:  key,
-		cond: cond,
-		val:  val,
-	})
-	s.whereConditions = whereConditions
-	return s
+
+	query.search.query = query
+	return query
 }
 
 // 获取总数
@@ -168,7 +128,7 @@ func (s *QueryRedis) count(value *uint) *QueryRedis {
 		*value = 0
 	}
 	// 读取某个表的数据总数
-	*value = uint(s.get(s.tableName).Count())
+	*value = uint(s.get(s.search.tableName).Count())
 	return s
 }
 
@@ -188,7 +148,7 @@ func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
 	query := s.jsonQuery(res)
 	var nullList interface{}
 	list := query.Get()
-	if s.first {
+	if s.search.first {
 		// 取第一条数据
 		switch list.(type) {
 		case []interface{}:
@@ -202,7 +162,7 @@ func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
 		}
 	}
 	// 获取json结果并转换为结构体
-	utils.Struct2StructByJson(list, s.out)
+	utils.Struct2StructByJson(list, s.search.out)
 
 	if list != nil {
 		// 处理预加载
@@ -228,19 +188,19 @@ func (s QueryRedis) jsonQuery(str string) *gojsonq.JSONQ {
 	// 使用jsonq
 	query := gojsonq.New().FromString(str)
 	// 添加where条件
-	for _, condition := range s.whereConditions {
+	for _, condition := range s.search.whereConditions {
 		query = query.Where(condition.key, condition.cond, condition.val)
 	}
 	// 添加limit/offset
-	query.Limit(s.limit)
-	query.Offset(s.offset)
+	query.Limit(s.search.limit)
+	query.Offset(s.search.offset)
 	return query
 }
 
 // 校验表名是否正常
 func (s QueryRedis) check() bool {
-	if strings.TrimSpace(s.tableName) == "" {
-		s.Error = fmt.Errorf("invalid table name: '%s'", s.tableName)
+	if strings.TrimSpace(s.clone().search.tableName) == "" {
+		s.Error = fmt.Errorf("invalid table name: '%s'", s.clone().search.tableName)
 		return false
 	}
 	return true
@@ -407,13 +367,13 @@ func convertUintType(source uint, target interface{}) interface{} {
 // 处理预加载
 func (s *QueryRedis) processPreload() {
 	// 获取当前域
-	scope := s.NewScope(s.out)
+	scope := s.NewScope(s.search.out)
 	var (
 		preloadedMap = map[string]bool{}
 		fields       = scope.scope.Fields()
 	)
 	// preload其他关联表
-	for _, preload := range s.preloads {
+	for _, preload := range s.search.preload {
 		var (
 			// 由.分隔子项目
 			preloadFields = strings.Split(preload.schema, ".")
@@ -456,7 +416,7 @@ func (s *QueryRedis) processPreload() {
 					return
 				}
 			}
-			// preload next level
+			// searchPreload next level
 			if idx < len(preloadFields)-1 {
 				currentScope = currentScope.getColumnAsScope(preloadField)
 				if currentScope != nil {
@@ -467,7 +427,7 @@ func (s *QueryRedis) processPreload() {
 	}
 }
 
-// handleHasManyPreload used to preload has many associations
+// handleHasManyPreload used to searchPreload has many associations
 func (s *QueryRedisScope) handleHasManyPreload(field *gorm.Field) {
 	relation := field.Relationship
 
@@ -519,7 +479,7 @@ func (s *QueryRedisScope) handleHasManyPreload(field *gorm.Field) {
 	}
 }
 
-// handleBelongsToPreload used to preload belongs to associations
+// handleBelongsToPreload used to searchPreload belongs to associations
 func (s *QueryRedisScope) handleBelongsToPreload(field *gorm.Field) {
 	relation := field.Relationship
 
@@ -573,7 +533,7 @@ func (s *QueryRedisScope) handleBelongsToPreload(field *gorm.Field) {
 	}
 }
 
-// handleManyToManyPreload used to preload many to many associations
+// handleManyToManyPreload used to searchPreload many to many associations
 func (s *QueryRedisScope) handleManyToManyPreload(field *gorm.Field) {
 	var (
 		relation         = field.Relationship
