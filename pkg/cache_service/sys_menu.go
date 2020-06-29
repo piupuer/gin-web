@@ -14,7 +14,7 @@ func (s *RedisService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	}
 	tree := make([]models.SysMenu, 0)
 	var role models.SysRole
-	err := s.redis.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id", "=", int(roleId)).First(&role).Error
+	err := s.redis.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id", "=", roleId).First(&role).Error
 	menus := make([]models.SysMenu, 0)
 	if err != nil {
 		return menus, err

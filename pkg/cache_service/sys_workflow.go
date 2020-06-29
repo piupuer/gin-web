@@ -35,18 +35,16 @@ func (s *RedisService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 		query = query.Where("creator", "contains", creator)
 	}
 	if req.Category > 0 {
-		// redis存的json转换为int, 因此这里转一下类型
-		query = query.Where("category", "=", int(req.Category))
+		query = query.Where("category", "=", req.Category)
 	}
 	if req.TargetCategory > 0 {
-		// redis存的json转换为int, 因此这里转一下类型
-		query = query.Where("targetCategory", "=", int(req.TargetCategory))
+		query = query.Where("target_category", "=", req.TargetCategory)
 	}
 	if req.Self != nil {
 		query = query.Where("self", "=", *req.Self)
 	}
 	if req.SubmitUserConfirm != nil {
-		query = query.Where("submitUserConfirm", "=", *req.SubmitUserConfirm)
+		query = query.Where("submit_user_confirm", "=", *req.SubmitUserConfirm)
 	}
 
 	err = query.Count(&req.PageInfo.Total).Error
