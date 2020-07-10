@@ -13,7 +13,7 @@ import (
 func (s *MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	tree := make([]models.SysMenu, 0)
 	var role models.SysRole
-	err := s.tx.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id", "=", roleId).Find(&role).Error
+	err := s.tx.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id = ?", roleId).Find(&role).Error
 	menus := make([]models.SysMenu, 0)
 	if err != nil {
 		return menus, err
