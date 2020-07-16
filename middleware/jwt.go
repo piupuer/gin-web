@@ -101,7 +101,9 @@ func unauthorized(c *gin.Context, code int, message string) {
 func loginResponse(c *gin.Context, code int, token string, expires time.Time) {
 	response.SuccessWithData(map[string]interface{}{
 		"token":   token,
-		"expires": expires,
+		"expires": models.LocalTime{
+			Time: expires,
+		},
 	})
 }
 
