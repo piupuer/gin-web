@@ -51,6 +51,7 @@ func Routers() *gin.Engine {
 	router.InitApiRouter(v1Group, authMiddleware)      // 注册接口路由
 	router.InitWorkflowRouter(v1Group, authMiddleware) // 注册工作流路由
 	router.InitLeaveRouter(v1Group, authMiddleware)    // 注册请假路由
+	router.InitUploadRouter(v1Group, authMiddleware)   // 注册文件上传路由
 
 	global.Log.Debug("初始化路由完成")
 	return r

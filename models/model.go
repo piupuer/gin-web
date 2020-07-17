@@ -23,6 +23,7 @@ func (Model) TableName(name string) string {
 
 // 自定义时间json转换
 const TimeFormat = "2006-01-02 15:04:05"
+const DateFormat = "2006-01-02"
 
 type LocalTime struct {
 	time.Time
@@ -68,4 +69,9 @@ func (t *LocalTime) Scan(v interface{}) error {
 // 用于 fmt.Println 和后续验证场景
 func (t LocalTime) String() string {
 	return t.Format(TimeFormat)
+}
+
+// 只需要日期
+func (t LocalTime) DateString() string {
+	return t.Format(DateFormat)
 }

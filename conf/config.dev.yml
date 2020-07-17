@@ -45,9 +45,9 @@ mysql:
 
 redis:
   # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
-  host: docker-redis-db
+  host: 127.0.0.1
   # 端口
-  port: 6379
+  port: 5556
   # 密码(默认为空)
   password:
   # 数据库编号
@@ -74,4 +74,13 @@ jwt:
 # 速率限制配置
 rate-limit:
   # 访问最大限制, 次/秒
-  max: 50
+  max: 200
+
+# 上传配置
+upload:
+  # 上传文件保存路径
+  save-dir: upload
+  # 单个文件或分片文件最大限制, 单位MB(上传文件先读取到内存, 如果这个值设置过大会导致内存崩溃)
+  single-max-size: 32
+  # 合并文件并发数(并发合并文件会提升性能, 但如果设置过大性能降低, 结合实际机器性能配置)
+  merge-concurrent-count: 10

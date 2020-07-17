@@ -12,6 +12,7 @@ type Configuration struct {
 	Casbin    CasbinConfiguration    `mapstructure:"casbin" json:"casbin"`
 	Jwt       JwtConfiguration       `mapstructure:"jwt" json:"jwt"`
 	RateLimit RateLimitConfiguration `mapstructure:"rate-limit" json:"rateLimit"`
+	Upload    UploadConfiguration    `mapstructure:"upload" json:"upload"`
 }
 
 type SystemConfiguration struct {
@@ -63,4 +64,10 @@ type JwtConfiguration struct {
 
 type RateLimitConfiguration struct {
 	Max int64 `mapstructure:"max" json:"max"`
+}
+
+type UploadConfiguration struct {
+	SaveDir              string `mapstructure:"save-dir" json:"saveDir"`
+	SingleMaxSize        uint   `mapstructure:"single-max-size" json:"singleMaxSize"`
+	MergeConcurrentCount uint   `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
 }

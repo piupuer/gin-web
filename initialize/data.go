@@ -292,6 +292,48 @@ func InitData() {
 				roles[3],
 			},
 		},
+		{
+			Model: models.Model{
+				Id: 13,
+			},
+			Name:      "uploader",
+			Title:     "上传组件",
+			Icon:      "back-top",
+			Path:      "/uploader",
+			Component: "",
+			Sort:      3,
+			Status:    &status,
+			Visible:   &visible,
+			Breadcrumb: &noBreadcrumb,
+			ParentId:  0,
+			Creator:   creator,
+			Roles: []models.SysRole{
+				roles[1],
+				roles[2],
+				roles[3],
+			},
+		},
+		{
+			Model: models.Model{
+				Id: 14,
+			},
+			Name:      "uploader1",
+			Title:     "上传示例1",
+			Icon:      "guide",
+			Path:      "uploader1",
+			Component: "/uploader/uploader1.vue",
+			Sort:      0,
+			Status:    &status,
+			Visible:   &visible,
+			Breadcrumb: &noBreadcrumb,
+			ParentId:  13,
+			Creator:   creator,
+			Roles: []models.SysRole{
+				roles[1],
+				roles[2],
+				roles[3],
+			},
+		},
 	}
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
@@ -744,6 +786,36 @@ func InitData() {
 			Path:     "/v1/workflow/log/approval",
 			Category: "workflow",
 			Desc:     "审批工作流日志",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 40,
+			},
+			Method:   "GET",
+			Path:     "/v1/upload/file",
+			Category: "upload",
+			Desc:     "获取文件块信息以及上传完成部分",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 41,
+			},
+			Method:   "POST",
+			Path:     "/v1/upload/file",
+			Category: "upload",
+			Desc:     "上传文件(分片)",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 42,
+			},
+			Method:   "POST",
+			Path:     "/v1/upload/merge",
+			Category: "upload",
+			Desc:     "合并分片文件",
 			Creator:  creator,
 		},
 	}
