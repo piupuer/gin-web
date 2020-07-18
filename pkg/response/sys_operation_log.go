@@ -1,22 +1,13 @@
-package request
+package response
 
 import (
-	"gin-web/pkg/response"
+	"gin-web/models"
 	"time"
 )
 
-// 获取操作日志列表结构体
-type OperationLogListRequestStruct struct {
-	Method            string `json:"method" form:"method"`
-	Path              string `json:"path" form:"path"`
-	Username          string `json:"username" form:"username"`
-	Ip                string `json:"ip" form:"ip"`
-	Status            *int   `json:"status" form:"status"`
-	response.PageInfo        // 分页参数
-}
-
-// 创建操作日志结构体
-type CreateOperationLogRequestStruct struct {
+// 接口信息响应, 字段含义见models
+type OperationLogListResponseStruct struct {
+	Id        uint             `json:"id"`
 	ApiDesc    string        `json:"apiDesc"`
 	Path       string        `json:"path"`
 	Method     string        `json:"method"`
@@ -30,4 +21,6 @@ type CreateOperationLogRequestStruct struct {
 	IpLocation string        `json:"ipLocation"`
 	Latency    time.Duration `json:"latency"`
 	UserAgent  string        `json:"userAgent"`
+	CreatedAt models.LocalTime `json:"createdAt"`
 }
+

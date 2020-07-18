@@ -18,7 +18,6 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	query := s.redis.Table(new(models.SysLeave).TableName())
 	query = query.Where("user_id", "=", req.UserId)
 	if req.Status != nil {
-		// redis存的json转换为int, 因此这里转一下类型
 		query = query.Where("status", "=", *req.Status)
 	}
 	desc := strings.TrimSpace(req.Desc)

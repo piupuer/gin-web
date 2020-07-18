@@ -4,7 +4,7 @@ import (
 	"gin-web/models"
 )
 
-// 接口信息响应, 字段含义见models.SysRole
+// 接口信息响应, 字段含义见models
 type ApiListResponseStruct struct {
 	Id        uint             `json:"id"`
 	Method    string           `json:"method"`
@@ -16,7 +16,7 @@ type ApiListResponseStruct struct {
 	CreatedAt models.LocalTime `json:"createdAt"`
 }
 
-// 权限接口信息响应, 字段含义见models.SysRole
+// 权限接口信息响应, 字段含义见models
 type ApiGroupByCategoryResponseStruct struct {
 	Title    string                  `json:"title"`    // 标题
 	Category string                  `json:"category"` // 分组名称

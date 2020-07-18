@@ -8,6 +8,8 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -17,6 +19,11 @@ func OperationLog(c *gin.Context) {
 	startTime := time.Now()
 	// 避免服务器出现异常, 这里用defer保证一定可以执行
 	defer func() {
+		// 下列请求比较频繁无需写入日志
+		if c.Request.Method == http.MethodGet || 
+			c.Request.Method == http.MethodOptions {
+			return
+		}
 		// 结束时间
 		endTime := time.Now()
 
@@ -25,8 +32,8 @@ func OperationLog(c *gin.Context) {
 			Ip: c.ClientIP(),
 			// 请求方式
 			Method: c.Request.Method,
-			// 请求路径
-			Path: c.Request.URL.Path,
+			// 请求路径(去除url前缀)
+			Path: strings.TrimPrefix(c.Request.URL.Path, "/"+global.Conf.System.UrlPathPrefix),
 			// 请求耗时
 			Latency: endTime.Sub(startTime),
 			// 浏览器标识

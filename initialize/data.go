@@ -254,6 +254,24 @@ func InitData() {
 		},
 		{
 			Model: models.Model{
+				Id: 15,
+			},
+			Name:      "operation-log",
+			Title:     "操作日志",
+			Icon:      "example",
+			Path:      "operation-log",
+			Component: "/system/operation-log",
+			Sort:      5,
+			Status:    &status,
+			Visible:   &visible,
+			ParentId:  2,
+			Creator:   creator,
+			Roles: []models.SysRole{
+				roles[2],
+			},
+		},
+		{
+			Model: models.Model{
 				Id: 11,
 			},
 			Name:      "leave",
@@ -321,7 +339,7 @@ func InitData() {
 			Title:     "上传示例1",
 			Icon:      "guide",
 			Path:      "uploader1",
-			Component: "/uploader/uploader1.vue",
+			Component: "/uploader/uploader1",
 			Sort:      0,
 			Status:    &status,
 			Visible:   &visible,
@@ -816,6 +834,26 @@ func InitData() {
 			Path:     "/v1/upload/merge",
 			Category: "upload",
 			Desc:     "合并分片文件",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 43,
+			},
+			Method:   "GET",
+			Path:     "/v1/operation/log/list",
+			Category: "operation-log",
+			Desc:     "获取操作日志列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 44,
+			},
+			Method:   "DELETE",
+			Path:     "/v1/operation/log/delete/batch",
+			Category: "operation-log",
+			Desc:     "批量删除操作日志",
 			Creator:  creator,
 		},
 	}
