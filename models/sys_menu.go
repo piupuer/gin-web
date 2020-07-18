@@ -1,7 +1,5 @@
 package models
 
-import "gin-web/pkg/utils"
-
 // 系统菜单表
 type SysMenu struct {
 	Model
@@ -38,8 +36,18 @@ func GetCheckedMenuIds(list []uint, allMenu []SysMenu) []uint {
 		// 判断子流水线是否全部在create中
 		count := 0
 		for _, child := range children {
-			if utils.ContainsUint(list, child) {
-				count++
+			// 避免环包调用, 不再调用utils
+			// if utils.ContainsUint(list, child) {
+			// 	count++
+			// }
+			contains := false
+			for _, v := range list {
+				if v == child {
+					contains = true
+				}
+			}
+			if contains {
+				count ++
 			}
 		}
 		if len(children) == count {
