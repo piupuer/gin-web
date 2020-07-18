@@ -37,7 +37,9 @@ func InitLogger() {
 	enConfig := zap.NewProductionEncoderConfig() // 生成配置
 
 	// 时间格式
-	enConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	enConfig.EncodeTime = global.ZapLogLocalTimeEncoder
+	// level字母大写
+	enConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
 	core := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(enConfig),                                            // 编码器配置

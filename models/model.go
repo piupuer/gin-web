@@ -21,10 +21,6 @@ func (Model) TableName(name string) string {
 	return fmt.Sprintf("%s%s", global.Conf.Mysql.TablePrefix, name)
 }
 
-// 自定义时间json转换
-const TimeFormat = "2006-01-02 15:04:05"
-const DateFormat = "2006-01-02"
-
 type LocalTime struct {
 	time.Time
 }
@@ -37,13 +33,13 @@ func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
 	}
 
 	// 指定解析的格式
-	now, err := time.Parse(`"`+TimeFormat+`"`, string(data))
+	now, err := time.Parse(`"`+global.SecLocalTimeFormat+`"`, string(data))
 	*t = LocalTime{Time: now}
 	return
 }
 
 func (t LocalTime) MarshalJSON() ([]byte, error) {
-	output := fmt.Sprintf("\"%s\"", t.Format(TimeFormat))
+	output := fmt.Sprintf("\"%s\"", t.Format(global.SecLocalTimeFormat))
 	return []byte(output), nil
 }
 
@@ -68,10 +64,10 @@ func (t *LocalTime) Scan(v interface{}) error {
 
 // 用于 fmt.Println 和后续验证场景
 func (t LocalTime) String() string {
-	return t.Format(TimeFormat)
+	return t.Format(global.SecLocalTimeFormat)
 }
 
 // 只需要日期
 func (t LocalTime) DateString() string {
-	return t.Format(DateFormat)
+	return t.Format(global.DateLocalTimeFormat)
 }

@@ -36,7 +36,9 @@ func InitLogger() {
 	enConfig := zap.NewProductionEncoderConfig() // 生成配置
 
 	// 时间格式
-	enConfig.EncodeTime = zapcore.ISO8601TimeEncoder
+	enConfig.EncodeTime = ZapLogLocalTimeEncoder
+	// level字母大写
+	enConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
 
 	core := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(enConfig),                                            // 编码器配置
@@ -47,4 +49,9 @@ func InitLogger() {
 	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 	Log = logger.Sugar()
 	Log.Debug("初始化日志完成")
+}
+
+// zap日志自定义本地时间格式
+func ZapLogLocalTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+	enc.AppendString(t.Format(MsecLocalTimeFormat))
 }
