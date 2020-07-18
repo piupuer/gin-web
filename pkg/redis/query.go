@@ -161,8 +161,11 @@ func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
 			}
 		}
 	}
-	// 获取json结果并转换为结构体
-	utils.Struct2StructByJson(list, s.search.out)
+	// 类型为uint表示查询数据条数, 直接跳过
+	if _, ok := s.search.out.(*uint); !ok {
+		// 获取json结果并转换为结构体
+		utils.Struct2StructByJson(list, s.search.out)
+	}
 
 	if list != nil {
 		// 处理预加载
