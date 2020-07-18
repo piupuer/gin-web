@@ -1,6 +1,9 @@
 package redis
 
-import "gin-web/pkg/utils"
+import (
+	"gin-web/pkg/utils"
+	"strings"
+)
 
 type search struct {
 	query *QueryRedis
@@ -16,6 +19,8 @@ type search struct {
 	offset int
 	// 输出值
 	out interface{}
+	// 排序条件
+	orderConditions []orderCondition
 	// 是否只取一条数据
 	first bool
 }
@@ -38,6 +43,14 @@ type whereCondition struct {
 	cond string
 	// 值
 	val interface{}
+}
+
+// order条件(与jsonq SortBy参数一致)
+type orderCondition struct {
+	// 键名称
+	property string
+	// 是否正向排序
+	asc bool
 }
 
 // 指定表名称
@@ -83,5 +96,36 @@ func (s *search) Where(key, cond string, val interface{}) *search {
 		val:  val,
 	})
 	s.whereConditions = whereConditions
+	return s
+}
+
+// order条件
+func (s *search) Order(key string) *search {
+	key = strings.ToLower(key)
+	// 通过空格拆分
+	fields := strings.Split(key, " ")
+	property := key
+	asc := true
+	// 刚好2个数据说明指定顺序
+	if len(fields) == 2 && strings.TrimSpace(fields[1]) == "desc" {
+		property = fields[0]
+		asc = false
+	}
+	// redis存的key均为驼峰
+	property = utils.CamelCaseLowerFirst(property)
+
+	var orderConditions []orderCondition
+	// 保留旧数据
+	for _, condition := range s.orderConditions {
+		if condition.property != key {
+			orderConditions = append(orderConditions, condition)
+		}
+	}
+	// 添加新数据
+	orderConditions = append(orderConditions, orderCondition{
+		property: property,
+		asc:      asc,
+	})
+	s.orderConditions = orderConditions
 	return s
 }

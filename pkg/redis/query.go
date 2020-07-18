@@ -89,6 +89,11 @@ func (s *QueryRedis) Count(out *uint) *QueryRedis {
 	return clone
 }
 
+// 排序
+func (s *QueryRedis) Order(key string) *QueryRedis {
+	return s.clone().search.Order(key).query
+}
+
 // 分页
 func (s *QueryRedis) Limit(limit uint) *QueryRedis {
 	clone := s.clone()
@@ -193,6 +198,14 @@ func (s QueryRedis) jsonQuery(str string) *gojsonq.JSONQ {
 	// 添加where条件
 	for _, condition := range s.search.whereConditions {
 		query = query.Where(condition.key, condition.cond, condition.val)
+	}
+	// 添加order条件
+	for _, condition := range s.search.orderConditions {
+		if condition.asc {
+			query = query.SortBy(condition.property)
+		} else {
+			query = query.SortBy(condition.property, "desc")
+		}
 	}
 	// 添加limit/offset
 	query.Limit(s.search.limit)
