@@ -41,5 +41,6 @@ func autoMigrate() {
 		new(models.SysWorkflow),
 		new(models.SysWorkflowLine),
 		new(models.SysWorkflowLog),
+		new(models.SysOperationLog),
 	)
 }

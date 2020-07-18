@@ -21,6 +21,8 @@ func Routers() *gin.Engine {
 	r.Use(middleware.RateLimiter())
 	// 添加访问记录
 	r.Use(middleware.AccessLog)
+	// 添加操作记录
+	r.Use(middleware.OperationLog)
 	// 添加全局异常处理中间件
 	r.Use(middleware.Exception)
 	// 添加全局事务处理中间件

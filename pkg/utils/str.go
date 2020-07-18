@@ -1,6 +1,9 @@
 package utils
 
 import (
+	"bytes"
+	"compress/gzip"
+	"io/ioutil"
 	"regexp"
 	"strconv"
 	"strings"
@@ -51,4 +54,21 @@ func CamelCaseLowerFirst(str string) string {
 func SnakeCase(str string) string {
 	snake := snakeRe.ReplaceAllString(str, "${1}_${2}")
 	return strings.ToLower(snake)
+}
+
+// 使用gizp压缩字符串
+func Str2BytesByGzip(str string) []byte {
+	var b bytes.Buffer
+	gz := gzip.NewWriter(&b)
+	gz.Write([]byte(str))
+	gz.Close()
+	return b.Bytes()
+}
+
+// 使用gizp压缩字符串
+func Bytes2StrByGzip(b []byte) string {
+	data := bytes.NewReader(b)
+	r, _ := gzip.NewReader(data)
+	s, _ := ioutil.ReadAll(r)
+	return string(s)
 }

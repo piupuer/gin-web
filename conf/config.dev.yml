@@ -10,6 +10,8 @@ system:
   transaction: true
   # 是否初始化数据(没有初始数据时使用, 已发布正式版谨慎使用)
   init-data: false
+  # 操作日志key
+  operation-log-key: operation_log_response
 
 logs:
   # 日志等级(-1:Debug, 0:Info, -1<=level<=5, 参照zap.level源码)

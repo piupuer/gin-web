@@ -16,11 +16,12 @@ type Configuration struct {
 }
 
 type SystemConfiguration struct {
-	UrlPathPrefix string `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
-	Port          int    `mapstructure:"port" json:"port"`
-	UseRedis      bool   `mapstructure:"use-redis" json:"useRedis"`
-	Transaction   bool   `mapstructure:"transaction" json:"transaction"`
-	InitData      bool   `mapstructure:"init-data" json:"initData"`
+	UrlPathPrefix   string `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
+	Port            int    `mapstructure:"port" json:"port"`
+	UseRedis        bool   `mapstructure:"use-redis" json:"useRedis"`
+	Transaction     bool   `mapstructure:"transaction" json:"transaction"`
+	InitData        bool   `mapstructure:"init-data" json:"initData"`
+	OperationLogKey string `mapstructure:"operation-log-key" json:"operationLogKey"`
 }
 
 type LogsConfiguration struct {

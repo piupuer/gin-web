@@ -1,5 +1,10 @@
 package response
 
+import (
+	"gin-web/pkg/global"
+	"github.com/gin-gonic/gin"
+)
+
 // http请求响应封装
 type Resp struct {
 	Code int         `json:"code"` // 错误代码代码
@@ -99,4 +104,12 @@ func FailWithCode(code int) {
 		msg = val
 	}
 	Result(code, msg, map[string]interface{}{})
+}
+
+// 写入json返回值
+func JSON(c *gin.Context, code int, resp interface{}) {
+	// 调用gin写入json
+	c.JSON(code, resp)
+	// 保存响应对象到context, Operation Log会读取到
+	c.Set(global.Conf.System.OperationLogKey, resp)
 }

@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -72,4 +73,8 @@ func TestCamelCaseLowerFirst(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestStr2BytesByGzip(t *testing.T) {
+	fmt.Println(Str2BytesByGzip("ok"))
 }

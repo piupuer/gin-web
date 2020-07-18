@@ -31,7 +31,7 @@ func Transaction(c *gin.Context) {
 					}
 				}
 				// 以json方式写入响应
-				c.JSON(http.StatusOK, resp)
+				response.JSON(c, http.StatusOK, resp)
 				c.Abort()
 				return
 			}

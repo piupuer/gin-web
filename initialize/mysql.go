@@ -45,6 +45,7 @@ func autoMigrate() {
 		new(models.SysWorkflowLog),
 		new(models.RelationUserWorkflowLine),
 		new(models.SysLeave),
+		new(models.SysOperationLog),
 	)
 }
 
@@ -61,5 +62,6 @@ func binlog() {
 		new(models.SysWorkflowLog).TableName(),
 		new(models.RelationUserWorkflowLine).TableName(),
 		new(models.SysLeave).TableName(),
+		new(models.SysOperationLog).TableName(),
 	})
 }
