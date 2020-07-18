@@ -30,7 +30,12 @@ func GetUserInfo(c *gin.Context) {
 func GetUsers(c *gin.Context) {
 	// 绑定参数
 	var req request.UserListRequestStruct
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 创建服务
 	s := cache_service.New(c)
 	users, err := s.GetUsers(&req)
@@ -97,9 +102,14 @@ func CreateUser(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateUserRequestStruct
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 参数校验
-	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
+	err = global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -121,7 +131,12 @@ func UpdateUserById(c *gin.Context) {
 	// 绑定参数
 	var req gin.H
 	var pwd request.ChangePwdRequestStruct
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 将部分参数转为pwd, 如果值不为空, 可能会用到
 	utils.Struct2StructByJson(req, &pwd)
 	// 获取path中的userId
@@ -133,7 +148,7 @@ func UpdateUserById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err := s.UpdateUserById(userId, pwd.NewPassword, req)
+	err = s.UpdateUserById(userId, pwd.NewPassword, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -144,11 +159,16 @@ func UpdateUserById(c *gin.Context) {
 // 批量删除用户
 func BatchDeleteUserByIds(c *gin.Context) {
 	var req request.Req
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err := s.DeleteUserByIds(req.GetUintIds())
+	err = s.DeleteUserByIds(req.GetUintIds())
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

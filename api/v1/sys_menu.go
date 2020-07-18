@@ -57,9 +57,14 @@ func CreateMenu(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateMenuRequestStruct
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 参数校验
-	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
+	err = global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -80,7 +85,12 @@ func CreateMenu(c *gin.Context) {
 func UpdateMenuById(c *gin.Context) {
 	// 绑定参数
 	var req gin.H
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 获取path中的menuId
 	menuId := utils.Str2Uint(c.Param("menuId"))
 	if menuId == 0 {
@@ -90,7 +100,7 @@ func UpdateMenuById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err := s.UpdateMenuById(menuId, req)
+	err = s.UpdateMenuById(menuId, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -101,11 +111,16 @@ func UpdateMenuById(c *gin.Context) {
 // 批量删除菜单
 func BatchDeleteMenuByIds(c *gin.Context) {
 	var req request.Req
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err := s.DeleteMenuByIds(req.GetUintIds())
+	err = s.DeleteMenuByIds(req.GetUintIds())
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

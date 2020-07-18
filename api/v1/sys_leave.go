@@ -15,7 +15,12 @@ import (
 func GetLeaves(c *gin.Context) {
 	// 绑定参数
 	var req request.LeaveListRequestStruct
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 获取当前登录用户
 	user := GetCurrentUser(c)
 	req.UserId = user.Id
@@ -42,7 +47,12 @@ func GetLeaves(c *gin.Context) {
 func GetLeaveApprovalLogs(c *gin.Context) {
 	// 绑定参数
 	var req request.LeaveListRequestStruct
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 创建服务
 	s := cache_service.New(c)
 	// 获取path中的leaveId
@@ -89,9 +99,14 @@ func CreateLeave(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateLeaveRequestStruct
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 参数校验
-	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
+	err = global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -112,7 +127,12 @@ func CreateLeave(c *gin.Context) {
 func UpdateLeaveById(c *gin.Context) {
 	// 绑定参数
 	var req gin.H
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 获取path中的leaveId
 	leaveId := utils.Str2Uint(c.Param("leaveId"))
 	if leaveId == 0 {
@@ -122,7 +142,7 @@ func UpdateLeaveById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err := s.UpdateLeaveById(leaveId, req)
+	err = s.UpdateLeaveById(leaveId, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -133,11 +153,16 @@ func UpdateLeaveById(c *gin.Context) {
 // 批量删除请假
 func BatchDeleteLeaveByIds(c *gin.Context) {
 	var req request.Req
-	_ = c.Bind(&req)
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err := s.DeleteLeaveByIds(req.GetUintIds())
+	err = s.DeleteLeaveByIds(req.GetUintIds())
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
