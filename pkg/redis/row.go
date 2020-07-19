@@ -84,12 +84,16 @@ func RowChange(e *canal.RowsEvent) {
 				indexes = append(indexes, index)
 			}
 		}
+		// 记录被删除的元素个数
+		deletedCount := 0
 		// 删除对应数据
 		for _, index := range indexes {
+			i := index - deletedCount
 			if index < rowCount-1 {
-				newRows = append(newRows[:index], newRows[index+1:]...)
+				newRows = append(newRows[:i], newRows[i+1:]...)
+				deletedCount ++ 
 			} else {
-				newRows = append(newRows[:index])
+				newRows = append(newRows[:i])
 			}
 		}
 		break
@@ -103,8 +107,8 @@ func RowChange(e *canal.RowsEvent) {
 
 // 获取旧数据所在行索引
 func getOldRowIndex(oldRows []map[string]interface{}, data []interface{}, table *schema.Table) int {
+	newRow := getRow(data, table)
 	for i, row := range oldRows {
-		newRow := getRow(data, table)
 		// 比对增量字段
 		m := make(gin.H, 0)
 		utils.CompareDifferenceStructByJson(row, newRow, &m)
