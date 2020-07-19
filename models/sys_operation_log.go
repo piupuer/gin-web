@@ -1,6 +1,8 @@
 package models
 
-import "time"
+import (
+	"time"
+)
 
 // 系统操作日志
 type SysOperationLog struct {
@@ -8,9 +10,8 @@ type SysOperationLog struct {
 	ApiDesc    string        `json:"apiDesc" gorm:"comment:'接口说明'"`
 	Path       string        `json:"path" gorm:"comment:'访问路径'"`
 	Method     string        `json:"method" gorm:"comment:'请求方式'"`
-	Params     string        `json:"params" gorm:"comment:'请求参数'"`
-	Body       string        `json:"body" gorm:"comment:'请求主体'"`
-	Data       []byte        `json:"data" gorm:"type:blob;comment:'响应数据(通过二进制存储节省空间)'"`
+	Body       string        `json:"body" gorm:"type:blob;comment:'请求主体(通过二进制存储节省空间)'"`
+	Data       string        `json:"data" gorm:"type:blob;comment:'响应数据(通过二进制存储节省空间)'"`
 	Status     int           `json:"status" gorm:"comment:'响应状态码'"`
 	Username   string        `json:"username" gorm:"comment:'用户登录名'"`
 	RoleName   string        `json:"roleName" gorm:"comment:'用户角色名'"`

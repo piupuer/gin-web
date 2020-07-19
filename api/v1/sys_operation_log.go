@@ -21,14 +21,14 @@ func GetOperationLogs(c *gin.Context) {
 
 	// 创建服务
 	s := cache_service.New(c)
-	OperationLogs, err := s.GetOperationLogs(&req)
+	operationLogs, err := s.GetOperationLogs(&req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
 	}
 	// 转为ResponseStruct, 隐藏部分字段
 	var respStruct []response.OperationLogListResponseStruct
-	utils.Struct2StructByJson(OperationLogs, &respStruct)
+	utils.Struct2StructByJson(operationLogs, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
 	// 设置分页参数

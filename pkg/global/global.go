@@ -55,8 +55,12 @@ func GetTx(c *gin.Context) *gorm.DB {
 		method := c.Request.Method
 		if !(method == "OPTIONS" || method == "GET" || !Conf.System.Transaction) {
 			// 从context对象中读取事务对象
-			txKey, _ := c.Get("tx")
-			tx, _ = txKey.(*gorm.DB)
+			txKey, exists := c.Get("tx")
+			if exists {
+				if item, ok := txKey.(*gorm.DB); ok {
+					tx = item
+				}
+			}
 		}
 	}
 	return tx

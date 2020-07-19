@@ -8,6 +8,7 @@ import (
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/schema"
+	"strings"
 )
 
 const (
@@ -47,6 +48,16 @@ func RowChange(e *canal.RowsEvent) {
 	rowCount := len(newRows)
 	// 将rows用json解析一下, 否则查找相同元素时可能出现类型不一致
 	utils.Struct2StructByJson(e.Rows, &changeRows)
+
+	// blob对象需要base64解码
+	for i := range changeRows {
+		for j, column := range e.Table.Columns {
+			rawType := strings.ToLower(column.RawType)
+			if item, ok := changeRows[i][j].(string); ok && rawType == "blob" {
+				changeRows[i][j] = utils.DecodeStrFromBase64(item)
+			}
+		}
+	}
 	// 选择事件类型
 	switch e.Action {
 	case canal.InsertAction:
@@ -91,7 +102,7 @@ func RowChange(e *canal.RowsEvent) {
 			i := index - deletedCount
 			if index < rowCount-1 {
 				newRows = append(newRows[:i], newRows[i+1:]...)
-				deletedCount ++ 
+				deletedCount++
 			} else {
 				newRows = append(newRows[:i])
 			}

@@ -89,11 +89,15 @@ func ChangePwd(c *gin.Context) {
 
 // 获取当前请求用户信息
 func GetCurrentUser(c *gin.Context) models.SysUser {
-	user, _ := c.Get("user")
+	user, exists := c.Get("user")
+	var newUser models.SysUser
+	if !exists {
+		return newUser
+	}
 	u, _ := user.(models.SysUser)
 	// 创建服务
 	s := cache_service.New(c)
-	newUser, _ := s.GetUserById(u.Id)
+	newUser, _ = s.GetUserById(u.Id)
 	return newUser
 }
 

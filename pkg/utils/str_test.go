@@ -1,7 +1,6 @@
 package utils
 
 import (
-	"fmt"
 	"reflect"
 	"testing"
 )
@@ -75,6 +74,50 @@ func TestCamelCaseLowerFirst(t *testing.T) {
 	}
 }
 
-func TestStr2BytesByGzip(t *testing.T) {
-	fmt.Println(Str2BytesByGzip("ok"))
+func TestEncodeStr2Base64(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name: "case1",
+			args: args{str: "ok"},
+			want: "b2s=",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := EncodeStr2Base64(tt.args.str); got != tt.want {
+				t.Errorf("EncodeStr2Base64() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestDecodeStrFromBase64(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{
+			name:"case1",
+			args:args{str:"b2s="},
+			want:"ok",
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := DecodeStrFromBase64(tt.args.str); got != tt.want {
+				t.Errorf("DecodeStrFromBase64() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

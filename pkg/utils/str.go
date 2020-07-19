@@ -1,9 +1,7 @@
 package utils
 
 import (
-	"bytes"
-	"compress/gzip"
-	"io/ioutil"
+	"encoding/base64"
 	"regexp"
 	"strconv"
 	"strings"
@@ -56,19 +54,13 @@ func SnakeCase(str string) string {
 	return strings.ToLower(snake)
 }
 
-// 使用gizp压缩字符串
-func Str2BytesByGzip(str string) []byte {
-	var b bytes.Buffer
-	gz := gzip.NewWriter(&b)
-	gz.Write([]byte(str))
-	gz.Close()
-	return b.Bytes()
+// 加密base64字符串
+func EncodeStr2Base64(str string) string {
+	return base64.StdEncoding.EncodeToString([]byte(str))
 }
 
-// 使用gizp压缩字符串
-func Bytes2StrByGzip(b []byte) string {
-	data := bytes.NewReader(b)
-	r, _ := gzip.NewReader(data)
-	s, _ := ioutil.ReadAll(r)
-	return string(s)
+// 解密base64字符串
+func DecodeStrFromBase64(str string) string {
+	decodeBytes, _ := base64.StdEncoding.DecodeString(str)
+	return string(decodeBytes)
 }

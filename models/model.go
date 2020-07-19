@@ -21,12 +21,13 @@ func (Model) TableName(name string) string {
 	return fmt.Sprintf("%s%s", global.Conf.Mysql.TablePrefix, name)
 }
 
+// 本地时间
 type LocalTime struct {
 	time.Time
 }
 
 func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
-	// 空值不进行解析
+	// ""空值不进行解析
 	if len(data) == 2 {
 		*t = LocalTime{Time: time.Time{}}
 		return
@@ -59,7 +60,7 @@ func (t *LocalTime) Scan(v interface{}) error {
 		*t = LocalTime{Time: value}
 		return nil
 	}
-	return fmt.Errorf("can not convert %v to timestamp", v)
+	return fmt.Errorf("can not convert %v to LocalTime", v)
 }
 
 // 用于 fmt.Println 和后续验证场景
