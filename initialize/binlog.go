@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/redis"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
+	"runtime/debug"
 )
 
 // 使用siddontang/go-mysql监听mysql binlog
@@ -46,6 +47,14 @@ type BinlogEventHandler struct {
 
 // 数据行发生变化
 func (s *BinlogEventHandler) OnRow(e *canal.RowsEvent) error {
+	// 避免监听器发生未知异常导致程序退出, 这里加defer
+	defer func() {
+		if err := recover(); err != nil {
+			// 将异常写入日志
+			global.Log.Error(fmt.Sprintf("[OnRow]未知异常: %v\n堆栈信息: %v", err, string(debug.Stack())))
+			return
+		}
+	}()
 	global.Log.Debug(fmt.Sprintf("行变化: %s %v", e.Action, e.Rows))
 	// 同步数据到redis
 	redis.RowChange(e)
@@ -54,6 +63,14 @@ func (s *BinlogEventHandler) OnRow(e *canal.RowsEvent) error {
 
 // 日志位置发生变化
 func (s *BinlogEventHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, force bool) error {
+	// 避免监听器发生未知异常导致程序退出, 这里加defer
+	defer func() {
+		if err := recover(); err != nil {
+			// 将异常写入日志
+			global.Log.Error(fmt.Sprintf("[OnPosSynced]未知异常: %v\n堆栈信息: %v", err, string(debug.Stack())))
+			return
+		}
+	}()
 	global.Log.Debug(fmt.Sprintf("日志位置变化: %s %v %t", pos, set, force))
 	redis.PosChange(pos)
 	return nil
