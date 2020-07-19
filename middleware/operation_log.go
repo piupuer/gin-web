@@ -8,6 +8,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
+	"github.com/casbin/casbin/v2/util"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
 	"net/http"
@@ -74,11 +75,19 @@ func OperationLog(c *gin.Context) {
 		cache := cache_service.New(c)
 		apis, err := cache.GetApis(&request.ApiListRequestStruct{
 			Method: log.Method,
-			Path:   log.Path,
 		})
-		if err == nil && len(apis) == 1 {
-			log.ApiDesc = apis[0].Desc
-		} else {
+		match := false
+		if err == nil {
+			for _, api := range apis {
+				// 通过casbin KeyMatch2来匹配url规则
+				match = util.KeyMatch2(log.Path, api.Path)
+				if match {
+					log.ApiDesc = api.Desc
+					break
+				}
+			}
+		}
+		if !match {
 			log.ApiDesc = "无"
 		}
 
