@@ -4,6 +4,7 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
+	"strconv"
 	"strings"
 )
 
@@ -32,8 +33,10 @@ func (s *RedisService) GetOperationLogs(req *request.OperationLogListRequestStru
 	if ip != "" {
 		query = query.Where("ip", "contains", ip)
 	}
-	if req.Status != nil {
-		query = query.Where("status", "=", *req.Status)
+	status := strings.TrimSpace(req.Status)
+	if status != "" {
+		s, _ := strconv.Atoi(status)
+		query = query.Where("status", "contains", s)
 	}
 	query = query.Order("id DESC")
 	// 查询条数

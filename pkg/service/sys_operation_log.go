@@ -25,8 +25,9 @@ func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStru
 	if ip != "" {
 		query = query.Where("ip LIKE ?", fmt.Sprintf("%%%s%%", ip))
 	}
-	if req.Status != nil {
-		query = query.Where("status = ?", *req.Status)
+	status := strings.TrimSpace(req.Status)
+	if status != "" {
+		query = query.Where("status LIKE ?", fmt.Sprintf("%%%s%%", status))
 	}
 	query = query.Order("id DESC")
 	// 查询条数

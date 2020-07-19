@@ -11,8 +11,15 @@ type OperationLogListRequestStruct struct {
 	Path              string `json:"path" form:"path"`
 	Username          string `json:"username" form:"username"`
 	Ip                string `json:"ip" form:"ip"`
-	Status            *int   `json:"status" form:"status"`
+	Status            string `json:"status" form:"status"`
 	response.PageInfo        // 分页参数
+}
+
+// 翻译需要校验的字段名称
+func (s OperationLogListRequestStruct) FieldTrans() map[string]string {
+	m := make(map[string]string, 0)
+	m["Status"] = "响应状态码"
+	return m
 }
 
 // 创建操作日志结构体
