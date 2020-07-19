@@ -7,6 +7,7 @@ import (
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
+	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
 	"github.com/casbin/casbin/v2/util"
 	"github.com/gin-gonic/gin"
@@ -101,6 +102,10 @@ func OperationLog(c *gin.Context) {
 		var data string
 		if exists {
 			data = utils.Struct2Json(resp)
+			// 是自定义的响应类型
+			if item, ok := resp.(response.Resp); ok {
+				log.Status = item.Code
+			}
 		} else {
 			data = "无"
 		}
