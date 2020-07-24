@@ -12,6 +12,7 @@ import (
 	"github.com/casbin/casbin/v2/util"
 	"github.com/gin-gonic/gin"
 	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"strings"
 	"time"
@@ -42,6 +43,33 @@ func OperationLog(c *gin.Context) {
 
 		if len(body) == 0 {
 			body = []byte("{}")
+		}
+		contentType := c.Request.Header.Get("Content-Type")
+		// 二进制文件类型需要特殊处理
+		if strings.Contains(contentType, "multipart/form-data") {
+
+			contentTypeArr := strings.Split(contentType, "; ")
+			if len(contentTypeArr) == 2 {
+				// 读取boundary
+				boundary := strings.TrimPrefix(contentTypeArr[1], "boundary=")
+				// 通过multipart读取body参数全部内容
+				b := strings.NewReader(string(body))
+				r := multipart.NewReader(b, boundary)
+				f, _ := r.ReadForm(int64(global.Conf.Upload.SingleMaxSize) << 20)
+				defer f.RemoveAll()
+				// 获取全部参数值
+				params := make(map[string]string, 0)
+				for key, val := range f.Value {
+					// 保留第一个值就行了
+					if len(val) > 0 {
+						params[key] = val[0]
+					}
+				}
+				params["content-type"] = "multipart/form-data"
+				params["file"] = "二进制数据被忽略"
+				// 将其转为json
+				body = []byte(utils.Struct2Json(params))
+			}
 		}
 		log := models.SysOperationLog{
 			// Ip地址
