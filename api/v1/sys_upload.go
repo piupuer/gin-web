@@ -106,7 +106,11 @@ func UploadMerge(c *gin.Context) {
 	}
 	// 等待协程全部处理结束
 	wg.Wait()
-	response.Success()
+	
+	// 回写文件信息
+	var res response.UploadMergeResponseStruct
+	res.Filename = chunkDir + filePart.Filename
+	response.SuccessWithData(res)
 }
 
 // 上传文件(小文件直接是单个文件, 若是超大文件可能是单个分片)
