@@ -104,6 +104,9 @@ func OperationLog(c *gin.Context) {
 		cache := cache_service.New(c)
 		apis, err := cache.GetApis(&request.ApiListRequestStruct{
 			Method: log.Method,
+			PageInfo: response.PageInfo{
+				NoPagination: true,
+			},
 		})
 		match := false
 		if err == nil {
@@ -121,7 +124,7 @@ func OperationLog(c *gin.Context) {
 		}
 
 		// 获取Ip所在地
-		log.IpLocation = "未知地址"
+		log.IpLocation = utils.GetIpRealLocation(log.Ip)
 
 		// 响应状态码
 		log.Status = c.Writer.Status()
