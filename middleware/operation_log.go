@@ -72,6 +72,12 @@ func OperationLog(c *gin.Context) {
 			}
 		}
 		log := models.SysOperationLog{
+			Model: models.Model{
+				// 记录最后时间
+				CreatedAt: models.LocalTime{
+					Time: endTime,
+				},
+			},
 			// Ip地址
 			Ip: c.ClientIP(),
 			// 请求方式
@@ -142,8 +148,8 @@ func OperationLog(c *gin.Context) {
 		}
 		// gzip压缩
 		log.Data = data
-		// 写入数据库
-		global.Mysql.Create(&log)
+		// 异步, 写入数据库
+		go global.Mysql.Create(&log)
 	}()
 	c.Next()
 }
