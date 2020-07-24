@@ -24,6 +24,7 @@ require (
 	github.com/ulule/limiter/v3 v3.5.0
 	go.uber.org/zap v1.14.1
 	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
+	golang.org/x/text v0.3.2
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 )

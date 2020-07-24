@@ -16,6 +16,36 @@ import (
 	"sync"
 )
 
+// 解压上传的zip文件
+func UploadUnZip(c *gin.Context) {
+	var filePart request.FilePartInfo
+	_ = c.Bind(&filePart)
+	if strings.TrimSpace(filePart.Filename) == ""{
+		response.FailWithMsg("文件名不存在")
+		return
+	}
+	// 获取工作目录
+	pwd := utils.GetWorkDir()
+	fileDir, filename := filepath.Split(filePart.Filename)
+	baseDir := fmt.Sprintf("%s/%s", pwd, fileDir)
+	fullName := fmt.Sprintf("%s%s", baseDir, filename)
+	// 解压文件到当前目录
+	unzipFiles, err := utils.UnZip(fullName, baseDir)
+	if err != nil {
+		global.Log.Error(fmt.Sprintf("无法解压文件: %v", err))
+		response.FailWithMsg("无法解压文件")
+		return
+	}
+	// 前端隐藏工作目录
+	files := make([]string, 0)
+	for _, file := range unzipFiles {
+		files = append(files, strings.TrimPrefix(file, pwd))
+	}
+	var resp response.UploadUnZipResponseStruct
+	resp.Files = files
+	response.SuccessWithData(files)
+}
+
 // 判断文件块是否存在
 func UploadFileChunkExists(c *gin.Context) {
 	var filePart request.FilePartInfo
@@ -106,7 +136,7 @@ func UploadMerge(c *gin.Context) {
 	}
 	// 等待协程全部处理结束
 	wg.Wait()
-	
+
 	// 回写文件信息
 	var res response.UploadMergeResponseStruct
 	res.Filename = chunkDir + filePart.Filename

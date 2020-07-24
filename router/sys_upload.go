@@ -14,6 +14,7 @@ func InitUploadRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) 
 		router.GET("/file", v1.UploadFileChunkExists)
 		router.POST("/file", v1.UploadFile)
 		router.POST("/merge", v1.UploadMerge)
+		router.POST("/unzip", v1.UploadUnZip)
 	}
 	return router
 }

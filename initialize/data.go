@@ -352,6 +352,27 @@ func InitData() {
 				roles[3],
 			},
 		},
+		{
+			Model: models.Model{
+				Id: 16,
+			},
+			Name:      "uploader2",
+			Title:     "上传示例2",
+			Icon:      "guide",
+			Path:      "uploader2",
+			Component: "/uploader/uploader2",
+			Sort:      1,
+			Status:    &status,
+			Visible:   &visible,
+			Breadcrumb: &noBreadcrumb,
+			ParentId:  13,
+			Creator:   creator,
+			Roles: []models.SysRole{
+				roles[1],
+				roles[2],
+				roles[3],
+			},
+		},
 	}
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
@@ -854,6 +875,16 @@ func InitData() {
 			Path:     "/v1/operation/log/delete/batch",
 			Category: "operation-log",
 			Desc:     "批量删除操作日志",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 45,
+			},
+			Method:   "POST",
+			Path:     "/v1/upload/unzip",
+			Category: "upload",
+			Desc:     "解压ZIP文件",
 			Creator:  creator,
 		},
 	}
