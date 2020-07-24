@@ -59,9 +59,15 @@ func login(c *gin.Context) (interface{}, error) {
 	// 请求json绑定
 	_ = c.ShouldBindJSON(&req)
 
+	// 密码通过RSA解密
+	decodeData, err := utils.RSADecrypt([]byte(req.Password), global.Conf.System.RSAPrivateBytes)
+	if err != nil {
+		return nil, err
+	}
+	
 	u := &models.SysUser{
 		Username: req.Username,
-		Password: req.Password,
+		Password: string(decodeData),
 	}
 
 	// 创建服务

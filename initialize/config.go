@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"gin-web/pkg/global"
+	"gin-web/pkg/utils"
 	"github.com/gobuffalo/packr"
 	"github.com/spf13/viper"
 	"os"
@@ -48,6 +49,26 @@ func InitConfig() {
 	if err := v.Unmarshal(&global.Conf); err != nil {
 		panic(fmt.Sprintf("初始化配置文件失败: %v", err))
 	}
+	// 加载rsa公私钥(优先从configBox中读取)
+	publicBytes, err := global.ConfBox.Find(global.Conf.System.RSAPublicKey)
+	if err != nil || len(publicBytes) == 0 {
+		publicBytes = utils.RSAReadKeyFromFile(global.Conf.System.RSAPublicKey)
+	}
+	if len(publicBytes) == 0 {
+		fmt.Println("RSA公钥未能加载, 请检查路径: ", global.Conf.System.RSAPublicKey)
+	} else {
+		global.Conf.System.RSAPublicBytes = publicBytes
+	}
+	privateBytes, err := global.ConfBox.Find(global.Conf.System.RSAPrivateKey)
+	if err != nil || len(privateBytes) == 0 {
+		privateBytes = utils.RSAReadKeyFromFile(global.Conf.System.RSAPrivateKey)
+	}
+	if len(privateBytes) == 0 {
+		fmt.Println("RSA私钥未能加载, 请检查路径: ", global.Conf.System.RSAPrivateKey)
+	} else {
+		global.Conf.System.RSAPrivateBytes = privateBytes
+	}
+
 	fmt.Println("初始化配置文件完成")
 }
 

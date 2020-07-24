@@ -22,6 +22,10 @@ type SystemConfiguration struct {
 	Transaction     bool   `mapstructure:"transaction" json:"transaction"`
 	InitData        bool   `mapstructure:"init-data" json:"initData"`
 	OperationLogKey string `mapstructure:"operation-log-key" json:"operationLogKey"`
+	RSAPublicKey    string `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
+	RSAPrivateKey   string `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
+	RSAPublicBytes  []byte `mapstructure:"-" json:"-"`
+	RSAPrivateBytes []byte `mapstructure:"-" json:"-"`
 }
 
 type LogsConfiguration struct {

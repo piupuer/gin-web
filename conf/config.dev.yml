@@ -12,6 +12,10 @@ system:
   init-data: false
   # 操作日志key
   operation-log-key: operation_log_response
+  # rsa公钥文件路径
+  rsa-public-key: /Users/piupuer/eric/learning/gin-web/conf/gin-web-rsa.pub
+  # rsa私钥文件路径
+  rsa-private-key: /Users/piupuer/eric/learning/gin-web/conf/gin-web-rsa
 
 logs:
   # 日志等级(-1:Debug, 0:Info, -1<=level<=5, 参照zap.level源码)
