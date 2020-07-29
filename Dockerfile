@@ -29,6 +29,6 @@ RUN go build -o main .
 # 暴露端口
 EXPOSE 10000
 
-# 启动应用
-CMD ["./main"]
+# 启动应用(daemon off后台运行)
+CMD ["./main", "-g", "daemon off;"]
 
