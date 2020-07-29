@@ -87,7 +87,8 @@ func UploadMerge(c *gin.Context) {
 	// 如果文件块总数过大, 性能反而降低, 因此需要配置一个合适的协程数
 	var count = int(global.Conf.Upload.MergeConcurrentCount)
 	chunkCount := len(chunkNumbers) / count
-	lastChunkCount := 0
+	// 最后一组默认认为恰好被整除
+	lastChunkCount := chunkCount
 	if len(chunkNumbers)%count > 0 || count == 1 {
 		lastChunkCount = len(chunkNumbers)%count + chunkCount
 	}
