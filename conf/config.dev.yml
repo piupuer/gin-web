@@ -41,11 +41,11 @@ mysql:
   # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
   host: docker-mysql
   # 端口
-  port: 5555
+  port: 3306
   # 连接字符串查询参数
   query: charset=utf8&parseTime=True&loc=Local&timeout=10000ms
   # 是否打印日志
-  log-mode: false
+  log-mode: true
   # 数据库表前缀
   table-prefix: tb_
 
