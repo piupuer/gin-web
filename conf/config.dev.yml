@@ -9,7 +9,7 @@ system:
   # 开启全局事务管理器
   transaction: true
   # 是否初始化数据(没有初始数据时使用, 已发布正式版谨慎使用)
-  init-data: false
+  init-data: true
   # 操作日志key
   operation-log-key: operation_log_response
   # rsa公钥文件路径
@@ -39,9 +39,9 @@ mysql:
   # 数据库名
   database: gin_web
   # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
-  host: docker-mysql-db
+  host: docker-mysql
   # 端口
-  port: 3306
+  port: 5555
   # 连接字符串查询参数
   query: charset=utf8&parseTime=True&loc=Local&timeout=10000ms
   # 是否打印日志
@@ -51,9 +51,9 @@ mysql:
 
 redis:
   # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
-  host: 127.0.0.1
+  host: docker-redis
   # 端口
-  port: 5556
+  port: 6379
   # 密码(默认为空)
   password:
   # 数据库编号

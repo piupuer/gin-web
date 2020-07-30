@@ -20,6 +20,8 @@ COPY ./gin-web/go.mod ./gin-web/go.sum ./
 # 下载依赖文件
 RUN go mod download
 
+# 拷贝mysqldump文件(binlog刷到redis会用到)
+COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
 # 拷贝宿主机全部文件到当前目录
 COPY ./gin-web .
 # 构建应用

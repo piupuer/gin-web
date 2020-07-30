@@ -32,7 +32,10 @@ func MysqlBinlog(tables []string) {
 	cfg.Dump.Tables = tables
 
 	// 创建canal实例
-	c, _ := canal.NewCanal(cfg)
+	c, err := canal.NewCanal(cfg)
+	if err != nil {
+		global.Log.Debug("初始化mysql binlog监听器失败: ", err)
+	}
 	// 设置事件处理器
 	c.SetEventHandler(&BinlogEventHandler{})
 	// 从指定位置开始加载(go 后台运行)
