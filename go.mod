@@ -7,6 +7,7 @@ require (
 	github.com/casbin/casbin/v2 v2.2.2
 	github.com/casbin/gorm-adapter/v2 v2.1.0
 	github.com/casbin/redis-adapter/v2 v2.0.1
+	github.com/foobaz/lossypng v0.0.0-20170418091904-b2e79a7cd5f1
 	github.com/gin-gonic/gin v1.6.2
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
@@ -15,6 +16,7 @@ require (
 	github.com/gobuffalo/packr v1.30.1
 	github.com/jinzhu/gorm v1.9.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible
+	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/satori/go.uuid v1.2.0
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
 	github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea
