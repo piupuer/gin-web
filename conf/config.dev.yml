@@ -90,3 +90,9 @@ upload:
   single-max-size: 32
   # 合并文件并发数(并发合并文件会提升性能, 但如果设置过大性能降低, 结合实际机器性能配置)
   merge-concurrent-count: 10
+  # 定时压缩上传目录图片文件(支持corn表达式, 默认关闭, cron文档: https://en.wikipedia.org/wiki/Cron)
+  compress-image-cron-task: '*/1 * * * *'
+  # 压缩根目录(默认save-dir)
+  compress-image-root-dir:
+  # 源文件保存目录, 建议开启可避免二次压缩损失质量(默认保存到同目录的.before下)
+  compress-image-original-save-dir: .before

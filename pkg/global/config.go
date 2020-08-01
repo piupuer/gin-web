@@ -72,7 +72,10 @@ type RateLimitConfiguration struct {
 }
 
 type UploadConfiguration struct {
-	SaveDir              string `mapstructure:"save-dir" json:"saveDir"`
-	SingleMaxSize        uint   `mapstructure:"single-max-size" json:"singleMaxSize"`
-	MergeConcurrentCount uint   `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
+	SaveDir                      string `mapstructure:"save-dir" json:"saveDir"`
+	SingleMaxSize                uint   `mapstructure:"single-max-size" json:"singleMaxSize"`
+	MergeConcurrentCount         uint   `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
+	CompressImageCronTask        string `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
+	CompressImageRootDir         string `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
+	CompressImageOriginalSaveDir string `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
 }

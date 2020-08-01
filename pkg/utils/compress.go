@@ -50,7 +50,7 @@ func CompressImageSaveOriginal(filename string, before string) error {
 		_, err := os.Stat(beforeFilename)
 		// 文件存在
 		if err == nil {
-			return fmt.Errorf("已经压缩过, 不再二次压缩")
+			return fmt.Errorf("文件%s已经压缩过, 不再二次压缩", filename)
 		}
 	}
 
