@@ -169,10 +169,17 @@ func CreateDirIfNotExists(name string) string {
 		dir, _ := filepath.Split(name)
 		return dir
 	} else {
-		// 最后一级只要包含"."则认为是文件, 否则是目录
 		dir, filename := filepath.Split(name)
-		if !strings.Contains(filename, ".") {
-			dir = name
+		// 在unix系统下以.开头的为隐藏目录
+		if strings.HasPrefix(filename, ".") {
+			if !strings.Contains(strings.TrimPrefix(filename, "."), ".") {
+				dir = name
+			}
+		} else {
+			// 最后一级只要包含"."则认为是文件, 否则是目录
+			if !strings.Contains(filename, ".") {
+				dir = name
+			}
 		}
 		// 创建不存在的目录
 		os.MkdirAll(dir, os.ModePerm)

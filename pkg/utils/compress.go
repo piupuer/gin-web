@@ -12,8 +12,13 @@ import (
 	"strings"
 )
 
-// 压缩图像(支持jpg/png)
+// 压缩图像(支持jpg/png, 不保存原始图像)
 func CompressImage(filename string) error {
+	return CompressImageSaveOriginal(filename, "")
+}
+
+// 压缩图像(支持jpg/png, 保存原始图像到before目录, before为空不保存)
+func CompressImageSaveOriginal(filename string, before string) error {
 	suffix := strings.ToLower(filepath.Ext(filename))
 	if suffix != ".jpg" && suffix != ".jpeg" && suffix != ".png" {
 		return fmt.Errorf("[CompressImage]图片格式不支持: %s", filename)
@@ -29,6 +34,20 @@ func CompressImage(filename string) error {
 	file, err := os.Open(filename)
 	if err != nil {
 		return fmt.Errorf("文件可能不存在, err: %v", err)
+	}
+
+	// 原始文件名
+	beforeFilename := ""
+	beforeDir := ""
+	if before != "" {
+		baseDir, name := filepath.Split(filename)
+		beforeDir = baseDir + before
+		beforeFilename = beforeDir + "/" + name
+		_, err := os.Stat(beforeFilename)
+		// 文件存在
+		if err == nil {
+			return fmt.Errorf("已经压缩过, 不再二次压缩")
+		}
 	}
 
 	// 解析图片
@@ -71,6 +90,15 @@ func CompressImage(filename string) error {
 	}
 	if err != nil {
 		return fmt.Errorf("压缩写入失败, err: %v", err)
+	}
+	// 保存原始文件
+	if beforeDir != "" {
+		CreateDirIfNotExists(beforeDir)
+		// 移动源文件到before目录
+		err = os.Rename(filename, beforeFilename)
+		if err != nil {
+			return fmt.Errorf("源文件保存失败, err: %v", err)
+		}
 	}
 	// 移动新文件到旧文件
 	err = os.Rename(newFilename, filename)
