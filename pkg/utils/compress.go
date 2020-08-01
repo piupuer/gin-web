@@ -41,6 +41,10 @@ func CompressImageSaveOriginal(filename string, before string) error {
 	beforeDir := ""
 	if before != "" {
 		baseDir, name := filepath.Split(filename)
+		if strings.Contains(filename, before) || strings.Contains(baseDir, before) {
+			// 当前目录是源文件目录
+			return nil
+		}
 		beforeDir = baseDir + before
 		beforeFilename = beforeDir + "/" + name
 		_, err := os.Stat(beforeFilename)
