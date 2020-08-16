@@ -41,6 +41,14 @@ func New() *QueryRedis {
 	}
 }
 
+// 指定json字符串
+func (s *QueryRedis) FromString(str string) *QueryRedis {
+	clone := s.clone()
+	clone.search.FromString(str)
+	clone.search.out = nil
+	return clone
+}
+
 // 指定表名称
 func (s *QueryRedis) Table(name string) *QueryRedis {
 	clone := s.clone()
@@ -139,18 +147,24 @@ func (s *QueryRedis) count(value *uint) *QueryRedis {
 
 // 从缓存中获取model全部数据, 返回json字符串
 func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
-	// 缓存键由数据库名与表名组成
-	cacheKey := fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, tableName)
-	res, err := s.redis.Get(cacheKey).Result()
-	global.Log.Debug(fmt.Sprintf("[QueryRedis.get]读取redis缓存: %s", tableName))
-	if err != nil {
-		global.Log.Debug(fmt.Sprintf("[QueryRedis.get]读取redis缓存异常: %v", err))
+	jsonStr := ""
+	if !s.search.json {
+		// 缓存键由数据库名与表名组成
+		cacheKey := fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, tableName)
+		var err error
+		jsonStr, err = s.redis.Get(cacheKey).Result()
+		global.Log.Debug(fmt.Sprintf("[QueryRedis.get]读取redis缓存: %s", tableName))
+		if err != nil {
+			global.Log.Debug(fmt.Sprintf("[QueryRedis.get]读取redis缓存异常: %v", err))
+		}
+		if jsonStr == "" {
+			// 如果是空字符串, 将其设置为空数组, 否则list会被转为nil
+			jsonStr = "[]"
+		}
+	} else {
+		jsonStr = s.search.jsonStr
 	}
-	if res == "" {
-		// 如果是空字符串, 将其设置为空数组, 否则list会被转为nil
-		res = "[]"
-	}
-	query := s.jsonQuery(res)
+	query := s.jsonQuery(jsonStr)
 	var nullList interface{}
 	list := query.Get()
 	if s.search.first {
@@ -215,7 +229,8 @@ func (s QueryRedis) jsonQuery(str string) *gojsonq.JSONQ {
 
 // 校验表名是否正常
 func (s *QueryRedis) check() bool {
-	if strings.TrimSpace(s.clone().search.tableName) == "" {
+	// 未指定json字符串时考虑表名称
+	if !s.clone().search.json && strings.TrimSpace(s.clone().search.tableName) == "" {
 		s.Error = fmt.Errorf("invalid table name: '%s'", s.clone().search.tableName)
 		return false
 	}

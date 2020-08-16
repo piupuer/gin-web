@@ -23,6 +23,9 @@ type search struct {
 	orderConditions []orderCondition
 	// 是否只取一条数据
 	first bool
+	// 不查询表, 直接给定了json字符串
+	json    bool
+	jsonStr string
 }
 
 func (s *search) clone() *search {
@@ -53,6 +56,13 @@ type orderCondition struct {
 	asc bool
 }
 
+// 指定json字符串
+func (s *search) FromString(str string) *search {
+	s.jsonStr = str
+	s.json = true
+	return s
+}
+
 // 指定表名称
 func (s *search) Table(name string) *search {
 	s.tableName = name
@@ -76,8 +86,14 @@ func (s *search) Preload(schema string) *search {
 
 // where条件
 func (s *search) Where(key, cond string, val interface{}) *search {
-	// redis存的key均为驼峰
-	key = utils.CamelCaseLowerFirst(key)
+	// 可能通过小数点分隔多条件
+	keys := strings.Split(key, ".")
+	newKeys := make([]string, 0)
+	for _, item := range keys {
+		// redis存的key均为驼峰
+		newKeys = append(newKeys, utils.CamelCaseLowerFirst(item))
+	}
+	key = strings.Join(newKeys, ".")
 	// 如果参数为uint, redis存的json转换为int, 因此这里转一下类型
 	if item, ok := val.(uint); ok {
 		val = int(item)
