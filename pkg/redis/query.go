@@ -214,7 +214,7 @@ func (s QueryRedis) jsonQuery(str string) *gojsonq.JSONQ {
 }
 
 // 校验表名是否正常
-func (s QueryRedis) check() bool {
+func (s *QueryRedis) check() bool {
 	if strings.TrimSpace(s.clone().search.tableName) == "" {
 		s.Error = fmt.Errorf("invalid table name: '%s'", s.clone().search.tableName)
 		return false
