@@ -24,7 +24,7 @@ type SysMessageLog struct {
 	ToUser    SysUser    `gorm:"foreignkey:ToUserId" json:"toUser"`
 	MessageId uint       `gorm:"comment:'消息编号'" json:"messageId"`
 	Message   SysMessage `gorm:"foreignkey:MessageId" json:"message"`
-	Status    uint       `gorm:"type:tinyint(1);default:0;comment:'消息状态(0: 未读, 1: 已读, 2: 删除)'" json:"status"`
+	Status    uint       `gorm:"type:tinyint;default:0;comment:'消息状态(0: 未读, 1: 已读, 2: 删除)'" json:"status"`
 }
 
 func (m SysMessageLog) TableName() string {

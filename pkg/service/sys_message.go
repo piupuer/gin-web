@@ -1,55 +1,96 @@
 package service
 
 import (
+	"fmt"
 	"gin-web/models"
+	"gin-web/pkg/request"
+	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"strings"
 	"time"
 )
 
-// 查询指定用户未读消息
-func (s *MysqlService) GetUnReadMessages(userId uint) ([]models.SysMessageLog, error) {
-	status := models.SysMessageLogStatusUnRead
-	return s.GetMessagesByStatus(userId, &status)
-}
-
-// 查询指定用户已读消息
-func (s *MysqlService) GetReadMessages(userId uint) ([]models.SysMessageLog, error) {
-	status := models.SysMessageLogStatusRead
-	return s.GetMessagesByStatus(userId, &status)
-}
-
-// 查询指定用户已删除消息
-func (s *MysqlService) GetDeletedMessages(userId uint) ([]models.SysMessageLog, error) {
-	status := models.SysMessageLogStatusDeleted
-	return s.GetMessagesByStatus(userId, &status)
-}
-
-// 查询指定用户某个状态的消息
-func (s *MysqlService) GetMessagesByStatus(userId uint, status *uint) ([]models.SysMessageLog, error) {
-	messageLogs := make([]models.SysMessageLog, 0)
-	query := s.tx.Where("to_user_id = ?", userId)
-	// 指定消息状态
-	if status != nil {
-		query = query.Where("status = ?", *status)
+// 查询指定用户未删除的消息
+func (s *MysqlService) GetUnDeleteMessages(req request.MessageListRequestStruct) ([]response.MessageListResponseStruct, error) {
+	sysMessageLogTableName := new(models.SysMessageLog).TableName()
+	sysMessageTableName := new(models.SysMessage).TableName()
+	sysUserTableName := new(models.SysUser).TableName()
+	list := make([]response.MessageListResponseStruct, 0)
+	// 自定义查询字段
+	fields := []string{
+		fmt.Sprintf("%s.id AS id", sysMessageLogTableName),
+		fmt.Sprintf("%s.to_user_id AS to_user_id", sysMessageLogTableName),
+		fmt.Sprintf("toUser.username AS to_username"),
+		fmt.Sprintf("%s.status AS status", sysMessageLogTableName),
+		fmt.Sprintf("%s.type AS type", sysMessageTableName),
+		fmt.Sprintf("%s.title AS title", sysMessageTableName),
+		fmt.Sprintf("%s.content AS content", sysMessageTableName),
+		fmt.Sprintf("%s.created_at AS created_at", sysMessageTableName),
+		fmt.Sprintf("%s.from_user_id AS from_user_id", sysMessageTableName),
+		fmt.Sprintf("fromUser.username AS from_username"),
 	}
-	err := query.
-		Preload("Message").
-		Preload("Message.FromUser").
-		Find(&messageLogs).Error
-	if err != nil {
-		return messageLogs, err
+	query := s.tx.
+		Table(sysMessageLogTableName).
+		Select(fields).
+		Joins(fmt.Sprintf("LEFT JOIN %s ON %s.message_id = %s.id", sysMessageTableName, sysMessageLogTableName, sysMessageTableName)).
+		Joins(fmt.Sprintf("LEFT JOIN %s AS toUser ON %s.to_user_id = toUser.id", sysUserTableName, sysMessageLogTableName)).
+		Joins(fmt.Sprintf("LEFT JOIN %s AS fromUser ON %s.from_user_id = fromUser.id", sysUserTableName, sysMessageTableName))
+
+	// 添加条件
+	query = query.Where(fmt.Sprintf("%s.to_user_id = ?", sysMessageLogTableName), req.ToUserId)
+	title := strings.TrimSpace(req.Title)
+	if title != "" {
+		query = query.Where(fmt.Sprintf("%s.title LIKE ?", sysMessageTableName), fmt.Sprintf("%%%s%%", title))
 	}
-	return messageLogs, nil
+	content := strings.TrimSpace(req.Title)
+	if content != "" {
+		query = query.Where(fmt.Sprintf("%s.content LIKE ?", sysMessageTableName), fmt.Sprintf("%%%s%%", content))
+	}
+	if req.Type != nil {
+		query = query.Where(fmt.Sprintf("%s.type = ?", sysMessageTableName), *req.Type)
+	}
+	if req.Status != nil {
+		query = query.Where(fmt.Sprintf("%s.status = ?", sysMessageLogTableName), *req.Status)
+	} else {
+		// 未删除的
+		query = query.Where(fmt.Sprintf("%s.status != ?", sysMessageLogTableName), models.SysMessageLogStatusDeleted)
+	}
+
+	// 多表联合查询不用Find用Scan
+	// 查询条数
+	err := query.Count(&req.PageInfo.Total).Error
+	if err == nil {
+		if req.PageInfo.NoPagination {
+			// 不使用分页
+			err = query.Scan(&list).Error
+		} else {
+			// 获取分页参数
+			limit, offset := req.GetLimit()
+			err = query.Limit(limit).Offset(offset).Scan(&list).Error
+		}
+	}
+	return list, err
+}
+
+// 查询未读消息条数
+func (s *MysqlService) GetUnReadMessageCount(userId uint) (uint, error) {
+	var total uint
+	err := s.tx.
+		Table(new(models.SysMessageLog).TableName()).
+		Where("to_user_id = ?", userId).
+		Where("status = ?", models.SysMessageLogStatusUnRead).
+		Count(&total).Error
+	return total, err
 }
 
 // 更新为已读
-func (s *MysqlService) UpdateMessageRead(messageLogId uint) error {
-	return s.UpdateMessageStatus(messageLogId, models.SysMessageLogStatusRead)
+func (s *MysqlService) BatchUpdateMessageRead(messageLogIds []uint) error {
+	return s.BatchUpdateMessageStatus(messageLogIds, models.SysMessageLogStatusRead)
 }
 
 // 更新为已删除
-func (s *MysqlService) UpdateMessageDeleted(messageLogId uint) error {
-	return s.UpdateMessageStatus(messageLogId, models.SysMessageLogStatusDeleted)
+func (s *MysqlService) BatchUpdateMessageDeleted(messageLogIds []uint) error {
+	return s.BatchUpdateMessageStatus(messageLogIds, models.SysMessageLogStatusDeleted)
 }
 
 // 全标已读
@@ -62,13 +103,13 @@ func (s *MysqlService) UpdateAllMessageDeleted(userId uint) error {
 	return s.UpdateAllMessageStatus(userId, models.SysMessageLogStatusDeleted)
 }
 
-// 更新消息状态
-func (s *MysqlService) UpdateMessageStatus(messageLogId uint, status uint) error {
-	var log models.SysMessageLog
-	log.Id = messageLogId
+// 批量更新消息状态
+func (s *MysqlService) BatchUpdateMessageStatus(messageLogIds []uint, status uint) error {
 	return s.tx.
-		Table(log.TableName()).
-		Where(&log).
+		Table(new(models.SysMessageLog).TableName()).
+		// 已删除的消息不再标记
+		Where("status != ?", models.SysMessageLogStatusDeleted).
+		Where("id IN (?)", messageLogIds).
 		Update("status", status).Error
 }
 
