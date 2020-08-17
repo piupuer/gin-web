@@ -62,27 +62,34 @@ func RowChange(e *canal.RowsEvent) {
 	switch e.Action {
 	case canal.InsertAction:
 		// 插入数据
-		row := getRow(changeRows[0], e.Table)
-		if row[deletedAtName] == nil {
-			// 由于gorm默认执行软删除, 当delete_at为空时才加入redis缓存
-			newRows = append(newRows, row)
+		for _, changeRow := range changeRows {
+			row := getRow(changeRow, e.Table)
+			if row[deletedAtName] == nil {
+				// 由于gorm默认执行软删除, 当delete_at为空时才加入redis缓存
+				newRows = append(newRows, row)
+			}
 		}
 		break
 	case canal.UpdateAction:
-		// 更新数据
-		// 通过历史数据changeRows[0]去匹配需要更新的数据所在索引
-		index := getOldRowIndex(newRows, changeRows[0], e.Table)
-		if deletedAtIndex >= 0 && changeRows[0][deletedAtIndex] == nil && changeRows[1][deletedAtIndex] != nil {
-			// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
-			if index < rowCount-1 {
-				newRows = append(newRows[:index], newRows[index+1:]...)
+		// 更新数据(新旧数据2个2个一组)
+		for i, l := 0, len(changeRows); i < l; i += 2 {
+			oldRow := changeRows[i]
+			newRow := changeRows[i+1]
+			// 通过历史数据changeRows[0]去匹配需要更新的数据所在索引
+			index := getOldRowIndex(newRows, oldRow, e.Table)
+			if deletedAtIndex >= 0 && oldRow[deletedAtIndex] == nil && newRow[deletedAtIndex] != nil {
+				// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
+				if index < rowCount-1 {
+					newRows = append(newRows[:index], newRows[index+1:]...)
+				} else {
+					newRows = append(newRows[:index])
+				}
 			} else {
-				newRows = append(newRows[:index])
+				// 执行更新
+				newRows[index] = getRow(newRow, e.Table)
 			}
-		} else {
-			// 执行更新
-			newRows[index] = getRow(changeRows[1], e.Table)
 		}
+
 		break
 	case canal.DeleteAction:
 		// 删除数据
