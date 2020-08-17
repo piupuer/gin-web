@@ -52,6 +52,27 @@ func GetUnReadMessageCount(c *gin.Context) {
 	response.SuccessWithData(total)
 }
 
+// 推送消息
+func PushMessage(c *gin.Context) {
+	// 绑定参数
+	var req request.PushMessageRequestStruct
+	err := c.Bind(&req)
+	if err != nil {
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+	user := GetCurrentUser(c)
+	// 创建服务
+	s := service.New(c)
+	req.FromUserId = user.Id
+	err = s.CreateMessage(&req)
+	if err != nil {
+		response.FailWithMsg(err.Error())
+		return
+	}
+	response.Success()
+}
+
 // 批量更新为已读
 func BatchUpdateMessageRead(c *gin.Context) {
 	var req request.Req
@@ -119,4 +140,3 @@ func UpdateAllMessageDeleted(c *gin.Context) {
 	}
 	response.Success()
 }
-

@@ -13,6 +13,7 @@ func InitMessageRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware)
 	{
 		router.GET("/all", v1.GetAllMessages)
 		router.GET("/unRead/count", v1.GetUnReadMessageCount)
+		router.POST("/push", v1.PushMessage)
 		router.PATCH("/read/batch", v1.BatchUpdateMessageRead)
 		router.PATCH("/deleted/batch", v1.BatchUpdateMessageDeleted)
 		router.PATCH("/read/all", v1.UpdateAllMessageRead)

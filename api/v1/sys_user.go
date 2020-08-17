@@ -14,6 +14,9 @@ import (
 // 获取当前用户信息
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
+	// 同步用户消息
+	s := service.New(c)
+	s.SyncMessageByUserIds([]uint{user.Id})
 	// 转为UserInfoResponseStruct, 隐藏部分字段
 	var resp response.UserInfoResponseStruct
 	utils.Struct2StructByJson(user, &resp)

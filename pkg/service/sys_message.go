@@ -180,6 +180,26 @@ func (s *MysqlService) SyncMessageByUserIds(userIds []uint) error {
 	return nil
 }
 
+// 创建消息
+func (s *MysqlService) CreateMessage(req *request.PushMessageRequestStruct) error {
+	message := models.SysMessage{
+		FromUserId: req.FromUserId,
+		Title:      req.Title,
+		Content:    req.Content,
+		Type:       *req.Type,
+		Role:       models.SysRole{},
+	}
+	switch *req.Type {
+	case models.SysMessageTypeOneToOne:
+		return s.BatchCreateOneToOneMessage(message, req.ToUserIds)
+	case models.SysMessageTypeOneToMany:
+		return s.BatchCreateOneToManyMessage(message, req.ToRoleIds)
+	case models.SysMessageTypeSystem:
+		return s.CreateSystemMessage(message)
+	}
+	return fmt.Errorf("消息类型不合法")
+}
+
 // 创建一对一的消息(这里支持多个接收者, 但消息类型为一对一, 适合于发送给少量人群的批量操作)
 func (s *MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toIds []uint) error {
 	// 强制修改类型为一对一
