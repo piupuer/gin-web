@@ -62,7 +62,7 @@ func (s *RedisService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
 	// 查询全部api
-	err := s.redis.Find(&allApi).Error
+	err := s.redis.Table(new(models.SysApi).TableName()).Find(&allApi).Error
 	if err != nil {
 		return tree, accessIds, err
 	}
