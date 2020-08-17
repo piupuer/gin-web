@@ -11,13 +11,15 @@ import (
 // 初始化mysql数据库
 func Mysql() {
 	db, err := gorm.Open("mysql", fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?%s",
+		"%s:%s@tcp(%s:%d)/%s?%s&charset=%s&collation=%s",
 		global.Conf.Mysql.Username,
 		global.Conf.Mysql.Password,
 		global.Conf.Mysql.Host,
 		global.Conf.Mysql.Port,
 		global.Conf.Mysql.Database,
 		global.Conf.Mysql.Query,
+		global.Conf.Mysql.Charset,
+		global.Conf.Mysql.Collation,
 	))
 	if err != nil {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))

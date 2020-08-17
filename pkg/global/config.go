@@ -46,6 +46,8 @@ type MysqlConfiguration struct {
 	Query       string `mapstructure:"query" json:"query"`
 	LogMode     bool   `mapstructure:"log-mode" json:"logMode"`
 	TablePrefix string `mapstructure:"table-prefix" json:"tablePrefix"`
+	Charset     string `mapstructure:"charset" json:"charset"`
+	Collation   string `mapstructure:"collation" json:"collation"`
 }
 
 type RedisConfiguration struct {

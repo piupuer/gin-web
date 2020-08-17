@@ -48,6 +48,10 @@ mysql:
   log-mode: true
   # 数据库表前缀
   table-prefix: tb_
+  # 编码方式
+  charset: utf8mb4
+  # 字符集(utf8mb4_general_ci速度比utf8mb4_unicode_ci快些)
+  collation: utf8mb4_general_ci
 
 redis:
   # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
