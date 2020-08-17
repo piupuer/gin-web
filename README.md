@@ -25,6 +25,7 @@
 - `GoFunk` 常用工具包, 某些方法无需重复造轮子
 - `Workflow` 工作流程管理(由于golang工作流相关轮子很少不太符合项目需要, 因此自己写了一个)
 - `Uploader` 大文件分块上传/多文件、文件夹上传Vue组件[vue-uploader](https://github.com/simple-uploader/vue-uploader/)
+- `MessageCenter` 消息中心(活跃用户上线时新增消息表, 不活跃用户不管, 有效降低数据量)
 - `testing` 测试标准包, 快速进行单元测试
 
 ## 中间件
@@ -47,6 +48,8 @@
   - 用户管理
   - 接口管理
   - 工作流管理
+  - 操作日志
+  - 消息推送
 - 测试页面
   - 测试用例
   - 我的请假条
