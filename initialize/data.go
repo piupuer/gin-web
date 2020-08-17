@@ -314,17 +314,17 @@ func InitData() {
 			Model: models.Model{
 				Id: 13,
 			},
-			Name:      "uploader",
-			Title:     "上传组件",
-			Icon:      "back-top",
-			Path:      "/uploader",
-			Component: "",
-			Sort:      3,
-			Status:    &status,
-			Visible:   &visible,
+			Name:       "uploader",
+			Title:      "上传组件",
+			Icon:       "back-top",
+			Path:       "/uploader",
+			Component:  "",
+			Sort:       3,
+			Status:     &status,
+			Visible:    &visible,
 			Breadcrumb: &noBreadcrumb,
-			ParentId:  0,
-			Creator:   creator,
+			ParentId:   0,
+			Creator:    creator,
 			Roles: []models.SysRole{
 				roles[1],
 				roles[2],
@@ -335,17 +335,17 @@ func InitData() {
 			Model: models.Model{
 				Id: 14,
 			},
-			Name:      "uploader1",
-			Title:     "上传示例1",
-			Icon:      "guide",
-			Path:      "uploader1",
-			Component: "/uploader/uploader1",
-			Sort:      0,
-			Status:    &status,
-			Visible:   &visible,
+			Name:       "uploader1",
+			Title:      "上传示例1",
+			Icon:       "guide",
+			Path:       "uploader1",
+			Component:  "/uploader/uploader1",
+			Sort:       0,
+			Status:     &status,
+			Visible:    &visible,
 			Breadcrumb: &noBreadcrumb,
-			ParentId:  13,
-			Creator:   creator,
+			ParentId:   13,
+			Creator:    creator,
 			Roles: []models.SysRole{
 				roles[1],
 				roles[2],
@@ -356,19 +356,39 @@ func InitData() {
 			Model: models.Model{
 				Id: 16,
 			},
-			Name:      "uploader2",
-			Title:     "上传示例2",
-			Icon:      "guide",
-			Path:      "uploader2",
-			Component: "/uploader/uploader2",
-			Sort:      1,
-			Status:    &status,
-			Visible:   &visible,
+			Name:       "uploader2",
+			Title:      "上传示例2",
+			Icon:       "guide",
+			Path:       "uploader2",
+			Component:  "/uploader/uploader2",
+			Sort:       1,
+			Status:     &status,
+			Visible:    &visible,
 			Breadcrumb: &noBreadcrumb,
-			ParentId:  13,
-			Creator:   creator,
+			ParentId:   13,
+			Creator:    creator,
 			Roles: []models.SysRole{
 				roles[1],
+				roles[2],
+				roles[3],
+			},
+		},
+		{
+			Model: models.Model{
+				Id: 17,
+			},
+			Name:       "message-push",
+			Title:      "消息推送",
+			Icon:       "guide",
+			Path:       "message-push",
+			Component:  "/system/message-push",
+			Sort:       6,
+			Status:     &status,
+			Visible:    &visible,
+			Breadcrumb: &noBreadcrumb,
+			ParentId:   2,
+			Creator:    creator,
+			Roles: []models.SysRole{
 				roles[2],
 				roles[3],
 			},
@@ -887,6 +907,76 @@ func InitData() {
 			Desc:     "解压ZIP文件",
 			Creator:  creator,
 		},
+		{
+			Model: models.Model{
+				Id: 46,
+			},
+			Method:   "GET",
+			Path:     "/v1/message/all",
+			Category: "message",
+			Desc:     "获取全部消息",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 47,
+			},
+			Method:   "GET",
+			Path:     "/v1/message/unRead/count",
+			Category: "message",
+			Desc:     "获取未读消息条数",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 48,
+			},
+			Method:   "POST",
+			Path:     "/v1/message/push",
+			Category: "message",
+			Desc:     "发送新消息",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 49,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/message/read/batch",
+			Category: "message",
+			Desc:     "批量标为已读",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 50,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/message/deleted/batch",
+			Category: "message",
+			Desc:     "批量标为删除",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 51,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/message/read/all",
+			Category: "message",
+			Desc:     "全部标为已读",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 52,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/message/deleted/all",
+			Category: "message",
+			Desc:     "全部标为删除",
+			Creator:  creator,
+		},
 	}
 	for _, api := range apis {
 		oldApi := models.SysApi{}
@@ -914,8 +1004,16 @@ func InitData() {
 					Method:  api.Method,
 				})
 			}
+			// 消息推送权限只给管理员和测试员
+			if api.Id == 48 {
+				s.CreateRoleCasbin(models.SysRoleCasbin{
+					Keyword: roles[1].Keyword,
+					Path:    api.Path,
+					Method:  api.Method,
+				})
+			}
 			// 其他人暂时只有登录/获取用户信息的权限
-			if api.Id < 5 || api.Id == 10 {
+			if api.Id < 5 || api.Id == 10 || (api.Id > 45 && api.Id != 48 && api.Id < 53) {
 				s.CreateRoleCasbin(models.SysRoleCasbin{
 					Keyword: roles[0].Keyword,
 					Path:    api.Path,
