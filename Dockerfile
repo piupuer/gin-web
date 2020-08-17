@@ -1,4 +1,4 @@
-FROM golang:1.14
+FROM golang:1.14-alpine
 
 RUN echo "----------------- 后端Gin Web构建 -----------------"
 # 环境变量
