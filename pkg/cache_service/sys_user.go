@@ -20,7 +20,7 @@ func (s *RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 	// 查询用户及其角色
 	err := s.redis.Table(new(models.SysUser).TableName()).Preload("Role").Where("username", "=", user.Username).First(&u).Error
 	if err != nil {
-		return nil, err
+		return nil, errors.New(response.LoginCheckErrorMsg)
 	}
 	// 校验密码
 	if ok := utils.ComparePwd(user.Password, u.Password); !ok {
