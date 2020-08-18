@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
-	"github.com/gobuffalo/packr"
+	"github.com/gobuffalo/packr/v2"
 	"github.com/spf13/viper"
 	"os"
 )
 
 const (
-	configType = "yml"
+	configBoxName = "gin-conf-box"
+	configType    = "yml"
 	// 配置文件目录, packr.Box基于当前包目录, 文件名需要写完整, 即使viper可以自动获取
 	configPath        = "../conf"
 	developmentConfig = "config.dev.yml"
@@ -22,7 +23,7 @@ const (
 // 初始化配置文件
 func InitConfig() {
 	// 使用packr将配置文件打包到二进制文件中, 如果以docker镜像方式运行将会非常舒服
-	global.ConfBox = packr.NewBox(configPath)
+	global.ConfBox = packr.New(configBoxName, configPath)
 	// 获取实例(可创建多实例读取多个配置文件, 这里不做演示)
 	v := viper.New()
 

@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-redis/redis"
-	"github.com/gobuffalo/packr"
+	"github.com/gobuffalo/packr/v2"
 	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v9"
@@ -16,7 +16,7 @@ var (
 	// 系统配置
 	Conf Configuration
 	// packr盒子用于打包配置文件到golang编译后的二进制程序中
-	ConfBox packr.Box
+	ConfBox *packr.Box
 	// zap日志
 	Log *zap.SugaredLogger
 	// mysql实例

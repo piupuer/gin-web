@@ -24,6 +24,13 @@ RUN go mod download
 COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
 # 拷贝宿主机全部文件到当前目录
 COPY ./gin-web .
+
+# 通过packr2将配置文件写入二进制文件
+# 构建packr2
+RUN cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.8.0/packr2 && go build && chmod +x packr2
+# 回到app目录运行packr2命令
+RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.8.0/packr2/packr2 build
+
 # 构建应用
 RUN go build -o main .
 
