@@ -1,4 +1,4 @@
-FROM golang:1.14-alpine
+FROM golang:1.14 AS gin-web
 
 RUN echo "----------------- 后端Gin Web构建 -----------------"
 # 环境变量
@@ -34,7 +34,22 @@ RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.8.0/packr2/
 # 构建应用
 RUN go build -o main .
 
-#
+# alpine镜像瘦身
+FROM alpine:3.12
+
+# 定义应用运行目录
+ENV APP_HOME /app/gin-web
+
+RUN mkdir -p $APP_HOME
+
+# 设置运行目录
+WORKDIR $APP_HOME
+
+COPY --from=gin-web $APP_HOME/main .
+
+# alpine中缺少动态库，创建一个软链
+RUN  mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
+
 # 暴露端口
 EXPOSE 10000
 
