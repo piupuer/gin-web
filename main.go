@@ -6,6 +6,8 @@ import (
 	"gin-web/initialize"
 	"gin-web/pkg/global"
 	"net/http"
+  // 加入pprof性能分析
+	_ "net/http/pprof"
 	"os"
 	"os/signal"
 	"runtime/debug"
@@ -61,6 +63,13 @@ func main() {
 		Handler: r,
 	}
 
+	go func() {
+		// 加入pprof性能分析
+		if err := http.ListenAndServe(":8005", nil); err != nil {
+			global.Log.Error("listen pprof error: ", err)
+		}
+	}()
+	
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {
