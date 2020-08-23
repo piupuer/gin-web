@@ -9,8 +9,11 @@ import (
 
 // 消息中心路由
 func InitMessageRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
+	// 初始化消息中心仓库
+	v1.StartMessageHub()
 	router := r.Group("message").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
+		router.GET("/ws", v1.MessageWs)
 		router.GET("/all", v1.GetAllMessages)
 		router.GET("/unRead/count", v1.GetUnReadMessageCount)
 		router.POST("/push", v1.PushMessage)

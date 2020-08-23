@@ -77,24 +77,36 @@ func Result(code int, msg string, data interface{}) {
 	})
 }
 
+func GetResult(code int, msg string, data interface{}) Resp {
+	return Resp{
+		Code: code,
+		Data: data,
+		Msg:  msg,
+	}
+}
+
 func Success() {
 	Result(Ok, CustomError[Ok], map[string]interface{}{})
+}
+
+func GetSuccess() Resp {
+	return GetResult(Ok, CustomError[Ok], map[string]interface{}{})
 }
 
 func SuccessWithData(data interface{}) {
 	Result(Ok, CustomError[Ok], data)
 }
 
-func SuccessWithMsg(msg string) {
-	Result(Ok, msg, map[string]interface{}{})
-}
-
-func Fail() {
-	FailWithCode(NotOk)
+func GetSuccessWithData(data interface{}) Resp {
+	return GetResult(Ok, CustomError[Ok], data)
 }
 
 func FailWithMsg(msg string) {
 	Result(NotOk, msg, map[string]interface{}{})
+}
+
+func GetFailWithMsg(msg string) Resp {
+	return GetResult(NotOk, msg, map[string]interface{}{})
 }
 
 func FailWithCode(code int) {
@@ -104,6 +116,15 @@ func FailWithCode(code int) {
 		msg = val
 	}
 	Result(code, msg, map[string]interface{}{})
+}
+
+func GetFailWithCode(code int) Resp {
+	// 查找给定的错误码存在对应的错误信息, 默认使用NotOk
+	msg := CustomError[NotOk]
+	if val, ok := CustomError[code]; ok {
+		msg = val
+	}
+	return GetResult(code, msg, map[string]interface{}{})
 }
 
 // 写入json返回值

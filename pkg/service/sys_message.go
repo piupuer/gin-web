@@ -191,8 +191,14 @@ func (s *MysqlService) CreateMessage(req *request.PushMessageRequestStruct) erro
 	}
 	switch *req.Type {
 	case models.SysMessageTypeOneToOne:
+		if len(req.ToUserIds) == 0 {
+			return fmt.Errorf("接收人不得为空")
+		}
 		return s.BatchCreateOneToOneMessage(message, req.ToUserIds)
 	case models.SysMessageTypeOneToMany:
+		if len(req.ToRoleIds) == 0 {
+			return fmt.Errorf("接收角色不得为空")
+		}
 		return s.BatchCreateOneToManyMessage(message, req.ToRoleIds)
 	case models.SysMessageTypeSystem:
 		return s.CreateSystemMessage(message)

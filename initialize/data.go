@@ -977,6 +977,16 @@ func InitData() {
 			Desc:     "全部标为删除",
 			Creator:  creator,
 		},
+		{
+			Model: models.Model{
+				Id: 53,
+			},
+			Method:   "GET",
+			Path:     "/v1/message/ws",
+			Category: "message",
+			Desc:     "消息中心长连接",
+			Creator:  creator,
+		},
 	}
 	for _, api := range apis {
 		oldApi := models.SysApi{}
@@ -1013,7 +1023,7 @@ func InitData() {
 				})
 			}
 			// 其他人暂时只有登录/获取用户信息的权限
-			if api.Id < 5 || api.Id == 10 || (api.Id > 45 && api.Id != 48 && api.Id < 53) {
+			if api.Id < 5 || api.Id == 10 || (api.Id > 45 && api.Id != 48 && api.Id < 54) {
 				s.CreateRoleCasbin(models.SysRoleCasbin{
 					Keyword: roles[0].Keyword,
 					Path:    api.Path,
