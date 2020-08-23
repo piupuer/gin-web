@@ -20,8 +20,6 @@ COPY ./gin-web/go.mod ./gin-web/go.sum ./
 # 下载依赖文件
 RUN go mod download
 
-# 拷贝mysqldump文件(binlog刷到redis会用到)
-COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
 # 拷贝宿主机全部文件到当前目录
 COPY ./gin-web .
 
@@ -46,6 +44,9 @@ RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
 COPY --from=gin-web $APP_HOME/main .
+
+# 拷贝mysqldump文件(binlog刷到redis会用到)
+COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
 
 # alpine中缺少动态库，创建一个软链
 RUN  mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
