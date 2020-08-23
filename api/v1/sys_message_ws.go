@@ -218,11 +218,6 @@ func (h *MessageHub) run() {
 					}
 				}
 			}
-		default:
-			if time.Now().Second()%5 == 0 {
-				global.Log.Debug("当前活跃连接", hub.Clients)
-				time.Sleep(time.Second)
-			}
 		}
 	}
 }
@@ -396,6 +391,7 @@ loop:
 		select {
 		// 到心跳检测时间
 		case <-ticker.C:
+			global.Log.Debug("当前活跃连接", hub.Clients)
 			last := time.Now().Sub(c.LastActiveTime.Time)
 			if c.RetryCount > HeartBeatMaxRetryCount {
 				global.Log.Error("尝试发送心跳多次无响应, 连接可能已断开")
