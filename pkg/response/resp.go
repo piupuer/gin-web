@@ -40,9 +40,6 @@ func (s *PageInfo) GetLimit() (limit uint, offset uint) {
 
 	// 如果偏移量比总条数还多
 	if s.Total > 0 {
-		if s.PageSize > s.Total {
-			s.PageSize = s.Total
-		}
 		if s.PageNum > s.Total {
 			s.PageNum = s.Total
 		}
