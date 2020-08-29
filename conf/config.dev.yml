@@ -100,3 +100,14 @@ upload:
   compress-image-root-dir:
   # 源文件保存目录, 建议开启可避免二次压缩损失质量(默认保存到同目录的.before下)
   compress-image-original-save-dir: .before
+
+# 微信配置
+we-chat:
+  # 微信公众号配置
+  official:
+    # 公众号id
+    app-id: xxx
+    # 公众号密钥
+    app-secret: xxx
+    # 加密key(不为空时, 传输数据会使用aes加密, 建议填写)
+    encoding: gin-web

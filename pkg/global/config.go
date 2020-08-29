@@ -13,6 +13,7 @@ type Configuration struct {
 	Jwt       JwtConfiguration       `mapstructure:"jwt" json:"jwt"`
 	RateLimit RateLimitConfiguration `mapstructure:"rate-limit" json:"rateLimit"`
 	Upload    UploadConfiguration    `mapstructure:"upload" json:"upload"`
+	WeChat    WeChatConfiguration    `mapstructure:"we-chat" json:"weChat"`
 }
 
 type SystemConfiguration struct {
@@ -80,4 +81,14 @@ type UploadConfiguration struct {
 	CompressImageCronTask        string `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
 	CompressImageRootDir         string `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
 	CompressImageOriginalSaveDir string `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
+}
+
+type WeChatConfiguration struct {
+	Official WeChatOfficialConfiguration `mapstructure:"official" json:"official"`
+}
+
+type WeChatOfficialConfiguration struct {
+	AppId     string `mapstructure:"app-id" json:"appId"`
+	AppSecret string `mapstructure:"app-secret" json:"appSecret"`
+	Encoding  string `mapstructure:"encoding" json:"encoding"`
 }

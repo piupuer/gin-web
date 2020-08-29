@@ -22,12 +22,13 @@ require (
 	github.com/satori/go.uuid v1.2.0
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
 	github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea
+	github.com/silenceper/wechat/v2 v2.0.2
 	github.com/spf13/viper v1.6.3
 	github.com/thedevsaddam/gojsonq/v2 v2.5.2
 	github.com/thoas/go-funk v0.6.0
 	github.com/ulule/limiter/v3 v3.5.0
 	go.uber.org/zap v1.14.1
-	golang.org/x/crypto v0.0.0-20191205180655-e7c4368fe9dd
+	golang.org/x/crypto v0.0.0-20200510223506-06a226fb4e37
 	golang.org/x/text v0.3.2
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
