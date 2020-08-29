@@ -2,6 +2,7 @@ package wechat
 
 import (
 	"gin-web/models"
+	"gin-web/pkg/global"
 	"gin-web/tests"
 	"github.com/silenceper/wechat/v2/officialaccount/message"
 	"testing"
@@ -12,7 +13,7 @@ func TestSendTplMessage(t *testing.T) {
 	tests.InitTestEnv()
 	msg := message.TemplateMessage{
 		ToUser:     "xxx",
-		TemplateID: "xxx",
+		TemplateID: global.Conf.WeChat.Official.TplMessageCronTask.TemplateId,
 		Data: map[string]*message.TemplateDataItem{
 			"first": {
 				Value: "日常事项定时提醒",
@@ -33,8 +34,8 @@ func TestSendTplMessage(t *testing.T) {
 			},
 		},
 	}
-	msg.MiniProgram.AppID = "xxx"
-	msg.MiniProgram.PagePath = "pages/index/index"
+	msg.MiniProgram.AppID = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramAppId
+	msg.MiniProgram.PagePath = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramPagePath
 	err := SendTplMessage(&msg)
 	if err != nil {
 		panic(err)

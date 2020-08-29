@@ -88,7 +88,16 @@ type WeChatConfiguration struct {
 }
 
 type WeChatOfficialConfiguration struct {
-	AppId     string `mapstructure:"app-id" json:"appId"`
-	AppSecret string `mapstructure:"app-secret" json:"appSecret"`
-	Encoding  string `mapstructure:"encoding" json:"encoding"`
+	AppId              string                                        `mapstructure:"app-id" json:"appId"`
+	AppSecret          string                                        `mapstructure:"app-secret" json:"appSecret"`
+	Encoding           string                                        `mapstructure:"encoding" json:"encoding"`
+	TplMessageCronTask WeChatOfficialTplMessageCronTaskConfiguration `mapstructure:"tpl-message-cron-task" json:"tplMessageCronTask"`
+}
+
+type WeChatOfficialTplMessageCronTaskConfiguration struct {
+	Expr                string `mapstructure:"expr" json:"expr"`
+	Users               string `mapstructure:"users" json:"users"`
+	TemplateId          string `mapstructure:"template-id" json:"templateId"`
+	MiniProgramAppId    string `mapstructure:"mini-program-app-id" json:"miniProgramAppId"`
+	MiniProgramPagePath string `mapstructure:"mini-program-page-path" json:"miniProgramPagePath"`
 }

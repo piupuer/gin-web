@@ -111,3 +111,16 @@ we-chat:
     app-secret: xxx
     # 加密key(不为空时, 传输数据会使用aes加密, 建议填写)
     encoding: gin-web
+    # 模板消息定时任务
+    tpl-message-cron-task:
+      # 表达式
+      expr: '*/1 * * * *'
+      # 接收人微信列表
+      users: xxx
+      # 模板id
+      template-id: xxx
+      # 小程序app-id
+      mini-program-app-id: xxx
+      # 小程序页面路径
+      mini-program-page-path: pages/index/index
+

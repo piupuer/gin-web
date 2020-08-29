@@ -2,12 +2,17 @@ package initialize
 
 import (
 	"fmt"
+	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
+	"gin-web/pkg/wechat"
 	"github.com/robfig/cron/v3"
+	"github.com/silenceper/wechat/v2/officialaccount/message"
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
+	"time"
 )
 
 // 初始化定时任务
@@ -15,9 +20,19 @@ func InitCron() {
 	go func() {
 		// 新建cron实例
 		c := cron.New()
+		// 自定义日志
+		log := new(CronCustomLogger)
+		// 图片压缩任务
 		if global.Conf.Upload.CompressImageCronTask != "" {
 			// SkipIfStillRunning作用是如果前一个任务未执行完成将跳过新任务
-			c.AddJob(global.Conf.Upload.CompressImageCronTask, cron.NewChain(cron.SkipIfStillRunning(&CronCustomLogger{})).Then(&CompressImageJob{}))
+			c.AddJob(global.Conf.Upload.CompressImageCronTask, cron.NewChain(cron.SkipIfStillRunning(log)).Then(&CompressImageJob{}))
+		}
+		// 微信消息任务
+		if global.Conf.WeChat.Official.TplMessageCronTask.Expr != "" {
+			job := new(WeChatTplMessageJob)
+			job.Users = strings.Split(global.Conf.WeChat.Official.TplMessageCronTask.Users, ",")
+			// SkipIfStillRunning作用是如果前一个任务未执行完成将跳过新任务
+			c.AddJob(global.Conf.WeChat.Official.TplMessageCronTask.Expr, cron.NewChain(cron.SkipIfStillRunning(log)).Then(job))
 		}
 		// 启动调度
 		c.Start()
@@ -85,5 +100,56 @@ func (s *CompressImageJob) Run() {
 				s.Dirs = append(s.Dirs, currentDir)
 			}
 		}
+	}
+}
+
+// 微信模板消息通知定时job
+type WeChatTplMessageJob struct {
+	// 当前index
+	Current int
+	// 用户微信号列表
+	Users []string
+}
+
+func (s *WeChatTplMessageJob) Run() {
+	global.Log.Info("[定时任务][微信模板消息]准备开始...")
+	l := len(s.Users)
+	if l == 0 {
+		global.Log.Warn("[定时任务][微信模板消息]用户列表未配置")
+		return
+	}
+	// 不得超过最大长度
+	if l <= s.Current {
+		panic("err")
+	}
+	currentUser := s.Users[s.Current]
+	msg := message.TemplateMessage{
+		ToUser:     currentUser,
+		TemplateID: global.Conf.WeChat.Official.TplMessageCronTask.TemplateId,
+		Data: map[string]*message.TemplateDataItem{
+			"first": {
+				Value: "日常事项定时提醒",
+			},
+			"keyword1": {
+				Value: "每日购买",
+			},
+			"keyword2": {
+				Value: "请到商城下单支付一单(杨博士店有一分钱的单)",
+			},
+			"keyword3": {
+				Value: models.LocalTime{
+					Time: time.Now(),
+				}.String(),
+			},
+			"remark": {
+				Value: "下单完成记得将截图发到群里哦~",
+			},
+		},
+	}
+	msg.MiniProgram.AppID = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramAppId
+	msg.MiniProgram.PagePath = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramPagePath
+	err := wechat.SendTplMessage(&msg)
+	if err == nil {
+		s.Current++
 	}
 }
