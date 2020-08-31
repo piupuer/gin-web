@@ -1,7 +1,6 @@
 package initialize
 
 import (
-	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
@@ -45,11 +44,11 @@ type CronCustomLogger struct {
 }
 
 func (s CronCustomLogger) Info(msg string, keysAndValues ...interface{}) {
-	global.Log.Info(fmt.Sprintf("[定时任务]%s", msg))
+	global.Log.Infof("[定时任务]%s", msg)
 }
 
 func (s CronCustomLogger) Error(err error, msg string, keysAndValues ...interface{}) {
-	global.Log.Error(fmt.Sprintf("[定时任务]%s, err: %v", msg, err))
+	global.Log.Errorf("[定时任务]%s, err: %v", msg, err)
 }
 
 // 图片压缩定时job
@@ -75,7 +74,7 @@ func (s *CompressImageJob) Run() {
 		if info.IsDir() {
 			currentDir := compressDir + "/" + info.Name()
 			if utils.Contains(s.Dirs, currentDir) {
-				global.Log.Debug(fmt.Sprintf("[定时任务][图片压缩]目录%s已扫描, 跳过", currentDir))
+				global.Log.Debugf("[定时任务][图片压缩]目录%s已扫描, 跳过", currentDir)
 				continue
 			}
 			filepath.Walk(currentDir, func(path string, fi os.FileInfo, errBack error) error {
@@ -85,6 +84,10 @@ func (s *CompressImageJob) Run() {
 				var err error
 				// 压缩图片
 				if global.Conf.Upload.CompressImageOriginalSaveDir != "" {
+					if strings.Contains(path, global.Conf.Upload.CompressImageOriginalSaveDir) {
+						global.Log.Debugf("[定时任务][图片压缩]目录%s为源文件保存目录, 跳过", path)
+						return nil
+					}
 					// 保存源文件
 					err = utils.CompressImageSaveOriginal(path, global.Conf.Upload.CompressImageOriginalSaveDir)
 				} else {
@@ -92,7 +95,9 @@ func (s *CompressImageJob) Run() {
 					err = utils.CompressImage(path)
 				}
 				if err != nil {
-					global.Log.Error(fmt.Sprintf("[定时任务][图片压缩]%v", err))
+					global.Log.Errorf("[定时任务][图片压缩]压缩失败, 当前文件%s, %v", path, err)
+				} else {
+					global.Log.Debugf("[定时任务][图片压缩]压缩成功, 当前文件%s", path)
 				}
 				return nil
 			})
@@ -101,6 +106,7 @@ func (s *CompressImageJob) Run() {
 			}
 		}
 	}
+	global.Log.Debugf("[定时任务][图片压缩]任务结束")
 }
 
 const CurrentIndexKey = "we_chat_tpl_message_job_current_index"
@@ -157,10 +163,14 @@ func (s *WeChatTplMessageJob) Run() {
 	msg.MiniProgram.PagePath = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramPagePath
 	err := wechat.SendTplMessage(&msg)
 	if err == nil {
+		global.Log.Debugf("[定时任务][微信模板消息]发送成功, 接收人%s, 当前索引%d", currentUser, s.Current)
 		s.Current++
 		// 保存到redis
 		if global.Conf.System.UseRedis {
 			global.Redis.Set(CurrentIndexKey, s.Current, 0)
 		}
+	} else {
+		global.Log.Errorf("[定时任务][微信模板消息]发送失败, %v", err)
 	}
+	global.Log.Debugf("[定时任务][微信模板消息]任务结束")
 }
