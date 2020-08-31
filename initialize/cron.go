@@ -103,6 +103,8 @@ func (s *CompressImageJob) Run() {
 	}
 }
 
+const CurrentIndexKey = "we_chat_tpl_message_job_current_index"
+
 // 微信模板消息通知定时job
 type WeChatTplMessageJob struct {
 	// 当前index
@@ -118,9 +120,14 @@ func (s *WeChatTplMessageJob) Run() {
 		global.Log.Warn("[定时任务][微信模板消息]用户列表未配置")
 		return
 	}
+	// 从redis中读取index
+	if global.Conf.System.UseRedis {
+		current, _ := global.Redis.Get(CurrentIndexKey).Int64()
+		s.Current = int(current)
+	}
 	// 不得超过最大长度
 	if l <= s.Current {
-		panic("err")
+		s.Current = 0
 	}
 	currentUser := s.Users[s.Current]
 	msg := message.TemplateMessage{
@@ -151,5 +158,9 @@ func (s *WeChatTplMessageJob) Run() {
 	err := wechat.SendTplMessage(&msg)
 	if err == nil {
 		s.Current++
+		// 保存到redis
+		if global.Conf.System.UseRedis {
+			global.Redis.Set(CurrentIndexKey, s.Current, 0)
+		}
 	}
 }
