@@ -51,6 +51,17 @@ COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
 # alpine中缺少动态库，创建一个软链
 RUN  mkdir /lib64 && ln -s /lib/libc.musl-x86_64.so.1 /lib64/ld-linux-x86-64.so.2
 
+# alpine时区修改
+# apk仓库使用国内源
+# 设置时区为上海
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN apk update \
+  && apk add tzdata \
+  && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
+  && echo "Asia/Shanghai" > /etc/timezone
+# 验证时区是否已修改
+# RUN date -R
+
 # 暴露端口
 EXPOSE 10000
 
