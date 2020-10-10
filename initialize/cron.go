@@ -121,8 +121,7 @@ type WeChatTplMessageJob struct {
 
 func (s *WeChatTplMessageJob) Run() {
 	global.Log.Info("[定时任务][微信模板消息]准备开始...")
-	l := len(s.Users)
-	if l == 0 {
+	if len(s.Users) == 0 {
 		global.Log.Warn("[定时任务][微信模板消息]用户列表未配置")
 		return
 	}
@@ -131,13 +130,7 @@ func (s *WeChatTplMessageJob) Run() {
 		current, _ := global.Redis.Get(CurrentIndexKey).Int64()
 		s.Current = int(current)
 	}
-	// 不得超过最大长度
-	if l <= s.Current {
-		s.Current = 0
-	}
-	currentUser := s.Users[s.Current]
 	msg := message.TemplateMessage{
-		ToUser:     currentUser,
 		TemplateID: global.Conf.WeChat.Official.TplMessageCronTask.TemplateId,
 		Data: map[string]*message.TemplateDataItem{
 			"first": {
@@ -161,16 +154,29 @@ func (s *WeChatTplMessageJob) Run() {
 	}
 	msg.MiniProgram.AppID = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramAppId
 	msg.MiniProgram.PagePath = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramPagePath
+	// 一次发送给2个人
+	s.sendOne(msg)
+	s.sendOne(msg)
+	global.Log.Debugf("[定时任务][微信模板消息]任务结束")
+}
+
+// 发送单条消息
+func (s *WeChatTplMessageJob) sendOne(msg message.TemplateMessage)  {
+	// 不得超过最大长度
+	if len(s.Users) <= s.Current {
+		s.Current = 0
+	}
+	currentUser := s.Users[s.Current]
+	msg.ToUser = currentUser
 	err := wechat.SendTplMessage(&msg)
 	if err == nil {
 		global.Log.Debugf("[定时任务][微信模板消息]发送成功, 接收人%s, 当前索引%d", currentUser, s.Current)
-		s.Current++
-		// 保存到redis
-		if global.Conf.System.UseRedis {
-			global.Redis.Set(CurrentIndexKey, s.Current, 0)
-		}
 	} else {
-		global.Log.Errorf("[定时任务][微信模板消息]发送失败, %v", err)
+		global.Log.Errorf("[定时任务][微信模板消息]发送失败, 接收人%s, 当前索引%d, 错误信息%v", currentUser, s.Current, err)
 	}
-	global.Log.Debugf("[定时任务][微信模板消息]任务结束")
+	s.Current++
+	// 保存到redis
+	if global.Conf.System.UseRedis {
+		global.Redis.Set(CurrentIndexKey, s.Current, 0)
+	}
 }
