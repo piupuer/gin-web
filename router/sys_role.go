@@ -9,7 +9,7 @@ import (
 
 // 角色路由
 func InitRoleRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	router := r.Group("role").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
+	router := r.Group("/role").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
 		router.GET("/list", v1.GetRoles)
 		router.POST("/create", v1.CreateRole)

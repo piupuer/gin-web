@@ -1,19 +1,19 @@
 package service
 
 import (
-	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
-	gormadapter "github.com/casbin/gorm-adapter/v2"
+	gormadapter "github.com/casbin/gorm-adapter/v3"
 )
 
 // 获取casbin策略管理器
 func (s *MysqlService) Casbin() (*casbin.Enforcer, error) {
 	// 初始化数据库适配器, 添加自定义表前缀, casbin不使用事务管理, 因为他内部使用到事务, 重复用会导致冲突
-	// casbin默认表名casbin_rule, 本项目添加了自定义表前缀以及sys, 因此使用prefix_sys_cabin_rule
-	a, err := gormadapter.NewAdapterByDBUsePrefix(s.db, fmt.Sprintf("%ssys_", global.Conf.Mysql.TablePrefix))
+	// casbin默认表名casbin_rule, 为了与项目统一改写一下规则
+	// 注意: gormadapter.CasbinTableName内部添加了下划线, 这里不再多此一举
+	a, err := gormadapter.NewAdapterByDBUseTableName(s.db, global.Conf.Mysql.TablePrefix, "sys_casbin")
 	if err != nil {
 		return nil, err
 	}

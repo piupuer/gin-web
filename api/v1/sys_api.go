@@ -87,7 +87,7 @@ func CreateApi(c *gin.Context) {
 // 更新接口
 func UpdateApiById(c *gin.Context) {
 	// 绑定参数
-	var req gin.H
+	var req map[string]interface{}
 	err := c.Bind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

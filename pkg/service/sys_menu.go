@@ -6,7 +6,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
-	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 // 获取权限菜单树
@@ -84,15 +84,15 @@ func (s *MysqlService) CreateMenu(req *request.CreateMenuRequestStruct) (err err
 }
 
 // 更新菜单
-func (s *MysqlService) UpdateMenuById(id uint, req gin.H) (err error) {
+func (s *MysqlService) UpdateMenuById(id uint, req map[string]interface{}) (err error) {
 	var oldMenu models.SysMenu
 	query := s.tx.Table(oldMenu.TableName()).Where("id = ?", id).First(&oldMenu)
-	if query.RecordNotFound() {
+	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(gin.H, 0)
+	m := make(map[string]interface{}, 0)
 	utils.CompareDifferenceStructByJson(oldMenu, req, &m)
 
 	// 更新指定列

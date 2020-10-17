@@ -11,10 +11,12 @@ import (
 func TestQueryRedis_Count(t *testing.T) {
 	tests.InitTestEnv()
 	query := New()
-	var count uint
-	err := global.Mysql.Count(&count).Error
+	var count int64
+	var u models.SysUser
+	tableName := u.TableName()
+	err := global.Mysql.Table(tableName).Count(&count).Error
 	fmt.Println(err)
-	err2 := query.Count(&count).Error
+	err2 := query.Table(tableName).Count(&count).Error
 	fmt.Println(err2)
 }
 
@@ -23,10 +25,10 @@ func TestQueryRedis_Table(t *testing.T) {
 	query := New()
 	var u models.SysUser
 	tableName := u.TableName()
-	var count uint
+	var count int64
 	err := global.Mysql.Table(tableName).Count(&count).Error
 	fmt.Println(err, count)
-	var count2 uint
+	var count2 int64
 	err2 := query.Table(tableName).Count(&count2).Error
 	fmt.Println(err2, count2)
 }
@@ -125,7 +127,7 @@ func TestQueryRedis_Multi(t *testing.T) {
 	query.Table(new(models.SysUser).TableName()).Where("id", "=", 1).Find(&us)
 	query.Table(new(models.SysUser).TableName()).Where("mobile", "=", "13888888888").Find(&us2)
 	query.Table(new(models.SysUser).TableName()).Where("id", "=", 3).Where("mobile", "=", "13888888888").Find(&us3)
-	query.mysql.Table(new(models.SysUser).TableName()).Where("id = ?", 1).Find(&us4)
-	query.mysql.Table(new(models.SysUser).TableName()).Where("mobile = ?", "13888888888").Find(&us5)
+	global.Mysql.Table(new(models.SysUser).TableName()).Where("id = ?", 1).Find(&us4)
+	global.Mysql.Table(new(models.SysUser).TableName()).Where("mobile = ?", "13888888888").Find(&us5)
 	fmt.Println(us, us2, us3, us4, us5)
 }

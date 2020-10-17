@@ -210,7 +210,7 @@ func (h *MessageHub) run() {
 						// 将当前消息条数发送给用户
 						msg := MessageResp{
 							Type: MessageRespUnRead,
-							Detail: response.GetSuccessWithData(map[string]uint{
+							Detail: response.GetSuccessWithData(map[string]int64{
 								"unReadCount": total,
 							}),
 						}

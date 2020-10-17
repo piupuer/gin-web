@@ -6,7 +6,9 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
+	"gorm.io/gorm"
 )
 
 // 初始化数据
@@ -60,8 +62,8 @@ func InitData() {
 	}
 	for _, role := range roles {
 		oldRole := models.SysRole{}
-		notFound := global.Mysql.Where("id = ?", role.Id).First(&oldRole).RecordNotFound()
-		if notFound {
+		err := global.Mysql.Where("id = ?", role.Id).First(&oldRole).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			global.Mysql.Create(&role)
 		}
 	}
@@ -396,8 +398,8 @@ func InitData() {
 	}
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
-		notFound := global.Mysql.Where("id = ?", menu.Id).First(&oldMenu).RecordNotFound()
-		if notFound {
+		err := global.Mysql.Where("id = ?", menu.Id).First(&oldMenu).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			global.Mysql.Create(&menu)
 		}
 	}
@@ -449,8 +451,8 @@ func InitData() {
 	}
 	for _, user := range users {
 		oldUser := models.SysUser{}
-		notFound := global.Mysql.Where("username = ?", user.Username).First(&oldUser).RecordNotFound()
-		if notFound {
+		err := global.Mysql.Where("username = ?", user.Username).First(&oldUser).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			global.Mysql.Create(&user)
 		}
 	}
@@ -990,8 +992,8 @@ func InitData() {
 	}
 	for _, api := range apis {
 		oldApi := models.SysApi{}
-		notFound := global.Mysql.Where("id = ?", api.Id).First(&oldApi).RecordNotFound()
-		if notFound {
+		err := global.Mysql.Where("id = ?", api.Id).First(&oldApi).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			global.Mysql.Create(&api)
 			// 创建服务
 			s := service.New(nil)
@@ -1058,8 +1060,8 @@ func InitData() {
 	}
 	for _, workflow := range workflows {
 		oldWorkflow := models.SysWorkflow{}
-		notFound := global.Mysql.Where("id = ?", workflow.Id).First(&oldWorkflow).RecordNotFound()
-		if notFound {
+		err := global.Mysql.Where("id = ?", workflow.Id).First(&oldWorkflow).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
 			global.Mysql.Create(&workflow)
 			// 创建服务
 			s := service.New(nil)

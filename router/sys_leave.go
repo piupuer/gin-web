@@ -9,7 +9,7 @@ import (
 
 // 请假路由
 func InitLeaveRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	router := r.Group("leave").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
+	router := r.Group("/leave").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
 		router.GET("/list", v1.GetLeaves)
 		router.GET("/approval/list/:leaveId", v1.GetLeaveApprovalLogs)

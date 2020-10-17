@@ -7,10 +7,9 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/service/strategy"
 	"gin-web/pkg/utils"
-	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
 	uuid "github.com/satori/go.uuid"
 	"github.com/thedevsaddam/gojsonq/v2"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -123,11 +122,11 @@ func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 	}
 	// 处理分页(转为json)
 	query := gojsonq.New().FromString(utils.Struct2Json(list))
-	req.PageInfo.Total = uint(query.Count())
+	req.PageInfo.Total = int64(query.Count())
 	if !req.PageInfo.NoPagination {
 		// 获取分页参数
 		limit, offset := req.GetLimit()
-		res := query.Limit(int(limit)).Offset(int(offset)).Get()
+		res := query.Limit(limit).Offset(offset).Get()
 		// 转换为结构体
 		utils.Struct2StructByJson(res, &list)
 	}
@@ -207,15 +206,15 @@ func (s *MysqlService) CreateWorkflow(req *request.CreateWorkflowRequestStruct) 
 }
 
 // 更新工作流
-func (s *MysqlService) UpdateWorkflowById(id uint, req gin.H) (err error) {
+func (s *MysqlService) UpdateWorkflowById(id uint, req map[string]interface{}) (err error) {
 	var oldWorkflow models.SysWorkflow
 	query := s.tx.Table(oldWorkflow.TableName()).Where("id = ?", id).First(&oldWorkflow)
-	if query.RecordNotFound() {
+	if query.Error == gorm.ErrRecordNotFound {
 		return fmt.Errorf("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(gin.H, 0)
+	m := make(map[string]interface{}, 0)
 	utils.CompareDifferenceStructByJson(oldWorkflow, req, &m)
 
 	// 更新指定列
@@ -233,8 +232,8 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 	// 查询流程以及流水线
 	var oldFlow models.SysWorkflow
 	oldLines := make([]models.SysWorkflowLine, 0)
-	noFlow := s.tx.Where("id = ?", req.FlowId).First(&oldFlow).RecordNotFound()
-	if noFlow {
+	noFlow := s.tx.Where("id = ?", req.FlowId).First(&oldFlow).Error
+	if noFlow == gorm.ErrRecordNotFound {
 		return fmt.Errorf("流程不存在")
 	}
 	err = s.tx.Where(&models.SysWorkflowLine{FlowId: req.FlowId}).Find(&oldLines).Error
@@ -294,7 +293,7 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 			query = query.Update("role_id", item.RoleId)
 		}
 		// 更新数据, 替换users
-		err = query.Update(&line).Association("Users").Replace(&us).Error
+		err = query.Updates(&line).Association("Users").Replace(&us)
 		if err != nil {
 			return
 		}
@@ -341,7 +340,7 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 		}
 		// 序号
 		attr.Sort = sort
-		err = s.tx.Model(&line).Update(&attr).Error
+		err = s.tx.Model(&line).Updates(&attr).Error
 		if err != nil {
 			return
 		}
@@ -370,8 +369,8 @@ func (s *MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequest
 		Where(&models.SysWorkflowLog{
 			TargetId: req.TargetId,
 			FlowId:   req.FlowId,
-		}).Last(&lastLog).RecordNotFound()
-	if notFound {
+		}).Last(&lastLog)
+	if notFound.Error == gorm.ErrRecordNotFound {
 		// 走提交逻辑
 		err = s.first(req)
 		if err != nil {
@@ -659,7 +658,7 @@ func (s *MysqlService) updateLog(status uint, approvalOpinion string, approval m
 	// 审批人以及意见
 	updateLog.ApprovalUserId = approval.Id
 	updateLog.ApprovalOpinion = approvalOpinion
-	err := s.tx.Table(updateLog.TableName()).Where("id = ?", lastLog.Id).Update(&updateLog).Error
+	err := s.tx.Table(updateLog.TableName()).Where("id = ?", lastLog.Id).Updates(&updateLog).Error
 	return err
 }
 

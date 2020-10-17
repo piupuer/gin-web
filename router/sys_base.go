@@ -7,7 +7,7 @@ import (
 
 // 基础路由
 func InitBaseRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	router := r.Group("base")
+	router := r.Group("/base")
 	{
 		router.POST("/login", authMiddleware.LoginHandler)
 		router.POST("/logout", authMiddleware.LogoutHandler)

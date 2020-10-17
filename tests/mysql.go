@@ -4,26 +4,31 @@ import (
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
-	_ "github.com/go-sql-driver/mysql" // mysql驱动
-	"github.com/jinzhu/gorm"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 // 初始化mysql数据库
 func Mysql() {
-	db, err := gorm.Open("mysql", fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?%s",
+	dsn := fmt.Sprintf(
+		"%s:%s@tcp(%s:%d)/%s?charset=%s&collation=%s&%s",
 		global.Conf.Mysql.Username,
 		global.Conf.Mysql.Password,
 		global.Conf.Mysql.Host,
 		global.Conf.Mysql.Port,
 		global.Conf.Mysql.Database,
+		global.Conf.Mysql.Charset,
+		global.Conf.Mysql.Collation,
 		global.Conf.Mysql.Query,
-	))
+	)
+	global.Log.Debug("[单元测试]数据库连接DSN: ", dsn)
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
+		DisableForeignKeyConstraintWhenMigrating: true,
+	})
 	if err != nil {
 		panic(fmt.Sprintf("[单元测试]初始化mysql异常: %v", err))
 	}
-	// 打印所有执行的sql
-	db.LogMode(global.Conf.Mysql.LogMode)
 	global.Mysql = db
 	// 表结构
 	autoMigrate()

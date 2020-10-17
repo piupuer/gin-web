@@ -133,7 +133,7 @@ func CreateUser(c *gin.Context) {
 // 更新用户
 func UpdateUserById(c *gin.Context) {
 	// 绑定参数
-	var req gin.H
+	var req map[string]interface{}
 	var pwd request.ChangePwdRequestStruct
 	err := c.Bind(&req)
 	if err != nil {

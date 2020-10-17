@@ -6,7 +6,7 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
-	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -84,15 +84,15 @@ func (s *MysqlService) CreateLeave(req *request.CreateLeaveRequestStruct) (err e
 }
 
 // 更新请假
-func (s *MysqlService) UpdateLeaveById(id uint, req gin.H) (err error) {
+func (s *MysqlService) UpdateLeaveById(id uint, req map[string]interface{}) (err error) {
 	var leave models.SysLeave
 	query := s.tx.Table(leave.TableName()).Where("id = ?", id).First(&leave)
-	if query.RecordNotFound() {
+	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(gin.H, 0)
+	m := make(map[string]interface{}, 0)
 	utils.CompareDifferenceStructByJson(leave, req, &m)
 
 	// 更新指定列

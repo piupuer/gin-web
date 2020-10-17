@@ -6,9 +6,9 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-redis/redis"
 	"github.com/gobuffalo/packr/v2"
-	"github.com/jinzhu/gorm"
 	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v9"
+	"gorm.io/gorm"
 	"strings"
 )
 

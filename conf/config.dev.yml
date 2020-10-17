@@ -43,11 +43,11 @@ mysql:
   # 端口
   port: 3306
   # 连接字符串查询参数
-  query: charset=utf8&parseTime=True&loc=Local&timeout=10000ms
+  query: parseTime=True&loc=Local&timeout=10000ms
   # 是否打印日志
   log-mode: true
-  # 数据库表前缀
-  table-prefix: tb_
+  # 数据库表前缀(无需再末尾添加下划线, 程序内部自动处理)
+  table-prefix: tb
   # 编码方式
   charset: utf8mb4
   # 字符集(utf8mb4_general_ci速度比utf8mb4_unicode_ci快些)
