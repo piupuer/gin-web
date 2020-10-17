@@ -18,8 +18,8 @@ type SysCasbin struct {
 }
 
 func (m SysCasbin) TableName() string {
-	// service.sys_casbin中NewAdapterByDBUsePrefix添加自定义表前缀, 这里同样需要
-	return fmt.Sprintf("%ssys_casbin_rule", global.Conf.Mysql.TablePrefix)
+	// service.sys_casbin中NewAdapterByDBUseTableName添加自定义表前缀, 这里同样需要
+	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "sys_casbin")
 }
 
 // 角色权限规则

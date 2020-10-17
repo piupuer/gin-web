@@ -126,7 +126,7 @@ func CreateLeave(c *gin.Context) {
 // 更新请假
 func UpdateLeaveById(c *gin.Context) {
 	// 绑定参数
-	var req gin.H
+	var req map[string]interface{}
 	err := c.Bind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

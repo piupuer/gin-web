@@ -82,12 +82,12 @@ func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 }
 
 // 查询未读消息条数
-func (s *RedisService) GetUnReadMessageCount(userId uint) (uint, error) {
+func (s *RedisService) GetUnReadMessageCount(userId uint) (int64, error) {
 	if !global.Conf.System.UseRedis {
 		// 不使用redis
 		return s.mysql.GetUnReadMessageCount(userId)
 	}
-	var total uint
+	var total int64
 	err := s.redis.
 		Table(new(models.SysMessageLog).TableName()).
 		Where("to_user_id", "=", userId).

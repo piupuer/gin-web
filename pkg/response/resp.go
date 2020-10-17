@@ -14,10 +14,10 @@ type Resp struct {
 
 // 分页封装
 type PageInfo struct {
-	PageNum      uint `json:"pageNum" form:"pageNum"`           // 当前页码
-	PageSize     uint `json:"pageSize" form:"pageSize"`         // 每页显示条数
-	Total        uint `json:"total"`                            // 数据总条数
-	NoPagination bool `json:"noPagination" form:"noPagination"` // 不使用分页
+	PageNum      uint  `json:"pageNum" form:"pageNum"`           // 当前页码
+	PageSize     uint  `json:"pageSize" form:"pageSize"`         // 每页显示条数
+	Total        int64 `json:"total"`                            // 数据总条数(gorm v2 Count方法参数从interface改为int64, 这里也需要相应改变)
+	NoPagination bool  `json:"noPagination" form:"noPagination"` // 不使用分页
 }
 
 // 带分页数据封装
@@ -27,28 +27,33 @@ type PageData struct {
 }
 
 // 计算limit/offset, 如果需要用到返回的PageSize, PageNum, 务必保证Total值有效
-func (s *PageInfo) GetLimit() (limit uint, offset uint) {
+func (s *PageInfo) GetLimit() (int, int) {
 	// 传入参数可能不合法, 设置默认值
+	var pageSize int64
+	var pageNum int64
+	total := s.Total
 	// 每页显示条数不能小于1
 	if s.PageSize < 1 {
-		s.PageSize = 10
+		pageSize = 10
+	} else {
+		pageSize = int64(s.PageSize)
 	}
 	// 页码不能小于1
 	if s.PageNum < 1 {
-		s.PageNum = 1
+		pageNum = 1
+	} else {
+		pageNum = int64(s.PageNum)
 	}
 
 	// 如果偏移量比总条数还多
-	if s.Total > 0 {
-		if s.PageNum > s.Total {
-			s.PageNum = s.Total
-		}
+	if total > 0 && pageNum > total {
+		pageNum = total
 	}
 
 	// 计算最大页码
-	maxPageNum := s.Total/s.PageSize + 1
-	if s.Total%s.PageSize == 0 {
-		maxPageNum = s.Total / s.PageSize
+	maxPageNum := total/pageSize + 1
+	if total%pageSize == 0 {
+		maxPageNum = total / pageSize
 	}
 	// 页码不能小于1
 	if maxPageNum < 1 {
@@ -56,13 +61,15 @@ func (s *PageInfo) GetLimit() (limit uint, offset uint) {
 	}
 
 	// 超出最后一页
-	if s.PageNum > maxPageNum {
-		s.PageNum = maxPageNum
+	if pageNum > maxPageNum {
+		pageNum = maxPageNum
 	}
 
-	limit = s.PageSize
-	offset = limit * (s.PageNum - 1)
-	return
+	limit := pageSize
+	offset := limit * (pageNum - 1)
+
+	// gorm v2参数从interface改为int, 这里也需要相应改变
+	return int(limit), int(offset)
 }
 
 func Result(code int, msg string, data interface{}) {

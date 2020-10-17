@@ -73,8 +73,8 @@ func (s *MysqlService) GetUnDeleteMessages(req request.MessageListRequestStruct)
 }
 
 // 查询未读消息条数
-func (s *MysqlService) GetUnReadMessageCount(userId uint) (uint, error) {
-	var total uint
+func (s *MysqlService) GetUnReadMessageCount(userId uint) (int64, error) {
+	var total int64
 	err := s.tx.
 		Table(new(models.SysMessageLog).TableName()).
 		Where("to_user_id = ?", userId).

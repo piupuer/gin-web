@@ -9,7 +9,7 @@ import (
 
 // 用户路由
 func InitUserRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	router := r.Group("user").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
+	router := r.Group("/user").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
 		router.POST("/info", v1.GetUserInfo)
 		router.GET("/list", v1.GetUsers)

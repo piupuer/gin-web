@@ -3,7 +3,7 @@ package strategy
 import (
 	"fmt"
 	"gin-web/models"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 // 工作流状态流转完成后需要更新目标表, 因此定义下列策略
@@ -24,7 +24,7 @@ func (s *LeaveApproval) UpdateTarget() error {
 		var leave models.SysLeave
 		leave.Status = s.lastLog.Status
 		// 更新请假审批状态
-		err = s.tx.Model(&leave).Where("id = ?", s.targetId).Update(&leave).Error
+		err = s.tx.Model(&leave).Where("id = ?", s.targetId).Updates(&leave).Error
 	}
 	return err
 }

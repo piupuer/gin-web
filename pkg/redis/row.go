@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
-	"github.com/gin-gonic/gin"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/schema"
-	"strings"
 )
 
 const (
@@ -35,6 +33,21 @@ func RowChange(e *canal.RowsEvent) {
 			break
 		}
 	}
+	// gorm更新到v2版本后, 某些字段在e.Rows中的表现为[]uint8类型([]byte的别名)
+	// 如果遇到json中有字段是uint8类型, golang json包会转为base64字符串, 这里将uint8转为string
+	rows := make([][]interface{}, len(e.Rows))
+	for i, eRow := range e.Rows {
+		row := make([]interface{}, len(eRow))
+		for j, eItem := range eRow {
+			if eV, ok := eItem.([]uint8); ok {
+				row[j] = string(eV)
+			} else {
+				row[j] = eItem
+			}
+		}
+		rows[i] = row
+	}
+
 	// 缓存键由数据库名与表名组成
 	cacheKey := fmt.Sprintf("%s_%s", database, table)
 	// 读取redis历史数据
@@ -47,17 +60,10 @@ func RowChange(e *canal.RowsEvent) {
 	}
 	rowCount := len(newRows)
 	// 将rows用json解析一下, 否则查找相同元素时可能出现类型不一致
-	utils.Struct2StructByJson(e.Rows, &changeRows)
+	utils.Struct2StructByJson(rows, &changeRows)
 
-	// blob对象需要base64解码
-	for i := range changeRows {
-		for j, column := range e.Table.Columns {
-			rawType := strings.ToLower(column.RawType)
-			if item, ok := changeRows[i][j].(string); ok && rawType == "blob" {
-				changeRows[i][j] = utils.DecodeStrFromBase64(item)
-			}
-		}
-	}
+	// gorm更新到v2版本后blob对象不再需要base64解码
+	
 	// 选择事件类型
 	switch e.Action {
 	case canal.InsertAction:
@@ -128,7 +134,7 @@ func getOldRowIndex(oldRows []map[string]interface{}, data []interface{}, table 
 	newRow := getRow(data, table)
 	for i, row := range oldRows {
 		// 比对增量字段
-		m := make(gin.H, 0)
+		m := make(map[string]interface{}, 0)
 		utils.CompareDifferenceStructByJson(row, newRow, &m)
 		// 字段没有任何变化
 		if len(m) == 0 {

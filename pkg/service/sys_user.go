@@ -8,7 +8,7 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
-	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -98,10 +98,10 @@ func (s *MysqlService) CreateUser(req *request.CreateUserRequestStruct) (err err
 }
 
 // 更新用户
-func (s *MysqlService) UpdateUserById(id uint, newPassword string, req gin.H) (err error) {
+func (s *MysqlService) UpdateUserById(id uint, newPassword string, req map[string]interface{}) (err error) {
 	var oldUser models.SysUser
 	query := s.tx.Table(oldUser.TableName()).Where("id = ?", id).First(&oldUser)
-	if query.RecordNotFound() {
+	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
@@ -111,7 +111,7 @@ func (s *MysqlService) UpdateUserById(id uint, newPassword string, req gin.H) (e
 		password = utils.GenPwd(newPassword)
 	}
 	// 比对增量字段
-	m := make(gin.H, 0)
+	m := make(map[string]interface{}, 0)
 	utils.CompareDifferenceStructByJson(oldUser, req, &m)
 
 	if password != "" {

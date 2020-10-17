@@ -40,8 +40,7 @@ func main() {
 	// 初始校验器
 	initialize.Validate()
 
-	// 结束后关闭数据库
-	defer global.Mysql.Close()
+	// 结束后关闭数据库(gorm2.0升级为连接池模式, 无需手动关闭)
 
 	// 初始化路由
 	r := initialize.Routers()

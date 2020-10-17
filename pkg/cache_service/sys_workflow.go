@@ -148,7 +148,7 @@ func (s *RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingListR
 	}
 	// 处理分页(转为json)
 	query := gojsonq.New().FromString(utils.Struct2Json(list))
-	req.PageInfo.Total = uint(query.Count())
+	req.PageInfo.Total = int64(query.Count())
 	if !req.PageInfo.NoPagination {
 		// 获取分页参数
 		limit, offset := req.GetLimit()

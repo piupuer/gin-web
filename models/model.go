@@ -18,7 +18,7 @@ type Model struct {
 // 表名设置
 func (Model) TableName(name string) string {
 	// 添加表前缀
-	return fmt.Sprintf("%s%s", global.Conf.Mysql.TablePrefix, name)
+	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, name)
 }
 
 // 本地时间

@@ -3,7 +3,7 @@ package service
 import (
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 type MysqlService struct {

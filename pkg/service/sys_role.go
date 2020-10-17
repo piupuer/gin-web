@@ -7,7 +7,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
-	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"strings"
 )
 
@@ -60,15 +60,15 @@ func (s *MysqlService) CreateRole(req *request.CreateRoleRequestStruct) (err err
 }
 
 // 更新角色
-func (s *MysqlService) UpdateRoleById(id uint, req gin.H) (err error) {
+func (s *MysqlService) UpdateRoleById(id uint, req map[string]interface{}) (err error) {
 	var oldRole models.SysRole
 	query := s.tx.Table(oldRole.TableName()).Where("id = ?", id).First(&oldRole)
-	if query.RecordNotFound() {
+	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(gin.H, 0)
+	m := make(map[string]interface{}, 0)
 	utils.CompareDifferenceStructByJson(oldRole, req, &m)
 
 	// 更新指定列
@@ -96,7 +96,7 @@ func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementa
 		return
 	}
 	// 替换菜单
-	err = s.tx.Where("id = ?", id).First(&models.SysRole{}).Association("Menus").Replace(&incrementalMenus).Error
+	err = s.tx.Where("id = ?", id).First(&models.SysRole{}).Association("Menus").Replace(&incrementalMenus)
 	return
 }
 
@@ -104,7 +104,7 @@ func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementa
 func (s *MysqlService) UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	var oldRole models.SysRole
 	query := s.tx.Model(&oldRole).Where("id = ?", id).First(&oldRole)
-	if query.RecordNotFound() {
+	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 	if len(req.Delete) > 0 {

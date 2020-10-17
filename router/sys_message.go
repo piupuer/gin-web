@@ -11,7 +11,7 @@ import (
 func InitMessageRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
 	// 初始化消息中心仓库
 	v1.StartMessageHub()
-	router := r.Group("message").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
+	router := r.Group("/message").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
 		router.GET("/ws", v1.MessageWs)
 		router.GET("/all", v1.GetAllMessages)
