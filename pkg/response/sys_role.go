@@ -10,7 +10,7 @@ type RoleListResponseStruct struct {
 	Name      string           `json:"name"`
 	Keyword   string           `json:"keyword"`
 	Desc      string           `json:"desc"`
-	Status    *bool            `json:"status"`
+	Status    *uint            `json:"status"`
 	Creator   string           `json:"creator"`
 	CreatedAt models.LocalTime `json:"createdAt"`
 }

@@ -149,15 +149,15 @@ func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error
 }
 
 // 更新接口
-func (s *MysqlService) UpdateApiById(id uint, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateApiById(id uint, req models.SysApi) (err error) {
 	var api models.SysApi
-	query := s.tx.Table(api.TableName()).Where("id = ?", id).First(&api)
+	query := s.tx.Model(api).Where("id = ?", id).First(&api)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysApi
 	utils.CompareDifferenceStructByJson(api, req, &m)
 
 	// 记录update前的旧数据, 执行Updates后api会变成新数据

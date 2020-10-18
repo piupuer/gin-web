@@ -9,9 +9,9 @@ type MenuListRequestStruct struct {
 	Path              string `json:"path" form:"path"`
 	Component         string `json:"component" form:"component"`
 	Redirect          string `json:"redirect"`
-	Status            *bool  `json:"status" form:"status"`
-	Visible           *bool  `json:"visible" form:"visible"`
-	Breadcrumb        *bool  `json:"breadcrumb" form:"breadcrumb"`
+	Status            *uint  `json:"status" form:"status"`
+	Visible           *uint  `json:"visible" form:"visible"`
+	Breadcrumb        *uint  `json:"breadcrumb" form:"breadcrumb"`
 	Creator           string `json:"creator" form:"creator"`
 	response.PageInfo        // 分页参数
 }
@@ -26,9 +26,9 @@ type CreateMenuRequestStruct struct {
 	Component  string `json:"component"`
 	Permission string `json:"permission"`
 	Sort       int    `json:"sort"`
-	Status     *bool  `json:"status"`
-	Visible    *bool  `json:"visible"`
-	Breadcrumb *bool  `json:"breadcrumb"`
+	Status     *uint  `json:"status"`
+	Visible    *uint  `json:"visible"`
+	Breadcrumb *uint  `json:"breadcrumb"`
 	ParentId   uint   `json:"parentId"`
 	Creator    string `json:"creator"`
 }

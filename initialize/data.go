@@ -15,9 +15,9 @@ import (
 func InitData() {
 	// 1. 初始化角色
 	creator := "系统自动创建"
-	status := true
-	visible := true
-	edit := true
+	status := uint(1)
+	visible := uint(1)
+	edit := uint(1)
 	roles := []models.SysRole{
 		{
 			Model: models.Model{
@@ -69,7 +69,7 @@ func InitData() {
 	}
 
 	// 2. 初始化菜单
-	noBreadcrumb := false
+	noBreadcrumb := uint(0)
 	menus := []models.SysMenu{
 		{
 			Model: models.Model{

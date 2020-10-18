@@ -84,15 +84,15 @@ func (s *MysqlService) CreateMenu(req *request.CreateMenuRequestStruct) (err err
 }
 
 // 更新菜单
-func (s *MysqlService) UpdateMenuById(id uint, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateMenuById(id uint, req models.SysMenu) (err error) {
 	var oldMenu models.SysMenu
-	query := s.tx.Table(oldMenu.TableName()).Where("id = ?", id).First(&oldMenu)
+	query := s.tx.Model(oldMenu).Where("id = ?", id).First(&oldMenu)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysMenu
 	utils.CompareDifferenceStructByJson(oldMenu, req, &m)
 
 	// 更新指定列

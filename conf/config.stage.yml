@@ -1,3 +1,7 @@
 # staging
 system:
-  port: 8080
+  url-path-prefix: stage-api
+  port: 9090
+
+mysql:
+  database: gin_web_stage

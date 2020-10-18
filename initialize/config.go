@@ -8,6 +8,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
 
 const (
@@ -35,7 +36,7 @@ func InitConfig() {
 		v.SetDefault(index, setting)
 	}
 	// 读取当前go运行环境变量
-	env := os.Getenv("GO_ENV")
+	env := strings.ToLower(os.Getenv("GIN_WEB_MODE"))
 	configName := ""
 	if env == "staging" {
 		configName = stagingConfig
@@ -50,6 +51,13 @@ func InitConfig() {
 	if err := v.Unmarshal(&global.Conf); err != nil {
 		panic(fmt.Sprintf("初始化配置文件失败: %v", err))
 	}
+
+	// 初始化OperationLogDisabledPaths
+	global.Conf.System.OperationLogDisabledPathArr = make([]string, 0)
+	if strings.TrimSpace(global.Conf.System.OperationLogDisabledPaths) != "" {
+		global.Conf.System.OperationLogDisabledPathArr = strings.Split(global.Conf.System.OperationLogDisabledPaths, ",")
+	}
+
 	// 加载rsa公私钥(优先从configBox中读取)
 	publicBytes, err := global.ConfBox.Find(global.Conf.System.RSAPublicKey)
 	if err != nil || len(publicBytes) == 0 {

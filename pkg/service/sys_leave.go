@@ -84,15 +84,15 @@ func (s *MysqlService) CreateLeave(req *request.CreateLeaveRequestStruct) (err e
 }
 
 // 更新请假
-func (s *MysqlService) UpdateLeaveById(id uint, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateLeaveById(id uint, req models.SysLeave) (err error) {
 	var leave models.SysLeave
-	query := s.tx.Table(leave.TableName()).Where("id = ?", id).First(&leave)
+	query := s.tx.Model(leave).Where("id = ?", id).First(&leave)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysLeave
 	utils.CompareDifferenceStructByJson(leave, req, &m)
 
 	// 更新指定列

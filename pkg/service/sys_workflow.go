@@ -65,7 +65,7 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
-	query := s.tx.Preload("Users").Model(&models.SysWorkflowLine{})
+	query := s.tx.Model(new (models.SysWorkflowLine)).Preload("Users")
 	if req.FlowId > 0 {
 		query = query.Where("flow_id = ?", req.FlowId)
 	}
@@ -206,15 +206,15 @@ func (s *MysqlService) CreateWorkflow(req *request.CreateWorkflowRequestStruct) 
 }
 
 // 更新工作流
-func (s *MysqlService) UpdateWorkflowById(id uint, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateWorkflowById(id uint, req models.SysWorkflow) (err error) {
 	var oldWorkflow models.SysWorkflow
-	query := s.tx.Table(oldWorkflow.TableName()).Where("id = ?", id).First(&oldWorkflow)
+	query := s.tx.Model(oldWorkflow).Where("id = ?", id).First(&oldWorkflow)
 	if query.Error == gorm.ErrRecordNotFound {
 		return fmt.Errorf("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysWorkflow
 	utils.CompareDifferenceStructByJson(oldWorkflow, req, &m)
 
 	// 更新指定列
@@ -330,7 +330,7 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 	}
 	// 序号重排
 	count := len(newLines)
-	endPtr := true
+	endPtr := uint(1)
 	sort := uint(1)
 	for i, line := range newLines {
 		var attr models.SysWorkflowLine
@@ -492,14 +492,14 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 	}
 	var nextLine models.SysWorkflowLine
 	// 获取下一流水线
-	if lastLog.CurrentLineId > 0 && !*lastLog.CurrentLine.End {
+	if lastLog.CurrentLineId > 0 && *lastLog.CurrentLine.End == 0 {
 		nextLine, err = s.GetNextWorkflowLine(req.FlowId, lastLog.CurrentLine.Sort)
 		if err != nil {
 			return err
 		}
 	}
 	// 1. 未结束 且 开启自我审批 且 有权限审批
-	if !*lastLog.End && *lastLog.Flow.Self && s.checkPermission(approval.Id, lastLog) {
+	if *lastLog.End == 0 && *lastLog.Flow.Self == 1 && s.checkPermission(approval.Id, lastLog) {
 		if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
 			if nextLine.Id == 0 {
 				return s.end(false, req.ApprovalOpinion, approval, lastLog)
@@ -512,7 +512,7 @@ func (s *MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, a
 		}
 	}
 	// 2.开启提交人确认
-	if *lastLog.Flow.SubmitUserConfirm {
+	if *lastLog.Flow.SubmitUserConfirm == 1 {
 		// 下一流水线为空
 		if nextLine.Id == 0 {
 			var log models.SysWorkflowLog
@@ -559,7 +559,7 @@ func (s *MysqlService) approval(req *request.WorkflowTransitionRequestStruct, ap
 		// 流转到下一流水线
 		var err error
 		var nextLine models.SysWorkflowLine
-		if !*lastLog.CurrentLine.End {
+		if *lastLog.CurrentLine.End == 0 {
 			// 获取下一流水线
 			nextLine, err = s.GetNextWorkflowLine(req.FlowId, lastLog.CurrentLine.Sort)
 			if err != nil {
@@ -617,25 +617,25 @@ func (s *MysqlService) end(submitConfirm bool, approvalOpinion string, approval 
 	// 结束
 	status := models.SysWorkflowLogStateEnd
 	// 状态为结束
-	end := true
-	if *lastLog.Flow.SubmitUserConfirm && !submitConfirm {
+	end := uint(1)
+	if *lastLog.Flow.SubmitUserConfirm == 1 && !submitConfirm {
 		// 开启了提交人确认则不能直接结束
 		status = models.SysWorkflowLogStateApproval
-		end = false
+		end = 0
 	}
 	lastLog.End = &end
 	// 提交人确认流水线
-	if end && lastLog.SubmitUserId == approval.Id && strings.TrimSpace(approvalOpinion) == "" {
+	if end == 1 && lastLog.SubmitUserId == approval.Id && strings.TrimSpace(approvalOpinion) == "" {
 		approvalOpinion = "提交人已确认"
 	}
 	err := s.updateLog(status, approvalOpinion, approval, lastLog)
 	if err != nil {
 		return err
 	}
-	if end {
+	if end == 1 {
 		return nil
 	}
-	end = true
+	end = 1
 	lastLog.End = &end
 	// 创建新记录
 	return s.newLog(models.SysWorkflowLogStateSubmit, 0, lastLog)
@@ -757,7 +757,7 @@ func (s *MysqlService) getHistoryApprovalUsers(log models.SysWorkflowLog) []uint
 // 获取全部审批人(当前流水线)
 func (s *MysqlService) getAllApprovalUsers(log models.SysWorkflowLog) []uint {
 	userIds := make([]uint, 0)
-	if log.CurrentLineId == 0 && *log.Flow.SubmitUserConfirm {
+	if log.CurrentLineId == 0 && *log.Flow.SubmitUserConfirm == 1 {
 		// 末尾节点 且 开启提交人确认
 		userIds = append(userIds, log.SubmitUserId)
 	} else {

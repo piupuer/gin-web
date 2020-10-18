@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
@@ -84,7 +85,7 @@ func CreateMenu(c *gin.Context) {
 // 更新菜单
 func UpdateMenuById(c *gin.Context) {
 	// 绑定参数
-	var req map[string]interface{}
+	var req models.SysMenu
 	err := c.Bind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

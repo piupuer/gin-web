@@ -8,9 +8,9 @@ import (
 type WorkflowListRequestStruct struct {
 	Uuid              string `json:"uuid" form:"uuid"`
 	Category          uint   `json:"category" form:"category"`
-	SubmitUserConfirm *bool  `json:"submitUserConfirm" form:"submitUserConfirm"`
+	SubmitUserConfirm *uint  `json:"submitUserConfirm" form:"submitUserConfirm"`
 	TargetCategory    uint   `json:"targetCategory" form:"targetCategory"`
-	Self              *bool  `json:"self" form:"self"`
+	Self              *uint  `json:"self" form:"self"`
 	Name              string `json:"name" form:"name"`
 	Desc              string `json:"desc" form:"desc"`
 	Creator           string `json:"creator" form:"creator"`
@@ -32,9 +32,9 @@ type WorkflowApprovingListRequestStruct struct {
 // 创建流程结构体
 type CreateWorkflowRequestStruct struct {
 	Category          uint   `json:"category"`
-	SubmitUserConfirm *bool  `json:"submitUserConfirm"`
+	SubmitUserConfirm *uint  `json:"submitUserConfirm"`
 	TargetCategory    uint   `json:"targetCategory"`
-	Self              *bool  `json:"self"`
+	Self              *uint  `json:"self"`
 	Name              string `json:"name" validate:"required"`
 	Desc              string `json:"desc"`
 	Creator           string `json:"creator"`
@@ -54,7 +54,7 @@ type UpdateWorkflowLineRequestStruct struct {
 	RoleId  *uint  `json:"roleId"`
 	UserIds []uint `json:"userIds"`
 	Name    string `json:"name" validate:"required"`
-	Edit    *bool  `json:"edit"`
+	Edit    *uint  `json:"edit"`
 }
 
 // 翻译需要校验的字段名称

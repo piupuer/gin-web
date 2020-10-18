@@ -12,6 +12,10 @@ system:
   init-data: true
   # 操作日志key
   operation-log-key: operation_log_response
+  # 不写操作日志的路径列表
+  operation-log-disabled-paths: /operation/log/delete/batch
+  # 允许用户删除操作日志
+  operation-log-allowed-to-delete: false
   # rsa公钥文件路径(conf相对路径, 也可以填绝对路径)
   rsa-public-key: gin-web-rsa.pub
   # rsa私钥文件路径(conf相对路径, 也可以填绝对路径)

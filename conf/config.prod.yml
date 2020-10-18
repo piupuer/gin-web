@@ -1,6 +1,6 @@
 # production
 system:
-  port: 80
+  port: 8080
 
-logs:
-  level: 0
+mysql:
+  database: gin_web_prod

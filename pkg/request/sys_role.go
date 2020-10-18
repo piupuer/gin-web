@@ -8,7 +8,7 @@ import (
 type RoleListRequestStruct struct {
 	Name              string `json:"name" form:"name"`
 	Keyword           string `json:"keyword" form:"keyword"`
-	Status            *bool  `json:"status" form:"status"`
+	Status            *uint  `json:"status" form:"status"`
 	Creator           string `json:"creator" form:"creator"`
 	response.PageInfo        // 分页参数
 }
@@ -18,7 +18,7 @@ type CreateRoleRequestStruct struct {
 	Name    string `json:"name" validate:"required"`
 	Keyword string `json:"keyword" validate:"required"`
 	Desc    string `json:"desc"`
-	Status  *bool  `json:"status"`
+	Status  *uint  `json:"status"`
 	Creator string `json:"creator"`
 }
 

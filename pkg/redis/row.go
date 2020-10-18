@@ -63,7 +63,7 @@ func RowChange(e *canal.RowsEvent) {
 	utils.Struct2StructByJson(rows, &changeRows)
 
 	// gorm更新到v2版本后blob对象不再需要base64解码
-	
+
 	// 选择事件类型
 	switch e.Action {
 	case canal.InsertAction:
@@ -151,15 +151,12 @@ func getRow(data []interface{}, table *schema.Table) map[string]interface{} {
 	for i, column := range table.Columns {
 		var item interface{}
 		if i < count {
-			// canal没有对tinyint(1)做bool转换, 这里自行转换
+			// canal没有对tinyint(1)转换, 这里自行转换为uint
 			if column.RawType == "tinyint(1)" {
-				item = false
 				switch data[i].(type) {
 				// canal中的tinyint(1)为float64格式
 				case float64:
-					if int(data[i].(float64)) == 1 {
-						item = true
-					}
+					item = uint(data[i].(float64))
 					break
 				}
 			} else {

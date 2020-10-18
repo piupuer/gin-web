@@ -15,7 +15,7 @@ import (
 func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
-	db := global.Mysql
+	db := global.Mysql.Table(new (models.SysRole).TableName())
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
@@ -29,14 +29,14 @@ func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
-		if *req.Status {
+		if *req.Status > 0 {
 			db = db.Where("status = ?", 1)
 		} else {
 			db = db.Where("status = ?", 0)
 		}
 	}
 	// 查询条数
-	err = db.Find(&list).Count(&req.PageInfo.Total).Error
+	err = db.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
@@ -60,15 +60,15 @@ func (s *MysqlService) CreateRole(req *request.CreateRoleRequestStruct) (err err
 }
 
 // 更新角色
-func (s *MysqlService) UpdateRoleById(id uint, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateRoleById(id uint, req models.SysRole) (err error) {
 	var oldRole models.SysRole
-	query := s.tx.Table(oldRole.TableName()).Where("id = ?", id).First(&oldRole)
+	query := s.tx.Model(oldRole).Where("id = ?", id).First(&oldRole)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysRole
 	utils.CompareDifferenceStructByJson(oldRole, req, &m)
 
 	// 更新指定列

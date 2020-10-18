@@ -1,12 +1,15 @@
 package redis
 
 import (
+	"errors"
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/go-redis/redis"
 	"github.com/thedevsaddam/gojsonq/v2"
+	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
+	"reflect"
 	"strings"
 	"sync"
 )
@@ -23,8 +26,8 @@ type QueryRedis struct {
 	// 是否需要克隆
 	clone int
 	// 查询声明, 类似于之前版本的search
-	Statement  *Statement
-	cacheStore *sync.Map
+	Statement      *Statement
+	cacheStore     *sync.Map
 	NamingStrategy schema.Namer
 }
 
@@ -81,8 +84,35 @@ func (s *QueryRedis) check() bool {
 	return true
 }
 
+// 执行查询前的一些初始化操作
+func (s *QueryRedis) beforeQuery(db *QueryRedis) *QueryRedis {
+	stmt := db.Statement
+	if stmt.Model == nil {
+		stmt.Model = stmt.Dest
+	} else if stmt.Dest == nil {
+		stmt.Dest = stmt.Model
+	}
+
+	if stmt.Model != nil {
+		if err := stmt.Parse(stmt.Model); err != nil && (!errors.Is(err, schema.ErrUnsupportedDataType) || (stmt.Table == "")) {
+			db.AddError(err)
+		}
+	}
+
+	if stmt.Dest != nil {
+		stmt.ReflectValue = reflect.ValueOf(stmt.Dest)
+		for stmt.ReflectValue.Kind() == reflect.Ptr {
+			stmt.ReflectValue = stmt.ReflectValue.Elem()
+		}
+		if !stmt.ReflectValue.IsValid() {
+			db.AddError(fmt.Errorf("invalid value"))
+		}
+	}
+	return db
+}
+
 // 从缓存中获取model全部数据, 返回json字符串
-func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
+func (s *QueryRedis) get(tableName string) *gojsonq.JSONQ {
 	jsonStr := ""
 	if !s.Statement.json {
 		// 缓存键由数据库名与表名组成
@@ -116,16 +146,18 @@ func (s QueryRedis) get(tableName string) *gojsonq.JSONQ {
 			}
 		}
 	}
-	// 类型为int64表示查询数据条数, 直接跳过
+	// 类型为int64表示查询数据条数, 直接跳过结构体查询以及预加载
 	if _, ok := s.Statement.Dest.(*int64); !ok {
 		// 获取json结果并转换为结构体
 		utils.Struct2StructByJson(list, s.Statement.Dest)
+		if list != nil {
+			// 处理预加载
+			s.processPreload()
+		} else {
+			s.AddError(gorm.ErrRecordNotFound)
+		}
 	}
 
-	if list != nil {
-		// 处理预加载
-		s.processPreload()
-	}
 	return query
 }
 

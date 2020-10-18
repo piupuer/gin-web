@@ -2,6 +2,7 @@ package v1
 
 import (
 	"fmt"
+	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
@@ -72,12 +73,15 @@ func CreateRole(c *gin.Context) {
 // 更新角色
 func UpdateRoleById(c *gin.Context) {
 	// 绑定参数
-	var req map[string]interface{}
+	var req models.SysRole
+	var roleInfo request.CreateRoleRequestStruct
 	err := c.Bind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
 	}
+
+	utils.Struct2StructByJson(req, &roleInfo)
 
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
@@ -85,6 +89,13 @@ func UpdateRoleById(c *gin.Context) {
 		response.FailWithMsg("角色编号不正确")
 		return
 	}
+
+	user := GetCurrentUser(c)
+	if roleInfo.Status != nil && *roleInfo.Status == models.SysRoleStatusDisabled && roleId == user.RoleId {
+		response.FailWithMsg("不能禁用自己所在的角色")
+		return
+	}
+	
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
@@ -154,6 +165,12 @@ func BatchDeleteRoleByIds(c *gin.Context) {
 	err := c.Bind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+	
+	user := GetCurrentUser(c)
+	if utils.ContainsUint(req.GetUintIds(), user.RoleId) {
+		response.FailWithMsg("不能删除自己所在的角色")
 		return
 	}
 

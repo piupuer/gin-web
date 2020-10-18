@@ -2,6 +2,7 @@ package v1
 
 import (
 	"gin-web/pkg/cache_service"
+	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
@@ -40,6 +41,10 @@ func GetOperationLogs(c *gin.Context) {
 
 // 批量删除操作日志
 func BatchDeleteOperationLogByIds(c *gin.Context) {
+	if !global.Conf.System.OperationLogAllowedToDelete {
+		response.FailWithMsg("日志删除功能已被管理员关闭")
+		return
+	}
 	var req request.Req
 	err := c.Bind(&req)
 	if err != nil {

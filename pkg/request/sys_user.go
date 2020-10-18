@@ -22,7 +22,7 @@ type UserListRequestStruct struct {
 	Avatar            string `json:"avatar" form:"avatar"`
 	Nickname          string `json:"nickname" form:"nickname"`
 	Introduction      string `json:"introduction" form:"introduction"`
-	Status            *bool  `json:"status" form:"status"`
+	Status            *uint  `json:"status" form:"status"`
 	RoleId            uint   `json:"roleId" form:"roleId"`
 	Creator           string `json:"creator" form:"creator"`
 	response.PageInfo        // 分页参数
@@ -36,7 +36,7 @@ type CreateUserRequestStruct struct {
 	Avatar       string `json:"avatar"`
 	Nickname     string `json:"nickname"`
 	Introduction string `json:"introduction"`
-	Status       *bool  `json:"status"`
+	Status       *uint  `json:"status"`
 	RoleId       uint   `json:"roleId" validate:"required"`
 	Creator      string `json:"creator"`
 }

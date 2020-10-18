@@ -17,16 +17,19 @@ type Configuration struct {
 }
 
 type SystemConfiguration struct {
-	UrlPathPrefix   string `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
-	Port            int    `mapstructure:"port" json:"port"`
-	UseRedis        bool   `mapstructure:"use-redis" json:"useRedis"`
-	Transaction     bool   `mapstructure:"transaction" json:"transaction"`
-	InitData        bool   `mapstructure:"init-data" json:"initData"`
-	OperationLogKey string `mapstructure:"operation-log-key" json:"operationLogKey"`
-	RSAPublicKey    string `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
-	RSAPrivateKey   string `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
-	RSAPublicBytes  []byte `mapstructure:"-" json:"-"`
-	RSAPrivateBytes []byte `mapstructure:"-" json:"-"`
+	UrlPathPrefix               string   `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
+	Port                        int      `mapstructure:"port" json:"port"`
+	UseRedis                    bool     `mapstructure:"use-redis" json:"useRedis"`
+	Transaction                 bool     `mapstructure:"transaction" json:"transaction"`
+	InitData                    bool     `mapstructure:"init-data" json:"initData"`
+	OperationLogKey             string   `mapstructure:"operation-log-key" json:"operationLogKey"`
+	OperationLogDisabledPaths   string   `mapstructure:"operation-log-disabled-paths" json:"operationLogDisabledPaths"`
+	OperationLogDisabledPathArr []string `mapstructure:"-" json:"-"`
+	OperationLogAllowedToDelete bool     `mapstructure:"operation-log-allowed-to-delete" json:"operationLogAllowedToDelete"`
+	RSAPublicKey                string   `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
+	RSAPrivateKey               string   `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
+	RSAPublicBytes              []byte   `mapstructure:"-" json:"-"`
+	RSAPrivateBytes             []byte   `mapstructure:"-" json:"-"`
 }
 
 type LogsConfiguration struct {

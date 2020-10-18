@@ -7,6 +7,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
 
 const (
@@ -36,7 +37,7 @@ func InitConfig() {
 		v.SetDefault(index, setting)
 	}
 	// 读取当前go运行环境变量
-	env := os.Getenv("GO_ENV")
+	env := strings.ToLower(os.Getenv("GIN_WEB_MODE"))
 	configName := ""
 	if env == "staging" {
 		configName = stagingConfig

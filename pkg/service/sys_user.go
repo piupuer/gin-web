@@ -31,7 +31,7 @@ func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
-	db := global.Mysql
+	db := global.Mysql.Table(new (models.SysUser).TableName())
 	username := strings.TrimSpace(req.Username)
 	if username != "" {
 		db = db.Where("username LIKE ?", fmt.Sprintf("%%%s%%", username))
@@ -49,14 +49,14 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
-		if *req.Status {
+		if *req.Status > 0 {
 			db = db.Where("status = ?", 1)
 		} else {
 			db = db.Where("status = ?", 0)
 		}
 	}
 	// 查询条数
-	err = db.Find(&list).Count(&req.PageInfo.Total).Error
+	err = db.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
@@ -74,7 +74,11 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 func (s *MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	var user models.SysUser
 	var err error
-	err = s.tx.Preload("Role").Where("id = ?", id).First(&user).Error
+	err = s.tx.Preload("Role").
+		Where("id = ?", id).
+		// 状态为正常
+		Where("status = ?", models.SysUserStatusNormal).
+		First(&user).Error
 	return user, err
 }
 
@@ -98,9 +102,9 @@ func (s *MysqlService) CreateUser(req *request.CreateUserRequestStruct) (err err
 }
 
 // 更新用户
-func (s *MysqlService) UpdateUserById(id uint, newPassword string, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateUserById(id uint, newPassword string, req models.SysUser) (err error) {
 	var oldUser models.SysUser
-	query := s.tx.Table(oldUser.TableName()).Where("id = ?", id).First(&oldUser)
+	query := s.tx.Model(oldUser).Where("id = ?", id).First(&oldUser)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
@@ -111,7 +115,7 @@ func (s *MysqlService) UpdateUserById(id uint, newPassword string, req map[strin
 		password = utils.GenPwd(newPassword)
 	}
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysUser
 	utils.CompareDifferenceStructByJson(oldUser, req, &m)
 
 	if password != "" {

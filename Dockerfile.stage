@@ -1,13 +1,13 @@
 FROM golang:1.14 AS gin-web
 
-RUN echo "----------------- 后端Gin Web构建(Production) -----------------"
+RUN echo "----------------- 后端Gin Web构建(Staging) -----------------"
 # 环境变量
 # 开启go modules
 ENV GO111MODULE=on
 # 使用国内代理, 避免被墙资源无法访问
 ENV GOPROXY=https://goproxy.cn
 # 定义应用运行目录
-ENV APP_HOME /app/gin-web-prod
+ENV APP_HOME /app/gin-web-stage
 
 RUN mkdir -p $APP_HOME
 
@@ -30,23 +30,23 @@ RUN cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.8.0/packr2 && go build &
 RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.8.0/packr2/packr2 build
 
 # 构建应用
-RUN go build -o main-prod .
+RUN go build -o main-stage .
 
 # mysqldump需要一些依赖库这里直接使用alpine-glibc
 # alpine镜像瘦身
 FROM frolvlad/alpine-glibc:alpine-3.12
 
 # 定义程序运行模式
-ENV GIN_WEB_MODE production
+ENV GIN_WEB_MODE staging
 # 定义应用运行目录
-ENV APP_HOME /app/gin-web-prod
+ENV APP_HOME /app/gin-web-stage
 
 RUN mkdir -p $APP_HOME
 
 # 设置运行目录
 WORKDIR $APP_HOME
 
-COPY --from=gin-web $APP_HOME/main-prod .
+COPY --from=gin-web $APP_HOME/main-stage .
 
 # 拷贝mysqldump文件(binlog刷到redis会用到)
 COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
@@ -64,7 +64,7 @@ RUN apk update \
 # RUN date -R
 
 # 暴露端口
-EXPOSE 8080
+EXPOSE 9090
 
 # 启动应用(daemon off后台运行)
-CMD ["./main-prod", "-g", "daemon off;"]
+CMD ["./main-stage", "-g", "daemon off;"]
