@@ -25,6 +25,7 @@ type SystemConfiguration struct {
 	OperationLogKey             string   `mapstructure:"operation-log-key" json:"operationLogKey"`
 	OperationLogDisabledPaths   string   `mapstructure:"operation-log-disabled-paths" json:"operationLogDisabledPaths"`
 	OperationLogDisabledPathArr []string `mapstructure:"-" json:"-"`
+	OperationLogAllowedToDelete bool     `mapstructure:"operation-log-allowed-to-delete" json:"operationLogAllowedToDelete"`
 	RSAPublicKey                string   `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
 	RSAPrivateKey               string   `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
 	RSAPublicBytes              []byte   `mapstructure:"-" json:"-"`
