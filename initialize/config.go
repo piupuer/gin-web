@@ -8,6 +8,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/spf13/viper"
 	"os"
+	"strings"
 )
 
 const (
@@ -50,6 +51,13 @@ func InitConfig() {
 	if err := v.Unmarshal(&global.Conf); err != nil {
 		panic(fmt.Sprintf("初始化配置文件失败: %v", err))
 	}
+
+	// 初始化OperationLogDisabledPaths
+	global.Conf.System.OperationLogDisabledPathArr = make([]string, 0)
+	if strings.TrimSpace(global.Conf.System.OperationLogDisabledPaths) != "" {
+		global.Conf.System.OperationLogDisabledPathArr = strings.Split(global.Conf.System.OperationLogDisabledPaths, ",")
+	}
+
 	// 加载rsa公私钥(优先从configBox中读取)
 	publicBytes, err := global.ConfBox.Find(global.Conf.System.RSAPublicKey)
 	if err != nil || len(publicBytes) == 0 {

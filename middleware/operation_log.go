@@ -33,11 +33,18 @@ func OperationLog(c *gin.Context) {
 	}
 	// 避免服务器出现异常, 这里用defer保证一定可以执行
 	defer func() {
-		// 下列请求比较频繁无需写入日志
+		// GET/OPTIONS请求比较频繁无需写入日志
 		if c.Request.Method == http.MethodGet ||
 			c.Request.Method == http.MethodOptions {
 			return
 		}
+		// 用户自定义请求无需写入日志
+		for _, s := range global.Conf.System.OperationLogDisabledPathArr {
+			if strings.Contains(c.Request.URL.Path, s) {
+				return
+			}
+		}
+
 		// 结束时间
 		endTime := time.Now()
 
