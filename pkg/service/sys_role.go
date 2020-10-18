@@ -29,7 +29,7 @@ func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
-		if *req.Status {
+		if *req.Status > 0 {
 			db = db.Where("status = ?", 1)
 		} else {
 			db = db.Where("status = ?", 0)

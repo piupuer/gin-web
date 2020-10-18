@@ -31,9 +31,9 @@ type WorkflowListResponseStruct struct {
 	Id                uint             `json:"id"`
 	Uuid              string           `json:"uuid"`
 	Category          uint             `json:"category"`
-	SubmitUserConfirm *bool            `json:"submitUserConfirm"`
+	SubmitUserConfirm *uint            `json:"submitUserConfirm"`
 	TargetCategory    uint             `json:"targetCategory"`
-	Self              *bool            `json:"self"`
+	Self              *uint            `json:"self"`
 	Name              string           `json:"name"`
 	Desc              string           `json:"desc"`
 	Creator           string           `json:"creator"`
@@ -45,9 +45,9 @@ type WorkflowLineListResponseStruct struct {
 	Id      uint   `json:"id"`
 	FlowId  uint   `json:"flowId"`
 	Sort    uint   `json:"sort"`
-	End     *bool  `json:"end"`
+	End     *uint  `json:"end"`
 	RoleId  uint   `json:"roleId"`
 	UserIds []uint `json:"userIds"`
-	Edit    *bool  `json:"edit"`
+	Edit    *uint  `json:"edit"`
 	Name    string `json:"name"`
 }

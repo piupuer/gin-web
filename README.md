@@ -101,6 +101,8 @@ go run main.go
 - 项目地址: [gin-web-vue](https://github.com/piupuer/gin-web-vue)
 - 实现方式: Typescript(为什么使用它, JS的弱类型带来的问题实在不想再吐槽, TS提高效率, 反正笔者作为一枚后端用起来很舒服~)
 
+## [注意事项](https://github.com/piupuer/gin-web/blob/master/TIPS.md)
+
 ## [TODO](https://github.com/piupuer/gin-web/blob/master/TODO.md)
 
 ## 特别感谢

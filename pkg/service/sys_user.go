@@ -49,7 +49,7 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
-		if *req.Status {
+		if *req.Status > 0 {
 			db = db.Where("status = ?", 1)
 		} else {
 			db = db.Where("status = ?", 0)
@@ -74,7 +74,11 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 func (s *MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	var user models.SysUser
 	var err error
-	err = s.tx.Preload("Role").Where("id = ?", id).First(&user).Error
+	err = s.tx.Preload("Role").
+		Where("id = ?", id).
+		// 状态为正常
+		Where("status = ?", models.SysUserStatusNormal).
+		First(&user).Error
 	return user, err
 }
 

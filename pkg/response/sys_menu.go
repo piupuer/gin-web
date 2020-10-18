@@ -13,9 +13,9 @@ type MenuTreeResponseStruct struct {
 	Permission string                   `json:"permission"`
 	Creator    string                   `json:"creator"`
 	Sort       int                      `json:"sort"`
-	Status     bool                     `json:"status"`
-	Visible    bool                     `json:"visible"`
-	Breadcrumb bool                     `json:"breadcrumb"`
+	Status     uint                     `json:"status"`
+	Visible    uint                     `json:"visible"`
+	Breadcrumb uint                     `json:"breadcrumb"`
 	Children   []MenuTreeResponseStruct `json:"children"`
 }
 

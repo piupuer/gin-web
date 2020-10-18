@@ -31,7 +31,7 @@ type UserListResponseStruct struct {
 	Avatar       string           `json:"avatar"`
 	Nickname     string           `json:"nickname"`
 	Introduction string           `json:"introduction"`
-	Status       *bool            `json:"status"`
+	Status       *uint            `json:"status"`
 	RoleId       uint             `json:"roleId"`
 	Creator      string           `json:"creator"`
 	CreatedAt    models.LocalTime `json:"createdAt"`

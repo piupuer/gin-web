@@ -78,6 +78,12 @@ func (s *RedisService) GetUserById(id uint) (models.SysUser, error) {
 	}
 	var user models.SysUser
 	var err error
-	err = s.redis.Table(new(models.SysUser).TableName()).Preload("Role").Where("id", "=", id).First(&user).Error
+	err = s.redis.
+		Table(new(models.SysUser).TableName()).
+		Preload("Role").
+		Where("id", "=", id).
+		// 状态为正常
+		Where("status", "=", models.SysUserStatusNormal).
+		First(&user).Error
 	return user, err
 }
