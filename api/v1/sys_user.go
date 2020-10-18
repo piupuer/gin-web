@@ -135,6 +135,7 @@ func UpdateUserById(c *gin.Context) {
 	// 绑定参数
 	var req map[string]interface{}
 	var pwd request.ChangePwdRequestStruct
+	var userInfo request.CreateUserRequestStruct
 	err := c.Bind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -143,12 +144,20 @@ func UpdateUserById(c *gin.Context) {
 
 	// 将部分参数转为pwd, 如果值不为空, 可能会用到
 	utils.Struct2StructByJson(req, &pwd)
+	utils.Struct2StructByJson(req, &userInfo)
 	// 获取path中的userId
 	userId := utils.Str2Uint(c.Param("userId"))
 	if userId == 0 {
 		response.FailWithMsg("用户编号不正确")
 		return
 	}
+
+	user := GetCurrentUser(c)
+	if *userInfo.Status == models.SysUserStatusDisabled && userId == user.Id {
+		response.FailWithMsg("不能禁用自己")
+		return
+	}
+
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
@@ -166,6 +175,12 @@ func BatchDeleteUserByIds(c *gin.Context) {
 	err := c.Bind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+		return
+	}
+
+	user := GetCurrentUser(c)
+	if utils.ContainsUint(req.GetUintIds(), user.Id) {
+		response.FailWithMsg("不能删除自己")
 		return
 	}
 
