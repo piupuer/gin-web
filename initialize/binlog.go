@@ -12,7 +12,7 @@ import (
 // 使用siddontang/go-mysql监听mysql binlog
 func MysqlBinlog(tables []string) {
 	if !global.Conf.System.UseRedis {
-		global.Log.Debug("未使用redis, 无需初始化mysql binlog监听器")
+		global.Log.Info("未使用redis, 无需初始化mysql binlog监听器")
 		return
 	}
 	// 监听器配置
@@ -34,13 +34,13 @@ func MysqlBinlog(tables []string) {
 	// 创建canal实例
 	c, err := canal.NewCanal(cfg)
 	if err != nil {
-		global.Log.Debug("初始化mysql binlog监听器失败: ", err)
+		global.Log.Infof("初始化mysql binlog监听器失败: ", err)
 	}
 	// 设置事件处理器
 	c.SetEventHandler(&BinlogEventHandler{})
 	// 从指定位置开始加载(go 后台运行)
 	go c.RunFrom(redis.GetCurrentPos())
-	global.Log.Debug("初始化mysql binlog监听器完成")
+	global.Log.Info("初始化mysql binlog监听器完成")
 }
 
 // 自定义事件处理器

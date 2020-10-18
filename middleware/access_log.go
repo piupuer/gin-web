@@ -34,7 +34,7 @@ func AccessLog(c *gin.Context) {
 	clientIP := c.ClientIP()
 
 	if reqMethod == "OPTIONS" {
-		global.Log.Debug(
+		global.Log.Info(
 			fmt.Sprintf(
 				"%s %s %d %s %s",
 				reqMethod,

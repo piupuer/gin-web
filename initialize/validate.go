@@ -21,5 +21,5 @@ func Validate() {
 
 	global.Validate = validate
 	global.Translator = trans
-	global.Log.Debug("初始化validator.v9校验器完成")
+	global.Log.Info("初始化validator.v9校验器完成")
 }

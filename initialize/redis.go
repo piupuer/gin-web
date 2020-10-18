@@ -14,5 +14,5 @@ func Redis() {
 		Password: global.Conf.Redis.Password,
 	})
 	global.Redis = client
-	global.Log.Debug("初始化redis完成")
+	global.Log.Info("初始化redis完成")
 }
