@@ -60,15 +60,15 @@ func (s *MysqlService) CreateRole(req *request.CreateRoleRequestStruct) (err err
 }
 
 // 更新角色
-func (s *MysqlService) UpdateRoleById(id uint, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateRoleById(id uint, req models.SysRole) (err error) {
 	var oldRole models.SysRole
-	query := s.tx.Table(oldRole.TableName()).Where("id = ?", id).First(&oldRole)
+	query := s.tx.Model(oldRole).Where("id = ?", id).First(&oldRole)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysRole
 	utils.CompareDifferenceStructByJson(oldRole, req, &m)
 
 	// 更新指定列

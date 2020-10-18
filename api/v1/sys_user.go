@@ -133,7 +133,7 @@ func CreateUser(c *gin.Context) {
 // 更新用户
 func UpdateUserById(c *gin.Context) {
 	// 绑定参数
-	var req map[string]interface{}
+	var req models.SysUser
 	var pwd request.ChangePwdRequestStruct
 	var userInfo request.CreateUserRequestStruct
 	err := c.Bind(&req)
@@ -153,7 +153,7 @@ func UpdateUserById(c *gin.Context) {
 	}
 
 	user := GetCurrentUser(c)
-	if *userInfo.Status == models.SysUserStatusDisabled && userId == user.Id {
+	if userInfo.Status != nil && *userInfo.Status == models.SysUserStatusDisabled && userId == user.Id {
 		response.FailWithMsg("不能禁用自己")
 		return
 	}

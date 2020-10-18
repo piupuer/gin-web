@@ -73,7 +73,7 @@ func CreateRole(c *gin.Context) {
 // 更新角色
 func UpdateRoleById(c *gin.Context) {
 	// 绑定参数
-	var req map[string]interface{}
+	var req models.SysRole
 	var roleInfo request.CreateRoleRequestStruct
 	err := c.Bind(&req)
 	if err != nil {
@@ -91,7 +91,7 @@ func UpdateRoleById(c *gin.Context) {
 	}
 
 	user := GetCurrentUser(c)
-	if *roleInfo.Status == models.SysRoleStatusDisabled && roleId == user.RoleId {
+	if roleInfo.Status != nil && *roleInfo.Status == models.SysRoleStatusDisabled && roleId == user.RoleId {
 		response.FailWithMsg("不能禁用自己所在的角色")
 		return
 	}

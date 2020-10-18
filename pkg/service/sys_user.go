@@ -102,9 +102,9 @@ func (s *MysqlService) CreateUser(req *request.CreateUserRequestStruct) (err err
 }
 
 // 更新用户
-func (s *MysqlService) UpdateUserById(id uint, newPassword string, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateUserById(id uint, newPassword string, req models.SysUser) (err error) {
 	var oldUser models.SysUser
-	query := s.tx.Table(oldUser.TableName()).Where("id = ?", id).First(&oldUser)
+	query := s.tx.Model(oldUser).Where("id = ?", id).First(&oldUser)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
@@ -115,7 +115,7 @@ func (s *MysqlService) UpdateUserById(id uint, newPassword string, req map[strin
 		password = utils.GenPwd(newPassword)
 	}
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysUser
 	utils.CompareDifferenceStructByJson(oldUser, req, &m)
 
 	if password != "" {

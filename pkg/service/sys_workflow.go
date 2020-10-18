@@ -206,15 +206,15 @@ func (s *MysqlService) CreateWorkflow(req *request.CreateWorkflowRequestStruct) 
 }
 
 // 更新工作流
-func (s *MysqlService) UpdateWorkflowById(id uint, req map[string]interface{}) (err error) {
+func (s *MysqlService) UpdateWorkflowById(id uint, req models.SysWorkflow) (err error) {
 	var oldWorkflow models.SysWorkflow
-	query := s.tx.Table(oldWorkflow.TableName()).Where("id = ?", id).First(&oldWorkflow)
+	query := s.tx.Model(oldWorkflow).Where("id = ?", id).First(&oldWorkflow)
 	if query.Error == gorm.ErrRecordNotFound {
 		return fmt.Errorf("记录不存在")
 	}
 
 	// 比对增量字段
-	m := make(map[string]interface{}, 0)
+	var m models.SysWorkflow
 	utils.CompareDifferenceStructByJson(oldWorkflow, req, &m)
 
 	// 更新指定列
