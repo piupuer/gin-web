@@ -97,7 +97,7 @@ func (s *CompressImageJob) Run() {
 				if err != nil {
 					global.Log.Errorf("[定时任务][图片压缩]压缩失败, 当前文件%s, %v", path, err)
 				} else {
-					global.Log.Debugf("[定时任务][图片压缩]压缩成功, 当前文件%s", path)
+					global.Log.Infof("[定时任务][图片压缩]压缩成功, 当前文件%s", path)
 				}
 				return nil
 			})
@@ -106,7 +106,7 @@ func (s *CompressImageJob) Run() {
 			}
 		}
 	}
-	global.Log.Debugf("[定时任务][图片压缩]任务结束")
+	global.Log.Infof("[定时任务][图片压缩]任务结束")
 }
 
 const CurrentIndexKey = "we_chat_tpl_message_job_current_index"
@@ -157,7 +157,7 @@ func (s *WeChatTplMessageJob) Run() {
 	// 一次发送给2个人
 	s.sendOne(msg)
 	s.sendOne(msg)
-	global.Log.Debugf("[定时任务][微信模板消息]任务结束")
+	global.Log.Infof("[定时任务][微信模板消息]任务结束")
 }
 
 // 发送单条消息
@@ -170,7 +170,7 @@ func (s *WeChatTplMessageJob) sendOne(msg message.TemplateMessage)  {
 	msg.ToUser = currentUser
 	err := wechat.SendTplMessage(&msg)
 	if err == nil {
-		global.Log.Debugf("[定时任务][微信模板消息]发送成功, 接收人%s, 当前索引%d", currentUser, s.Current)
+		global.Log.Infof("[定时任务][微信模板消息]发送成功, 接收人%s, 当前索引%d", currentUser, s.Current)
 	} else {
 		global.Log.Errorf("[定时任务][微信模板消息]发送失败, 接收人%s, 当前索引%d, 错误信息%v", currentUser, s.Current, err)
 	}

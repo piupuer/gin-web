@@ -21,7 +21,7 @@ func RateLimiter() gin.HandlerFunc {
 	// 创建速率实例, 必须是真实的请求
 	instance := limiter.New(store, rate, limiter.WithTrustForwardHeader(true))
 
-	global.Log.Debug("初始化速率限制中间件完成")
+	global.Log.Infof("初始化速率限制中间件完成")
 
 	// 生成gin中间件
 	return mgin.NewMiddleware(instance)
