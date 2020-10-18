@@ -31,7 +31,7 @@ func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
-	db := global.Mysql
+	db := global.Mysql.Table(new (models.SysUser).TableName())
 	username := strings.TrimSpace(req.Username)
 	if username != "" {
 		db = db.Where("username LIKE ?", fmt.Sprintf("%%%s%%", username))
@@ -56,7 +56,7 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 		}
 	}
 	// 查询条数
-	err = db.Find(&list).Count(&req.PageInfo.Total).Error
+	err = db.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页

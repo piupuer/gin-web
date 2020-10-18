@@ -15,7 +15,7 @@ import (
 func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
-	db := global.Mysql
+	db := global.Mysql.Table(new (models.SysRole).TableName())
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
@@ -36,7 +36,7 @@ func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 		}
 	}
 	// 查询条数
-	err = db.Find(&list).Count(&req.PageInfo.Total).Error
+	err = db.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页

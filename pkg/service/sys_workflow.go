@@ -65,7 +65,7 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
-	query := s.tx.Preload("Users").Model(&models.SysWorkflowLine{})
+	query := s.tx.Model(new (models.SysWorkflowLine)).Preload("Users")
 	if req.FlowId > 0 {
 		query = query.Where("flow_id = ?", req.FlowId)
 	}
