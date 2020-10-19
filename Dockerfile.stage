@@ -47,6 +47,7 @@ RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
 COPY --from=gin-web $APP_HOME/main-stage .
+COPY --from=gin-web $APP_HOME/gitversion .
 
 # 拷贝mysqldump文件(binlog刷到redis会用到)
 COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
