@@ -10,6 +10,8 @@ func (s *QueryRedis) Find(dest interface{}) *QueryRedis {
 	ins.Statement.Dest = dest
 	// 重新指定model
 	ins.Statement.Model = dest
+	// 非数据条数
+	ins.Statement.count = false
 	// 获取数据
 	ins.beforeQuery(ins).get(ins.Statement.Table)
 	return ins
@@ -28,6 +30,7 @@ func (s *QueryRedis) First(dest interface{}) *QueryRedis {
 func (s *QueryRedis) Count(count *int64) *QueryRedis {
 	ins := s.getInstance()
 	ins.Statement.Dest = count
+	ins.Statement.count = true
 	if !ins.check() {
 		*count = 0
 	}
