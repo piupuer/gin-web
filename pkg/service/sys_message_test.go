@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"gin-web/models"
 	"gin-web/tests"
 	"testing"
@@ -56,54 +55,6 @@ func TestMysqlService_UpdateMessageByUserId(t *testing.T) {
 	tests.InitTestEnv()
 	s := New(nil)
 	err := s.SyncMessageByUserIds([]uint{1})
-	if err != nil {
-		panic(err)
-	}
-}
-
-func TestMysqlService_GetUnReadMessages(t *testing.T) {
-	tests.InitTestEnv()
-	s := New(nil)
-	list, err := s.GetUnReadMessages(1)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(list)
-}
-
-func TestMysqlService_GetReadMessages(t *testing.T) {
-	tests.InitTestEnv()
-	s := New(nil)
-	list, err := s.GetReadMessages(1)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(list)
-}
-
-func TestMysqlService_GetDeletedMessages(t *testing.T) {
-	tests.InitTestEnv()
-	s := New(nil)
-	list, err := s.GetDeletedMessages(1)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println(list)
-}
-
-func TestMysqlService_UpdateMessageRead(t *testing.T) {
-	tests.InitTestEnv()
-	s := New(nil)
-	err := s.UpdateMessageRead(1)
-	if err != nil {
-		panic(err)
-	}
-}
-
-func TestMysqlService_UpdateMessageDeleted(t *testing.T) {
-	tests.InitTestEnv()
-	s := New(nil)
-	err := s.UpdateMessageDeleted(1)
 	if err != nil {
 		panic(err)
 	}

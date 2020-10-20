@@ -149,7 +149,7 @@ func TestMysqlService_WorkflowTransition(t *testing.T) {
 	}
 	s.tx.Create(&user10)
 
-	falsePtr := false
+	falsePtr := uint(0)
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
 		Uuid:              uuid.NewV4().String(),
@@ -383,7 +383,7 @@ func TestMysqlService_WorkflowTransition2(t *testing.T) {
 	}
 	s.tx.Create(&user10)
 
-	falsePtr := false
+	falsePtr := uint(0)
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
 		Uuid:              uuid.NewV4().String(),
@@ -762,7 +762,7 @@ func TestMysqlService_WorkflowTransition3(t *testing.T) {
 	}
 	s.tx.Create(&user10)
 
-	falsePtr := false
+	falsePtr := uint(0)
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
 		Uuid:              uuid.NewV4().String(),
@@ -1009,8 +1009,8 @@ func TestMysqlService_WorkflowTransition4(t *testing.T) {
 	}
 	s.tx.Create(&user10)
 
-	truePtr := true
-	falsePtr := false
+	truePtr := uint(0)
+	falsePtr := uint(0)
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
 		Uuid:              uuid.NewV4().String(),
@@ -1255,8 +1255,8 @@ func TestMysqlService_WorkflowTransition5(t *testing.T) {
 	}
 	s.tx.Create(&user10)
 
-	truePtr := true
-	falsePtr := false
+	truePtr := uint(0)
+	falsePtr := uint(0)
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
 		Uuid:              uuid.NewV4().String(),
@@ -1508,8 +1508,8 @@ func TestMysqlService_WorkflowTransition6(t *testing.T) {
 	}
 	s.tx.Create(&user10)
 
-	truePtr := true
-	falsePtr := false
+	truePtr := uint(0)
+	falsePtr := uint(0)
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
 		Uuid:              uuid.NewV4().String(),
@@ -1704,7 +1704,7 @@ func TestMysqlService_WorkflowTransition7(t *testing.T) {
 	}
 	s.tx.Create(&user10)
 
-	falsePtr := false
+	falsePtr := uint(0)
 	// 6.构建请假流程流水线 角色1审批=>角色2审批=>角色3审批
 	var flow = models.SysWorkflow{
 		Uuid:              uuid.NewV4().String(),

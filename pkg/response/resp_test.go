@@ -12,8 +12,8 @@ func TestPageInfo_getLimit(t *testing.T) {
 	tests := []struct {
 		name       string
 		fields     fields
-		wantLimit  uint
-		wantOffset uint
+		wantLimit  int
+		wantOffset int
 	}{
 		{
 			name: "case1",
