@@ -22,6 +22,9 @@ RUN go mod download
 # 拷贝宿主机全部文件到当前目录
 COPY . .
 
+# 记录当前版本号
+RUN chmod +x version.sh && ./version.sh
+
 # 通过packr2将配置文件写入二进制文件
 # 构建packr2
 RUN cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.8.0/packr2 && go build && chmod +x packr2
