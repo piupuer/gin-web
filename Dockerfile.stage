@@ -14,14 +14,13 @@ RUN mkdir -p $APP_HOME
 # 设置运行目录
 WORKDIR $APP_HOME
 
-# 这里的根目录以docker-compose.yml配置build.context的为准
 # 拷贝宿主机go.mod / go.sum文件到当前目录
-COPY ./gin-web/go.mod ./gin-web/go.sum ./
+COPY go.mod go.sum ./
 # 下载依赖文件
 RUN go mod download
 
 # 拷贝宿主机全部文件到当前目录
-COPY ./gin-web .
+COPY . .
 
 # 通过packr2将配置文件写入二进制文件
 # 构建packr2
@@ -50,7 +49,7 @@ COPY --from=gin-web $APP_HOME/main-stage .
 COPY --from=gin-web $APP_HOME/gitversion .
 
 # 拷贝mysqldump文件(binlog刷到redis会用到)
-COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
+COPY docker-conf/mysql/mysqldump /usr/bin/mysqldump
 
 # alpine时区修改
 # apk仓库使用国内源
