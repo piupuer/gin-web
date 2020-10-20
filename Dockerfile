@@ -48,6 +48,7 @@ RUN mkdir -p $APP_HOME
 # 设置运行目录
 WORKDIR $APP_HOME
 
+COPY --from=gin-web $APP_HOME/conf ./conf/
 COPY --from=gin-web $APP_HOME/main-prod .
 COPY --from=gin-web $APP_HOME/gitversion .
 
