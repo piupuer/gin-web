@@ -23,10 +23,28 @@ const (
 
 // 初始化配置文件
 func InitConfig() {
-	// 使用packr将配置文件打包到二进制文件中, 如果以docker镜像方式运行将会非常舒服
-	global.ConfBox = packr.New(configBoxName, configPath)
-	// 获取实例(可创建多实例读取多个配置文件, 这里不做演示)
-	v := viper.New()
+	// 初始化配置盒子
+	var box global.CustomConfBox
+	ginWebConf := strings.ToLower(os.Getenv("GIN_WEB_CONF"))
+	// 从环境变量中读取配置路径
+	if ginWebConf != "" {
+		if strings.HasPrefix(ginWebConf, "/") {
+			// 指定的目录为绝对路径
+			box.ConfEnv = ginWebConf
+		} else {
+			// 指定的目录为相对路径
+			box.ConfEnv = utils.GetWorkDir() + "/" + ginWebConf
+		}
+	}
+	// 获取viper实例(可创建多实例读取多个配置文件, 这里不做演示)
+	box.ViperIns = viper.New()
+	// 环境变量不存在, 需要打包到二进制文件中
+	if box.ConfEnv == "" {
+		// 使用packr将配置文件打包到二进制文件中, 如果以docker镜像方式运行将会非常舒服
+		box.PackrBox = packr.New(configBoxName, configPath)
+	}
+	global.ConfBox = &box
+	v := box.ViperIns
 
 	// 读取开发环境配置作为默认配置项
 	readConfig(v, developmentConfig)
@@ -49,7 +67,7 @@ func InitConfig() {
 	}
 	// 转换为结构体
 	if err := v.Unmarshal(&global.Conf); err != nil {
-		panic(fmt.Sprintf("初始化配置文件失败: %v", err))
+		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
 
 	// 初始化OperationLogDisabledPaths
@@ -85,10 +103,10 @@ func readConfig(v *viper.Viper, configFile string) {
 	v.SetConfigType(configType)
 	config, err := global.ConfBox.Find(configFile)
 	if err != nil {
-		panic(fmt.Sprintf("初始化配置文件失败: %v", err))
+		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
 	// 加载配置
 	if err = v.ReadConfig(bytes.NewReader(config)); err != nil {
-		panic(fmt.Sprintf("初始化配置文件失败: %v", err))
+		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
 }
