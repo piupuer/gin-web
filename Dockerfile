@@ -61,6 +61,7 @@ COPY docker-conf/mysql/mysqldump /usr/bin/mysqldump
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk update \
   && apk add tzdata \
+  && apk add curl \
   && apk add libstdc++ \
   && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && echo "Asia/Shanghai" > /etc/timezone
@@ -72,3 +73,7 @@ EXPOSE 8080
 
 # 启动应用(daemon off后台运行)
 CMD ["./main-prod", "-g", "daemon off;"]
+
+# 设置健康检查
+HEALTHCHECK --interval=5s --timeout=3s \
+  CMD curl -fs http://127.0.0.1:8080/api/ping || exit 1
