@@ -96,7 +96,7 @@ func InitConfig() {
 		global.Conf.System.RSAPrivateBytes = privateBytes
 	}
 
-	fmt.Println("初始化配置文件完成")
+	fmt.Println("初始化配置文件完成, 环境变量GIN_WEB_CONF: ", global.ConfBox.ConfEnv)
 }
 
 func readConfig(v *viper.Viper, configFile string) {
