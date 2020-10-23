@@ -76,4 +76,4 @@ CMD ["./main-stage", "-g", "daemon off;"]
 
 # 设置健康检查
 HEALTHCHECK --interval=5s --timeout=3s \
-  CMD curl -fs http://127.0.0.1:9090/api/ping || exit 1
+  CMD curl -fs http://127.0.0.1:9090/stage-api/ping || exit 1
