@@ -14,14 +14,16 @@ RUN mkdir -p $APP_HOME
 # 设置运行目录
 WORKDIR $APP_HOME
 
-# 这里的根目录以docker-compose.yml配置build.context的为准
 # 拷贝宿主机go.mod / go.sum文件到当前目录
-COPY ./gin-web/go.mod ./gin-web/go.sum ./
+COPY go.mod go.sum ./
 # 下载依赖文件
 RUN go mod download
 
 # 拷贝宿主机全部文件到当前目录
-COPY ./gin-web .
+COPY . .
+
+# 记录当前版本号
+RUN chmod +x version.sh && ./version.sh
 
 # 通过packr2将配置文件写入二进制文件
 # 构建packr2
@@ -46,10 +48,12 @@ RUN mkdir -p $APP_HOME
 # 设置运行目录
 WORKDIR $APP_HOME
 
+COPY --from=gin-web $APP_HOME/conf ./conf/
 COPY --from=gin-web $APP_HOME/main-prod .
+COPY --from=gin-web $APP_HOME/gitversion .
 
 # 拷贝mysqldump文件(binlog刷到redis会用到)
-COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
+COPY docker-conf/mysql/mysqldump /usr/bin/mysqldump
 
 # alpine时区修改
 # apk仓库使用国内源
@@ -57,6 +61,7 @@ COPY ./gin-web/docker-conf/mysql/mysqldump /usr/bin/mysqldump
 RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk update \
   && apk add tzdata \
+  && apk add curl \
   && apk add libstdc++ \
   && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
   && echo "Asia/Shanghai" > /etc/timezone
@@ -68,3 +73,7 @@ EXPOSE 8080
 
 # 启动应用(daemon off后台运行)
 CMD ["./main-prod", "-g", "daemon off;"]
+
+# 设置健康检查
+HEALTHCHECK --interval=5s --timeout=3s \
+  CMD curl -fs http://127.0.0.1:8080/api/ping || exit 1

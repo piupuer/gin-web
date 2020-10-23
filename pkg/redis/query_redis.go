@@ -93,7 +93,7 @@ func (s *QueryRedis) beforeQuery(db *QueryRedis) *QueryRedis {
 		stmt.Dest = stmt.Model
 	}
 
-	if stmt.Model != nil {
+	if stmt.Model != nil && !stmt.count {
 		if err := stmt.Parse(stmt.Model); err != nil && (!errors.Is(err, schema.ErrUnsupportedDataType) || (stmt.Table == "")) {
 			db.AddError(err)
 		}

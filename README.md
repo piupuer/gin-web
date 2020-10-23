@@ -27,6 +27,7 @@
 - `Uploader` 大文件分块上传/多文件、文件夹上传Vue组件[vue-uploader](https://github.com/simple-uploader/vue-uploader/)
 - `MessageCenter` 消息中心(websocket长连接保证实时性, 活跃用户上线时新增消息表, 不活跃用户不管, 有效降低数据量)
 - `testing` 测试标准包, 快速进行单元测试
+- `Grafana Loki` 轻量日志收集工具loki, 支持分布式日志收集(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
 
 ## 中间件
 
@@ -61,6 +62,7 @@
 ## 在线演示(服务器配置低, 慢的话多等待一下)
 
 [传送门](http://106.75.132.201/)
+[日志收集器Grafana传送门](http://106.75.132.201:3000/) (test/123456)
 
 ## 快速开始
 
@@ -81,19 +83,31 @@ go run main.go
 ├── api
 │   └── v1 # v1版本接口目录(类似于Java中的controller), 如果有新版本可以继续添加v2/v3
 ├── conf # 配置文件目录(包含测试/预发布/生产环境配置参数及casbin模型配置)
+├── docker-conf # docker相关配置文件
 ├── initialize # 数据初始化目录
 ├── logs # 日志文件默认目录(运行代码是生成)
 ├── middleware # 中间件目录
 ├── models # 存储层模型定义目录
 ├── pkg # 公共模块目录
+│   ├── cache_service # redis缓存服务目录
 │   ├── global # 全局变量目录
+│   ├── redis # redis查询工具目录
 │   ├── request # 请求相关结构体目录
 │   ├── request # 响应相关结构体目录
 │   ├── service # 数据DAO服务目录
 │   ├── utils # 工具包目录
-│   └── route # 工具包目录
+│   └── wechat # 微信接口目录
 ├── router # 路由目录
 ├── tests # 本地单元测试配置目录
+├── upload # 上传文件默认目录
+├── Dockerfile # docker镜像构建文件(生产环境)
+├── Dockerfile.stage # docker镜像构建文件(预发布环境)
+├── go.mod # go依赖列表
+├── go.sum # go依赖下载历史
+├── main.go # 程序主入口
+├── README.md # 说明文档
+├── TIPS.md # 个人踩坑记录
+├── TODO.md # 已完成/待完成列表
 ```
 
 ## 前端
@@ -139,6 +153,11 @@ go run main.go
 [limiter](https://github.com/ulule/limiter): Dead simple rate limit middleware for Go.
 <br/>
 [validator](https://github.com/go-playground/validator): Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving.
+<br/>
+
+日志搜集:
+<br/>
+[loki](https://github.com/grafana/loki): Loki: like Prometheus, but for logs.
 
 <br/>
 

@@ -21,7 +21,18 @@ func Mysql() {
 		global.Conf.Mysql.Collation,
 		global.Conf.Mysql.Query,
 	)
-	global.Log.Info("数据库连接DSN: ", dsn)
+	// 隐藏密码
+	showDsn := fmt.Sprintf(
+		"%s:******@tcp(%s:%d)/%s?charset=%s&collation=%s&%s",
+		global.Conf.Mysql.Username,
+		global.Conf.Mysql.Host,
+		global.Conf.Mysql.Port,
+		global.Conf.Mysql.Database,
+		global.Conf.Mysql.Charset,
+		global.Conf.Mysql.Collation,
+		global.Conf.Mysql.Query,
+	)
+	global.Log.Info("数据库连接DSN: ", showDsn)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,

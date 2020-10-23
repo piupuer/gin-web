@@ -14,6 +14,4 @@ func TestGetAllMenuByRoleId(t *testing.T) {
 	m2, a2, _ := s.GetAllMenuByRoleId(1)
 	fmt.Println(m1, a1)
 	fmt.Println(m2, a2)
-
-	defer s.tx.Close()
 }

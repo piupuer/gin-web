@@ -41,7 +41,7 @@ func TestMysqlService_DlDl(t *testing.T) {
 		mobile, _ := strconv.Atoi(item.Mobile)
 		var entity Entity
 		entity.Mobile = strconv.Itoa(mobile+random)
-		err := query.Where("id = ?", item.Id).Update(&entity).Error
+		err := query.Where("id = ?", item.Id).Updates(&entity).Error
 		fmt.Println(err)
 	}
 }

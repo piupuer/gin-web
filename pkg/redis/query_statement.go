@@ -30,6 +30,8 @@ type Statement struct {
 	offset int
 	// 是否只取一条数据
 	first bool
+	// 是否只查询数据条数
+	count bool
 	// 不查询表, 直接给定了json字符串
 	json    bool
 	jsonStr string
