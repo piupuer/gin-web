@@ -8,6 +8,10 @@ import (
 	"time"
 )
 
+const (
+	// 上传分片文件临时目录
+	ChunkTmpPath = "chunks"
+)
 // 文件分片信息结构体
 type FilePartInfo struct {
 	// 当前文件大小(post传输时值非空)
@@ -56,13 +60,58 @@ func (s *FilePartInfo) GetChunkFilename(chunkNumber uint) string {
 	identifier := s.CleanIdentifier()
 	// 定义块文件名
 	return fmt.Sprintf(
-		"%s/%s/uploader-%s.chunk%d",
+		"%s/%s/%s/uploader-%s/chunk%d",
 		global.Conf.Upload.SaveDir,
 		models.LocalTime{
 			Time: time.Now(),
 		}.DateString(),
+		ChunkTmpPath,
 		identifier,
 		chunkNumber,
+	)
+}
+
+// 获取块文件名(不带分片编号)
+func (s *FilePartInfo) GetChunkFilenameWithoutChunkNumber() string {
+	// 清理特殊字符
+	identifier := s.CleanIdentifier()
+	// 定义块文件名
+	return fmt.Sprintf(
+		"%s/%s/%s/uploader-%s/chunk",
+		global.Conf.Upload.SaveDir,
+		models.LocalTime{
+			Time: time.Now(),
+		}.DateString(),
+		ChunkTmpPath,
+		identifier,
+	)
+}
+
+// 获取块文件名(不带临时目录)
+func (s *FilePartInfo) GetUploadRootPath() string {
+	// 定义块文件名
+	return fmt.Sprintf(
+		"%s/%s",
+		global.Conf.Upload.SaveDir,
+		models.LocalTime{
+			Time: time.Now(),
+		}.DateString(),
+	)
+}
+
+// 获取块文件名(不带临时目录)
+func (s *FilePartInfo) GetChunkRootPath() string {
+	// 清理特殊字符
+	identifier := s.CleanIdentifier()
+	// 定义块文件名
+	return fmt.Sprintf(
+		"%s/%s/%s/uploader-%s",
+		global.Conf.Upload.SaveDir,
+		models.LocalTime{
+			Time: time.Now(),
+		}.DateString(),
+		ChunkTmpPath,
+		identifier,
 	)
 }
 

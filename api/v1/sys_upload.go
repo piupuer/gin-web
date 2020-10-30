@@ -20,7 +20,7 @@ import (
 func UploadUnZip(c *gin.Context) {
 	var filePart request.FilePartInfo
 	_ = c.Bind(&filePart)
-	if strings.TrimSpace(filePart.Filename) == ""{
+	if strings.TrimSpace(filePart.Filename) == "" {
 		response.FailWithMsg("文件名不存在")
 		return
 	}
@@ -64,12 +64,11 @@ func UploadFileChunkExists(c *gin.Context) {
 func UploadMerge(c *gin.Context) {
 	var filePart request.FilePartInfo
 	_ = c.Bind(&filePart)
-	// 通过文件唯一标识找确定文件
-	// 获取块文件名
-	chunkName := filePart.GetChunkFilename(filePart.CurrentCheckChunkNumber)
-	chunkDir, _ := filepath.Split(chunkName)
+	// 获取
+	rootDir := filePart.GetUploadRootPath()
+	mergeFileName := fmt.Sprintf("%s/%s", rootDir, filePart.Filename)
 	// 创建merge file
-	mergeFile, err := os.OpenFile(fmt.Sprintf("%s/%s", chunkDir, filePart.Filename), os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	mergeFile, err := os.OpenFile(mergeFileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -120,8 +119,6 @@ func UploadMerge(c *gin.Context) {
 						defer func() {
 							// 关闭文件
 							f.Close()
-							// 删除分片
-							os.Remove(currentChunkName)
 						}()
 						b, err := ioutil.ReadAll(f)
 						if err != nil {
@@ -138,9 +135,19 @@ func UploadMerge(c *gin.Context) {
 	// 等待协程全部处理结束
 	wg.Wait()
 
+	// 写入minio对象存储
+	err = global.Minio.PutLocalObject(global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
+	if err != nil {
+		response.FailWithMsg(fmt.Sprintf("写入minio对象存储失败, %v", err))
+		return
+	}
+	// 删除分片文件所在路径
+	os.RemoveAll(filePart.GetChunkRootPath())
+
 	// 回写文件信息
 	var res response.UploadMergeResponseStruct
-	res.Filename = chunkDir + filePart.Filename
+	res.Filename = mergeFileName
+	res.PreviewUrl = global.Minio.GetObjectPreviewUrl(global.Conf.Upload.Minio.Bucket, mergeFileName)
 	response.SuccessWithData(res)
 }
 

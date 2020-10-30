@@ -52,6 +52,9 @@ func main() {
 
 	// 初始化定时任务
 	initialize.InitCron()
+	
+	// 初始化对象存储
+	initialize.Oss()
 
 	host := "0.0.0.0"
 	port := global.Conf.System.Port

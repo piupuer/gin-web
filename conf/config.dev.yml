@@ -92,6 +92,18 @@ rate-limit:
 
 # 上传配置
 upload:
+  # 对象存储配置
+  # minio
+  oss-minio:
+    # 初始化存储桶名称
+    bucket: gin-web
+    # 节点地址
+    endpoint: 127.0.0.1:9005
+    # 密钥对
+    access-id: minio
+    secret: minio123
+    # 是否使用https
+    use-https: false
   # 上传文件保存路径
   save-dir: upload
   # 单个文件或分片文件最大限制, 单位MB(上传文件先读取到内存, 如果这个值设置过大会导致内存崩溃)

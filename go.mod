@@ -24,6 +24,7 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/juju/testing v0.0.0-20200923013621-75df6121fbb0 // indirect
+	github.com/minio/minio-go/v7 v7.0.5
 	github.com/myesui/uuid v1.0.0 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646

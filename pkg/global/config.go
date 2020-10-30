@@ -78,12 +78,21 @@ type RateLimitConfiguration struct {
 }
 
 type UploadConfiguration struct {
-	SaveDir                      string `mapstructure:"save-dir" json:"saveDir"`
-	SingleMaxSize                uint   `mapstructure:"single-max-size" json:"singleMaxSize"`
-	MergeConcurrentCount         uint   `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
-	CompressImageCronTask        string `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
-	CompressImageRootDir         string `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
-	CompressImageOriginalSaveDir string `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
+	Minio                        UploadOssMinioConfiguration `mapstructure:"oss-minio" json:"ossMinio"`
+	SaveDir                      string                      `mapstructure:"save-dir" json:"saveDir"`
+	SingleMaxSize                uint                        `mapstructure:"single-max-size" json:"singleMaxSize"`
+	MergeConcurrentCount         uint                        `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
+	CompressImageCronTask        string                      `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
+	CompressImageRootDir         string                      `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
+	CompressImageOriginalSaveDir string                      `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
+}
+
+type UploadOssMinioConfiguration struct {
+	Bucket   string `mapstructure:"bucket" json:"bucket"`
+	Endpoint string `mapstructure:"endpoint" json:"endpoint"`
+	AccessId string `mapstructure:"access-id" json:"accessId"`
+	Secret   string `mapstructure:"secret" json:"secret"`
+	UseHttps bool   `mapstructure:"use-https" json:"useHttps"`
 }
 
 type WeChatConfiguration struct {
