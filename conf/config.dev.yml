@@ -13,7 +13,7 @@ system:
   # 操作日志key
   operation-log-key: operation_log_response
   # 不写操作日志的路径列表
-  operation-log-disabled-paths: /operation/log/delete/batch
+  operation-log-disabled-paths: /operation/log/delete/batch,/upload/file
   # 允许用户删除操作日志
   operation-log-allowed-to-delete: false
   # rsa公钥文件路径(conf相对路径, 也可以填绝对路径)
@@ -99,7 +99,7 @@ upload:
   # 合并文件并发数(并发合并文件会提升性能, 但如果设置过大性能降低, 结合实际机器性能配置)
   merge-concurrent-count: 10
   # 定时压缩上传目录图片文件(支持corn表达式, 默认关闭, cron文档: https://en.wikipedia.org/wiki/Cron)
-  compress-image-cron-task: '*/1 * * * *'
+  compress-image-cron-task: ''
   # 压缩根目录(默认save-dir)
   compress-image-root-dir:
   # 源文件保存目录, 建议开启可避免二次压缩损失质量(默认保存到同目录的.before下)
@@ -118,7 +118,7 @@ we-chat:
     # 模板消息定时任务
     tpl-message-cron-task:
       # 表达式
-      expr: '*/1 * * * *'
+      expr: ''
       # 接收人微信列表
       users: xxx
       # 模板id
