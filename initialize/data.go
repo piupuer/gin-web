@@ -395,6 +395,25 @@ func InitData() {
 				roles[3],
 			},
 		},
+		{
+			Model: models.Model{
+				Id: 18,
+			},
+			Name:       "machine",
+			Title:      "机器管理",
+			Icon:       "guide",
+			Path:       "machine",
+			Component:  "/system/machine",
+			Sort:       7,
+			Status:     &status,
+			Visible:    &visible,
+			Breadcrumb: &noBreadcrumb,
+			ParentId:   2,
+			Creator:    creator,
+			Roles: []models.SysRole{
+				roles[2],
+			},
+		},
 	}
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
@@ -987,6 +1006,66 @@ func InitData() {
 			Path:     "/v1/message/ws",
 			Category: "message",
 			Desc:     "消息中心长连接",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 54,
+			},
+			Method:   "GET",
+			Path:     "/v1/machine/shell/ws",
+			Category: "machine",
+			Desc:     "机器终端shell长连接",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 55,
+			},
+			Method:   "GET",
+			Path:     "/v1/machine/list",
+			Category: "machine",
+			Desc:     "获取机器列表",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 56,
+			},
+			Method:   "POST",
+			Path:     "/v1/machine/create",
+			Category: "message",
+			Desc:     "创建机器",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 57,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/machine/update/:machineId",
+			Category: "machine",
+			Desc:     "更新机器",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 58,
+			},
+			Method:   "PATCH",
+			Path:     "/v1/machine/connect/:machineId",
+			Category: "machine",
+			Desc:     "连接或刷新机器状态",
+			Creator:  creator,
+		},
+		{
+			Model: models.Model{
+				Id: 59,
+			},
+			Method:   "DELETE",
+			Path:     "/v1/machine/delete/batch",
+			Category: "machine",
+			Desc:     "批量删除机器",
 			Creator:  creator,
 		},
 	}

@@ -64,6 +64,7 @@ func autoMigrate() {
 		new(models.SysOperationLog),
 		new(models.SysMessage),
 		new(models.SysMessageLog),
+		new(models.SysMachine),
 	)
 }
 
@@ -83,5 +84,6 @@ func binlog() {
 		new(models.SysOperationLog).TableName(),
 		new(models.SysMessage).TableName(),
 		new(models.SysMessageLog).TableName(),
+		new(models.SysMachine).TableName(),
 	})
 }
