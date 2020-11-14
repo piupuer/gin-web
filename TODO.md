@@ -29,7 +29,7 @@
 - [x] 上传组件新增ZIP解压示例
 - [x] 用户登录通过RSA非对称加密传输用户密码, 避免密码泄漏风险
 - [x] 上线在线演示
-- [ ] 最近发现一款对象存储服务[Minio](https://github.com/minio/minio), 准备研究下
+- [x] 最近发现一款对象存储服务[Minio](https://github.com/minio/minio), 准备研究下
 - [x] 消息中心(活跃用户上线时新增消息表, 不活跃用户不管, 有效降低数据量)
 - [x] 消息中心修改为websocket长连接保证实时性
 - [x] 轻量级日志收集工具Grafana loki(ELK太重, 本地测试至少需要4G内存才基本跑起来)
