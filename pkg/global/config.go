@@ -88,6 +88,7 @@ type UploadConfiguration struct {
 }
 
 type UploadOssMinioConfiguration struct {
+	Enable   bool   `mapstructure:"enable" json:"enable"`
 	Bucket   string `mapstructure:"bucket" json:"bucket"`
 	Endpoint string `mapstructure:"endpoint" json:"endpoint"`
 	AccessId string `mapstructure:"access-id" json:"accessId"`

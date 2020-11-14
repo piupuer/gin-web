@@ -135,11 +135,15 @@ func UploadMerge(c *gin.Context) {
 	// 等待协程全部处理结束
 	wg.Wait()
 
-	// 写入minio对象存储
-	err = global.Minio.PutLocalObject(global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
-	if err != nil {
-		response.FailWithMsg(fmt.Sprintf("写入minio对象存储失败, %v", err))
-		return
+	previewUrl := "未开启对象存储, 无预览地址"
+	if global.Conf.Upload.Minio.Enable {
+		// 写入minio对象存储
+		err = global.Minio.PutLocalObject(global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
+		if err != nil {
+			response.FailWithMsg(fmt.Sprintf("写入minio对象存储失败, %v", err))
+			return
+		}
+		previewUrl = global.Minio.GetObjectPreviewUrl(global.Conf.Upload.Minio.Bucket, mergeFileName)
 	}
 	// 删除分片文件所在路径
 	os.RemoveAll(filePart.GetChunkRootPath())
@@ -147,7 +151,7 @@ func UploadMerge(c *gin.Context) {
 	// 回写文件信息
 	var res response.UploadMergeResponseStruct
 	res.Filename = mergeFileName
-	res.PreviewUrl = global.Minio.GetObjectPreviewUrl(global.Conf.Upload.Minio.Bucket, mergeFileName)
+	res.PreviewUrl = previewUrl
 	response.SuccessWithData(res)
 }
 

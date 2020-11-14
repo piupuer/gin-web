@@ -95,6 +95,8 @@ upload:
   # 对象存储配置
   # minio
   oss-minio:
+    # 是否开启对象存储
+    enable: false
     # 初始化存储桶名称
     bucket: gin-web
     # 节点地址
