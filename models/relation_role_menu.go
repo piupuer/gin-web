@@ -1,5 +1,10 @@
 package models
 
+import (
+	"fmt"
+	"gin-web/pkg/global"
+)
+
 // 角色与菜单关联关系
 type RelationRoleMenu struct {
 	SysRoleId uint `json:"sysRoleId"`
@@ -7,6 +12,5 @@ type RelationRoleMenu struct {
 }
 
 func (m RelationRoleMenu) TableName() string {
-	// 多对多关系表在tag中写死, 不能加自定义表前缀
-	return "relation_role_menu"
+	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "relation_role_menu")
 }

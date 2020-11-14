@@ -64,6 +64,11 @@ func InitConfig() {
 		panic(fmt.Sprintf("[单元测试]初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
 
+	// 表前缀去掉后缀_
+	if strings.TrimSpace(global.Conf.Mysql.TablePrefix) != "" && strings.HasSuffix(global.Conf.Mysql.TablePrefix, "_") {
+		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")
+	}
+
 	// 初始化OperationLogDisabledPaths
 	global.Conf.System.OperationLogDisabledPathArr = make([]string, 0)
 	if strings.TrimSpace(global.Conf.System.OperationLogDisabledPaths) != "" {

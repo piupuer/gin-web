@@ -1,5 +1,10 @@
 package models
 
+import (
+	"fmt"
+	"gin-web/pkg/global"
+)
+
 // 流程相关的常量
 const (
 	// 流程类别
@@ -88,8 +93,7 @@ type RelationUserWorkflowLine struct {
 }
 
 func (m RelationUserWorkflowLine) TableName() string {
-	// 多对多关系表在tag中写死, 不能加自定义表前缀
-	return "relation_user_workflow_line"
+	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "relation_user_workflow_line")
 }
 
 // 流程日志: 任何一种工作流程都会关联到某一张表, 需要targetId
