@@ -1,4 +1,4 @@
-FROM golang:1.14 AS gin-web
+FROM golang:1.14-alpine AS gin-web
 
 RUN echo "----------------- 后端Gin Web构建(Production) -----------------"
 # 环境变量
@@ -8,6 +8,13 @@ ENV GO111MODULE=on
 ENV GOPROXY=https://goproxy.cn
 # 定义应用运行目录
 ENV APP_HOME /app/gin-web-prod
+
+# alpine添加基础软件
+RUN sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
+RUN apk update \
+  && apk add bash \
+  && apk add git \
+  && rm -rf /var/cache/apk/* /tmp/* /var/tmp/* $HOME/.cache
 
 RUN mkdir -p $APP_HOME
 
