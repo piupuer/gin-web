@@ -25,31 +25,31 @@ func (s *RedisService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 }
 
 // 获取所有菜单
-func (s *RedisService) GetMenus() []models.SysMenu {
+func (s *RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 	if !global.Conf.System.UseRedis {
 		// 不使用redis
-		return s.mysql.GetMenus()
+		return s.mysql.GetMenus(currentRole)
 	}
 	tree := make([]models.SysMenu, 0)
 	// 获取全部菜单
-	menus := s.getAllMenu()
+	menus := s.getAllMenu(currentRole)
 	// 生成菜单树
 	tree = service.GenMenuTree(nil, menus)
 	return tree
 }
 
 // 根据权限编号获取全部菜单
-func (s *RedisService) GetAllMenuByRoleId(roleId uint) ([]models.SysMenu, []uint, error) {
+func (s *RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
 	if !global.Conf.System.UseRedis {
 		// 不使用redis
-		return s.mysql.GetAllMenuByRoleId(roleId)
+		return s.mysql.GetAllMenuByRoleId(currentRole, roleId)
 	}
 	// 菜单树
 	tree := make([]models.SysMenu, 0)
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
 	// 查询全部菜单
-	allMenu := s.getAllMenu()
+	allMenu := s.getAllMenu(currentRole)
 	// 查询角色拥有菜单
 	roleMenus := s.getRoleMenus(roleId)
 	// 生成菜单树
@@ -73,11 +73,28 @@ func (s *RedisService) getRoleMenus(roleId uint) []models.SysMenu {
 }
 
 // 获取全部菜单, 非菜单树
-func (s *RedisService) getAllMenu() []models.SysMenu {
+func (s *RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	menus := make([]models.SysMenu, 0)
-	// TODO 查询所有菜单
-	// err := s.redis.Table(new(models.SysMenu).TableName()).Order("sort").Find(&menus).Error
-	err := s.redis.Table(new(models.SysMenu).TableName()).Find(&menus).Error
+
+	// 查询关系表
+	relations := make([]models.RelationRoleMenu, 0)
+	menuIds := make([]uint, 0)
+	query := s.redis.Table(new(models.RelationRoleMenu).TableName())
+	// 非超级管理员
+	if *currentRole.Sort != models.SysRoleSuperAdminSort {
+		query = query.Where("sysRoleId", "=", currentRole.Id)
+	}
+	err := query.Find(&relations).Error
+	if err != nil {
+		return menus
+	}
+	for _, relation := range relations {
+		// redis存的json转换为int, 因此这里转一下类型
+		menuIds = append(menuIds, relation.SysMenuId)
+	}
+
+	// 查询所有菜单
+	err = s.redis.Table(new(models.SysMenu).TableName()).Where("id", "in", menuIds).Find(&menus).Error
 	global.Log.Warn("[getAllMenu]", err)
 	return menus
 }

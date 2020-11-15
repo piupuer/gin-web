@@ -93,6 +93,8 @@ func (stmt *Statement) Where(key, cond string, val interface{}) *Statement {
 	// 如果参数为uint, redis存的json转换为int, 因此这里转一下类型
 	if item, ok := val.(uint); ok {
 		val = int(item)
+	} else if item, ok := val.([]uint); ok {
+		val = utils.UintArr2IntArr(item)
 	}
 	var whereConditions []whereCondition
 	// 保留旧数据

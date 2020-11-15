@@ -11,11 +11,25 @@ import (
 	"strings"
 )
 
+// 根据当前角色顺序获取角色编号集合(主要功能是针对不同角色用户登录系统隐藏特定菜单)
+func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
+	roles := make([]models.SysRole, 0)
+	roleIds := make([]uint, 0)
+	err := s.tx.Model(models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
+	if err != nil {
+		return roleIds, err
+	}
+	for _, role := range roles {
+		roleIds = append(roleIds, role.Id)
+	}
+	return roleIds, nil
+}
+
 // 获取所有角色
 func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
-	db := global.Mysql.Table(new (models.SysRole).TableName())
+	db := global.Mysql.Table(new (models.SysRole).TableName()).Where("sort >= ?", req.CurrentRoleSort)
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
@@ -77,9 +91,9 @@ func (s *MysqlService) UpdateRoleById(id uint, req models.SysRole) (err error) {
 }
 
 // 更新角色的权限菜单
-func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (s *MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	// 查询全部菜单
-	allMenu := s.getAllMenu()
+	allMenu := s.getAllMenu(currentRole)
 	// 查询角色拥有菜单
 	roleMenus := s.getRoleMenus(id)
 	// 获取当前菜单编号集合
@@ -95,8 +109,14 @@ func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementa
 	if err != nil {
 		return
 	}
+	// 查询role
+	var role models.SysRole
+	err = s.tx.Where("id = ?", id).First(&role).Error
+	if err != nil {
+		return
+	}
 	// 替换菜单
-	err = s.tx.Where("id = ?", id).First(&models.SysRole{}).Association("Menus").Replace(&incrementalMenus)
+	err = s.tx.Debug().Model(&role).Association("Menus").Replace(&incrementalMenus)
 	return
 }
 

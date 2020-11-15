@@ -22,6 +22,10 @@ func GetRoles(c *gin.Context) {
 		return
 	}
 
+	// 绑定当前用户角色排序(隐藏特定用户)
+	user := GetCurrentUser(c)
+	req.CurrentRoleSort = *user.Role.Sort
+
 	// 创建服务
 	s := cache_service.New(c)
 	roles, err := s.GetRoles(&req)
@@ -58,6 +62,12 @@ func CreateRole(c *gin.Context) {
 		response.FailWithMsg(err.Error())
 		return
 	}
+
+	if *user.Role.Sort > *req.Sort {
+		response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
+		return
+	}
+
 	// 记录当前创建人信息
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
@@ -83,6 +93,15 @@ func UpdateRoleById(c *gin.Context) {
 
 	utils.Struct2StructByJson(req, &roleInfo)
 
+	if roleInfo.Sort != nil {
+		// 绑定当前用户角色排序(隐藏特定用户)
+		user := GetCurrentUser(c)
+		if *user.Role.Sort > *roleInfo.Sort {
+			response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
+			return
+		}
+	}
+
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
 	if roleId == 0 {
@@ -95,7 +114,7 @@ func UpdateRoleById(c *gin.Context) {
 		response.FailWithMsg("不能禁用自己所在的角色")
 		return
 	}
-	
+
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
@@ -122,10 +141,23 @@ func UpdateRoleMenusById(c *gin.Context) {
 		response.FailWithMsg("角色编号不正确")
 		return
 	}
+	// 绑定当前用户角色排序(隐藏特定用户)
+	user := GetCurrentUser(c)
+
+	if user.RoleId == roleId {
+		if *user.Role.Sort == models.SysRoleSuperAdminSort && len(req.Delete) > 0 {
+			response.FailWithMsg("无法移除超级管理员的权限, 如有疑问请联系网站开发者")
+			return
+		} else if *user.Role.Sort != models.SysRoleSuperAdminSort {
+			response.FailWithMsg("无法更改自己的权限, 如需更改请联系上级领导")
+			return
+		}
+	}
+
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateRoleMenusById(roleId, req)
+	err = s.UpdateRoleMenusById(user.Role, roleId, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -148,6 +180,20 @@ func UpdateRoleApisById(c *gin.Context) {
 		response.FailWithMsg("角色编号不正确")
 		return
 	}
+
+	// 绑定当前用户角色排序(隐藏特定用户)
+	user := GetCurrentUser(c)
+
+	if user.RoleId == roleId {
+		if *user.Role.Sort == models.SysRoleSuperAdminSort && len(req.Delete) > 0 {
+			response.FailWithMsg("无法移除超级管理员的权限, 如有疑问请联系网站开发者")
+			return
+		} else if *user.Role.Sort != models.SysRoleSuperAdminSort {
+			response.FailWithMsg("无法更改自己的权限, 如需更改请联系上级领导")
+			return
+		}
+	}
+
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
@@ -167,7 +213,7 @@ func BatchDeleteRoleByIds(c *gin.Context) {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
 	}
-	
+
 	user := GetCurrentUser(c)
 	if utils.ContainsUint(req.GetUintIds(), user.RoleId) {
 		response.FailWithMsg("不能删除自己所在的角色")

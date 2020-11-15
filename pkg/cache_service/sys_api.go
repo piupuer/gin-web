@@ -51,10 +51,10 @@ func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 }
 
 // 根据权限编号获取以api分类分组的权限接口
-func (s *RedisService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
+func (s *RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
 	if !global.Conf.System.UseRedis {
 		// 不使用redis
-		return s.mysql.GetAllApiGroupByCategoryByRoleId(roleId)
+		return s.mysql.GetAllApiGroupByCategoryByRoleId(currentRole, roleId)
 	}
 	// 接口树
 	tree := make([]response.ApiGroupByCategoryResponseStruct, 0)
@@ -66,14 +66,35 @@ func (s *RedisService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response
 	if err != nil {
 		return tree, accessIds, err
 	}
+	var currentRoleId uint
+	// 非超级管理员
+	if *currentRole.Sort != models.SysRoleSuperAdminSort {
+		currentRoleId = currentRole.Id
+	}
 	// 查询当前角色拥有api访问权限的casbin规则
+	currentCasbins, err := s.GetCasbinListByRoleId(currentRoleId)
+	// 查询指定角色拥有api访问权限的casbin规则(当前角色只能在自己权限范围内操作, 不得越权)
 	casbins, err := s.GetCasbinListByRoleId(roleId)
 	if err != nil {
 		return tree, accessIds, err
 	}
 
-	// 通过分类进行分组归纳
+	// 找到当前角色的全部api
+	newApi := make([]models.SysApi, 0)
 	for _, api := range allApi {
+		path := api.Path
+		method := api.Method
+		for _, currentCasbin := range currentCasbins {
+			// 该api有权限
+			if path == currentCasbin.V1 && method == currentCasbin.V2 {
+				newApi = append(newApi, api)
+				break
+			}
+		}
+	}
+
+	// 通过分类进行分组归纳
+	for _, api := range newApi {
 		category := api.Category
 		path := api.Path
 		method := api.Method

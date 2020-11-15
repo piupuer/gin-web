@@ -18,6 +18,9 @@ func InitData() {
 	status := uint(1)
 	visible := uint(1)
 	edit := uint(1)
+	sorts := []uint{
+		0, 1, 2, 3,
+	}
 	roles := []models.SysRole{
 		{
 			Model: models.Model{
@@ -28,6 +31,7 @@ func InitData() {
 			Desc:    "外来访问人员",
 			Status:  &status,
 			Creator: creator,
+			Sort:    &sorts[3],
 		},
 		{
 			Model: models.Model{
@@ -38,26 +42,40 @@ func InitData() {
 			Desc:    "系统测试工程师",
 			Status:  &status,
 			Creator: creator,
+			Sort:    &sorts[2],
 		},
 		{
 			Model: models.Model{
 				Id: 3,
 			},
-			Name:    "管理员",
-			Keyword: "admin",
-			Desc:    "系统管理员",
+			Name:    "超级管理员",
+			Keyword: "super",
+			Desc:    "超级管理员",
 			Status:  &status,
 			Creator: creator,
+			Sort:    &sorts[0],
 		},
 		{
 			Model: models.Model{
 				Id: 4,
+			},
+			Name:    "系统管理员",
+			Keyword: "admin",
+			Desc:    "系统管理员",
+			Status:  &status,
+			Creator: creator,
+			Sort:    &sorts[1],
+		},
+		{
+			Model: models.Model{
+				Id: 5,
 			},
 			Name:    "请假条提交员",
 			Keyword: "leave",
 			Desc:    "请假条提交员",
 			Status:  &status,
 			Creator: creator,
+			Sort:    &sorts[2],
 		},
 	}
 	for _, role := range roles {
@@ -121,6 +139,7 @@ func InitData() {
 			Creator:    creator,
 			Roles: []models.SysRole{
 				roles[2],
+				roles[3],
 			},
 		},
 		{
@@ -142,6 +161,7 @@ func InitData() {
 				roles[1],
 				roles[2],
 				roles[3],
+				roles[4],
 			},
 		},
 		{
@@ -162,6 +182,7 @@ func InitData() {
 				roles[1],
 				roles[2],
 				roles[3],
+				roles[4],
 			},
 		},
 		{
@@ -198,6 +219,7 @@ func InitData() {
 			Creator:   creator,
 			Roles: []models.SysRole{
 				roles[2],
+				roles[3],
 			},
 		},
 		{
@@ -216,6 +238,7 @@ func InitData() {
 			Creator:   creator,
 			Roles: []models.SysRole{
 				roles[2],
+				roles[3],
 			},
 		},
 		{
@@ -252,6 +275,7 @@ func InitData() {
 			Creator:   creator,
 			Roles: []models.SysRole{
 				roles[2],
+				roles[3],
 			},
 		},
 		{
@@ -290,6 +314,7 @@ func InitData() {
 				roles[1],
 				roles[2],
 				roles[3],
+				roles[4],
 			},
 		},
 		{
@@ -310,6 +335,7 @@ func InitData() {
 				roles[1],
 				roles[2],
 				roles[3],
+				roles[4],
 			},
 		},
 		{
@@ -330,7 +356,7 @@ func InitData() {
 			Roles: []models.SysRole{
 				roles[1],
 				roles[2],
-				roles[3],
+				roles[4],
 			},
 		},
 		{
@@ -352,6 +378,7 @@ func InitData() {
 				roles[1],
 				roles[2],
 				roles[3],
+				roles[4],
 			},
 		},
 		{
@@ -373,6 +400,7 @@ func InitData() {
 				roles[1],
 				roles[2],
 				roles[3],
+				roles[4],
 			},
 		},
 		{
@@ -393,6 +421,7 @@ func InitData() {
 			Roles: []models.SysRole{
 				roles[2],
 				roles[3],
+				roles[4],
 			},
 		},
 		{
@@ -426,18 +455,37 @@ func InitData() {
 	// 3. 初始化用户
 	// 默认头像
 	avatar := "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif"
-	users := [4]models.SysUser{
+	users := [5]models.SysUser{
 		{
-			Username:     "admin",
+			Model: models.Model{
+				Id: 1,
+			},
+			Username:     "super",
 			Password:     utils.GenPwd("123456"),
-			Mobile:       "18888888888",
+			Mobile:       "19999999999",
 			Avatar:       avatar,
-			Nickname:     "管理员",
-			Introduction: "妖怪, 哪里跑",
+			Nickname:     "超级管理员",
+			Introduction: "我是超管我怕谁？",
 			RoleId:       3,
 			Creator:      creator,
 		},
 		{
+			Model: models.Model{
+				Id: 2,
+			},
+			Username:     "admin",
+			Password:     utils.GenPwd("123456"),
+			Mobile:       "18888888888",
+			Avatar:       avatar,
+			Nickname:     "系统管理员",
+			Introduction: "妖怪, 哪里跑",
+			RoleId:       4,
+			Creator:      creator,
+		},
+		{
+			Model: models.Model{
+				Id: 3,
+			},
 			Username:     "zhangsan",
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "15888888888",
@@ -448,6 +496,9 @@ func InitData() {
 			Creator:      creator,
 		},
 		{
+			Model: models.Model{
+				Id: 4,
+			},
 			Username:     "lisi",
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "13888888888",
@@ -458,13 +509,16 @@ func InitData() {
 			Creator:      creator,
 		},
 		{
+			Model: models.Model{
+				Id: 5,
+			},
 			Username:     "wangwu",
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "13999999999",
 			Avatar:       avatar,
 			Nickname:     "王武",
 			Introduction: "这个人很懒, 什么也没留下",
-			RoleId:       4,
+			RoleId:       5,
 			Creator:      creator,
 		},
 	}
@@ -1076,12 +1130,38 @@ func InitData() {
 			global.Mysql.Create(&api)
 			// 创建服务
 			s := service.New(nil)
-			// 管理员拥有所有API权限role[2]
+			// 超级管理员拥有所有API权限role[2]
 			s.CreateRoleCasbin(models.SysRoleCasbin{
 				Keyword: roles[2].Keyword,
 				Path:    api.Path,
 				Method:  api.Method,
 			})
+			// 管理员没有菜单管理/接口管理/操作日志/机器管理权限
+			if !utils.Contains([]uint{
+				11,
+				12,
+				13,
+				14,
+				19,
+				20,
+				21,
+				22,
+				43,
+				44,
+				54,
+				55,
+				56,
+				57,
+				58,
+				59,
+			}, api.Id) {
+				s.CreateRoleCasbin(models.SysRoleCasbin{
+					Keyword: roles[3].Keyword,
+					Path:    api.Path,
+					Method:  api.Method,
+				})
+			}
+
 			// 测试/请假条测试员: 拥有请假条与审批请假条权限
 			if api.Id >= 33 && api.Id <= 39 {
 				s.CreateRoleCasbin(models.SysRoleCasbin{
@@ -1090,7 +1170,7 @@ func InitData() {
 					Method:  api.Method,
 				})
 				s.CreateRoleCasbin(models.SysRoleCasbin{
-					Keyword: roles[3].Keyword,
+					Keyword: roles[4].Keyword,
 					Path:    api.Path,
 					Method:  api.Method,
 				})
@@ -1116,7 +1196,7 @@ func InitData() {
 					Method:  api.Method,
 				})
 				s.CreateRoleCasbin(models.SysRoleCasbin{
-					Keyword: roles[3].Keyword,
+					Keyword: roles[4].Keyword,
 					Path:    api.Path,
 					Method:  api.Method,
 				})
@@ -1145,7 +1225,6 @@ func InitData() {
 			// 创建服务
 			s := service.New(nil)
 			// 设置张三和管理员审批
-			roleId := uint(3)
 			req := request.UpdateWorkflowLineIncrementalRequestStruct{
 				FlowId: 1,
 				Create: []request.UpdateWorkflowLineRequestStruct{
@@ -1153,7 +1232,7 @@ func InitData() {
 						Id:     1,
 						FlowId: 1,
 						UserIds: []uint{
-							2,
+							3,
 						},
 						Edit: &edit,
 						Name: "主管审批",
@@ -1161,7 +1240,7 @@ func InitData() {
 					{
 						Id:     2,
 						FlowId: 1,
-						RoleId: &roleId,
+						RoleId: &roles[3].Id,
 						Edit:   &edit,
 						Name:   "总经理审批",
 					},

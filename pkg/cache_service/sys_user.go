@@ -37,6 +37,14 @@ func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 	var err error
 	list := make([]models.SysUser, 0)
 	query := s.redis.Table(new(models.SysUser).TableName())
+	// 非超级管理员
+	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
+		roleIds, err := s.GetRoleIdsBySort(*req.CurrentRole.Sort)
+		if err != nil {
+			return list, err
+		}
+		query = query.Where("roleId", "in", roleIds)
+	}
 	username := strings.TrimSpace(req.Username)
 	if username != "" {
 		query = query.Where("username", "contains", username)

@@ -3,6 +3,7 @@ package service
 import (
 	"gin-web/models"
 	"gin-web/pkg/global"
+	"gin-web/pkg/utils"
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
@@ -93,22 +94,33 @@ func (s *MysqlService) BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, 
 
 // 根据权限编号读取casbin规则
 func (s *MysqlService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
+	list := make([][]string, 0)
 	casbins := make([]models.SysCasbin, 0)
-	var role models.SysRole
-	err := s.tx.Where("id = ?", roleId).First(&role).Error
-	if err != nil {
-		return casbins, err
-	}
 	e, _ := s.Casbin()
-	// 查询符合字段v0=role.Keyword所有casbin规则
-	list := e.GetFilteredPolicy(0, role.Keyword)
+	if roleId > 0 {
+		// 读取角色缓存
+		var role models.SysRole
+		err := s.tx.Where("id = ?", roleId).First(&role).Error
+		if err != nil {
+			return casbins, err
+		}
+		// 查询符合字段v0=role.Keyword所有casbin规则
+		list = e.GetFilteredPolicy(0, role.Keyword)
+	} else {
+		list = e.GetFilteredPolicy(0)
+	}
+
+	// 避免重复, 记录添加历史
+	var added []string
 	for _, v := range list {
-		casbins = append(casbins, models.SysCasbin{
-			PType: "p",
-			V0:    v[0],
-			V1:    v[1],
-			V2:    v[2],
-		})
+		if !utils.Contains(added, v[1]+v[2]) {
+			casbins = append(casbins, models.SysCasbin{
+				PType: "p",
+				V1:    v[1],
+				V2:    v[2],
+			})
+			added = append(added, v[1]+v[2])
+		}
 	}
 	return casbins, nil
 }

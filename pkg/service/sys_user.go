@@ -31,7 +31,15 @@ func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
-	db := global.Mysql.Table(new (models.SysUser).TableName())
+	db := global.Mysql.Model(models.SysUser{})
+	// 非超级管理员
+	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
+		roleIds, err := s.GetRoleIdsBySort(*req.CurrentRole.Sort)
+		if err != nil {
+			return list, err
+		}
+		db = db.Where("role_id IN (?)", roleIds)
+	}
 	username := strings.TrimSpace(req.Username)
 	if username != "" {
 		db = db.Where("username LIKE ?", fmt.Sprintf("%%%s%%", username))

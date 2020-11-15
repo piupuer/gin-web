@@ -20,9 +20,7 @@ func GetUserInfo(c *gin.Context) {
 	resp.Roles = []string{
 		"admin",
 	}
-	resp.Permissions = []string{
-		"***",
-	}
+	resp.RoleSort = *user.Role.Sort
 	response.SuccessWithData(resp)
 }
 
@@ -36,6 +34,9 @@ func GetUsers(c *gin.Context) {
 		return
 	}
 
+	// 绑定当前用户角色排序(隐藏特定用户)
+	user := GetCurrentUser(c)
+	req.CurrentRole = user.Role
 	// 创建服务
 	s := cache_service.New(c)
 	users, err := s.GetUsers(&req)
@@ -153,9 +154,19 @@ func UpdateUserById(c *gin.Context) {
 	}
 
 	user := GetCurrentUser(c)
-	if userInfo.Status != nil && *userInfo.Status == models.SysUserStatusDisabled && userId == user.Id {
-		response.FailWithMsg("不能禁用自己")
-		return
+	if userId == user.Id {
+		if userInfo.Status != nil && *userInfo.Status == models.SysUserStatusDisabled {
+			response.FailWithMsg("不能禁用自己")
+			return
+		}
+		if user.RoleId != userInfo.RoleId {
+			if *user.Role.Sort != models.SysRoleSuperAdminSort {
+				response.FailWithMsg("无法更改自己的角色, 如需更改请联系上级领导")
+			} else {
+				response.FailWithMsg("无法更改超级管理员的角色")
+			}
+			return
+		}
 	}
 
 	// 创建服务

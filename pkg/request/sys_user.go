@@ -1,6 +1,9 @@
 package request
 
-import "gin-web/pkg/response"
+import (
+	"gin-web/models"
+	"gin-web/pkg/response"
+)
 
 // User login structure
 type RegisterAndLoginRequestStruct struct {
@@ -16,7 +19,8 @@ type ChangePwdRequestStruct struct {
 
 // 获取用户列表结构体
 type UserListRequestStruct struct {
-	Id                uint   `json:"id" form:"id"`
+	Id                uint `json:"id" form:"id"`
+	CurrentRole       models.SysRole
 	Username          string `json:"username" form:"username"`
 	Mobile            string `json:"mobile" form:"mobile"`
 	Avatar            string `json:"avatar" form:"avatar"`

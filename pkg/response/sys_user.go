@@ -20,7 +20,7 @@ type UserInfoResponseStruct struct {
 	Nickname     string   `json:"nickname"`
 	Introduction string   `json:"introduction"`
 	Roles        []string `json:"roles"`
-	Permissions  []string `json:"permissions"`
+	RoleSort     uint     `json:"roleSort"`
 }
 
 // 用户信息响应, 字段含义见models.SysUser

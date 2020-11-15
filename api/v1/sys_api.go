@@ -42,10 +42,12 @@ func GetApis(c *gin.Context) {
 
 // 查询指定角色的接口(以分类分组)
 func GetAllApiGroupByCategoryByRoleId(c *gin.Context) {
+	// 绑定当前用户角色排序(隐藏特定用户)
+	user := GetCurrentUser(c)
 	// 创建服务
 	s := cache_service.New(c)
 	// 绑定参数
-	apis, ids, err := s.GetAllApiGroupByCategoryByRoleId(utils.Str2Uint(c.Param("roleId")))
+	apis, ids, err := s.GetAllApiGroupByCategoryByRoleId(user.Role, utils.Str2Uint(c.Param("roleId")))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

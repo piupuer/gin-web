@@ -29,9 +29,11 @@ func GetMenuTree(c *gin.Context) {
 
 // 查询指定角色的菜单树
 func GetAllMenuByRoleId(c *gin.Context) {
+	// 绑定当前用户角色排序(隐藏特定用户)
+	user := GetCurrentUser(c)
 	// 创建服务
 	s := cache_service.New(c)
-	menus, ids, err := s.GetAllMenuByRoleId(utils.Str2Uint(c.Param("roleId")))
+	menus, ids, err := s.GetAllMenuByRoleId(user.Role, utils.Str2Uint(c.Param("roleId")))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -44,9 +46,11 @@ func GetAllMenuByRoleId(c *gin.Context) {
 
 // 查询所有菜单
 func GetMenus(c *gin.Context) {
+	// 绑定当前用户角色排序(隐藏特定用户)
+	user := GetCurrentUser(c)
 	// 创建服务
 	s := cache_service.New(c)
-	menus := s.GetMenus()
+	menus := s.GetMenus(user.Role)
 	// 转为MenuTreeResponseStruct
 	var resp []response.MenuTreeResponseStruct
 	utils.Struct2StructByJson(menus, &resp)

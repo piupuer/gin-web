@@ -62,7 +62,7 @@ func GetCheckedMenuIds(list []uint, allMenu []SysMenu) []uint {
 				}
 			}
 			if contains {
-				count ++
+				count++
 			}
 		}
 		if len(children) == count {

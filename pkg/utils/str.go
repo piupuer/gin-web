@@ -26,6 +26,14 @@ func Str2Uint(str string) uint {
 	return uint(num)
 }
 
+// 字符串转uint数组, 默认逗号分割
+func UintArr2IntArr(arr []uint) (newArr []int) {
+	for _, v := range arr {
+		newArr = append(newArr, int(v))
+	}
+	return
+}
+
 var (
 	camelRe = regexp.MustCompile("(_)([a-zA-Z]+)")
 	snakeRe = regexp.MustCompile("([a-z0-9])([A-Z])")
