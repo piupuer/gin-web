@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
+	"github.com/thedevsaddam/gojsonq/v2"
 	"gorm.io/gorm"
 )
 
@@ -39,6 +40,13 @@ func GenMenuTree(parent *models.SysMenu, menus []models.SysMenu) []models.SysMen
 	var parentId uint
 	if parent != nil {
 		parentId = parent.Id
+	} else {
+		// 将菜单转为json再排序
+		newMenus := make([]models.SysMenu, 0)
+		list := gojsonq.New().FromString(utils.Struct2Json(menus)).SortBy("sort").Get()
+		// 再转为json
+		utils.Struct2StructByJson(list, &newMenus)
+		menus = newMenus
 	}
 
 	for _, menu := range menus {

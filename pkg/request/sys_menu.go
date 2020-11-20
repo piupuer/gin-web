@@ -25,7 +25,7 @@ type CreateMenuRequestStruct struct {
 	Redirect   string `json:"redirect"`
 	Component  string `json:"component"`
 	Permission string `json:"permission"`
-	Sort       int    `json:"sort"`
+	Sort       *uint  `json:"sort"`
 	Status     *uint  `json:"status"`
 	Visible    *uint  `json:"visible"`
 	Breadcrumb *uint  `json:"breadcrumb"`
