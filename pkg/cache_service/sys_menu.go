@@ -83,7 +83,7 @@ func (s *RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	var err error
 	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
-		query = query.Where("sysRoleId", "=", currentRole.Id)
+		query = query.Where("sys_role_id", "=", currentRole.Id)
 		err = query.Find(&relations).Error
 		if err != nil {
 			return menus

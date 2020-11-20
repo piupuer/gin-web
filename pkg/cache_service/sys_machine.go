@@ -23,7 +23,7 @@ func (s *RedisService) GetMachines(req *request.MachineListRequestStruct) ([]mod
 	}
 	loginName := strings.TrimSpace(req.LoginName)
 	if loginName != "" {
-		query = query.Where("loginName", "contains", loginName)
+		query = query.Where("login_name", "contains", loginName)
 	}
 	creator := strings.TrimSpace(req.Creator)
 	if creator != "" {
