@@ -1088,7 +1088,7 @@ func InitData() {
 			},
 			Method:   "POST",
 			Path:     "/v1/machine/create",
-			Category: "message",
+			Category: "machine",
 			Desc:     "创建机器",
 			Creator:  creator,
 		},

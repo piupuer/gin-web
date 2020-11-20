@@ -11,7 +11,7 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (s *MysqlService) GetUnDeleteMessages(req request.MessageListRequestStruct) ([]response.MessageListResponseStruct, error) {
+func (s *MysqlService) GetUnDeleteMessages(req *request.MessageListRequestStruct) ([]response.MessageListResponseStruct, error) {
 	sysMessageLogTableName := new(models.SysMessageLog).TableName()
 	sysMessageTableName := new(models.SysMessage).TableName()
 	sysUserTableName := new(models.SysUser).TableName()

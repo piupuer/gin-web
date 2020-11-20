@@ -13,7 +13,7 @@ import (
 func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct) ([]response.MessageListResponseStruct, error) {
 	if !global.Conf.System.UseRedis {
 		// 不使用redis
-		return s.mysql.GetUnDeleteMessages(*req)
+		return s.mysql.GetUnDeleteMessages(req)
 	}
 	// 取出当前用户的所有消息
 	currentUserAllLogs := make([]models.SysMessageLog, 0)
