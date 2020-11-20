@@ -116,7 +116,7 @@ func (s *MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, 
 		return
 	}
 	// 替换菜单
-	err = s.tx.Debug().Model(&role).Association("Menus").Replace(&incrementalMenus)
+	err = s.tx.Model(&role).Association("Menus").Replace(&incrementalMenus)
 	return
 }
 

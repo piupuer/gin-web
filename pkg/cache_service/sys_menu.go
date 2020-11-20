@@ -80,21 +80,23 @@ func (s *RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	relations := make([]models.RelationRoleMenu, 0)
 	menuIds := make([]uint, 0)
 	query := s.redis.Table(new(models.RelationRoleMenu).TableName())
+	var err error
 	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
 		query = query.Where("sysRoleId", "=", currentRole.Id)
-	}
-	err := query.Find(&relations).Error
-	if err != nil {
-		return menus
-	}
-	for _, relation := range relations {
-		// redis存的json转换为int, 因此这里转一下类型
-		menuIds = append(menuIds, relation.SysMenuId)
+		err = query.Find(&relations).Error
+		if err != nil {
+			return menus
+		}
+		for _, relation := range relations {
+			menuIds = append(menuIds, relation.SysMenuId)
+		}
+		// 查询所有菜单
+		err = s.redis.Table(new(models.SysMenu).TableName()).Where("id", "in", menuIds).Find(&menus).Error
+	} else {
+		err = s.redis.Table(new(models.SysMenu).TableName()).Find(&menus).Error
 	}
 
-	// 查询所有菜单
-	err = s.redis.Table(new(models.SysMenu).TableName()).Where("id", "in", menuIds).Find(&menus).Error
 	global.Log.Warn("[getAllMenu]", err)
 	return menus
 }

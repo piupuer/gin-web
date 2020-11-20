@@ -75,11 +75,16 @@ func (s *MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uin
 }
 
 // 创建菜单
-func (s *MysqlService) CreateMenu(req *request.CreateMenuRequestStruct) (err error) {
+func (s *MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuRequestStruct) (err error) {
 	var menu models.SysMenu
 	utils.Struct2StructByJson(req, &menu)
 	// 创建数据
 	err = s.tx.Create(&menu).Error
+	// 自己创建的菜单需绑定权限
+	menuReq := request.UpdateIncrementalIdsRequestStruct{
+		Create: []uint{menu.Id},
+	}
+	err = s.UpdateRoleMenusById(currentRole, currentRole.Id, menuReq)
 	return
 }
 
@@ -122,20 +127,23 @@ func (s *MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	relations := make([]models.RelationRoleMenu, 0)
 	menuIds := make([]uint, 0)
 	query := s.tx.Model(models.RelationRoleMenu{})
+	var err error
 	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
 		query = query.Where("sys_role_id = ?", currentRole.Id)
-	}
-	err := query.Find(&relations).Error
-	if err != nil {
-		return menus
-	}
-	for _, relation := range relations {
-		menuIds = append(menuIds, relation.SysMenuId)
+		err = query.Find(&relations).Error
+		if err != nil {
+			return menus
+		}
+		for _, relation := range relations {
+			menuIds = append(menuIds, relation.SysMenuId)
+		}
+		// 查询所有菜单
+		err = s.tx.Order("sort").Where("id IN (?)", menuIds).Find(&menus).Error
+	} else {
+		err = s.tx.Order("sort").Find(&menus).Error
 	}
 
-	// 查询所有菜单
-	err = s.tx.Order("sort").Where("id IN (?)", menuIds).Find(&menus).Error
 	global.Log.Warn("[getAllMenu]", err)
 	return menus
 }

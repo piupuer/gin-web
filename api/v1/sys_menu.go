@@ -78,7 +78,7 @@ func CreateMenu(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
 	s := service.New(c)
-	err = s.CreateMenu(&req)
+	err = s.CreateMenu(user.Role, &req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
