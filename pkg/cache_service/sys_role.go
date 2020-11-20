@@ -33,7 +33,10 @@ func (s *RedisService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 	}
 	var err error
 	list := make([]models.SysRole, 0)
-	query := s.redis.Table(new(models.SysRole).TableName()).Where("sort", ">=", req.CurrentRoleSort)
+	query := s.redis.
+		Table(new(models.SysRole).TableName()).
+		Order("created_at DESC").
+		Where("sort", ">=", req.CurrentRoleSort)
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		query = query.Where("name", "contains", name)

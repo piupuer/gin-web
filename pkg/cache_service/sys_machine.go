@@ -14,7 +14,9 @@ func (s *RedisService) GetMachines(req *request.MachineListRequestStruct) ([]mod
 	}
 	var err error
 	list := make([]models.SysMachine, 0)
-	query := s.redis.Table(new(models.SysMachine).TableName())
+	query := s.redis.
+		Table(new(models.SysMachine).TableName()).
+		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
 	if host != "" {
 		query = query.Where("host", "contains", host)

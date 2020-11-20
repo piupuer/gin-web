@@ -92,9 +92,9 @@ func (s *RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 			menuIds = append(menuIds, relation.SysMenuId)
 		}
 		// 查询所有菜单
-		err = s.redis.Table(new(models.SysMenu).TableName()).Where("id", "in", menuIds).Find(&menus).Error
+		err = s.redis.Table(new(models.SysMenu).TableName()).Order("sort").Where("id", "in", menuIds).Find(&menus).Error
 	} else {
-		err = s.redis.Table(new(models.SysMenu).TableName()).Find(&menus).Error
+		err = s.redis.Table(new(models.SysMenu).TableName()).Order("sort").Find(&menus).Error
 	}
 
 	global.Log.Warn("[getAllMenu]", err)

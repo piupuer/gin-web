@@ -29,7 +29,10 @@ func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
-	db := global.Mysql.Table(new (models.SysRole).TableName()).Where("sort >= ?", req.CurrentRoleSort)
+	db := global.Mysql.Debug().
+		Table(new (models.SysRole).TableName()).
+		Order("created_at DESC").
+		Where("sort >= ?", req.CurrentRoleSort)
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))

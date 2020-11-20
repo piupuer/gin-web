@@ -18,7 +18,9 @@ func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 	}
 	var err error
 	list := make([]models.SysApi, 0)
-	query := s.redis.Table(new(models.SysApi).TableName())
+	query := s.redis.
+		Table(new(models.SysApi).TableName()).
+		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
 		query = query.Where("method", "contains", method)

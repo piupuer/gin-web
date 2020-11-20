@@ -36,7 +36,9 @@ func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 	}
 	var err error
 	list := make([]models.SysUser, 0)
-	query := s.redis.Table(new(models.SysUser).TableName())
+	query := s.redis.
+		Table(new(models.SysUser).TableName()).
+		Order("created_at DESC")
 	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
 		roleIds, err := s.GetRoleIdsBySort(*req.CurrentRole.Sort)

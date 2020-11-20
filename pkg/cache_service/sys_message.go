@@ -32,8 +32,9 @@ func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 
 	messageLogs := make([]models.SysMessageLog, 0)
 	// 转为json, 再匹配前端其他条件
-	query := s.redis.FromString(utils.Struct2Json(currentUserAllLogs))
-
+	query := s.redis.
+		FromString(utils.Struct2Json(currentUserAllLogs)).
+		Order("created_at DESC")
 	title := strings.TrimSpace(req.Title)
 	if title != "" {
 		query = query.Where("message.title", "contains", title)

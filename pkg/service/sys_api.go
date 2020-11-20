@@ -22,7 +22,9 @@ import (
 func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
-	query := s.tx.Table(new(models.SysApi).TableName())
+	query := s.tx.
+		Table(new(models.SysApi).TableName()).
+		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
 		query = query.Where("method LIKE ?", fmt.Sprintf("%%%s%%", method))

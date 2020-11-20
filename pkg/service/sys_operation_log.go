@@ -12,7 +12,9 @@ import (
 func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStruct) ([]models.SysOperationLog, error) {
 	var err error
 	list := make([]models.SysOperationLog, 0)
-	query := global.Mysql.Table(new (models.SysOperationLog).TableName())
+	query := global.Mysql.
+		Table(new(models.SysOperationLog).TableName()).
+		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
 		query = query.Where("method LIKE ?", fmt.Sprintf("%%%s%%", method))
@@ -29,7 +31,6 @@ func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStru
 	if status != "" {
 		query = query.Where("status LIKE ?", fmt.Sprintf("%%%s%%", status))
 	}
-	query = query.Order("id DESC")
 	// 查询条数
 	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {

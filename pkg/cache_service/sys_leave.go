@@ -15,7 +15,9 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	}
 	var err error
 	list := make([]models.SysLeave, 0)
-	query := s.redis.Table(new(models.SysLeave).TableName())
+	query := s.redis.
+		Table(new(models.SysLeave).TableName()).
+		Order("created_at DESC")
 	query = query.Where("user_id", "=", req.UserId)
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)

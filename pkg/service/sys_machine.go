@@ -15,7 +15,9 @@ import (
 func (s *MysqlService) GetMachines(req *request.MachineListRequestStruct) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
-	db := global.Mysql.Table(new(models.SysMachine).TableName())
+	db := global.Mysql.
+		Table(new(models.SysMachine).TableName()).
+		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
 	if host != "" {
 		db = db.Where("host LIKE ?", fmt.Sprintf("%%%s%%", host))

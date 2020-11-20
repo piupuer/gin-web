@@ -37,7 +37,9 @@ func (s *MysqlService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 		Joins(fmt.Sprintf("LEFT JOIN %s AS fromUser ON %s.from_user_id = fromUser.id", sysUserTableName, sysMessageTableName))
 
 	// 添加条件
-	query = query.Where(fmt.Sprintf("%s.to_user_id = ?", sysMessageLogTableName), req.ToUserId)
+	query = query.
+		Order(fmt.Sprintf("%s.created_at DESC", sysMessageLogTableName)).
+		Where(fmt.Sprintf("%s.to_user_id = ?", sysMessageLogTableName), req.ToUserId)
 	title := strings.TrimSpace(req.Title)
 	if title != "" {
 		query = query.Where(fmt.Sprintf("%s.title LIKE ?", sysMessageTableName), fmt.Sprintf("%%%s%%", title))

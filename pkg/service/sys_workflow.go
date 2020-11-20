@@ -24,7 +24,9 @@ func (s *MysqlService) GetWorkflowByTargetCategory(targetCategory uint) (models.
 func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]models.SysWorkflow, error) {
 	var err error
 	list := make([]models.SysWorkflow, 0)
-	query := s.tx.Table(new(models.SysWorkflow).TableName())
+	query := s.tx.
+		Table(new(models.SysWorkflow).TableName()).
+		Order("created_at DESC")
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		query = query.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))

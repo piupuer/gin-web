@@ -31,7 +31,9 @@ func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
-	db := global.Mysql.Model(models.SysUser{})
+	db := global.Mysql.
+		Model(models.SysUser{}).
+		Order("created_at DESC")
 	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
 		roleIds, err := s.GetRoleIdsBySort(*req.CurrentRole.Sort)

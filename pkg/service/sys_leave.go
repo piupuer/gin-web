@@ -14,7 +14,10 @@ import (
 func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.SysLeave, error) {
 	var err error
 	list := make([]models.SysLeave, 0)
-	query := s.tx.Table(new(models.SysLeave).TableName()).Where("user_id = ?", req.UserId)
+	query := s.tx.
+		Table(new(models.SysLeave).TableName()).
+		Order("created_at DESC").
+		Where("user_id = ?", req.UserId)
 	desc := strings.TrimSpace(req.Desc)
 	if req.Status != nil {
 		query = query.Where("status = ?", *req.Status)
@@ -22,8 +25,6 @@ func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	if desc != "" {
 		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
-	// 按id逆序
-	query = query.Order("id DESC")
 	// 查询条数
 	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {
