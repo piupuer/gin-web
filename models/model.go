@@ -33,8 +33,8 @@ func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
 		return
 	}
 
-	// 指定解析的格式
-	now, err := time.Parse(`"`+global.SecLocalTimeFormat+`"`, string(data))
+	// 指定解析的格式(设置转为本地格式)
+	now, err := time.ParseInLocation(`"`+global.SecLocalTimeFormat+`"`, string(data), time.Local)
 	*t = LocalTime{Time: now}
 	return
 }
