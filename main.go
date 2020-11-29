@@ -24,7 +24,7 @@ func main() {
 	}()
 
 	// 初始化配置
-	initialize.InitConfig()
+	initialize.Config()
 
 	// 初始化日志
 	initialize.Logger()
@@ -43,13 +43,11 @@ func main() {
 	// 初始化路由
 	r := initialize.Routers()
 
-	if global.Conf.System.InitData {
-		// 初始化数据
-		initialize.InitData()
-	}
+	// 初始化数据
+	initialize.Data()
 
 	// 初始化定时任务
-	initialize.InitCron()
+	initialize.Cron()
 	
 	// 初始化对象存储
 	initialize.Oss()

@@ -21,7 +21,7 @@ import (
  * serviceName 服务名
  * 由于zap不具备日志切割功能, 这里使用lumberjack配合
  */
-func InitLogger() {
+func Logger() {
 	now := time.Now()
 	filename := fmt.Sprintf("%s/%04d-%02d-%02d.test.log", global.Conf.Logs.Path, now.Year(), now.Month(), now.Day())
 	hook := &lumberjack.Logger{

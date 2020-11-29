@@ -12,7 +12,10 @@ import (
 )
 
 // 初始化数据
-func InitData() {
+func Data() {
+	if !global.Conf.System.InitData {
+		return
+	}
 	// 1. 初始化角色
 	creator := "系统自动创建"
 	status := uint(1)

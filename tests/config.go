@@ -18,7 +18,7 @@ const (
 )
 
 // 初始化配置文件
-func InitConfig() {
+func Config() {
 	if os.Getenv("TEST_CONF") == "" {
 		panic("[单元测试]请检查环境变量TEST_CONF")
 	}

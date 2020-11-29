@@ -22,7 +22,7 @@ const (
 )
 
 // 初始化配置文件
-func InitConfig() {
+func Config() {
 	// 初始化配置盒子
 	var box global.CustomConfBox
 	ginWebConf := strings.ToLower(os.Getenv("GIN_WEB_CONF"))

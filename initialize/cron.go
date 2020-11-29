@@ -15,7 +15,7 @@ import (
 )
 
 // 初始化定时任务
-func InitCron() {
+func Cron() {
 	go func() {
 		// 新建cron实例
 		c := cron.New()
