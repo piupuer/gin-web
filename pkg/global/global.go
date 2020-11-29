@@ -2,7 +2,6 @@ package global
 
 import (
 	"errors"
-	"gin-web/pkg/oss"
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-redis/redis"
@@ -26,8 +25,6 @@ var (
 	Mysql *gorm.DB
 	// redis实例
 	Redis *redis.Client
-	// minio实例
-	Minio *oss.MinioOss
 	// validation.v9校验器
 	Validate *validator.Validate
 	// validation.v9相关翻译器

@@ -2,7 +2,6 @@ package v1
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -22,7 +21,7 @@ func GetMachines(c *gin.Context) {
 	}
 
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	machines, err := s.GetMachines(&req)
 	if err != nil {
 		response.FailWithMsg(err.Error())

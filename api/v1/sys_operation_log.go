@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -21,7 +20,7 @@ func GetOperationLogs(c *gin.Context) {
 	}
 
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	operationLogs, err := s.GetOperationLogs(&req)
 	if err != nil {
 		response.FailWithMsg(err.Error())

@@ -67,8 +67,6 @@ func Mysql() {
 	// 表结构
 	autoMigrate()
 	global.Log.Info("初始化mysql完成")
-	// 初始化数据库日志监听器
-	binlog()
 }
 
 // 自动迁移表结构
@@ -79,34 +77,9 @@ func autoMigrate() {
 		new(models.SysMenu),
 		new(models.SysApi),
 		new(models.SysCasbin),
-		new(models.SysWorkflow),
-		new(models.SysWorkflowLine),
-		new(models.SysWorkflowLog),
-		new(models.RelationUserWorkflowLine),
-		new(models.SysLeave),
 		new(models.SysOperationLog),
 		new(models.SysMessage),
 		new(models.SysMessageLog),
 		new(models.SysMachine),
 	)
-}
-
-func binlog() {
-	MysqlBinlog([]string{
-		new(models.SysUser).TableName(),
-		new(models.SysRole).TableName(),
-		new(models.SysMenu).TableName(),
-		new(models.SysApi).TableName(),
-		new(models.SysCasbin).TableName(),
-		new(models.RelationRoleMenu).TableName(),
-		new(models.SysWorkflow).TableName(),
-		new(models.SysWorkflowLine).TableName(),
-		new(models.SysWorkflowLog).TableName(),
-		new(models.RelationUserWorkflowLine).TableName(),
-		new(models.SysLeave).TableName(),
-		new(models.SysOperationLog).TableName(),
-		new(models.SysMessage).TableName(),
-		new(models.SysMessageLog).TableName(),
-		new(models.SysMachine).TableName(),
-	})
 }

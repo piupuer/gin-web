@@ -68,8 +68,6 @@ redis:
   password:
   # 数据库编号
   database: 0
-  # binlog位置缓存键
-  binlog-pos: mysql_binlog_pos
 
 # casbin配置
 casbin:
@@ -94,20 +92,6 @@ rate-limit:
 
 # 上传配置
 upload:
-  # 对象存储配置
-  # minio
-  oss-minio:
-    # 是否开启对象存储
-    enable: false
-    # 初始化存储桶名称
-    bucket: gin-web
-    # 节点地址
-    endpoint: 127.0.0.1:9005
-    # 密钥对
-    access-id: minio
-    secret: minio123
-    # 是否使用https
-    use-https: false
   # 上传文件保存路径
   save-dir: upload
   # 单个文件或分片文件最大限制, 单位MB(上传文件先读取到内存, 如果这个值设置过大会导致内存崩溃)
@@ -120,27 +104,3 @@ upload:
   compress-image-root-dir:
   # 源文件保存目录, 建议开启可避免二次压缩损失质量(默认保存到同目录的.before下)
   compress-image-original-save-dir: .before
-
-# 微信配置
-we-chat:
-  # 微信公众号配置
-  official:
-    # 公众号id
-    app-id: xxx
-    # 公众号密钥
-    app-secret: xxx
-    # 加密key(不为空时, 传输数据会使用aes加密, 建议填写)
-    encoding: gin-web
-    # 模板消息定时任务
-    tpl-message-cron-task:
-      # 表达式
-      expr: ''
-      # 接收人微信列表
-      users: xxx
-      # 模板id
-      template-id: xxx
-      # 小程序app-id
-      mini-program-app-id: xxx
-      # 小程序页面路径
-      mini-program-page-path: pages/index/index
-

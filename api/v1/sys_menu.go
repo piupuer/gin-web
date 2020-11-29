@@ -2,7 +2,6 @@ package v1
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -15,7 +14,7 @@ import (
 func GetMenuTree(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	menus, err := s.GetMenuTree(user.RoleId)
 	if err != nil {
 		response.FailWithMsg(err.Error())
@@ -32,7 +31,7 @@ func GetAllMenuByRoleId(c *gin.Context) {
 	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	menus, ids, err := s.GetAllMenuByRoleId(user.Role, utils.Str2Uint(c.Param("roleId")))
 	if err != nil {
 		response.FailWithMsg(err.Error())
@@ -49,7 +48,7 @@ func GetMenus(c *gin.Context) {
 	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	menus := s.GetMenus(user.Role)
 	// 转为MenuTreeResponseStruct
 	var resp []response.MenuTreeResponseStruct

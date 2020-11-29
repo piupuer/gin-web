@@ -3,11 +3,9 @@ package initialize
 import (
 	"gin-web/models"
 	"gin-web/pkg/global"
-	"gin-web/pkg/request"
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 )
 
@@ -20,33 +18,10 @@ func Data() {
 	creator := "系统自动创建"
 	status := uint(1)
 	visible := uint(1)
-	edit := uint(1)
 	sorts := []uint{
 		0, 1, 2, 3, 4, 5, 6, 7,
 	}
 	roles := []models.SysRole{
-		{
-			Model: models.Model{
-				Id: 1,
-			},
-			Name:    "访客",
-			Keyword: "guest",
-			Desc:    "外来访问人员",
-			Status:  &status,
-			Creator: creator,
-			Sort:    &sorts[3],
-		},
-		{
-			Model: models.Model{
-				Id: 2,
-			},
-			Name:    "测试",
-			Keyword: "tester",
-			Desc:    "系统测试工程师",
-			Status:  &status,
-			Creator: creator,
-			Sort:    &sorts[2],
-		},
 		{
 			Model: models.Model{
 				Id: 3,
@@ -68,17 +43,6 @@ func Data() {
 			Status:  &status,
 			Creator: creator,
 			Sort:    &sorts[1],
-		},
-		{
-			Model: models.Model{
-				Id: 5,
-			},
-			Name:    "请假条提交员",
-			Keyword: "leave",
-			Desc:    "请假条提交员",
-			Status:  &status,
-			Creator: creator,
-			Sort:    &sorts[2],
 		},
 	}
 	for _, role := range roles {
@@ -141,51 +105,8 @@ func Data() {
 			ParentId:   0,
 			Creator:    creator,
 			Roles: []models.SysRole{
-				roles[2],
-				roles[3],
-			},
-		},
-		{
-			Model: models.Model{
-				Id: 3,
-			},
-			Name:       "testRoot",
-			Title:      "测试页面",
-			Icon:       "bug",
-			Path:       "/test",
-			Component:  "",
-			Sort:       &sorts[2],
-			Status:     &status,
-			Visible:    &visible,
-			Breadcrumb: &noBreadcrumb,
-			ParentId:   0,
-			Creator:    creator,
-			Roles: []models.SysRole{
+				roles[0],
 				roles[1],
-				roles[2],
-				roles[3],
-				roles[4],
-			},
-		},
-		{
-			Model: models.Model{
-				Id: 8,
-			},
-			Name:      "test",
-			Title:     "测试用例",
-			Icon:      "bug",
-			Path:      "index",
-			Component: "/test/index",
-			Sort:      &sorts[0],
-			Status:    &status,
-			Visible:   &visible,
-			ParentId:  3,
-			Creator:   creator,
-			Roles: []models.SysRole{
-				roles[1],
-				roles[2],
-				roles[3],
-				roles[4],
 			},
 		},
 		{
@@ -203,7 +124,7 @@ func Data() {
 			ParentId:  2,
 			Creator:   creator,
 			Roles: []models.SysRole{
-				roles[2],
+				roles[0],
 			},
 		},
 		{
@@ -221,8 +142,8 @@ func Data() {
 			ParentId:  2,
 			Creator:   creator,
 			Roles: []models.SysRole{
-				roles[2],
-				roles[3],
+				roles[0],
+				roles[1],
 			},
 		},
 		{
@@ -240,8 +161,8 @@ func Data() {
 			ParentId:  2,
 			Creator:   creator,
 			Roles: []models.SysRole{
-				roles[2],
-				roles[3],
+				roles[0],
+				roles[1],
 			},
 		},
 		{
@@ -259,26 +180,7 @@ func Data() {
 			ParentId:  2,
 			Creator:   creator,
 			Roles: []models.SysRole{
-				roles[2],
-			},
-		},
-		{
-			Model: models.Model{
-				Id: 10,
-			},
-			Name:      "workflow",
-			Title:     "工作流管理",
-			Icon:      "example",
-			Path:      "workflow",
-			Component: "/system/workflow",
-			Sort:      &sorts[4],
-			Status:    &status,
-			Visible:   &visible,
-			ParentId:  2,
-			Creator:   creator,
-			Roles: []models.SysRole{
-				roles[2],
-				roles[3],
+				roles[0],
 			},
 		},
 		{
@@ -296,114 +198,7 @@ func Data() {
 			ParentId:  2,
 			Creator:   creator,
 			Roles: []models.SysRole{
-				roles[2],
-			},
-		},
-		{
-			Model: models.Model{
-				Id: 11,
-			},
-			Name:      "leave",
-			Title:     "我的请假条",
-			Icon:      "skill",
-			Path:      "leave",
-			Component: "/test/leave",
-			Sort:      &sorts[2],
-			Status:    &status,
-			Visible:   &visible,
-			ParentId:  3,
-			Creator:   creator,
-			Roles: []models.SysRole{
-				roles[1],
-				roles[2],
-				roles[3],
-				roles[4],
-			},
-		},
-		{
-			Model: models.Model{
-				Id: 12,
-			},
-			Name:      "approving",
-			Title:     "待审批列表",
-			Icon:      "form",
-			Path:      "approving",
-			Component: "/test/approving",
-			Sort:      &sorts[3],
-			Status:    &status,
-			Visible:   &visible,
-			ParentId:  3,
-			Creator:   creator,
-			Roles: []models.SysRole{
-				roles[1],
-				roles[2],
-				roles[3],
-				roles[4],
-			},
-		},
-		{
-			Model: models.Model{
-				Id: 13,
-			},
-			Name:       "uploader",
-			Title:      "上传组件",
-			Icon:       "back-top",
-			Path:       "/uploader",
-			Component:  "",
-			Sort:       &sorts[3],
-			Status:     &status,
-			Visible:    &visible,
-			Breadcrumb: &noBreadcrumb,
-			ParentId:   0,
-			Creator:    creator,
-			Roles: []models.SysRole{
-				roles[1],
-				roles[2],
-				roles[4],
-			},
-		},
-		{
-			Model: models.Model{
-				Id: 14,
-			},
-			Name:       "uploader1",
-			Title:      "上传示例1",
-			Icon:       "guide",
-			Path:       "uploader1",
-			Component:  "/uploader/uploader1",
-			Sort:       &sorts[0],
-			Status:     &status,
-			Visible:    &visible,
-			Breadcrumb: &noBreadcrumb,
-			ParentId:   13,
-			Creator:    creator,
-			Roles: []models.SysRole{
-				roles[1],
-				roles[2],
-				roles[3],
-				roles[4],
-			},
-		},
-		{
-			Model: models.Model{
-				Id: 16,
-			},
-			Name:       "uploader2",
-			Title:      "上传示例2",
-			Icon:       "guide",
-			Path:       "uploader2",
-			Component:  "/uploader/uploader2",
-			Sort:       &sorts[1],
-			Status:     &status,
-			Visible:    &visible,
-			Breadcrumb: &noBreadcrumb,
-			ParentId:   13,
-			Creator:    creator,
-			Roles: []models.SysRole{
-				roles[1],
-				roles[2],
-				roles[3],
-				roles[4],
+				roles[0],
 			},
 		},
 		{
@@ -422,9 +217,8 @@ func Data() {
 			ParentId:   2,
 			Creator:    creator,
 			Roles: []models.SysRole{
-				roles[2],
-				roles[3],
-				roles[4],
+				roles[0],
+				roles[1],
 			},
 		},
 		{
@@ -443,7 +237,7 @@ func Data() {
 			ParentId:   2,
 			Creator:    creator,
 			Roles: []models.SysRole{
-				roles[2],
+				roles[0],
 			},
 		},
 	}
@@ -458,7 +252,7 @@ func Data() {
 	// 3. 初始化用户
 	// 默认头像
 	avatar := "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif"
-	users := [5]models.SysUser{
+	users := [2]models.SysUser{
 		{
 			Model: models.Model{
 				Id: 1,
@@ -483,45 +277,6 @@ func Data() {
 			Nickname:     "系统管理员",
 			Introduction: "妖怪, 哪里跑",
 			RoleId:       4,
-			Creator:      creator,
-		},
-		{
-			Model: models.Model{
-				Id: 3,
-			},
-			Username:     "zhangsan",
-			Password:     utils.GenPwd("123456"),
-			Mobile:       "15888888888",
-			Avatar:       avatar,
-			Nickname:     "张三",
-			Introduction: "今天是个好日子",
-			RoleId:       2,
-			Creator:      creator,
-		},
-		{
-			Model: models.Model{
-				Id: 4,
-			},
-			Username:     "lisi",
-			Password:     utils.GenPwd("123456"),
-			Mobile:       "13888888888",
-			Avatar:       avatar,
-			Nickname:     "李四",
-			Introduction: "这个人很懒, 什么也没留下",
-			RoleId:       1,
-			Creator:      creator,
-		},
-		{
-			Model: models.Model{
-				Id: 5,
-			},
-			Username:     "wangwu",
-			Password:     utils.GenPwd("123456"),
-			Mobile:       "13999999999",
-			Avatar:       avatar,
-			Nickname:     "王武",
-			Introduction: "这个人很懒, 什么也没留下",
-			RoleId:       5,
 			Creator:      creator,
 		},
 	}
@@ -797,136 +552,6 @@ func Data() {
 		},
 		{
 			Model: models.Model{
-				Id: 27,
-			},
-			Method:   "GET",
-			Path:     "/v1/workflow/list",
-			Category: "workflow",
-			Desc:     "获取工作流列表",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 28,
-			},
-			Method:   "POST",
-			Path:     "/v1/workflow/create",
-			Category: "workflow",
-			Desc:     "创建工作流",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 29,
-			},
-			Method:   "PATCH",
-			Path:     "/v1/workflow/update/:roleId",
-			Category: "workflow",
-			Desc:     "更新工作流",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 30,
-			},
-			Method:   "DELETE",
-			Path:     "/v1/workflow/delete/batch",
-			Category: "workflow",
-			Desc:     "批量删除工作流",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 31,
-			},
-			Method:   "GET",
-			Path:     "/v1/workflow/line/list",
-			Category: "workflow",
-			Desc:     "获取流水线列表",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 32,
-			},
-			Method:   "PATCH",
-			Path:     "/v1/workflow/line/update",
-			Category: "workflow",
-			Desc:     "更新流水线",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 33,
-			},
-			Method:   "GET",
-			Path:     "/v1/leave/list",
-			Category: "leave",
-			Desc:     "获取请假条列表",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 34,
-			},
-			Method:   "POST",
-			Path:     "/v1/leave/create",
-			Category: "leave",
-			Desc:     "创建请假条",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 35,
-			},
-			Method:   "PATCH",
-			Path:     "/v1/leave/update/:leaveId",
-			Category: "leave",
-			Desc:     "更新请假条",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 36,
-			},
-			Method:   "DELETE",
-			Path:     "/v1/leave/delete/batch",
-			Category: "leave",
-			Desc:     "批量删除请假条",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 37,
-			},
-			Method:   "GET",
-			Path:     "/v1/leave/approval/list/:leaveId",
-			Category: "leave",
-			Desc:     "获取请假条审批记录",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 38,
-			},
-			Method:   "GET",
-			Path:     "/v1/workflow/approving/list",
-			Category: "workflow",
-			Desc:     "获取当前登录用户待审批记录",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
-				Id: 39,
-			},
-			Method:   "PATCH",
-			Path:     "/v1/workflow/log/approval",
-			Category: "workflow",
-			Desc:     "审批工作流日志",
-			Creator:  creator,
-		},
-		{
-			Model: models.Model{
 				Id: 40,
 			},
 			Method:   "GET",
@@ -1135,7 +760,7 @@ func Data() {
 			s := service.New(nil)
 			// 超级管理员拥有所有API权限role[2]
 			s.CreateRoleCasbin(models.SysRoleCasbin{
-				Keyword: roles[2].Keyword,
+				Keyword: roles[0].Keyword,
 				Path:    api.Path,
 				Method:  api.Method,
 			})
@@ -1159,7 +784,7 @@ func Data() {
 				59,
 			}, api.Id) {
 				s.CreateRoleCasbin(models.SysRoleCasbin{
-					Keyword: roles[3].Keyword,
+					Keyword: roles[1].Keyword,
 					Path:    api.Path,
 					Method:  api.Method,
 				})
@@ -1169,11 +794,6 @@ func Data() {
 			if api.Id >= 33 && api.Id <= 39 {
 				s.CreateRoleCasbin(models.SysRoleCasbin{
 					Keyword: roles[1].Keyword,
-					Path:    api.Path,
-					Method:  api.Method,
-				})
-				s.CreateRoleCasbin(models.SysRoleCasbin{
-					Keyword: roles[4].Keyword,
 					Path:    api.Path,
 					Method:  api.Method,
 				})
@@ -1198,58 +818,8 @@ func Data() {
 					Path:    api.Path,
 					Method:  api.Method,
 				})
-				s.CreateRoleCasbin(models.SysRoleCasbin{
-					Keyword: roles[4].Keyword,
-					Path:    api.Path,
-					Method:  api.Method,
-				})
 			}
 		}
 	}
-
-	// 5. 初始化工作流
-	workflows := []models.SysWorkflow{
-		{
-			Model: models.Model{
-				Id: 1,
-			},
-			Uuid:     uuid.NewV4().String(),
-			Category: models.SysWorkflowTargetCategoryLeave,
-			Name:     "请假审批流程",
-			Desc:     "用于员工请假",
-			Creator:  creator,
-		},
-	}
-	for _, workflow := range workflows {
-		oldWorkflow := models.SysWorkflow{}
-		err := global.Mysql.Where("id = ?", workflow.Id).First(&oldWorkflow).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			global.Mysql.Create(&workflow)
-			// 创建服务
-			s := service.New(nil)
-			// 设置张三和管理员审批
-			req := request.UpdateWorkflowLineIncrementalRequestStruct{
-				FlowId: 1,
-				Create: []request.UpdateWorkflowLineRequestStruct{
-					{
-						Id:     1,
-						FlowId: 1,
-						UserIds: []uint{
-							3,
-						},
-						Edit: &edit,
-						Name: "主管审批",
-					},
-					{
-						Id:     2,
-						FlowId: 1,
-						RoleId: &roles[3].Id,
-						Edit:   &edit,
-						Name:   "总经理审批",
-					},
-				},
-			}
-			s.UpdateWorkflowLineByIncremental(&req)
-		}
-	}
+	
 }

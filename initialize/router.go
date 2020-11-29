@@ -51,8 +51,6 @@ func Routers() *gin.Engine {
 	router.InitMenuRouter(v1Group, authMiddleware)         // 注册菜单路由
 	router.InitRoleRouter(v1Group, authMiddleware)         // 注册角色路由
 	router.InitApiRouter(v1Group, authMiddleware)          // 注册接口路由
-	router.InitWorkflowRouter(v1Group, authMiddleware)     // 注册工作流路由
-	router.InitLeaveRouter(v1Group, authMiddleware)        // 注册请假路由
 	router.InitUploadRouter(v1Group, authMiddleware)       // 注册文件上传路由
 	router.InitOperationLogRouter(v1Group, authMiddleware) // 注册操作日志路由
 	router.InitMessageRouter(v1Group, authMiddleware)      // 注册消息中心路由

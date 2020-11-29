@@ -8,6 +8,3 @@ mysql:
 logs:
   level: 0
 
-upload:
-  oss-minio:
-    enable: true

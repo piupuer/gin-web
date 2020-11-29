@@ -4,10 +4,10 @@ import (
 	"bytes"
 	v1 "gin-web/api/v1"
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
+	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/casbin/casbin/v2/util"
 	"github.com/gin-gonic/gin"
@@ -114,7 +114,7 @@ func OperationLog(c *gin.Context) {
 		}
 
 		// 获取当前接口
-		cache := cache_service.New(c)
+		cache := service.New(c)
 		apis, err := cache.GetApis(&request.ApiListRequestStruct{
 			Method: log.Method,
 			PageInfo: response.PageInfo{

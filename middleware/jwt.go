@@ -3,10 +3,10 @@ package middleware
 import (
 	"fmt"
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
+	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
@@ -71,7 +71,7 @@ func login(c *gin.Context) (interface{}, error) {
 	}
 
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	// 密码校验
 	user, err := s.LoginCheck(u)
 	if err != nil {

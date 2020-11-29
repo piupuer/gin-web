@@ -3,7 +3,6 @@ package v1
 import (
 	"fmt"
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -27,7 +26,7 @@ func GetRoles(c *gin.Context) {
 	req.CurrentRoleSort = *user.Role.Sort
 
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	roles, err := s.GetRoles(&req)
 	if err != nil {
 		response.FailWithMsg(err.Error())

@@ -46,12 +46,6 @@ func main() {
 	// 初始化数据
 	initialize.Data()
 
-	// 初始化定时任务
-	initialize.Cron()
-	
-	// 初始化对象存储
-	initialize.Oss()
-
 	host := "0.0.0.0"
 	port := global.Conf.System.Port
 	// 服务器启动以及优雅的关闭

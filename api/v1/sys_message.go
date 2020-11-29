@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
@@ -22,7 +21,7 @@ func GetAllMessages(c *gin.Context) {
 	user := GetCurrentUser(c)
 	req.ToUserId = user.Id
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 
 	messages, err := s.GetUnDeleteMessages(&req)
 	if err != nil {
@@ -42,7 +41,7 @@ func GetAllMessages(c *gin.Context) {
 func GetUnReadMessageCount(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 
 	total, err := s.GetUnReadMessageCount(user.Id)
 	if err != nil {

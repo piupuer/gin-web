@@ -2,9 +2,9 @@ package middleware
 
 import (
 	v1 "gin-web/api/v1"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/response"
+	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
 	"strings"
 )
@@ -20,7 +20,7 @@ func CasbinMiddleware(c *gin.Context) {
 	// 请求方式作为casbin访问动作act
 	act := c.Request.Method
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	// 获取casbin策略管理器
 	e, err := s.Casbin()
 	if err != nil {

@@ -2,7 +2,6 @@ package v1
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -22,7 +21,7 @@ func GetApis(c *gin.Context) {
 	}
 
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	apis, err := s.GetApis(&req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
@@ -45,7 +44,7 @@ func GetAllApiGroupByCategoryByRoleId(c *gin.Context) {
 	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	// 绑定参数
 	apis, ids, err := s.GetAllApiGroupByCategoryByRoleId(user.Role, utils.Str2Uint(c.Param("roleId")))
 	if err != nil {
