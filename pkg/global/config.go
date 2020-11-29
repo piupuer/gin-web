@@ -19,6 +19,7 @@ type Configuration struct {
 type SystemConfiguration struct {
 	UrlPathPrefix               string   `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
 	Port                        int      `mapstructure:"port" json:"port"`
+	ConnectTimeout              int      `mapstructure:"connect-timeout" json:"connectTimeout"`
 	UseRedis                    bool     `mapstructure:"use-redis" json:"useRedis"`
 	Transaction                 bool     `mapstructure:"transaction" json:"transaction"`
 	InitData                    bool     `mapstructure:"init-data" json:"initData"`
