@@ -65,3 +65,12 @@ func ContainsUintIndex(arr []uint, item uint) int {
 	}
 	return -1
 }
+
+// 判断uint数组是否包含item元素, 并移除
+func ContainsUintThenRemove(arr []uint, item uint) []uint {
+	index := ContainsUintIndex(arr, item)
+	if index >= 0 {
+		arr = append(arr[:index], arr[index+1:]...)
+	}
+	return arr
+}
