@@ -21,8 +21,8 @@ type SysMenu struct {
 	Breadcrumb *uint     `gorm:"type:tinyint(1);default:1;comment:'面包屑可见性(可见/隐藏, 默认可见)'" json:"breadcrumb"`
 	ParentId   uint      `gorm:"default:0;comment:'父菜单编号(编号为0时表示根菜单)'" json:"parentId"`
 	Creator    string    `gorm:"comment:'创建人'" json:"creator"`
-	Children   []SysMenu `gorm:"-" json:"children"`                          // 子菜单集合
-	Roles      []SysRole `gorm:"many2many:relation_role_menu;" json:"roles"` // 角色菜单多对多关系
+	Children   []SysMenu `gorm:"-" json:"children"`                              // 子菜单集合
+	Roles      []SysRole `gorm:"many2many:sys_role_menu_relation;" json:"roles"` // 角色菜单多对多关系
 }
 
 func (m SysMenu) TableName() string {
@@ -36,7 +36,7 @@ type RelationRoleMenu struct {
 }
 
 func (m RelationRoleMenu) TableName() string {
-	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "relation_role_menu")
+	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "sys_role_menu_relation")
 }
 
 // 获取选中列表

@@ -77,7 +77,7 @@ type SysWorkflowLine struct {
 	End    *uint       `gorm:"default:0;comment:'是否到达末尾'" json:"end"`
 	RoleId uint        `gorm:"comment:'审批人角色编号(拥有该角色才能审批)'" json:"roleId"`
 	Role   SysRole     `gorm:"foreignkey:RoleId" json:"role"`
-	Users  []SysUser   `gorm:"many2many:relation_user_workflow_line;comment:'审批人列表(指定了具体审批人, 则不再使用角色判断)'" json:"users"`
+	Users  []SysUser   `gorm:"many2many:sys_user_workflow_line_relation;comment:'审批人列表(指定了具体审批人, 则不再使用角色判断)'" json:"users"`
 	Edit   *uint       `gorm:"type:tinyint(1);default:1;comment:'是否有编辑权限'" json:"edit"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
 	Name   string      `gorm:"comment:'名称'" json:"name"`
 }
@@ -93,7 +93,7 @@ type RelationUserWorkflowLine struct {
 }
 
 func (m RelationUserWorkflowLine) TableName() string {
-	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "relation_user_workflow_line")
+	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "sys_user_workflow_line_relation")
 }
 
 // 流程日志: 任何一种工作流程都会关联到某一张表, 需要targetId
