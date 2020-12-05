@@ -4,6 +4,7 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"gin-web/pkg/global"
+	"strings"
 	"time"
 )
 
@@ -27,8 +28,9 @@ type LocalTime struct {
 }
 
 func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
+	str := strings.Trim(string(data), "\"")
 	// ""空值不进行解析
-	if len(data) == 2 {
+	if str == "null" || strings.TrimSpace(str) == "" {
 		*t = LocalTime{Time: time.Time{}}
 		return
 	}
