@@ -74,6 +74,14 @@ func Config() {
 		global.Conf.System.ConnectTimeout = defaultConnectTimeout
 	}
 
+	if strings.TrimSpace(global.Conf.System.UrlPathPrefix) == "" {
+		global.Conf.System.UrlPathPrefix = "api"
+	}
+
+	if strings.TrimSpace(global.Conf.System.ApiVersion) == "" {
+		global.Conf.System.UrlPathPrefix = "v1"
+	}
+
 	// 表前缀去掉后缀_
 	if strings.TrimSpace(global.Conf.Mysql.TablePrefix) != "" && strings.HasSuffix(global.Conf.Mysql.TablePrefix, "_") {
 		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")
