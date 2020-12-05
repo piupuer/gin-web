@@ -6,22 +6,22 @@ import (
 
 // 获取消息列表结构体
 type MessageListRequestStruct struct {
-	ToUserId          uint   `json:"toUserId"`
-	Title             string `json:"title" form:"title"`
-	Content           string `json:"content" form:"content"`
-	Type              *uint  `json:"type" form:"type"`
-	Status            *uint  `json:"status" form:"status"`
-	response.PageInfo        // 分页参数
+	ToUserId          uint      `json:"toUserId"`
+	Title             string    `json:"title" form:"title"`
+	Content           string    `json:"content" form:"content"`
+	Type              ReqNumber `json:"type" form:"type"`
+	Status            ReqNumber `json:"status" form:"status"`
+	response.PageInfo           // 分页参数
 }
 
 // 推送消息结构体
 type PushMessageRequestStruct struct {
 	FromUserId uint
-	Type       *uint  `json:"type" form:"type" validate:"required"`
-	ToUserIds  []uint `json:"toUserIds" form:"toUserIds"`
-	ToRoleIds  []uint `json:"toRoleIds" form:"toRoleIds"`
-	Title      string `json:"title" form:"title" validate:"required"`
-	Content    string `json:"content" form:"content" validate:"required"`
+	Type       ReqNumber `json:"type" form:"type" validate:"required"`
+	ToUserIds  []uint    `json:"toUserIds" form:"toUserIds"`
+	ToRoleIds  []uint    `json:"toRoleIds" form:"toRoleIds"`
+	Title      string    `json:"title" form:"title" validate:"required"`
+	Content    string    `json:"content" form:"content" validate:"required"`
 }
 
 // 翻译需要校验的字段名称

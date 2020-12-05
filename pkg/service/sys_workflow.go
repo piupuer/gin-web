@@ -35,17 +35,21 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 	if creator != "" {
 		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
-	if req.Category > 0 {
-		query = query.Where("category = ?", req.Category)
+	categoryVal, categoryFlag := req.Category.Uint()
+	if categoryFlag {
+		query = query.Where("category = ?", categoryVal)
 	}
-	if req.TargetCategory > 0 {
-		query = query.Where("targetCategory = ?", req.TargetCategory)
+	targetCategoryVal, targetCategoryFlag := req.Category.Uint()
+	if targetCategoryFlag {
+		query = query.Where("targetCategory = ?", targetCategoryVal)
 	}
-	if req.Self != nil {
-		query = query.Where("self = ?", *req.Self)
+	selfVal, selfFlag := req.Category.Uint()
+	if selfFlag {
+		query = query.Where("self = ?", selfVal)
 	}
-	if req.SubmitUserConfirm != nil {
-		query = query.Where("submitUserConfirm = ?", *req.SubmitUserConfirm)
+	submitUserConfirmVal, submitUserConfirmFlag := req.Category.Uint()
+	if submitUserConfirmFlag {
+		query = query.Where("submitUserConfirm = ?", submitUserConfirmVal)
 	}
 
 	// 查询条数
@@ -290,9 +294,10 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 			}
 		}
 		query := s.tx.Model(&line)
-		if item.RoleId != nil {
+		roleIdVal, roleIdFlag := item.RoleId.Uint()
+		if roleIdFlag {
 			// 需要强制更新roleId
-			query = query.Update("role_id", item.RoleId)
+			query = query.Where("role_id = ?", roleIdVal)
 		}
 		// 更新数据, 替换users
 		err = query.Updates(&line).Association("Users").Replace(&us)

@@ -30,7 +30,7 @@ func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 	var err error
 	list := make([]models.SysRole, 0)
 	db := global.Mysql.Debug().
-		Table(new (models.SysRole).TableName()).
+		Table(new(models.SysRole).TableName()).
 		Order("created_at DESC").
 		Where("sort >= ?", req.CurrentRoleSort)
 	name := strings.TrimSpace(req.Name)
@@ -45,8 +45,9 @@ func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 	if creator != "" {
 		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
-	if req.Status != nil {
-		if *req.Status > 0 {
+	statusVal, statusFlag := req.Status.Uint()
+	if statusFlag {
+		if statusVal > 0 {
 			db = db.Where("status = ?", 1)
 		} else {
 			db = db.Where("status = ?", 0)

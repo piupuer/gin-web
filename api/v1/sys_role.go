@@ -63,7 +63,8 @@ func CreateRole(c *gin.Context) {
 		return
 	}
 
-	if *user.Role.Sort > *req.Sort {
+	sort, _ := req.Sort.Uint()
+	if *user.Role.Sort > sort {
 		response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
 		return
 	}
@@ -93,10 +94,11 @@ func UpdateRoleById(c *gin.Context) {
 
 	utils.Struct2StructByJson(req, &roleInfo)
 
-	if roleInfo.Sort != nil {
+	sortVal, sortFlag := roleInfo.Sort.Uint()
+	if sortFlag {
 		// 绑定当前用户角色排序(隐藏特定用户)
 		user := GetCurrentUser(c)
-		if *user.Role.Sort > *roleInfo.Sort {
+		if *user.Role.Sort > sortVal {
 			response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
 			return
 		}
@@ -110,7 +112,8 @@ func UpdateRoleById(c *gin.Context) {
 	}
 
 	user := GetCurrentUser(c)
-	if roleInfo.Status != nil && *roleInfo.Status == models.SysRoleStatusDisabled && roleId == user.RoleId {
+	statusVal, statusFlag := roleInfo.Status.Uint()
+	if statusFlag && statusVal == models.SysRoleStatusDisabled && roleId == user.RoleId {
 		response.FailWithMsg("不能禁用自己所在的角色")
 		return
 	}

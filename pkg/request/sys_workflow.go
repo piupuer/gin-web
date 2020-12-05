@@ -6,15 +6,15 @@ import (
 
 // 获取流程列表结构体
 type WorkflowListRequestStruct struct {
-	Uuid              string `json:"uuid" form:"uuid"`
-	Category          uint   `json:"category" form:"category"`
-	SubmitUserConfirm *uint  `json:"submitUserConfirm" form:"submitUserConfirm"`
-	TargetCategory    uint   `json:"targetCategory" form:"targetCategory"`
-	Self              *uint  `json:"self" form:"self"`
-	Name              string `json:"name" form:"name"`
-	Desc              string `json:"desc" form:"desc"`
-	Creator           string `json:"creator" form:"creator"`
-	response.PageInfo        // 分页参数
+	Uuid              string    `json:"uuid" form:"uuid"`
+	Category          ReqNumber `json:"category" form:"category"`
+	SubmitUserConfirm ReqNumber `json:"submitUserConfirm" form:"submitUserConfirm"`
+	TargetCategory    ReqNumber `json:"targetCategory" form:"targetCategory"`
+	Self              ReqNumber `json:"self" form:"self"`
+	Name              string    `json:"name" form:"name"`
+	Desc              string    `json:"desc" form:"desc"`
+	Creator           string    `json:"creator" form:"creator"`
+	response.PageInfo           // 分页参数
 }
 
 // 获取流水线结构体
@@ -31,13 +31,13 @@ type WorkflowApprovingListRequestStruct struct {
 
 // 创建流程结构体
 type CreateWorkflowRequestStruct struct {
-	Category          uint   `json:"category"`
-	SubmitUserConfirm *uint  `json:"submitUserConfirm"`
-	TargetCategory    uint   `json:"targetCategory"`
-	Self              *uint  `json:"self"`
-	Name              string `json:"name" validate:"required"`
-	Desc              string `json:"desc"`
-	Creator           string `json:"creator"`
+	Category          ReqNumber `json:"category"`
+	SubmitUserConfirm ReqNumber `json:"submitUserConfirm"`
+	TargetCategory    ReqNumber `json:"targetCategory"`
+	Self              ReqNumber `json:"self"`
+	Name              string    `json:"name" validate:"required"`
+	Desc              string    `json:"desc"`
+	Creator           string    `json:"creator"`
 }
 
 // 翻译需要校验的字段名称
@@ -49,12 +49,12 @@ func (s CreateWorkflowRequestStruct) FieldTrans() map[string]string {
 
 // 更新流程流水线结构体
 type UpdateWorkflowLineRequestStruct struct {
-	Id      uint   `json:"id"`
-	FlowId  uint   `json:"flowId" validate:"required"`
-	RoleId  *uint  `json:"roleId"`
-	UserIds []uint `json:"userIds"`
-	Name    string `json:"name" validate:"required"`
-	Edit    *uint  `json:"edit"`
+	Id      uint      `json:"id"`
+	FlowId  ReqNumber `json:"flowId" validate:"required"`
+	RoleId  ReqNumber `json:"roleId"`
+	UserIds []uint    `json:"userIds"`
+	Name    string    `json:"name" validate:"required"`
+	Edit    ReqNumber `json:"edit"`
 }
 
 // 翻译需要校验的字段名称

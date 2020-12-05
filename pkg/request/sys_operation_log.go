@@ -30,7 +30,7 @@ type CreateOperationLogRequestStruct struct {
 	Params     string        `json:"params"`
 	Body       string        `json:"body"`
 	Data       string        `json:"data"`
-	Status     int           `json:"status"`
+	Status     ReqNumber     `json:"status"`
 	Username   string        `json:"username"`
 	RoleName   string        `json:"roleName"`
 	Ip         string        `json:"ip"`

@@ -48,11 +48,13 @@ func (s *MysqlService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 	if content != "" {
 		query = query.Where(fmt.Sprintf("%s.content LIKE ?", sysMessageTableName), fmt.Sprintf("%%%s%%", content))
 	}
-	if req.Type != nil {
-		query = query.Where(fmt.Sprintf("%s.type = ?", sysMessageTableName), *req.Type)
+	typeVal, typeFlag := req.Type.Uint()
+	if typeFlag {
+		query = query.Where("type = ?", typeVal)
 	}
-	if req.Status != nil {
-		query = query.Where(fmt.Sprintf("%s.status = ?", sysMessageLogTableName), *req.Status)
+	statusVal, statusFlag := req.Status.Uint()
+	if statusFlag {
+		query = query.Where(fmt.Sprintf("%s.status = ?", sysMessageLogTableName), statusVal)
 	} else {
 		// 未删除的
 		query = query.Where(fmt.Sprintf("%s.status != ?", sysMessageLogTableName), models.SysMessageLogStatusDeleted)
@@ -184,26 +186,29 @@ func (s *MysqlService) SyncMessageByUserIds(userIds []uint) error {
 
 // 创建消息
 func (s *MysqlService) CreateMessage(req *request.PushMessageRequestStruct) error {
-	message := models.SysMessage{
-		FromUserId: req.FromUserId,
-		Title:      req.Title,
-		Content:    req.Content,
-		Type:       *req.Type,
-		Role:       models.SysRole{},
-	}
-	switch *req.Type {
-	case models.SysMessageTypeOneToOne:
-		if len(req.ToUserIds) == 0 {
-			return fmt.Errorf("接收人不得为空")
+	typeVal, typeFlag := req.Type.Uint()
+	if typeFlag {
+		message := models.SysMessage{
+			FromUserId: req.FromUserId,
+			Title:      req.Title,
+			Content:    req.Content,
+			Type:       typeVal,
+			Role:       models.SysRole{},
 		}
-		return s.BatchCreateOneToOneMessage(message, req.ToUserIds)
-	case models.SysMessageTypeOneToMany:
-		if len(req.ToRoleIds) == 0 {
-			return fmt.Errorf("接收角色不得为空")
+		switch typeVal {
+		case models.SysMessageTypeOneToOne:
+			if len(req.ToUserIds) == 0 {
+				return fmt.Errorf("接收人不得为空")
+			}
+			return s.BatchCreateOneToOneMessage(message, req.ToUserIds)
+		case models.SysMessageTypeOneToMany:
+			if len(req.ToRoleIds) == 0 {
+				return fmt.Errorf("接收角色不得为空")
+			}
+			return s.BatchCreateOneToManyMessage(message, req.ToRoleIds)
+		case models.SysMessageTypeSystem:
+			return s.CreateSystemMessage(message)
 		}
-		return s.BatchCreateOneToManyMessage(message, req.ToRoleIds)
-	case models.SysMessageTypeSystem:
-		return s.CreateSystemMessage(message)
 	}
 	return fmt.Errorf("消息类型不合法")
 }

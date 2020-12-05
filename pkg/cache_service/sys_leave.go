@@ -17,10 +17,11 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	list := make([]models.SysLeave, 0)
 	query := s.redis.
 		Table(new(models.SysLeave).TableName()).
+		Where("user_id", "=", req.UserId).
 		Order("created_at DESC")
-	query = query.Where("user_id", "=", req.UserId)
-	if req.Status != nil {
-		query = query.Where("status", "=", *req.Status)
+	statusVal, statusFlag := req.Status.Uint()
+	if statusFlag {
+		query = query.Where("status", "=", statusVal)
 	}
 	desc := strings.TrimSpace(req.Desc)
 	if desc != "" {

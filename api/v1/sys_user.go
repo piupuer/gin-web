@@ -155,7 +155,8 @@ func UpdateUserById(c *gin.Context) {
 
 	user := GetCurrentUser(c)
 	if userId == user.Id {
-		if userInfo.Status != nil && *userInfo.Status == models.SysUserStatusDisabled {
+		statusVal, statusFlag := userInfo.Status.Uint()
+		if statusFlag && statusVal == models.SysUserStatusDisabled {
 			response.FailWithMsg("不能禁用自己")
 			return
 		}
