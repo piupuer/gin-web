@@ -39,7 +39,7 @@ require (
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
-	github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea
+	github.com/siddontang/go-mysql v1.1.0
 	github.com/silenceper/wechat/v2 v2.0.2
 	github.com/spf13/viper v1.6.3
 	github.com/thedevsaddam/gojsonq/v2 v2.5.2

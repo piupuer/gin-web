@@ -421,6 +421,8 @@ github.com/siddontang/go-log v0.0.0-20180807004314-8d05993dda07 h1:oI+RNwuC9jF2g
 github.com/siddontang/go-log v0.0.0-20180807004314-8d05993dda07/go.mod h1:yFdBgwXP24JziuRl2NMUahT7nGLNOKi1SIiFxMttVD4=
 github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea h1:B7BYAquq1gdE8aKAK6pnu66OUbG7ydil3DWqls+GuJU=
 github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea/go.mod h1:+W4RCzesQDI11HvIkaDjS8yM36SpAnGNQ7jmTLn5BnU=
+github.com/siddontang/go-mysql v1.1.0 h1:NfkS1skrPwUd3hsUqhc6jrv24dKTNMANxKRmDsf1fMc=
+github.com/siddontang/go-mysql v1.1.0/go.mod h1:+W4RCzesQDI11HvIkaDjS8yM36SpAnGNQ7jmTLn5BnU=
 github.com/silenceper/wechat v1.2.6 h1:FED3ko2yD96YD153xIV0I0bDjII4GxWaggjsYKdjQQc=
 github.com/silenceper/wechat/v2 v2.0.2 h1:A4FmrGUSNHu3NRUjkqf/YS+tdAJEYF0P/FRGZQBHwI4=
 github.com/silenceper/wechat/v2 v2.0.2/go.mod h1:hksYXWXGl7/E6TQojFNgxv8ouTF9CPPjfvWWJouJJGs=

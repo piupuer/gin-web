@@ -6,7 +6,10 @@ import (
 	"gin-web/pkg/redis"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
+	"github.com/siddontang/go-mysql/replication"
+	"regexp"
 	"runtime/debug"
+	"strings"
 )
 
 // 使用siddontang/go-mysql监听mysql binlog
@@ -61,6 +64,44 @@ func (s *BinlogEventHandler) OnRow(e *canal.RowsEvent) error {
 	global.Log.Debug(fmt.Sprintf("行变化: %s %v", e.Action, e.Rows))
 	// 同步数据到redis
 	redis.RowChange(e)
+	return nil
+}
+
+// ddl事件
+func (s *BinlogEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replication.QueryEvent) error {
+	database := string(queryEvent.Schema)
+	sql := strings.ToLower(string(queryEvent.Query))
+	dropReg := regexp.MustCompile("drop table `(.+?)`")
+	if dropReg != nil {
+		// 提取关键信息
+		if m := dropReg.FindAllStringSubmatch(sql, -1); len(m) == 1 {
+			table := strings.Trim(m[0][1], "`")
+			cacheKey := fmt.Sprintf("%s_%s", database, table)
+			// 将数据转为json字符串写入redis, expiration=0永不过期
+			err := global.Redis.Del(cacheKey).Err()
+			if err != nil {
+				global.Log.Errorf("删除表%s, 同步binlog增量数据到redis失败: %v", table, err)
+			}
+		}
+	}
+	if strings.Contains(sql, "truncate table") {
+		table := ""
+		arr := strings.Split(sql, " ")
+		l := len(arr)
+		for i, item := range arr {
+			if item == "table" && i < l {
+				table = strings.Trim(arr[i+1], "`")
+			}
+		}
+		if table != "" {
+			cacheKey := fmt.Sprintf("%s_%s", database, table)
+			// 将数据转为json字符串写入redis, expiration=0永不过期
+			err := global.Redis.Del(cacheKey).Err()
+			if err != nil {
+				global.Log.Errorf("清空表%s, 同步binlog增量数据到redis失败: %v", table, err)
+			}
+		}
+	}
 	return nil
 }
 
