@@ -56,6 +56,20 @@ func (s *MysqlService) CreateRoleCasbin(c models.SysRoleCasbin) (bool, error) {
 	return e.AddPolicy(c.Keyword, c.Path, c.Method)
 }
 
+// 创建多条casbin规则, 按角色
+func (s *MysqlService) CreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
+	e, _ := s.Casbin()
+	rules := make([][]string, 0)
+	for _, c := range cs {
+		rules = append(rules, []string{
+			c.Keyword,
+			c.Path,
+			c.Method,
+		})
+	}
+	return e.AddPolicies(rules)
+}
+
 // 批量创建多条casbin规则, 按角色
 func (s *MysqlService) BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
 	e, _ := s.Casbin()

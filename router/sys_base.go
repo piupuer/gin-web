@@ -11,7 +11,7 @@ func InitBaseRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R
 	{
 		router.POST("/login", authMiddleware.LoginHandler)
 		router.POST("/logout", authMiddleware.LogoutHandler)
-		router.POST("/refresh_token", authMiddleware.RefreshHandler)
+		router.POST("/refreshToken", authMiddleware.RefreshHandler)
 	}
 	return router
 }
