@@ -2,6 +2,8 @@
 system:
   # url前缀
   url-path-prefix: api
+  # 接口版本, 紧跟url-path-prefix后
+  api-version: v1
   # 程序监听端口
   port: 10000
   # 连接超时时间(秒, 初始化连接mysql/redis等默认超时时间设置, 小于1无效)
