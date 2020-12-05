@@ -62,7 +62,7 @@ func CreateMenu(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateMenuRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -90,7 +90,7 @@ func CreateMenu(c *gin.Context) {
 func UpdateMenuById(c *gin.Context) {
 	// 绑定参数
 	var req models.SysMenu
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -116,7 +116,7 @@ func UpdateMenuById(c *gin.Context) {
 // 批量删除菜单
 func BatchDeleteMenuByIds(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return

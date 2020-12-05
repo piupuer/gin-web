@@ -15,7 +15,7 @@ import (
 func GetWorkflowApprovings(c *gin.Context) {
 	// 绑定参数
 	var req request.WorkflowApprovingListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -69,7 +69,7 @@ func GetWorkflowApprovings(c *gin.Context) {
 func GetWorkflows(c *gin.Context) {
 	// 绑定参数
 	var req request.WorkflowListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -98,7 +98,7 @@ func GetWorkflows(c *gin.Context) {
 func GetWorkflowLines(c *gin.Context) {
 	// 绑定参数
 	var req request.WorkflowLineListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -138,7 +138,7 @@ func CreateWorkflow(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateWorkflowRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -166,7 +166,7 @@ func CreateWorkflow(c *gin.Context) {
 func UpdateWorkflowLineIncremental(c *gin.Context) {
 	// 绑定参数
 	var req request.UpdateWorkflowLineIncrementalRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -193,7 +193,7 @@ func UpdateWorkflowLineIncremental(c *gin.Context) {
 func UpdateWorkflowById(c *gin.Context) {
 	// 绑定参数
 	var req models.SysWorkflow
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -220,7 +220,7 @@ func UpdateWorkflowById(c *gin.Context) {
 func UpdateWorkflowLogApproval(c *gin.Context) {
 	// 绑定参数
 	var req request.WorkflowTransitionRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -249,7 +249,7 @@ func UpdateWorkflowLogApproval(c *gin.Context) {
 // 批量删除工作流
 func BatchDeleteWorkflowByIds(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return

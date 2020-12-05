@@ -28,7 +28,7 @@ func GetUserInfo(c *gin.Context) {
 func GetUsers(c *gin.Context) {
 	// 绑定参数
 	var req request.UserListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -107,7 +107,7 @@ func CreateUser(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateUserRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -137,7 +137,7 @@ func UpdateUserById(c *gin.Context) {
 	var req models.SysUser
 	var pwd request.ChangePwdRequestStruct
 	var userInfo request.CreateUserRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -183,7 +183,7 @@ func UpdateUserById(c *gin.Context) {
 // 批量删除用户
 func BatchDeleteUserByIds(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return

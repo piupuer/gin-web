@@ -15,7 +15,7 @@ import (
 func GetMachines(c *gin.Context) {
 	// 绑定参数
 	var req request.MachineListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -45,7 +45,7 @@ func CreateMachine(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateMachineRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -74,7 +74,7 @@ func UpdateMachineById(c *gin.Context) {
 	// 绑定参数
 	var req models.SysMachine
 	var machineInfo request.CreateMachineRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -123,7 +123,7 @@ func ConnectMachineById(c *gin.Context) {
 // 批量删除机器
 func BatchDeleteMachineByIds(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return

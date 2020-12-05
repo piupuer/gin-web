@@ -19,7 +19,7 @@ import (
 // 解压上传的zip文件
 func UploadUnZip(c *gin.Context) {
 	var filePart request.FilePartInfo
-	_ = c.Bind(&filePart)
+	_ = c.ShouldBind(&filePart)
 	if strings.TrimSpace(filePart.Filename) == "" {
 		response.FailWithMsg("文件名不存在")
 		return
@@ -49,7 +49,7 @@ func UploadUnZip(c *gin.Context) {
 // 判断文件块是否存在
 func UploadFileChunkExists(c *gin.Context) {
 	var filePart request.FilePartInfo
-	_ = c.Bind(&filePart)
+	_ = c.ShouldBind(&filePart)
 	// 校验请求
 	err := filePart.ValidateReq()
 	if err != nil {
@@ -63,7 +63,7 @@ func UploadFileChunkExists(c *gin.Context) {
 // 合并分片文件
 func UploadMerge(c *gin.Context) {
 	var filePart request.FilePartInfo
-	_ = c.Bind(&filePart)
+	_ = c.ShouldBind(&filePart)
 	// 获取
 	rootDir := filePart.GetUploadRootPath()
 	mergeFileName := fmt.Sprintf("%s/%s", rootDir, filePart.Filename)

@@ -25,7 +25,7 @@ type ptyRequestMsg struct {
 // 启动shell连接
 func MachineShellWs(c *gin.Context) {
 	var req request.MachineShellWsRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 
 	conn, err := upgrade.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {

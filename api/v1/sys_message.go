@@ -12,7 +12,7 @@ import (
 func GetAllMessages(c *gin.Context) {
 	// 绑定参数
 	var req request.MessageListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -56,7 +56,7 @@ func GetUnReadMessageCount(c *gin.Context) {
 func PushMessage(c *gin.Context) {
 	// 绑定参数
 	var req request.PushMessageRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -76,7 +76,7 @@ func PushMessage(c *gin.Context) {
 // 批量更新为已读
 func BatchUpdateMessageRead(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -96,7 +96,7 @@ func BatchUpdateMessageRead(c *gin.Context) {
 // 批量更新为删除
 func BatchUpdateMessageDeleted(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return

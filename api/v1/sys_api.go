@@ -15,7 +15,7 @@ import (
 func GetApis(c *gin.Context) {
 	// 绑定参数
 	var req request.ApiListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -63,7 +63,7 @@ func CreateApi(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateApiRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -91,7 +91,7 @@ func CreateApi(c *gin.Context) {
 func UpdateApiById(c *gin.Context) {
 	// 绑定参数
 	var req models.SysApi
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -117,7 +117,7 @@ func UpdateApiById(c *gin.Context) {
 // 批量删除接口
 func BatchDeleteApiByIds(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
