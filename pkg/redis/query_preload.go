@@ -36,19 +36,21 @@ func (s *QueryRedis) processPreload() {
 			var (
 				curSchema     = s.Statement.Schema
 				preloadFields = preloadMap[name]
-				rels          = make([]*schema.Relationship, len(preloadFields))
+				rels          = make([]*schema.Relationship, 0)
 			)
 
-			for idx, preloadField := range preloadFields {
+			for _, preloadField := range preloadFields {
 				if rel := curSchema.Relationships.Relations[preloadField]; rel != nil {
-					rels[idx] = rel
+					rels = append(rels, rel)
 					curSchema = rel.FieldSchema
 				} else {
 					s.AddError(fmt.Errorf("%v: %w", name, gorm.ErrUnsupportedRelation))
 				}
 			}
 
-			preload(s, rels)
+			if len(rels) > 0 {
+				preload(s, rels)
+			}
 		}
 	}
 }
