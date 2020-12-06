@@ -1,8 +1,15 @@
-<h1>Gin Web TODO List</h1>
+<h1>Gin Web TODO LIST (Change Logs)</h1>
 
 > 这也是我的学习路线, 新手可以根据每个步骤从头尝试, 可看对应commit id. 
 > 主要是一些常用的功能, 如果你有一些实用或好玩的功能, 可以推荐给我学习哦~
-### 任务列表
+## 待完成 OR 更新日志
+
+### 2020-12-05
+- [x] 请求参数绑定优化(数字类型兼容, 如{"key":1}和{"key":"1"}, 现在定义ReqNumber可以正常解析)
+- [x] Mysql Binlog: drop/truncate table同步刷新到redis
+- [x] 前端代码构建是自动上传到阿里云OSS对象存储, 加快网页访问速度
+
+### 较早之前
 - [x] Gorm连接Mysql
 - [x] Gin搭建简易web服务器
 - [x] 全局日志管理
