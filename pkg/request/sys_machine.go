@@ -23,30 +23,30 @@ type MachineListRequestStruct struct {
 
 // 创建机器结构体
 type CreateMachineRequestStruct struct {
-	Host      string    `json:"host" validate:"required"`
-	SshPort   ReqNumber `json:"sshPort" validate:"required"`
-	Version   string    `json:"version"`
-	Name      string    `json:"name"`
-	Arch      string    `json:"arch"`
-	Cpu       string    `json:"cpu"`
-	Memory    string    `json:"memory"`
-	Disk      string    `json:"disk"`
-	LoginName string    `json:"loginName" validate:"required"`
-	LoginPwd  string    `json:"loginPwd" validate:"required"`
-	Status    ReqNumber `json:"status"`
-	Remark    string    `json:"remark"`
-	Creator   string    `json:"creator"`
+	Host      string  `json:"host" validate:"required"`
+	SshPort   ReqUint `json:"sshPort" validate:"required"`
+	Version   string  `json:"version"`
+	Name      string  `json:"name"`
+	Arch      string  `json:"arch"`
+	Cpu       string  `json:"cpu"`
+	Memory    string  `json:"memory"`
+	Disk      string  `json:"disk"`
+	LoginName string  `json:"loginName" validate:"required"`
+	LoginPwd  string  `json:"loginPwd" validate:"required"`
+	Status    ReqUint `json:"status"`
+	Remark    string  `json:"remark"`
+	Creator   string  `json:"creator"`
 }
 
 // 机器shell ws请求结构体
 type MachineShellWsRequestStruct struct {
-	Host      string    `json:"host" form:"host"`
-	SshPort   ReqNumber `json:"sshPort" form:"sshPort"`
-	LoginName string    `json:"loginName" form:"loginName"`
-	LoginPwd  string    `json:"loginPwd" form:"loginPwd"`
-	InitCmd   string    `json:"initCmd" form:"initCmd"`
-	Cols      ReqNumber `json:"cols" form:"cols"`
-	Rows      ReqNumber `json:"rows" form:"rows"`
+	Host      string  `json:"host" form:"host"`
+	SshPort   ReqUint `json:"sshPort" form:"sshPort"`
+	LoginName string  `json:"loginName" form:"loginName"`
+	LoginPwd  string  `json:"loginPwd" form:"loginPwd"`
+	InitCmd   string  `json:"initCmd" form:"initCmd"`
+	Cols      ReqUint `json:"cols" form:"cols"`
+	Rows      ReqUint `json:"rows" form:"rows"`
 }
 
 // 翻译需要校验的字段名称

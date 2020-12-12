@@ -18,19 +18,19 @@ type MenuListRequestStruct struct {
 
 // 创建菜单结构体
 type CreateMenuRequestStruct struct {
-	Name       string    `json:"name" validate:"required"`
-	Title      string    `json:"title"`
-	Icon       string    `json:"icon"`
-	Path       string    `json:"path"`
-	Redirect   string    `json:"redirect"`
-	Component  string    `json:"component"`
-	Permission string    `json:"permission"`
-	Sort       ReqNumber `json:"sort"`
-	Status     ReqNumber `json:"status"`
-	Visible    ReqNumber `json:"visible"`
-	Breadcrumb ReqNumber `json:"breadcrumb"`
-	ParentId   ReqNumber `json:"parentId"`
-	Creator    string    `json:"creator"`
+	Name       string  `json:"name" validate:"required"`
+	Title      string  `json:"title"`
+	Icon       string  `json:"icon"`
+	Path       string  `json:"path"`
+	Redirect   string  `json:"redirect"`
+	Component  string  `json:"component"`
+	Permission string  `json:"permission"`
+	Sort       ReqUint `json:"sort"`
+	Status     ReqUint `json:"status"`
+	Visible    ReqUint `json:"visible"`
+	Breadcrumb ReqUint `json:"breadcrumb"`
+	ParentId   ReqUint `json:"parentId"`
+	Creator    string  `json:"creator"`
 }
 
 // 翻译需要校验的字段名称

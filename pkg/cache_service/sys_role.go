@@ -49,9 +49,8 @@ func (s *RedisService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 	if creator != "" {
 		query = query.Where("creator", "contains", creator)
 	}
-	statusVal, statusFlag := req.Status.Uint()
-	if statusFlag {
-		if statusVal > 0 {
+	if req.Status != nil {
+		if *req.Status > 0 {
 			query = query.Where("status", "=", 1)
 		} else {
 			query = query.Where("status", "=", 0)

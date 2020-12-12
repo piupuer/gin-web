@@ -7,11 +7,11 @@ import (
 
 // 获取请假列表结构体
 type LeaveListRequestStruct struct {
-	UserId            uint      `json:"-"`
-	Status            ReqNumber `json:"status" form:"status"`
-	ApprovalOpinion   string    `json:"approvalOpinion" form:"approvalOpinion"`
-	Desc              string    `json:"desc" form:"desc"`
-	response.PageInfo           // 分页参数
+	UserId            uint   `json:"-"`
+	Status            *uint  `json:"status" form:"status"`
+	ApprovalOpinion   string `json:"approvalOpinion" form:"approvalOpinion"`
+	Desc              string `json:"desc" form:"desc"`
+	response.PageInfo        // 分页参数
 }
 
 // 创建请假结构体

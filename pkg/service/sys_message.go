@@ -48,13 +48,11 @@ func (s *MysqlService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 	if content != "" {
 		query = query.Where(fmt.Sprintf("%s.content LIKE ?", sysMessageTableName), fmt.Sprintf("%%%s%%", content))
 	}
-	typeVal, typeFlag := req.Type.Uint()
-	if typeFlag {
-		query = query.Where("type = ?", typeVal)
+	if req.Type != nil {
+		query = query.Where("type = ?", *req.Type)
 	}
-	statusVal, statusFlag := req.Status.Uint()
-	if statusFlag {
-		query = query.Where(fmt.Sprintf("%s.status = ?", sysMessageLogTableName), statusVal)
+	if req.Status != nil {
+		query = query.Where(fmt.Sprintf("%s.status = ?", sysMessageLogTableName), *req.Status)
 	} else {
 		// 未删除的
 		query = query.Where(fmt.Sprintf("%s.status != ?", sysMessageLogTableName), models.SysMessageLogStatusDeleted)
@@ -186,16 +184,15 @@ func (s *MysqlService) SyncMessageByUserIds(userIds []uint) error {
 
 // 创建消息
 func (s *MysqlService) CreateMessage(req *request.PushMessageRequestStruct) error {
-	typeVal, typeFlag := req.Type.Uint()
-	if typeFlag {
+	if req.Type != nil {
 		message := models.SysMessage{
 			FromUserId: req.FromUserId,
 			Title:      req.Title,
 			Content:    req.Content,
-			Type:       typeVal,
+			Type:       uint(*req.Type),
 			Role:       models.SysRole{},
 		}
-		switch typeVal {
+		switch uint(*req.Type) {
 		case models.SysMessageTypeOneToOne:
 			if len(req.ToUserIds) == 0 {
 				return fmt.Errorf("接收人不得为空")

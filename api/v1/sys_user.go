@@ -134,18 +134,13 @@ func CreateUser(c *gin.Context) {
 // 更新用户
 func UpdateUserById(c *gin.Context) {
 	// 绑定参数
-	var req models.SysUser
-	var pwd request.ChangePwdRequestStruct
-	var userInfo request.CreateUserRequestStruct
-	err := c.ShouldBind(&req)
+	var req request.CreateUserRequestStruct
+	err := c.Bind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
 	}
 
-	// 将部分参数转为pwd, 如果值不为空, 可能会用到
-	utils.Struct2StructByJson(req, &pwd)
-	utils.Struct2StructByJson(req, &userInfo)
 	// 获取path中的userId
 	userId := utils.Str2Uint(c.Param("userId"))
 	if userId == 0 {
@@ -155,12 +150,11 @@ func UpdateUserById(c *gin.Context) {
 
 	user := GetCurrentUser(c)
 	if userId == user.Id {
-		statusVal, statusFlag := userInfo.Status.Uint()
-		if statusFlag && statusVal == models.SysUserStatusDisabled {
+		if req.Status != nil && uint(*req.Status) == models.SysUserStatusDisabled {
 			response.FailWithMsg("不能禁用自己")
 			return
 		}
-		if user.RoleId != userInfo.RoleId {
+		if user.RoleId != req.RoleId {
 			if *user.Role.Sort != models.SysRoleSuperAdminSort {
 				response.FailWithMsg("无法更改自己的角色, 如需更改请联系上级领导")
 			} else {
@@ -173,7 +167,9 @@ func UpdateUserById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateUserById(userId, pwd.NewPassword, req)
+	var reqUser models.SysUser
+	utils.Struct2StructByJson(req, &reqUser)
+	err = s.UpdateUserById(userId, req.NewPassword, reqUser)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

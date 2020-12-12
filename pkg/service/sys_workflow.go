@@ -35,21 +35,17 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 	if creator != "" {
 		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
-	categoryVal, categoryFlag := req.Category.Uint()
-	if categoryFlag {
-		query = query.Where("category = ?", categoryVal)
+	if req.Category != nil {
+		query = query.Where("category = ?", *req.Category)
 	}
-	targetCategoryVal, targetCategoryFlag := req.Category.Uint()
-	if targetCategoryFlag {
-		query = query.Where("targetCategory = ?", targetCategoryVal)
+	if req.TargetCategory != nil {
+		query = query.Where("target_category = ?", *req.TargetCategory)
 	}
-	selfVal, selfFlag := req.Category.Uint()
-	if selfFlag {
-		query = query.Where("self = ?", selfVal)
+	if req.Self != nil {
+		query = query.Where("self = ?", *req.Self)
 	}
-	submitUserConfirmVal, submitUserConfirmFlag := req.Category.Uint()
-	if submitUserConfirmFlag {
-		query = query.Where("submitUserConfirm = ?", submitUserConfirmVal)
+	if req.SubmitUserConfirm != nil {
+		query = query.Where("submit_user_confirm = ?", *req.SubmitUserConfirm)
 	}
 
 	// 查询条数
@@ -71,7 +67,7 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
-	query := s.tx.Model(new (models.SysWorkflowLine)).Preload("Users")
+	query := s.tx.Model(new(models.SysWorkflowLine)).Preload("Users")
 	if req.FlowId > 0 {
 		query = query.Where("flow_id = ?", req.FlowId)
 	}
@@ -294,10 +290,9 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 			}
 		}
 		query := s.tx.Model(&line)
-		roleIdVal, roleIdFlag := item.RoleId.Uint()
-		if roleIdFlag {
+		if item.RoleId > 0 {
 			// 需要强制更新roleId
-			query = query.Where("role_id = ?", roleIdVal)
+			query = query.Where("role_id = ?", item.RoleId)
 		}
 		// 更新数据, 替换users
 		err = query.Updates(&line).Association("Users").Replace(&us)

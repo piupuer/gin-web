@@ -34,21 +34,17 @@ func (s *RedisService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 	if creator != "" {
 		query = query.Where("creator", "contains", creator)
 	}
-	categoryVal, categoryFlag := req.Category.Uint()
-	if categoryFlag {
-		query = query.Where("category ", "=", categoryVal)
+	if req.Category != nil {
+		query = query.Where("category", "=", *req.Category)
 	}
-	targetCategoryVal, targetCategoryFlag := req.Category.Uint()
-	if targetCategoryFlag {
-		query = query.Where("targetCategory ", "=", targetCategoryVal)
+	if req.TargetCategory != nil {
+		query = query.Where("target_category", "=", *req.TargetCategory)
 	}
-	selfVal, selfFlag := req.Category.Uint()
-	if selfFlag {
-		query = query.Where("self ", "=", selfVal)
+	if req.Self != nil {
+		query = query.Where("self", "=", *req.Self)
 	}
-	submitUserConfirmVal, submitUserConfirmFlag := req.Category.Uint()
-	if submitUserConfirmFlag {
-		query = query.Where("submitUserConfirm ", "=", submitUserConfirmVal)
+	if req.SubmitUserConfirm != nil {
+		query = query.Where("submit_user_confirm", "=", *req.SubmitUserConfirm)
 	}
 
 	err = query.Count(&req.PageInfo.Total).Error

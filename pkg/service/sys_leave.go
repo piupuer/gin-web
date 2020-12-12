@@ -18,9 +18,8 @@ func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 		Table(new(models.SysLeave).TableName()).
 		Order("created_at DESC").
 		Where("user_id = ?", req.UserId)
-	statusVal, statusFlag := req.Status.Uint()
-	if statusFlag {
-		query = query.Where("status = ?", statusVal)
+	if req.Status != nil {
+		query = query.Where("status = ?", *req.Status)
 	}
 	desc := strings.TrimSpace(req.Desc)
 	if desc != "" {

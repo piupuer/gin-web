@@ -58,9 +58,8 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 	if creator != "" {
 		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
-	statusVal, statusFlag := req.Status.Uint()
-	if statusFlag {
-		if statusVal > 0 {
+	if req.Status != nil {
+		if *req.Status > 0 {
 			db = db.Where("status = ?", 1)
 		} else {
 			db = db.Where("status = ?", 0)

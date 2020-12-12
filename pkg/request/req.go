@@ -1,6 +1,7 @@
 package request
 
 import (
+	"database/sql/driver"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/utils"
@@ -39,73 +40,70 @@ func (s *UpdateIncrementalIdsRequestStruct) GetIncremental(oldMenuIds []uint, al
 	return append(newList, s.Create...)
 }
 
-// 请求数字类型, 先用string接收(类似json.Number, 相比之下多扩展几种类型)
-type ReqNumber string
+// 请求uint类型
+type ReqUint uint
 
-// 获取字符串
-func (n ReqNumber) String() string {
-	return string(n)
-}
-
-// 获取int
-func (n ReqNumber) Int() (int, bool) {
-	str := n.String()
-	if utils.StrIsEmpty(str) {
-		return 0, false
-	}
-	return utils.Str2Int(str), true
-}
-
-// 获取uint
-func (n ReqNumber) Uint() (uint, bool) {
-	str := n.String()
-	if utils.StrIsEmpty(str) {
-		return 0, false
-	}
-	return utils.Str2Uint(str), true
-}
-
-// 获取uint32
-func (n ReqNumber) Uint32() (uint32, bool) {
-	str := n.String()
-	if utils.StrIsEmpty(str) {
-		return 0, false
-	}
-	return utils.Str2Uint32(str), true
-}
-
-// 获取float64
-func (n ReqNumber) Float64() (float64, bool) {
-	str := n.String()
-	if utils.StrIsEmpty(str) {
-		return 0, false
-	}
-	return utils.Str2Float64(str), true
-}
-
-// 获取bool
-func (n ReqNumber) Bool() (bool, bool) {
-	str := n.String()
-	if utils.StrIsEmpty(str) {
-		return false, false
-	}
-	return utils.Str2Bool(str), true
-}
-
-func (n *ReqNumber) UnmarshalJSON(data []byte) (err error) {
+func (r *ReqUint) UnmarshalJSON(data []byte) (err error) {
 	str := strings.Trim(string(data), "\"")
 	// ""空值不进行解析
 	if utils.StrIsEmpty(str) {
-		*n = ReqNumber(0)
+		*r = ReqUint(0)
 		return
 	}
-
-	// 指定解析的格式(设置转为本地格式)
-	*n = ReqNumber(str)
+	*r = ReqUint(utils.Str2Uint(str))
 	return
 }
 
-func (n ReqNumber) MarshalJSON() ([]byte, error) {
-	output := fmt.Sprintf("\"%s\"", n.String())
-	return []byte(output), nil
+func (r ReqUint) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%d", r)), nil
+}
+
+// gorm 写入 mysql 时调用
+// driver.Value可取值int64/float64/bool/[]byte/string/time.Time
+func (r ReqUint) Value() (driver.Value, error) {
+	return int64(r), nil
+}
+
+// gorm 检出 mysql 时调用
+func (r *ReqUint) Scan(v interface{}) error {
+	value, ok := v.(ReqUint)
+	if ok {
+		*r = value
+		return nil
+	}
+	return fmt.Errorf("can not convert %v to ReqUint", v)
+}
+
+// 请求float64类型
+type ReqFloat64 float64
+
+func (r *ReqFloat64) UnmarshalJSON(data []byte) (err error) {
+	str := strings.Trim(string(data), "\"")
+	// ""空值不进行解析
+	if utils.StrIsEmpty(str) {
+		*r = ReqFloat64(0)
+		return
+	}
+	*r = ReqFloat64(utils.Str2Float64(str))
+	return
+}
+
+func (r ReqFloat64) MarshalJSON() ([]byte, error) {
+	return []byte(fmt.Sprintf("%f", r)), nil
+}
+
+// gorm 写入 mysql 时调用
+// driver.Value可取值int64/float64/bool/[]byte/string/time.Time
+func (r ReqFloat64) Value() (driver.Value, error) {
+	return float64(r), nil
+}
+
+// gorm 检出 mysql 时调用
+func (r *ReqFloat64) Scan(v interface{}) error {
+	value, ok := v.(ReqFloat64)
+	if ok {
+		*r = value
+		return nil
+	}
+	return fmt.Errorf("can not convert %v to ReqFloat64", v)
 }

@@ -43,13 +43,11 @@ func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 	if content != "" {
 		query = query.Where("message.content", "contains", content)
 	}
-	typeVal, typeFlag := req.Type.Uint()
-	if typeFlag {
-		query = query.Where("type", "=", typeVal)
+	if req.Type != nil {
+		query = query.Where("type", "=", *req.Type)
 	}
-	statusVal, statusFlag := req.Status.Uint()
-	if statusFlag {
-		query = query.Where("status", "=", statusVal)
+	if req.Status != nil {
+		query = query.Where("status", "=", *req.Status)
 	}
 	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {

@@ -38,10 +38,9 @@ func MachineShellWs(c *gin.Context) {
 	active := time.Now()
 
 	// 建立连接
-	port, _ := req.SshPort.Int()
 	client, err := utils.GetSshClient(utils.SshConfig{
 		Host:      req.Host,
-		Port:      port,
+		Port:      int(req.SshPort),
 		LoginName: req.LoginName,
 		LoginPwd:  req.LoginPwd,
 	})
@@ -87,8 +86,8 @@ func MachineShellWs(c *gin.Context) {
 	modeList = append(modeList, 0)
 
 	// 发送pty
-	rows, _ := req.Rows.Uint32()
-	cols, _ := req.Cols.Uint32()
+	rows := uint32(req.Rows)
+	cols := uint32(req.Cols)
 	ptyReq := ptyRequestMsg{
 		Term:     "xterm",
 		Columns:  rows,

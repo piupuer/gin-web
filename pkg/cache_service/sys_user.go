@@ -63,9 +63,8 @@ func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 	if creator != "" {
 		query = query.Where("creator", "contains", creator)
 	}
-	statusVal, statusFlag := req.Status.Uint()
-	if statusFlag {
-		query = query.Where("status", "=", statusVal)
+	if req.Status != nil {
+		query = query.Where("status", "=", *req.Status)
 	}
 	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {
