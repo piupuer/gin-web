@@ -9,6 +9,7 @@ import (
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"strings"
 )
 
 // 获取当前用户信息
@@ -123,7 +124,9 @@ func CreateUser(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
 	s := service.New(c)
-	err = s.CreateUser(&req)
+	// 将初始密码转为密文
+	req.Password = utils.GenPwd(req.InitPassword)
+	err = s.Create(req, new(models.SysUser))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -148,6 +151,11 @@ func UpdateUserById(c *gin.Context) {
 		return
 	}
 
+	// 填写了新密码
+	if strings.TrimSpace(req.NewPassword) != "" {
+		req.Password = utils.GenPwd(req.NewPassword)
+	}
+
 	user := GetCurrentUser(c)
 	if userId == user.Id {
 		if req.Status != nil && uint(*req.Status) == models.SysUserStatusDisabled {
@@ -169,7 +177,7 @@ func UpdateUserById(c *gin.Context) {
 	// 更新数据
 	var reqUser models.SysUser
 	utils.Struct2StructByJson(req, &reqUser)
-	err = s.UpdateUserById(userId, req.NewPassword, reqUser)
+	err = s.UpdateById(userId, reqUser)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -195,7 +203,7 @@ func BatchDeleteUserByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteUserByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysUser))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

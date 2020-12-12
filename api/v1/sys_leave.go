@@ -142,7 +142,7 @@ func UpdateLeaveById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateLeaveById(leaveId, req)
+	err = s.UpdateById(leaveId, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -162,7 +162,7 @@ func BatchDeleteLeaveByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteLeaveByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysLeave))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

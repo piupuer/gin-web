@@ -61,7 +61,7 @@ func CreateMachine(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
 	s := service.New(c)
-	err = s.CreateMachine(&req)
+	err = s.Create(req, new(models.SysMachine))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -92,7 +92,7 @@ func UpdateMachineById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateMachineById(machineId, req)
+	err = s.UpdateById(machineId, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -132,7 +132,7 @@ func BatchDeleteMachineByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteMachineByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysMachine))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

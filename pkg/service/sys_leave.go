@@ -1,12 +1,9 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
-	"gin-web/pkg/utils"
-	"gorm.io/gorm"
 	"strings"
 )
 
@@ -56,10 +53,8 @@ func (s *MysqlService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowL
 
 // 创建请假
 func (s *MysqlService) CreateLeave(req *request.CreateLeaveRequestStruct) (err error) {
-	var leave models.SysLeave
-	utils.Struct2StructByJson(req, &leave)
-	// 创建数据
-	err = s.tx.Create(&leave).Error
+	leave := new(models.SysLeave)
+	err = s.Create(req, &leave)
 	if err != nil {
 		return
 	}
@@ -82,31 +77,4 @@ func (s *MysqlService) CreateLeave(req *request.CreateLeaveRequestStruct) (err e
 		), // 提交明细
 	})
 	return
-}
-
-// 更新请假
-func (s *MysqlService) UpdateLeaveById(id uint, req models.SysLeave) (err error) {
-	var leave models.SysLeave
-	query := s.tx.Model(leave).Where("id = ?", id).First(&leave)
-	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
-	}
-
-	// 比对增量字段
-	var m models.SysLeave
-	utils.CompareDifferenceStructByJson(leave, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	return
-}
-
-// 批量删除请假
-func (s *MysqlService) DeleteLeaveByIds(ids []uint) (err error) {
-	var list []models.SysLeave
-	query := s.tx.Where("id IN (?)", ids).Find(&list)
-	if query.Error != nil {
-		return
-	}
-	return query.Delete(models.SysLeave{}).Error
 }

@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
@@ -55,7 +56,7 @@ func BatchDeleteOperationLogByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteOperationLogByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysOperationLog))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

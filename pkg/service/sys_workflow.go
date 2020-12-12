@@ -7,7 +7,6 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/service/strategy"
 	"gin-web/pkg/utils"
-	uuid "github.com/satori/go.uuid"
 	"github.com/thedevsaddam/gojsonq/v2"
 	"gorm.io/gorm"
 	"strings"
@@ -194,39 +193,6 @@ func (s *MysqlService) GetWorkflowLineBySort(flowId uint, sort uint) (models.Sys
 		Sort:   sort,
 	}).First(&line).Error
 	return line, err
-}
-
-// 创建工作流
-func (s *MysqlService) CreateWorkflow(req *request.CreateWorkflowRequestStruct) (err error) {
-	var flow models.SysWorkflow
-	utils.Struct2StructByJson(req, &flow)
-	// 生成uuid
-	flow.Uuid = uuid.NewV4().String()
-	// 创建数据
-	err = s.tx.Create(&flow).Error
-	return
-}
-
-// 更新工作流
-func (s *MysqlService) UpdateWorkflowById(id uint, req models.SysWorkflow) (err error) {
-	var oldWorkflow models.SysWorkflow
-	query := s.tx.Model(oldWorkflow).Where("id = ?", id).First(&oldWorkflow)
-	if query.Error == gorm.ErrRecordNotFound {
-		return fmt.Errorf("记录不存在")
-	}
-
-	// 比对增量字段
-	var m models.SysWorkflow
-	utils.CompareDifferenceStructByJson(oldWorkflow, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	return
-}
-
-// 批量删除工作流
-func (s *MysqlService) DeleteWorkflowByIds(ids []uint) (err error) {
-	return s.tx.Where("id IN (?)", ids).Delete(models.SysWorkflow{}).Error
 }
 
 // 更新流程流水线

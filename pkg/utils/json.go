@@ -38,7 +38,7 @@ func Struct2StructByJson(struct1 interface{}, struct2 interface{}) {
 	Json2Struct(jsonStr, struct2)
 }
 
-// 两结构体比对不同的字段, 不同时将取struct1中的字段返回, json为中间桥梁, struct3必须以指针方式传递, 否则可能获取到空数据
+// 两结构体比对不同的字段, 不同时将取struct1中的字段返回, json为中间桥梁, update必须以指针方式传递, 否则可能获取到空数据
 func CompareDifferenceStructByJson(oldStruct interface{}, newStruct interface{}, update interface{}) {
 	// 通过json先将其转为map集合
 	m1 := make(map[string]interface{}, 0)

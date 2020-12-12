@@ -34,6 +34,7 @@ type UserListRequestStruct struct {
 // 创建用户结构体
 type CreateUserRequestStruct struct {
 	Username     string   `json:"username" validate:"required"`
+	Password     string   `json:"password"`
 	InitPassword string   `json:"initPassword" validate:"required"` // 不使用SysUser的Password字段, 避免请求劫持绕过系统校验
 	NewPassword  string   `json:"newPassword"`
 	Mobile       string   `json:"mobile" validate:"required"`

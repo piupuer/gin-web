@@ -52,51 +52,6 @@ func (s *MysqlService) GetMachines(req *request.MachineListRequestStruct) ([]mod
 	return list, err
 }
 
-// 创建机器
-func (s *MysqlService) CreateMachine(req *request.CreateMachineRequestStruct) (err error) {
-	var machine models.SysMachine
-	utils.Struct2StructByJson(req, &machine)
-	var oldMachine models.SysMachine
-	query := s.tx.Model(oldMachine).Where("host = ?", machine.Host).First(&oldMachine)
-	if query.Error != gorm.ErrRecordNotFound {
-		return errors.New("主机地址重复, 请添加其他主机")
-	}
-
-	// 创建数据
-	err = s.tx.Create(&machine).Error
-	if err != nil {
-		return err
-	}
-	// 连接机器
-	s.ConnectMachine(machine.Id)
-	return
-}
-
-// 更新机器
-func (s *MysqlService) UpdateMachineById(id uint, req models.SysMachine) (err error) {
-	var oldMachine models.SysMachine
-	query := s.tx.Model(oldMachine).Where("id = ?", id).First(&oldMachine)
-	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
-	}
-
-	// 比对增量字段
-	var m models.SysMachine
-	utils.CompareDifferenceStructByJson(oldMachine, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	
-	// 连接机器
-	s.ConnectMachine(oldMachine.Id)
-	return
-}
-
-// 批量删除机器
-func (s *MysqlService) DeleteMachineByIds(ids []uint) (err error) {
-	return s.tx.Where("id IN (?)", ids).Delete(models.SysMachine{}).Error
-}
-
 // 验证机器状态
 func (s *MysqlService) ConnectMachine(id uint) error {
 	var oldMachine models.SysMachine

@@ -105,7 +105,7 @@ func UpdateMenuById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateMenuById(menuId, req)
+	err = s.UpdateById(menuId, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -125,7 +125,7 @@ func BatchDeleteMenuByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteMenuByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysMenu))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

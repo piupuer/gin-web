@@ -72,7 +72,7 @@ func CreateRole(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
 	s := service.New(c)
-	err = s.CreateRole(&req)
+	err = s.Create(req, new(models.SysRole))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -118,7 +118,7 @@ func UpdateRoleById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateRoleById(roleId, req)
+	err = s.UpdateById(roleId, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

@@ -94,7 +94,7 @@ func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 			}
 		}
 	}
-	
+
 	// 通过分类进行分组归纳
 	for _, api := range newApi {
 		category := api.Category
@@ -144,10 +144,11 @@ func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 
 // 创建接口
 func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error) {
-	var api models.SysApi
-	utils.Struct2StructByJson(req, &api)
-	// 创建数据
-	err = s.tx.Create(&api).Error
+	api := new(models.SysApi)
+	err = s.Create(req, &api)
+	if err != nil {
+		return err
+	}
 	// 添加了角色
 	if len(req.RoleIds) > 0 {
 		// 查询角色关键字

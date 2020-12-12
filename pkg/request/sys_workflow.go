@@ -31,6 +31,7 @@ type WorkflowApprovingListRequestStruct struct {
 
 // 创建流程结构体
 type CreateWorkflowRequestStruct struct {
+	Uuid              string  `json:"uuid"`
 	Category          ReqUint `json:"category"`
 	SubmitUserConfirm ReqUint `json:"submitUserConfirm"`
 	TargetCategory    ReqUint `json:"targetCategory"`

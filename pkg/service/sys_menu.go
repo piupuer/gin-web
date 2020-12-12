@@ -1,13 +1,11 @@
 package service
 
 import (
-	"errors"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
 	"github.com/thedevsaddam/gojsonq/v2"
-	"gorm.io/gorm"
 )
 
 // 获取权限菜单树
@@ -84,39 +82,17 @@ func (s *MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uin
 
 // 创建菜单
 func (s *MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuRequestStruct) (err error) {
-	var menu models.SysMenu
-	utils.Struct2StructByJson(req, &menu)
-	// 创建数据
-	err = s.tx.Create(&menu).Error
+	menu := new(models.SysMenu)
+	err = s.Create(req, &menu)
+	if err != nil {
+		return
+	}
 	// 自己创建的菜单需绑定权限
 	menuReq := request.UpdateIncrementalIdsRequestStruct{
 		Create: []uint{menu.Id},
 	}
 	err = s.UpdateRoleMenusById(currentRole, currentRole.Id, menuReq)
 	return
-}
-
-// 更新菜单
-func (s *MysqlService) UpdateMenuById(id uint, req models.SysMenu) (err error) {
-	var oldMenu models.SysMenu
-	query := s.tx.Model(oldMenu).Where("id = ?", id).First(&oldMenu)
-	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
-	}
-
-	// 比对增量字段
-	var m models.SysMenu
-	utils.CompareDifferenceStructByJson(oldMenu, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	return
-}
-
-// 批量删除菜单
-func (s *MysqlService) DeleteMenuByIds(ids []uint) (err error) {
-	// 执行删除
-	return s.tx.Where("id IN (?)", ids).Delete(models.SysMenu{}).Error
 }
 
 // 获取权限菜单, 非菜单树

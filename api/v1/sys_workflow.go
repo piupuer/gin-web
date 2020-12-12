@@ -9,6 +9,7 @@ import (
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 )
 
 // 获取全部审批日志(目前有1: 请假)
@@ -154,7 +155,8 @@ func CreateWorkflow(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
 	s := service.New(c)
-	err = s.CreateWorkflow(&req)
+	req.Uuid = uuid.NewV4().String()
+	err = s.Create(req, new(models.SysWorkflow))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -208,7 +210,7 @@ func UpdateWorkflowById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateWorkflowById(workflowId, req)
+	err = s.UpdateById(workflowId, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -258,7 +260,7 @@ func BatchDeleteWorkflowByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteWorkflowByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysWorkflow))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

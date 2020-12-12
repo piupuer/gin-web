@@ -6,7 +6,6 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
-	"gin-web/pkg/utils"
 	"gorm.io/gorm"
 	"strings"
 )
@@ -65,32 +64,6 @@ func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 		}
 	}
 	return list, err
-}
-
-// 创建角色
-func (s *MysqlService) CreateRole(req *request.CreateRoleRequestStruct) (err error) {
-	var role models.SysRole
-	utils.Struct2StructByJson(req, &role)
-	// 创建数据
-	err = s.tx.Create(&role).Error
-	return
-}
-
-// 更新角色
-func (s *MysqlService) UpdateRoleById(id uint, req models.SysRole) (err error) {
-	var oldRole models.SysRole
-	query := s.tx.Model(oldRole).Where("id = ?", id).First(&oldRole)
-	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
-	}
-
-	// 比对增量字段
-	var m models.SysRole
-	utils.CompareDifferenceStructByJson(oldRole, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	return
 }
 
 // 更新角色的权限菜单
@@ -197,7 +170,7 @@ func (s *MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	}
 	if len(newIds) > 0 {
 		// 执行删除
-		err = s.tx.Where("id IN (?)", newIds).Delete(models.SysRole{}).Error
+		err = s.DeleteByIds(newIds, new(models.SysRole))
 	}
 	return
 }
