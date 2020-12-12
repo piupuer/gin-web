@@ -63,6 +63,10 @@ func Mysql() {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))
 	}
 	init = true
+	// 开启mysql日志
+	if global.Conf.Mysql.LogMode {
+		db = db.Debug()
+	}
 	global.Mysql = db
 	// 表结构
 	autoMigrate()
