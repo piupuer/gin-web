@@ -86,8 +86,8 @@ jwt:
   key: secret key
   # token过期时间, 小时
   timeout: 24
-  # token更新时间, 小时
-  max-refresh: 24
+  # 刷新token最大过期时间, 小时
+  max-refresh: 168
 
 # 速率限制配置
 rate-limit:
