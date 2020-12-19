@@ -78,7 +78,10 @@ func GetTx(c *gin.Context) *gorm.DB {
 	// 默认使用无事务的mysql
 	tx := Mysql
 	if c != nil {
-		method := c.Request.Method
+		method := ""
+		if c.Request != nil {
+			method = c.Request.Method
+		}
 		if !(method == "OPTIONS" || method == "GET" || !Conf.System.Transaction) {
 			// 从context对象中读取事务对象
 			txKey, exists := c.Get("tx")
