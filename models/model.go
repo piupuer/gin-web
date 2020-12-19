@@ -4,7 +4,6 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"gin-web/pkg/global"
-	"gin-web/pkg/utils"
 	"strings"
 	"time"
 )
@@ -31,19 +30,24 @@ type LocalTime struct {
 func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
 	str := strings.Trim(string(data), "\"")
 	// ""空值不进行解析
-	if utils.StrIsEmpty(str) {
+	// 避免环包调用, 不再调用utils
+	if str == "null" || strings.TrimSpace(str) == "" {
 		*t = LocalTime{Time: time.Time{}}
 		return
 	}
 
-	// 指定解析的格式(设置转为本地格式)
-	now, err := time.ParseInLocation(`"`+global.SecLocalTimeFormat+`"`, string(data), time.Local)
-	*t = LocalTime{Time: now}
+	// 设置str
+	t.SetString(str)
 	return
 }
 
 func (t LocalTime) MarshalJSON() ([]byte, error) {
-	output := fmt.Sprintf("\"%s\"", t.Format(global.SecLocalTimeFormat))
+	s := t.Format(global.SecLocalTimeFormat)
+	// 处理时间0值
+	if t.IsZero() {
+		s = ""
+	}
+	output := fmt.Sprintf("\"%s\"", s)
 	return []byte(output), nil
 }
 
@@ -74,4 +78,16 @@ func (t LocalTime) String() string {
 // 只需要日期
 func (t LocalTime) DateString() string {
 	return t.Format(global.DateLocalTimeFormat)
+}
+
+// 设置字符串
+func (t *LocalTime) SetString(str string) *LocalTime {
+	if t != nil {
+		// 指定解析的格式(设置转为本地格式)
+		now, err := time.ParseInLocation(global.SecLocalTimeFormat, str, time.Local)
+		if err == nil {
+			*t = LocalTime{Time: now}
+		}
+	}
+	return t
 }

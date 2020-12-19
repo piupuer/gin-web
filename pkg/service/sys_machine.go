@@ -83,7 +83,13 @@ func (s *MysqlService) ConnectMachine(id uint) error {
 
 // 初始化机器信息
 func initRemoteMachine(machine *models.SysMachine) error {
-	config := machine.GetSshConfig(2)
+	config := utils.SshConfig{
+		LoginName: machine.LoginName,
+		LoginPwd:  machine.LoginPwd,
+		Port:      machine.SshPort,
+		Host:      machine.Host,
+		Timeout:   2,
+	}
 	cmds := []string{
 		// 查看系统版本
 		"lsb_release -d | cut -f 2 -d : | awk '$1=$1'",

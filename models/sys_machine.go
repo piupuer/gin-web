@@ -1,9 +1,5 @@
 package models
 
-import (
-	"gin-web/pkg/utils"
-)
-
 const (
 	// 机器状态
 	SysMachineStatusUnConnected    uint   = 0      // 无法连接
@@ -38,15 +34,4 @@ type SysMachine struct {
 
 func (m *SysMachine) TableName() string {
 	return m.Model.TableName("sys_machine")
-}
-
-// 获取ssh配置项
-func (m *SysMachine) GetSshConfig(timeout int) utils.SshConfig {
-	return utils.SshConfig{
-		LoginName: m.LoginName,
-		LoginPwd:  m.LoginPwd,
-		Port:      m.SshPort,
-		Host:      m.Host,
-		Timeout:   timeout,
-	}
 }
