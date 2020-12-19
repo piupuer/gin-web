@@ -77,9 +77,9 @@ func (s *RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	menus := make([]models.SysMenu, 0)
 
 	// 查询关系表
-	relations := make([]models.RelationRoleMenu, 0)
+	relations := make([]models.RelationMenuRole, 0)
 	menuIds := make([]uint, 0)
-	query := s.redis.Table(new(models.RelationRoleMenu).TableName())
+	query := s.redis.Table(new(models.RelationMenuRole).TableName())
 	var err error
 	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
