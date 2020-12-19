@@ -54,7 +54,7 @@ var SysWorkflowLogStateConst = map[uint]string{
 // 流程
 type SysWorkflow struct {
 	Model
-	Uuid              string `gorm:"unique;comment:'唯一标识'" json:"uuid"`
+	Uuid              string `gorm:"index:idx_uuid,unique;comment:'唯一标识'" json:"uuid"`
 	Category          uint   `gorm:"default:1;comment:'类别(1:每个流水线有一个人通过 2:每个流水线必须所有人审批通过(指定了Users) 其他自行扩展)'" json:"category"`
 	SubmitUserConfirm *uint  `gorm:"type:tinyint(1);default:0;comment:'是否需要提交人确认'" json:"submitUserConfirm"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
 	TargetCategory    uint   `gorm:"default:1;comment:'目标类别(1:请假(需要关联SysUser表) 其他自行扩展)'" json:"targetCategory"`

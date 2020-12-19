@@ -17,7 +17,7 @@ var SysUserStatusConst = map[uint]string{
 // User
 type SysUser struct {
 	Model
-	Username     string  `gorm:"unique;comment:'用户名'" json:"username"`
+	Username     string  `gorm:"idx_username,unique;comment:'用户名'" json:"username"`
 	Password     string  `gorm:"comment:'密码'" json:"password"`
 	Mobile       string  `gorm:"comment:'手机'" json:"mobile"`
 	Avatar       string  `gorm:"comment:'头像'" json:"avatar"`
