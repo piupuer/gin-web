@@ -32,6 +32,7 @@ type SystemConfiguration struct {
 	RSAPrivateKey               string   `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
 	RSAPublicBytes              []byte   `mapstructure:"-" json:"-"`
 	RSAPrivateBytes             []byte   `mapstructure:"-" json:"-"`
+	IdempotenceTokenName        string   `mapstructure:"idempotence-token-name" json:"idempotenceTokenName"`
 }
 
 type LogsConfiguration struct {

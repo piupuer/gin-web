@@ -255,6 +255,12 @@ func Data() {
 			Desc:     "刷新JWT令牌",
 		},
 		{
+			Method:   "GET",
+			Path:     "/v1/base/idempotenceToken",
+			Category: "base",
+			Desc:     "获取幂等性token",
+		},
+		{
 			Method:   "POST",
 			Path:     "/v1/user/info",
 			Category: "user",
@@ -610,6 +616,7 @@ func Data() {
 				"/base/login",
 				"/base/logout",
 				"/base/refreshToken",
+				"/base/idempotenceToken",
 				"/user/info",
 				"/menu/tree",
 				"/message/all",
