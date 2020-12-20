@@ -13,7 +13,9 @@ func InitLeaveRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (
 	{
 		router.GET("/list", v1.GetLeaves)
 		router.GET("/approval/list/:leaveId", v1.GetLeaveApprovalLogs)
-		router.POST("/create", v1.CreateLeave)
+		router.
+			Use(middleware.Idempotence).
+			POST("/create", v1.CreateLeave)
 		router.PATCH("/update/:leaveId", v1.UpdateLeaveById)
 		router.DELETE("/delete/batch", v1.BatchDeleteLeaveByIds)
 	}

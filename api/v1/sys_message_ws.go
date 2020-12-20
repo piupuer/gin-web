@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
@@ -85,6 +86,8 @@ type MessageHub struct {
 	Broadcast chan MessageBroadcast
 	// 刷新用户消息通道
 	RefreshUserMessage chan []uint
+	// 幂等性token校验方法
+	CheckIdempotenceTokenFunc func(token string) bool
 }
 
 // 消息客户端
@@ -126,7 +129,7 @@ type MessageBroadcast struct {
 }
 
 // 启动消息中心仓库
-func StartMessageHub() {
+func StartMessageHub(checkIdempotenceTokenFunc func(token string) bool) {
 	// 初始化
 	hub.Mysql = service.New(nil)
 	hub.Clients = make(map[string]*MessageClient)
@@ -134,6 +137,7 @@ func StartMessageHub() {
 	hub.UnRegister = make(chan *MessageClient)
 	hub.Broadcast = make(chan MessageBroadcast)
 	hub.RefreshUserMessage = make(chan []uint)
+	hub.CheckIdempotenceTokenFunc = checkIdempotenceTokenFunc
 	go hub.run()
 }
 
@@ -266,18 +270,19 @@ func (c *MessageClient) receive() {
 			// 参数校验
 			err = global.NewValidatorError(global.Validate.Struct(data), data.FieldTrans())
 			detail := response.GetSuccess()
-			if err != nil {
-				detail = response.GetFailWithMsg(err.Error())
-			} else {
-				data.FromUserId = c.User.Id
-				err = hub.Mysql.CreateMessage(&data)
-				if err != nil {
-					detail = response.GetFailWithMsg(err.Error())
+			if err == nil {
+				if !hub.CheckIdempotenceTokenFunc(data.IdempotenceToken) {
+					err = errors.New(response.IdempotenceTokenInvalidMsg)
+				} else {
+					data.FromUserId = c.User.Id
+					err = hub.Mysql.CreateMessage(&data)
 				}
 			}
 			if err == nil {
 				// 刷新条数
 				hub.RefreshUserMessage <- hub.UserIds
+			} else {
+				detail = response.GetFailWithMsg(err.Error())
 			}
 			// 发送响应
 			c.Send <- MessageResp{

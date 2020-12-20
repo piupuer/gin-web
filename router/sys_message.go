@@ -10,13 +10,15 @@ import (
 // 消息中心路由
 func InitMessageRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
 	// 初始化消息中心仓库
-	v1.StartMessageHub()
+	v1.StartMessageHub(middleware.CheckIdempotenceToken)
 	router := r.Group("/message").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
 		router.GET("/ws", v1.MessageWs)
 		router.GET("/all", v1.GetAllMessages)
 		router.GET("/unRead/count", v1.GetUnReadMessageCount)
-		router.POST("/push", v1.PushMessage)
+		router.
+			Use(middleware.Idempotence).
+			POST("/push", v1.PushMessage)
 		router.PATCH("/read/batch", v1.BatchUpdateMessageRead)
 		router.PATCH("/deleted/batch", v1.BatchUpdateMessageDeleted)
 		router.PATCH("/read/all", v1.UpdateAllMessageRead)

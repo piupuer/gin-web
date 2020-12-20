@@ -13,7 +13,9 @@ func InitMachineRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware)
 	{
 		router.GET("/shell/ws", v1.MachineShellWs)
 		router.GET("/list", v1.GetMachines)
-		router.POST("/create", v1.CreateMachine)
+		router.
+			Use(middleware.Idempotence).
+			POST("/create", v1.CreateMachine)
 		router.PATCH("/update/:machineId", v1.UpdateMachineById)
 		router.PATCH("/connect/:machineId", v1.ConnectMachineById)
 		router.DELETE("/delete/batch", v1.BatchDeleteMachineByIds)

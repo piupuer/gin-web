@@ -12,7 +12,9 @@ func InitRoleRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R
 	router := r.Group("/role").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
 	{
 		router.GET("/list", v1.GetRoles)
-		router.POST("/create", v1.CreateRole)
+		router.
+			Use(middleware.Idempotence).
+			POST("/create", v1.CreateRole)
 		router.PATCH("/update/:roleId", v1.UpdateRoleById)
 		router.PATCH("/menus/update/:roleId", v1.UpdateRoleMenusById)
 		router.PATCH("/apis/update/:roleId", v1.UpdateRoleApisById)
