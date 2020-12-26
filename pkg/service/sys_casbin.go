@@ -9,14 +9,19 @@ import (
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 )
 
+var cabinAdapter *gormadapter.Adapter
+
 // 获取casbin策略管理器
 func (s *MysqlService) Casbin() (*casbin.Enforcer, error) {
-	// 初始化数据库适配器, 添加自定义表前缀, casbin不使用事务管理, 因为他内部使用到事务, 重复用会导致冲突
-	// casbin默认表名casbin_rule, 为了与项目统一改写一下规则
-	// 注意: gormadapter.CasbinTableName内部添加了下划线, 这里不再多此一举
-	a, err := gormadapter.NewAdapterByDBUseTableName(s.db, global.Conf.Mysql.TablePrefix, "sys_casbin")
-	if err != nil {
-		return nil, err
+	if cabinAdapter == nil {
+		// 初始化数据库适配器, 添加自定义表前缀, casbin不使用事务管理, 因为他内部使用到事务, 重复用会导致冲突
+		// casbin默认表名casbin_rule, 为了与项目统一改写一下规则
+		// 注意: gormadapter.CasbinTableName内部添加了下划线, 这里不再多此一举
+		a, err := gormadapter.NewAdapterByDBUseTableName(s.db, global.Conf.Mysql.TablePrefix, "sys_casbin")
+		if err != nil {
+			return nil, err
+		}
+		cabinAdapter = a
 	}
 	// 读取配置文件
 	config, err := global.ConfBox.Find(global.Conf.Casbin.ModelPath)
@@ -26,7 +31,7 @@ func (s *MysqlService) Casbin() (*casbin.Enforcer, error) {
 	if err != nil {
 		return nil, err
 	}
-	e, err := casbin.NewEnforcer(cabinModel, a)
+	e, err := casbin.NewEnforcer(cabinModel, cabinAdapter)
 	if err != nil {
 		return nil, err
 	}
