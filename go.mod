@@ -39,6 +39,7 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
+	github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
 	github.com/siddontang/go-mysql v1.1.0
 	github.com/silenceper/wechat/v2 v2.0.2

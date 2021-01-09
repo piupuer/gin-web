@@ -32,3 +32,14 @@ func (s CreateApiRequestStruct) FieldTrans() map[string]string {
 	m["Category"] = "所属类别"
 	return m
 }
+
+// 更新接口结构体
+type UpdateApiRequestStruct struct {
+	Method   *string `json:"method"`
+	Path     *string `json:"path"`
+	Category *string `json:"category"`
+	Desc     *string `json:"desc"`
+	Title    *string `json:"title"`
+	Creator  *string `json:"creator"`
+	RoleIds  []uint `json:"roleIds"`
+}

@@ -39,3 +39,19 @@ func (s CreateMenuRequestStruct) FieldTrans() map[string]string {
 	m["Name"] = "菜单名称"
 	return m
 }
+
+// 更新菜单结构体
+type UpdateMenuRequestStruct struct {
+	Name       *string  `json:"name"`
+	Title      *string  `json:"title"`
+	Icon       *string  `json:"icon"`
+	Path       *string  `json:"path"`
+	Redirect   *string  `json:"redirect"`
+	Component  *string  `json:"component"`
+	Permission *string  `json:"permission"`
+	Sort       *ReqUint `json:"sort"`
+	Status     *ReqUint `json:"status"`
+	Visible    *ReqUint `json:"visible"`
+	Breadcrumb *ReqUint `json:"breadcrumb"`
+	ParentId   *ReqUint `json:"parentId"`
+}

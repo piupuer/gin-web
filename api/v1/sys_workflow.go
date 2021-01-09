@@ -194,7 +194,7 @@ func UpdateWorkflowLineIncremental(c *gin.Context) {
 // 更新工作流
 func UpdateWorkflowById(c *gin.Context) {
 	// 绑定参数
-	var req models.SysWorkflow
+	var req request.UpdateWorkflowRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -210,7 +210,7 @@ func UpdateWorkflowById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(workflowId, req)
+	err = s.UpdateById(workflowId, &models.SysWorkflow{}, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

@@ -26,3 +26,8 @@ func (s CreateLeaveRequestStruct) FieldTrans() map[string]string {
 	m["Desc"] = "说明"
 	return m
 }
+
+// 更新请假结构体
+type UpdateLeaveRequestStruct struct {
+	Desc *string `json:"desc"`
+}

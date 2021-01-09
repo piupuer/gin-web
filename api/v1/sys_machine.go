@@ -72,16 +72,13 @@ func CreateMachine(c *gin.Context) {
 // 更新机器
 func UpdateMachineById(c *gin.Context) {
 	// 绑定参数
-	var req models.SysMachine
-	var machineInfo request.CreateMachineRequestStruct
+	var req request.UpdateMachineRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
 	}
 
-	// 将部分参数转为pwd, 如果值不为空, 可能会用到
-	utils.Struct2StructByJson(req, &machineInfo)
 	// 获取path中的machineId
 	machineId := utils.Str2Uint(c.Param("machineId"))
 	if machineId == 0 {
@@ -92,7 +89,7 @@ func UpdateMachineById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(machineId, req)
+	err = s.UpdateById(machineId, &models.SysMachine{}, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

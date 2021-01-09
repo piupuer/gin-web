@@ -33,3 +33,13 @@ func (s CreateRoleRequestStruct) FieldTrans() map[string]string {
 	m["Sort"] = "角色排序"
 	return m
 }
+
+// 更新角色结构体
+type UpdateRoleRequestStruct struct {
+	Name    *string  `json:"name"`
+	Keyword *string  `json:"keyword"`
+	Sort    *ReqUint `json:"sort"`
+	Desc    *string  `json:"desc"`
+	Status  *ReqUint `json:"status"`
+	Creator *string  `json:"creator"`
+}

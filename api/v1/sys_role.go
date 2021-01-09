@@ -83,20 +83,17 @@ func CreateRole(c *gin.Context) {
 // 更新角色
 func UpdateRoleById(c *gin.Context) {
 	// 绑定参数
-	var req models.SysRole
-	var roleInfo request.CreateRoleRequestStruct
+	var req request.UpdateRoleRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
 	}
 
-	utils.Struct2StructByJson(req, &roleInfo)
-
 	if req.Sort != nil {
 		// 绑定当前用户角色排序(隐藏特定用户)
 		user := GetCurrentUser(c)
-		if *user.Role.Sort > *req.Sort {
+		if req.Sort != nil && *user.Role.Sort > uint(*req.Sort) {
 			response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
 			return
 		}
@@ -110,7 +107,7 @@ func UpdateRoleById(c *gin.Context) {
 	}
 
 	user := GetCurrentUser(c)
-	if roleInfo.Status != nil && uint(*roleInfo.Status) == models.SysRoleStatusDisabled && roleId == user.RoleId {
+	if req.Status != nil && uint(*req.Status) == models.SysRoleStatusDisabled && roleId == user.RoleId {
 		response.FailWithMsg("不能禁用自己所在的角色")
 		return
 	}
@@ -118,7 +115,7 @@ func UpdateRoleById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(roleId, req)
+	err = s.UpdateById(roleId, &models.SysRole{}, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

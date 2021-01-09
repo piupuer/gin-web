@@ -55,3 +55,17 @@ func (s CreateUserRequestStruct) FieldTrans() map[string]string {
 	m["RoleId"] = "角色"
 	return m
 }
+
+// 更新用户结构体
+type UpdateUserRequestStruct struct {
+	Username     *string  `json:"username"`
+	Password     *string  `json:"password"`
+	InitPassword *string  `json:"initPassword"`
+	NewPassword  *string  `json:"newPassword"`
+	Mobile       *string  `json:"mobile"`
+	Avatar       *string  `json:"avatar"`
+	Nickname     *string  `json:"nickname"`
+	Introduction *string  `json:"introduction"`
+	Status       *ReqUint `json:"status"`
+	RoleId       *uint    `json:"roleId"`
+}

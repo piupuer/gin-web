@@ -126,7 +126,7 @@ func CreateLeave(c *gin.Context) {
 // 更新请假
 func UpdateLeaveById(c *gin.Context) {
 	// 绑定参数
-	var req models.SysLeave
+	var req request.UpdateLeaveRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -142,7 +142,7 @@ func UpdateLeaveById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(leaveId, req)
+	err = s.UpdateById(leaveId, &models.SysLeave{}, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

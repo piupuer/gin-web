@@ -48,6 +48,16 @@ func (s CreateWorkflowRequestStruct) FieldTrans() map[string]string {
 	return m
 }
 
+// 更新流程结构体
+type UpdateWorkflowRequestStruct struct {
+	Category          *ReqUint `json:"category"`
+	SubmitUserConfirm *ReqUint `json:"submitUserConfirm"`
+	TargetCategory    *ReqUint `json:"targetCategory"`
+	Self              *ReqUint `json:"self"`
+	Name              *string  `json:"name"`
+	Desc              *string  `json:"desc"`
+}
+
 // 更新流程流水线结构体
 type UpdateWorkflowLineRequestStruct struct {
 	Id      uint    `json:"id"`

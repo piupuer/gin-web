@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
@@ -33,23 +34,23 @@ func (s *MysqlService) Create(req interface{}, model interface{}) (err error) {
 }
 
 // 根据编号更新
-func (s *MysqlService) UpdateById(id uint, req interface{}) error {
-	// 通过反射获取请求类型
-	reqType := reflect.TypeOf(req)
-	oldModel := reflect.New(reqType)
-	oldModelIns := oldModel.Interface()
-	query := s.tx.Model(oldModelIns).Where("id = ?", id).First(oldModelIns)
+func (s *MysqlService) UpdateById(id uint, model interface{}, req interface{}) error {
+	// 获取model值
+	rv := reflect.ValueOf(model)
+	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Struct) {
+		return fmt.Errorf("model必须是非空指针结构体类型")
+	}
+	query := s.tx.Model(rv.Interface()).Where("id = ?", id).First(rv.Interface())
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在, 更新失败")
 	}
 
 	// 比对增量字段
-	newModel := reflect.New(reqType)
-	newModelIns := newModel.Interface()
-	utils.CompareDifferenceStructByJson(oldModelIns, req, newModelIns)
+	m := make(map[string]interface{}, 0)
+	utils.CompareDifferenceStruct2SnakeKeyByJson(rv.Elem().Interface(), req, &m)
 
 	// 更新指定列
-	return query.Updates(newModelIns).Error
+	return query.Updates(&m).Error
 }
 
 // 批量删除, model需使用指针, 否则可能无法插入数据
