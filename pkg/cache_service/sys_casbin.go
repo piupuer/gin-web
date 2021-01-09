@@ -8,9 +8,13 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	redisadapter "github.com/casbin/redis-adapter/v2"
+	"sync"
 )
 
-var cabinAdapter *redisadapter.Adapter
+var (
+	casbinLock sync.Mutex
+	cabinModel model.Model
+)
 
 // 获取casbin策略管理器
 func (s *RedisService) Casbin() (*casbin.Enforcer, error) {
@@ -18,26 +22,29 @@ func (s *RedisService) Casbin() (*casbin.Enforcer, error) {
 		// 不使用redis
 		return s.mysql.Casbin()
 	}
-	if cabinAdapter == nil {
-		// 这里使用redis适配器
-		cabinAdapter = redisadapter.NewAdapterWithKey(
-			// 使用tcp连接redis
-			"tcp",
-			// 主机地址+端口
-			fmt.Sprintf("%s:%d", global.Conf.Redis.Host, global.Conf.Redis.Port),
-			// 缓存key由数据库名+表名组成, 见redis.RowChange方法cacheKey
-			fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, new(models.SysCasbin).TableName()),
-		)
+	// 加锁避免并发多次初始化cabinModel
+	casbinLock.Lock()
+	defer casbinLock.Unlock()
+	// 这里使用redis适配器
+	a := redisadapter.NewAdapterWithKey(
+		// 使用tcp连接redis
+		"tcp",
+		// 主机地址+端口
+		fmt.Sprintf("%s:%d", global.Conf.Redis.Host, global.Conf.Redis.Port),
+		// 缓存key由数据库名+表名组成, 见redis.RowChange方法cacheKey
+		fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, new(models.SysCasbin).TableName()),
+	)
+	if len(cabinModel) == 0 {
+		// 读取配置文件
+		config, err := global.ConfBox.Find(global.Conf.Casbin.ModelPath)
+		cabinModel = model.NewModel()
+		// 从字符串中加载casbin配置
+		err = cabinModel.LoadModelFromText(string(config))
+		if err != nil {
+			return nil, err
+		}
 	}
-	// 读取配置文件
-	config, err := global.ConfBox.Find(global.Conf.Casbin.ModelPath)
-	cabinModel := model.NewModel()
-	// 从字符串中加载casbin配置
-	err = cabinModel.LoadModelFromText(string(config))
-	if err != nil {
-		return nil, err
-	}
-	e, err := casbin.NewEnforcer(cabinModel, cabinAdapter)
+	e, err := casbin.NewEnforcer(cabinModel, a)
 	if err != nil {
 		return nil, err
 	}

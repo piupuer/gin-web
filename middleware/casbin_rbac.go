@@ -7,7 +7,10 @@ import (
 	"gin-web/pkg/response"
 	"github.com/gin-gonic/gin"
 	"strings"
+	"sync"
 )
+
+var checkLock sync.Mutex
 
 // Casbin中间件, 基于RBAC的权限访问控制模型
 func CasbinMiddleware(c *gin.Context) {
@@ -21,17 +24,25 @@ func CasbinMiddleware(c *gin.Context) {
 	act := c.Request.Method
 	// 创建服务
 	s := cache_service.New(c)
-	// 获取casbin策略管理器
-	e, err := s.Casbin()
-	if err != nil {
-		response.FailWithMsg("获取资源访问策略失败")
-		return
-	}
-	// 检查策略
-	pass, _ := e.Enforce(sub, obj, act)
-	if !pass {
+	// 校验是否有权限访问资源
+	if !check(sub, obj, act, s) {
 		response.FailWithCode(response.Forbidden)
+		return
 	}
 	// 处理请求
 	c.Next()
+}
+
+func check(sub, obj, act string, s cache_service.RedisService) bool {
+	// 同一时间只允许一个请求执行校验, 否则可能会校验失败
+	checkLock.Lock()
+	defer checkLock.Unlock()
+	// 获取casbin策略管理器
+	e, err := s.Casbin()
+	if err != nil {
+		return false
+	}
+	// 检查策略
+	pass, _ := e.Enforce(sub, obj, act)
+	return pass
 }
