@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/redis"
+	"gin-web/pkg/utils"
 	"github.com/siddontang/go-mysql/canal"
 	"github.com/siddontang/go-mysql/mysql"
 	"github.com/siddontang/go-mysql/replication"
@@ -41,14 +42,46 @@ func MysqlBinlog(tables []string) {
 	}
 	// 设置事件处理器
 	c.SetEventHandler(&BinlogEventHandler{})
-	// 从指定位置开始加载(go 后台运行)
-	go c.RunFrom(redis.GetCurrentPos())
+	// 刷新数据
+	refresh(tables)
+	// 从最后一个位置开始运行
+	pos, _ := c.GetMasterPos()
+	go c.RunFrom(pos)
 	global.Log.Info("初始化mysql binlog监听器完成")
 }
 
 // 自定义事件处理器
 type BinlogEventHandler struct {
 	canal.DummyEventHandler
+}
+
+// 同步器启动时, 刷新redis数据
+func refresh(tables []string) {
+	database := global.Conf.Mysql.Database
+	for _, table := range tables {
+		// 缓存键由数据库名与表名组成
+		cacheKey := fmt.Sprintf("%s_%s", database, table)
+		// 查询mysql数据
+		oldRows := make([]map[string]interface{}, 0)
+		err := global.Mysql.Table(table).Scan(&oldRows).Error
+		if err != nil {
+			continue
+		}
+		newRows := make([]map[string]interface{}, 0)
+		for _, oldRow := range oldRows {
+			row := make(map[string]interface{}, 0)
+			for key, item := range oldRow {
+				// 由于gorm以驼峰命名, 这里将蛇形转为驼峰
+				row[utils.CamelCaseLowerFirst(key)] = item
+			}
+			newRows = append(newRows, row)
+		}
+		// 将数据转为json字符串写入redis, expiration=0永不过期
+		err = global.Redis.Set(cacheKey, utils.Struct2Json(newRows), 0).Err()
+		if err != nil {
+			panic(fmt.Sprintf("刷新redis数据失败, %v", err))
+		}
+	}
 }
 
 // 数据行发生变化
