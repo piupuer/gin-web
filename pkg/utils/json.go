@@ -61,31 +61,49 @@ func CompareDifferenceStructByJson(oldStruct interface{}, newStruct interface{},
 				// key相同, 值不同
 				if k1 == k2 && v1 != v2 {
 					t := reflect.TypeOf(oldStruct)
+					key := CamelCase(k1)
+					var fieldType reflect.Type
+					oldStructV := reflect.ValueOf(oldStruct)
+					// map与结构体取值方式不同
+					if oldStructV.Kind() == reflect.Map {
+						mapV := oldStructV.MapIndex(reflect.ValueOf(k1))
+						if !mapV.IsValid() {
+							break
+						}
+						fieldType = mapV.Type()
+					} else if oldStructV.Kind() == reflect.Struct {
+						structField, ok := t.FieldByName(key)
+						if !ok {
+							break
+						}
+						fieldType = structField.Type
+					} else {
+						// oldStruct类型不对, 直接跳过不处理
+						break
+					}
 					// 取到结构体对应字段
-					if field, ok := t.FieldByName(CamelCase(k1)); ok {
-						realT := field.Type
-						// 指针类型需要剥掉一层获取真实类型
-						if field.Type.Kind() == reflect.Ptr {
-							realT = field.Type.Elem()
+					realT := fieldType
+					// 指针类型需要剥掉一层获取真实类型
+					if fieldType.Kind() == reflect.Ptr {
+						realT = fieldType.Elem()
+					}
+					// 获得元素
+					e := reflect.New(realT).Elem()
+					// 不同类型不一定可以强制转换
+					switch e.Interface().(type) {
+					case decimal.Decimal:
+						d, _ := decimal.NewFromString(rv.String())
+						m3[k1] = d
+					case models.LocalTime:
+						t := new(models.LocalTime).SetString(rv.String())
+						// 时间过滤空值
+						if !t.IsZero() {
+							m3[k1] = *t
 						}
-						// 获得元素
-						e := reflect.New(realT).Elem()
-						// 不同类型不一定可以强制转换
-						switch e.Interface().(type) {
-						case decimal.Decimal:
-							d, _ := decimal.NewFromString(rv.String())
-							m3[k1] = d
-						case models.LocalTime:
-							t := new(models.LocalTime).SetString(rv.String())
-							// 时间过滤空值
-							if !t.IsZero() {
-								m3[k1] = *t
-							}
-						default:
-							// 强制转换rv赋值给e
-							e.Set(rv.Convert(realT))
-							m3[k1] = e.Interface()
-						}
+					default:
+						// 强制转换rv赋值给e
+						e.Set(rv.Convert(realT))
+						m3[k1] = e.Interface()
 					}
 					break
 				}
