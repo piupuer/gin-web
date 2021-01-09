@@ -4,16 +4,17 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"gin-web/pkg/global"
+	"gorm.io/gorm"
 	"strings"
 	"time"
 )
 
 // 由于gorm提供的base model没有json tag, 使用自定义
 type Model struct {
-	Id        uint       `gorm:"primary_key;comment:'自增编号'" json:"id"`
-	CreatedAt LocalTime  `gorm:"comment:'创建时间'" json:"createdAt"`
-	UpdatedAt LocalTime  `gorm:"comment:'更新时间'" json:"updatedAt"`
-	DeletedAt *LocalTime `gorm:"comment:'删除时间(软删除)'" sql:"index" json:"deletedAt"`
+	Id        uint           `gorm:"primary_key;comment:'自增编号'" json:"id"`
+	CreatedAt LocalTime      `gorm:"comment:'创建时间'" json:"createdAt"`
+	UpdatedAt LocalTime      `gorm:"comment:'更新时间'" json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `gorm:"comment:'删除时间(软删除)'" sql:"index" json:"deletedAt"`
 }
 
 // 表名设置
