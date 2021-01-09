@@ -20,5 +20,15 @@ func InitBaseRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R
 			Use(middleware.CasbinMiddleware).
 			GET("/idempotenceToken", middleware.GetIdempotenceToken)
 	}
-	return router
+	return r
+}
+
+// 获取带casbin中间件的路由
+func GetCasbinRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware, path string) gin.IRoutes {
+	return r.Group(path).Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
+}
+
+// 获取带casbin和幂等性中间件的路由
+func GetCasbinAndIdempotenceRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware, path string) gin.IRoutes {
+	return GetCasbinRouter(r, authMiddleware, path).Use(middleware.Idempotence)
 }
