@@ -604,6 +604,7 @@ func Data() {
 		oldApi := models.SysApi{}
 		err := global.Mysql.Where("id = ?", id).First(&oldApi).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
+			api.Id = id
 			api.Creator = creator
 			newApis = append(newApis, api)
 			// 超级管理员拥有所有API权限
