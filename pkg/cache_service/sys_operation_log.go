@@ -10,7 +10,7 @@ import (
 
 // 获取所有操作日志
 func (s *RedisService) GetOperationLogs(req *request.OperationLogListRequestStruct) ([]models.SysOperationLog, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetOperationLogs(req)
 	}

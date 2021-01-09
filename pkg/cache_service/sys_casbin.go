@@ -18,7 +18,7 @@ var (
 
 // 获取casbin策略管理器
 func (s *RedisService) Casbin() (*casbin.Enforcer, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.Casbin()
 	}
@@ -55,7 +55,7 @@ func (s *RedisService) Casbin() (*casbin.Enforcer, error) {
 
 // 获取符合条件的casbin规则, 按角色
 func (s *RedisService) GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCasbin {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetRoleCasbins(c)
 	}
@@ -74,7 +74,7 @@ func (s *RedisService) GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCa
 
 // 根据权限编号读取casbin规则(如果roleId为0表示读取全部)
 func (s *RedisService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetCasbinListByRoleId(roleId)
 	}

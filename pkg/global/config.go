@@ -22,6 +22,7 @@ type SystemConfiguration struct {
 	Port                        int      `mapstructure:"port" json:"port"`
 	ConnectTimeout              int      `mapstructure:"connect-timeout" json:"connectTimeout"`
 	UseRedis                    bool     `mapstructure:"use-redis" json:"useRedis"`
+	UseRedisService             bool     `mapstructure:"use-redis-service" json:"useRedisService"`
 	Transaction                 bool     `mapstructure:"transaction" json:"transaction"`
 	InitData                    bool     `mapstructure:"init-data" json:"initData"`
 	OperationLogKey             string   `mapstructure:"operation-log-key" json:"operationLogKey"`

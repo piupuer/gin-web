@@ -8,7 +8,7 @@ import (
 
 // 获取权限菜单树
 func (s *RedisService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetMenuTree(roleId)
 	}
@@ -26,7 +26,7 @@ func (s *RedisService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 
 // 获取所有菜单
 func (s *RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetMenus(currentRole)
 	}
@@ -40,7 +40,7 @@ func (s *RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 
 // 根据权限编号获取全部菜单
 func (s *RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetAllMenuByRoleId(currentRole, roleId)
 	}
