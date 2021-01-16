@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
@@ -9,11 +10,25 @@ import (
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
+	"time"
+)
+
+var (
+	// 定期缓存, 避免每次频繁查询数据库
+	menuTreeCache = cache.New(24*time.Hour, 48*time.Hour)
 )
 
 // 查询当前用户菜单树
 func GetMenuTree(c *gin.Context) {
 	user := GetCurrentUser(c)
+	oldCache, ok := menuTreeCache.Get(fmt.Sprintf("%d", user.Id))
+	if ok {
+		resp, _ := oldCache.([]response.MenuTreeResponseStruct)
+		response.SuccessWithData(resp)
+		return
+	}
+
 	// 创建服务
 	s := cache_service.New(c)
 	menus, err := s.GetMenuTree(user.RoleId)
@@ -24,6 +39,8 @@ func GetMenuTree(c *gin.Context) {
 	// 转为MenuTreeResponseStruct
 	var resp []response.MenuTreeResponseStruct
 	utils.Struct2StructByJson(menus, &resp)
+	// 写入缓存
+	menuTreeCache.Add(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
 	response.SuccessWithData(resp)
 }
 
