@@ -2,6 +2,7 @@ package redis
 
 import (
 	"fmt"
+	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/siddontang/go-mysql/canal"
@@ -42,6 +43,12 @@ func RowChange(e *canal.RowsEvent) {
 			if eV, ok := eItem.([]uint8); ok {
 				row[j] = string(eV)
 			} else {
+				columnType := e.Table.Columns[j].RawType
+				// 转为本地时间
+				// grom v2时间类型全部是datetime(3)
+				if t, ok := eItem.(string); ok && columnType == "datetime(3)" {
+					eItem = new(models.LocalTime).SetString(t)
+				}
 				row[j] = eItem
 			}
 		}

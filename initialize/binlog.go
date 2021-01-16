@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"fmt"
+	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/redis"
 	"gin-web/pkg/utils"
@@ -11,6 +12,7 @@ import (
 	"regexp"
 	"runtime/debug"
 	"strings"
+	"time"
 )
 
 // 使用siddontang/go-mysql监听mysql binlog
@@ -71,6 +73,19 @@ func refresh(tables []string) {
 		for _, oldRow := range oldRows {
 			row := make(map[string]interface{}, 0)
 			for key, item := range oldRow {
+				// 转为本地时间
+				if t, ok := item.(time.Time); ok {
+					item = models.LocalTime{
+						Time: t,
+					}
+				}
+				if t, ok := item.(*time.Time); ok {
+					if t != nil {
+						item = &models.LocalTime{
+							Time: *t,
+						}
+					}
+				}
 				// 由于gorm以驼峰命名, 这里将蛇形转为驼峰
 				row[utils.CamelCaseLowerFirst(key)] = item
 			}
