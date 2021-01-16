@@ -3,6 +3,7 @@ package global
 import (
 	"errors"
 	"gin-web/pkg/oss"
+	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-redis/redis"
@@ -26,6 +27,8 @@ var (
 	Mysql *gorm.DB
 	// redis实例
 	Redis *redis.Client
+	// cabin实例
+	CasbinEnforcer *casbin.Enforcer
 	// minio实例
 	Minio *oss.MinioOss
 	// validation.v9校验器

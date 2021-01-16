@@ -2,7 +2,6 @@ package middleware
 
 import (
 	v1 "gin-web/api/v1"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/response"
 	"github.com/gin-gonic/gin"
@@ -22,10 +21,8 @@ func CasbinMiddleware(c *gin.Context) {
 	obj := strings.Replace(c.Request.URL.Path, "/"+global.Conf.System.UrlPathPrefix, "", 1)
 	// 请求方式作为casbin访问动作act
 	act := c.Request.Method
-	// 创建服务
-	s := cache_service.New(c)
 	// 校验是否有权限访问资源
-	if !check(sub, obj, act, s) {
+	if !check(sub, obj, act) {
 		response.FailWithCode(response.Forbidden)
 		return
 	}
@@ -33,16 +30,11 @@ func CasbinMiddleware(c *gin.Context) {
 	c.Next()
 }
 
-func check(sub, obj, act string, s cache_service.RedisService) bool {
+func check(sub, obj, act string) bool {
 	// 同一时间只允许一个请求执行校验, 否则可能会校验失败
 	checkLock.Lock()
 	defer checkLock.Unlock()
-	// 获取casbin策略管理器
-	e, err := s.Casbin()
-	if err != nil {
-		return false
-	}
 	// 检查策略
-	pass, _ := e.Enforce(sub, obj, act)
+	pass, _ := global.CasbinEnforcer.Enforce(sub, obj, act)
 	return pass
 }

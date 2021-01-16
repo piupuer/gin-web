@@ -7,7 +7,6 @@ require (
 	github.com/appleboy/gin-jwt/v2 v2.6.3
 	github.com/casbin/casbin/v2 v2.2.2
 	github.com/casbin/gorm-adapter/v3 v3.0.3
-	github.com/casbin/redis-adapter/v2 v2.0.1
 	github.com/codahale/hdrhistogram v0.9.0 // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/cznic/sortutil v0.0.0-20181122101858-f5f958428db8 // indirect

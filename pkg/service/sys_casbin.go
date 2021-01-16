@@ -4,54 +4,11 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
-	"github.com/casbin/casbin/v2"
-	"github.com/casbin/casbin/v2/model"
-	gormadapter "github.com/casbin/gorm-adapter/v3"
-	"sync"
 )
-
-var (
-	casbinLock sync.Mutex
-	cabinAdapter *gormadapter.Adapter
-	cabinModel model.Model
-)
-
-// 获取casbin策略管理器
-func (s *MysqlService) Casbin() (*casbin.Enforcer, error) {
-	// 加锁避免并发多次初始化cabinModel
-	casbinLock.Lock()
-	defer casbinLock.Unlock()
-	if cabinAdapter == nil {
-		// 初始化数据库适配器, 添加自定义表前缀, casbin不使用事务管理, 因为他内部使用到事务, 重复用会导致冲突
-		// casbin默认表名casbin_rule, 为了与项目统一改写一下规则
-		// 注意: gormadapter.CasbinTableName内部添加了下划线, 这里不再多此一举
-		a, err := gormadapter.NewAdapterByDBUseTableName(s.db, global.Conf.Mysql.TablePrefix, "sys_casbin")
-		if err != nil {
-			return nil, err
-		}
-		cabinAdapter = a
-		// 读取配置文件
-		config, err := global.ConfBox.Find(global.Conf.Casbin.ModelPath)
-		cabinModel = model.NewModel()
-		// 从字符串中加载casbin配置
-		err = cabinModel.LoadModelFromText(string(config))
-		if err != nil {
-			return nil, err
-		}
-	}
-	e, err := casbin.NewEnforcer(cabinModel, cabinAdapter)
-	if err != nil {
-		return nil, err
-	}
-	// 加载策略
-	err = e.LoadPolicy()
-	return e, err
-}
 
 // 获取符合条件的casbin规则, 按角色
 func (s *MysqlService) GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCasbin {
-	e, _ := s.Casbin()
-	policies := e.GetFilteredPolicy(0, c.Keyword, c.Path, c.Method)
+	policies := global.CasbinEnforcer.GetFilteredPolicy(0, c.Keyword, c.Path, c.Method)
 	cs := make([]models.SysRoleCasbin, 0)
 	for _, policy := range policies {
 		cs = append(cs, models.SysRoleCasbin{
@@ -65,13 +22,11 @@ func (s *MysqlService) GetRoleCasbins(c models.SysRoleCasbin) []models.SysRoleCa
 
 // 创建一条casbin规则, 按角色
 func (s *MysqlService) CreateRoleCasbin(c models.SysRoleCasbin) (bool, error) {
-	e, _ := s.Casbin()
-	return e.AddPolicy(c.Keyword, c.Path, c.Method)
+	return global.CasbinEnforcer.AddPolicy(c.Keyword, c.Path, c.Method)
 }
 
 // 创建多条casbin规则, 按角色
 func (s *MysqlService) CreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
-	e, _ := s.Casbin()
 	rules := make([][]string, 0)
 	for _, c := range cs {
 		rules = append(rules, []string{
@@ -80,12 +35,11 @@ func (s *MysqlService) CreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error
 			c.Method,
 		})
 	}
-	return e.AddPolicies(rules)
+	return global.CasbinEnforcer.AddPolicies(rules)
 }
 
 // 批量创建多条casbin规则, 按角色
 func (s *MysqlService) BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
-	e, _ := s.Casbin()
 	// 按角色构建
 	rules := make([][]string, 0)
 	for _, c := range cs {
@@ -95,18 +49,16 @@ func (s *MysqlService) BatchCreateRoleCasbins(cs []models.SysRoleCasbin) (bool, 
 			c.Method,
 		})
 	}
-	return e.AddPolicies(rules)
+	return global.CasbinEnforcer.AddPolicies(rules)
 }
 
 // 删除一条casbin规则, 按角色
 func (s *MysqlService) DeleteRoleCasbin(c models.SysRoleCasbin) (bool, error) {
-	e, _ := s.Casbin()
-	return e.RemovePolicy(c.Keyword, c.Path, c.Method)
+	return global.CasbinEnforcer.RemovePolicy(c.Keyword, c.Path, c.Method)
 }
 
 // 批量删除多条casbin规则, 按角色
 func (s *MysqlService) BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, error) {
-	e, _ := s.Casbin()
 	// 按角色构建
 	rules := make([][]string, 0)
 	for _, c := range cs {
@@ -116,14 +68,13 @@ func (s *MysqlService) BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, 
 			c.Method,
 		})
 	}
-	return e.RemovePolicies(rules)
+	return global.CasbinEnforcer.RemovePolicies(rules)
 }
 
 // 根据权限编号读取casbin规则
 func (s *MysqlService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
 	list := make([][]string, 0)
 	casbins := make([]models.SysCasbin, 0)
-	e, _ := s.Casbin()
 	if roleId > 0 {
 		// 读取角色缓存
 		var role models.SysRole
@@ -132,9 +83,9 @@ func (s *MysqlService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, e
 			return casbins, err
 		}
 		// 查询符合字段v0=role.Keyword所有casbin规则
-		list = e.GetFilteredPolicy(0, role.Keyword)
+		list = global.CasbinEnforcer.GetFilteredPolicy(0, role.Keyword)
 	} else {
-		list = e.GetFilteredPolicy(0)
+		list = global.CasbinEnforcer.GetFilteredPolicy(0)
 	}
 
 	// 避免重复, 记录添加历史

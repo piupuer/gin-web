@@ -35,6 +35,9 @@ func main() {
 	// 初始化mysql数据库
 	initialize.Mysql()
 
+	// 初始化casbin策略管理器
+	initialize.CasbinEnforcer()
+	
 	// 初始校验器
 	initialize.Validate()
 

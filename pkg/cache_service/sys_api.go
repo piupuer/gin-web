@@ -74,9 +74,9 @@ func (s *RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 		currentRoleId = currentRole.Id
 	}
 	// 查询当前角色拥有api访问权限的casbin规则
-	currentCasbins, err := s.GetCasbinListByRoleId(currentRoleId)
+	currentCasbins, err := s.mysql.GetCasbinListByRoleId(currentRoleId)
 	// 查询指定角色拥有api访问权限的casbin规则(当前角色只能在自己权限范围内操作, 不得越权)
-	casbins, err := s.GetCasbinListByRoleId(roleId)
+	casbins, err := s.mysql.GetCasbinListByRoleId(roleId)
 	if err != nil {
 		return tree, accessIds, err
 	}
