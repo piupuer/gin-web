@@ -10,6 +10,7 @@ import (
 	"gin-web/pkg/utils"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	"time"
 )
 
@@ -84,12 +85,25 @@ func login(c *gin.Context) (interface{}, error) {
 	}, nil
 }
 
+var (
+	// 定期缓存, 避免每次频繁查询
+	authorizatorCache = cache.New(24*time.Hour, 48*time.Hour)
+)
+
 func authorizator(data interface{}, c *gin.Context) bool {
 	if v, ok := data.(map[string]interface{}); ok {
+		userStr := v["user"].(string)
+		oldCache, ok := authorizatorCache.Get(userStr)
 		var user models.SysUser
-		// 将用户json转为结构体
-		utils.JsonI2Struct(v["user"], &user)
-		// 将用户保存到context, api调用时取数据方便
+		if ok {
+			user, _ = oldCache.(models.SysUser)
+		} else {
+			// 将用户json转为结构体
+			utils.Json2Struct(userStr, &user)
+			// 将用户保存到context, api调用时取数据方便
+			// 写入缓存
+			authorizatorCache.Add(userStr, user, cache.DefaultExpiration)
+		}
 		c.Set("user", user)
 		return true
 	}

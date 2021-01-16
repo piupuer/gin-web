@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
@@ -9,12 +10,26 @@ import (
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	"strings"
+	"time"
 )
 
+var (
+	// 定期缓存, 避免每次频繁查询数据库
+	userInfoCache = cache.New(24*time.Hour, 48*time.Hour)
+	userByIdCache = cache.New(24*time.Hour, 48*time.Hour)
+)
 // 获取当前用户信息
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
+	oldCache, ok := userInfoCache.Get(fmt.Sprintf("%d", user.Id))
+	if ok {
+		resp, _ := oldCache.(response.UserInfoResponseStruct)
+		response.SuccessWithData(resp)
+		return
+	}
+
 	// 转为UserInfoResponseStruct, 隐藏部分字段
 	var resp response.UserInfoResponseStruct
 	utils.Struct2StructByJson(user, &resp)
@@ -22,6 +37,8 @@ func GetUserInfo(c *gin.Context) {
 		"admin",
 	}
 	resp.RoleSort = *user.Role.Sort
+	// 写入缓存
+	userInfoCache.Add(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
 	response.SuccessWithData(resp)
 }
 
@@ -97,9 +114,16 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 		return newUser
 	}
 	u, _ := user.(models.SysUser)
+	oldCache, ok := userByIdCache.Get(fmt.Sprintf("%d", u.Id))
+	if ok {
+		u, _ := oldCache.(models.SysUser)
+		return u
+	}
 	// 创建服务
 	s := cache_service.New(c)
 	newUser, _ = s.GetUserById(u.Id)
+	// 写入缓存
+	userByIdCache.Add(fmt.Sprintf("%d", u.Id), newUser, cache.DefaultExpiration)
 	return newUser
 }
 
