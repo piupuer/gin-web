@@ -179,17 +179,6 @@ func getRow(data []interface{}, table *schema.Table) map[string]interface{} {
 	return row
 }
 
-// 获取当前日志位置
-func GetCurrentPos() mysql.Position {
-	var pos mysql.Position
-	p, err := global.Redis.Get(global.Conf.Redis.BinlogPos).Result()
-	if err == nil {
-		// 将旧数据解析为对象
-		utils.Json2Struct(p, &pos)
-	}
-	return pos
-}
-
 // mysql日志位置发生变化
 func PosChange(pos mysql.Position) {
 	err := global.Redis.Set(global.Conf.Redis.BinlogPos, utils.Struct2Json(pos), 0).Err()

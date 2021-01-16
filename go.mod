@@ -31,6 +31,7 @@ require (
 	github.com/ngaut/sync2 v0.0.0-20141008032647-7a24ed77b2ef // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/panjf2000/ants v1.3.0
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pingcap/goleveldb v0.0.0-20191226122134-f82aafb29989 // indirect
 	github.com/pingcap/kvproto v0.0.0-20200927054727-1290113160f0 // indirect
 	github.com/pingcap/tidb v2.0.11+incompatible // indirect

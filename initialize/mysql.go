@@ -108,7 +108,6 @@ func binlog() {
 		new(models.SysWorkflowLog).TableName(),
 		new(models.RelationUserWorkflowLine).TableName(),
 		new(models.SysLeave).TableName(),
-		new(models.SysOperationLog).TableName(),
 		new(models.SysMessage).TableName(),
 		new(models.SysMessageLog).TableName(),
 		new(models.SysMachine).TableName(),

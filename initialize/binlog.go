@@ -101,6 +101,10 @@ func refresh(tables []string) {
 
 // 数据行发生变化
 func (s *BinlogEventHandler) OnRow(e *canal.RowsEvent) error {
+	// 操作日志表无需写入
+	if e.Table.Name == new(models.SysOperationLog).TableName() {
+		return nil
+	}
 	// 避免监听器发生未知异常导致程序退出, 这里加defer
 	defer func() {
 		if err := recover(); err != nil {
