@@ -4,9 +4,11 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/response"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	uuid "github.com/satori/go.uuid"
 	"strings"
 	"sync"
+	"time"
 )
 
 // 幂等性中间件
@@ -15,7 +17,7 @@ var (
 	// 记录是否加锁
 	idempotenceLock sync.Mutex
 	// 存取token(redis未开启的情况下)
-	idempotenceMap = make(map[string]bool)
+	idempotenceMap = cache.New(24*time.Hour, 48*time.Hour)
 )
 
 // redis lua脚本(先读取key, 直接删除, 获取删除标志)
@@ -64,7 +66,7 @@ func GenIdempotenceToken() string {
 	} else {
 		idempotenceLock.Lock()
 		defer idempotenceLock.Unlock()
-		idempotenceMap[token] = true
+		idempotenceMap.Add(token, 1, cache.DefaultExpiration)
 	}
 	return token
 }
@@ -80,13 +82,13 @@ func CheckIdempotenceToken(token string) bool {
 	} else {
 		idempotenceLock.Lock()
 		defer idempotenceLock.Unlock()
-		// 这里只是模拟单机map缓存，如果是分布式系统多个gin-web应用会导致token不一致，此时建议使用redis或其他分布式唯一token组件
-		_, ok := idempotenceMap[token]
+		// 读取map
+		_, ok := idempotenceMap.Get(token)
 		if !ok {
 			return false
 		}
 		// 删除map中的值
-		delete(idempotenceMap, token)
+		idempotenceMap.Delete(token)
 	}
 	return true
 }
