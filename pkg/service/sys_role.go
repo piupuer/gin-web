@@ -6,16 +6,32 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
-	"gin-web/pkg/utils"
 	"gorm.io/gorm"
 	"strings"
 )
+
+// 根据当前角色顺序获取角色编号集合(主要功能是针对不同角色用户登录系统隐藏特定菜单)
+func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
+	roles := make([]models.SysRole, 0)
+	roleIds := make([]uint, 0)
+	err := s.tx.Model(models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
+	if err != nil {
+		return roleIds, err
+	}
+	for _, role := range roles {
+		roleIds = append(roleIds, role.Id)
+	}
+	return roleIds, nil
+}
 
 // 获取所有角色
 func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
-	db := global.Mysql.Table(new (models.SysRole).TableName())
+	db := global.Mysql.
+		Table(new(models.SysRole).TableName()).
+		Order("created_at DESC").
+		Where("sort >= ?", req.CurrentRoleSort)
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
@@ -50,36 +66,10 @@ func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 	return list, err
 }
 
-// 创建角色
-func (s *MysqlService) CreateRole(req *request.CreateRoleRequestStruct) (err error) {
-	var role models.SysRole
-	utils.Struct2StructByJson(req, &role)
-	// 创建数据
-	err = s.tx.Create(&role).Error
-	return
-}
-
-// 更新角色
-func (s *MysqlService) UpdateRoleById(id uint, req models.SysRole) (err error) {
-	var oldRole models.SysRole
-	query := s.tx.Model(oldRole).Where("id = ?", id).First(&oldRole)
-	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
-	}
-
-	// 比对增量字段
-	var m models.SysRole
-	utils.CompareDifferenceStructByJson(oldRole, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	return
-}
-
 // 更新角色的权限菜单
-func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (s *MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	// 查询全部菜单
-	allMenu := s.getAllMenu()
+	allMenu := s.getAllMenu(currentRole)
 	// 查询角色拥有菜单
 	roleMenus := s.getRoleMenus(id)
 	// 获取当前菜单编号集合
@@ -95,8 +85,14 @@ func (s *MysqlService) UpdateRoleMenusById(id uint, req request.UpdateIncrementa
 	if err != nil {
 		return
 	}
+	// 查询role
+	var role models.SysRole
+	err = s.tx.Where("id = ?", id).First(&role).Error
+	if err != nil {
+		return
+	}
 	// 替换菜单
-	err = s.tx.Where("id = ?", id).First(&models.SysRole{}).Association("Menus").Replace(&incrementalMenus)
+	err = s.tx.Model(&role).Association("Menus").Replace(&incrementalMenus)
 	return
 }
 
@@ -174,7 +170,7 @@ func (s *MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	}
 	if len(newIds) > 0 {
 		// 执行删除
-		err = s.tx.Where("id IN (?)", newIds).Delete(models.SysRole{}).Error
+		err = s.DeleteByIds(newIds, new(models.SysRole))
 	}
 	return
 }

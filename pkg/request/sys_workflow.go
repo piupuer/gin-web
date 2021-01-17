@@ -7,9 +7,9 @@ import (
 // 获取流程列表结构体
 type WorkflowListRequestStruct struct {
 	Uuid              string `json:"uuid" form:"uuid"`
-	Category          uint   `json:"category" form:"category"`
+	Category          *uint  `json:"category" form:"category"`
 	SubmitUserConfirm *uint  `json:"submitUserConfirm" form:"submitUserConfirm"`
-	TargetCategory    uint   `json:"targetCategory" form:"targetCategory"`
+	TargetCategory    *uint  `json:"targetCategory" form:"targetCategory"`
 	Self              *uint  `json:"self" form:"self"`
 	Name              string `json:"name" form:"name"`
 	Desc              string `json:"desc" form:"desc"`
@@ -31,13 +31,14 @@ type WorkflowApprovingListRequestStruct struct {
 
 // 创建流程结构体
 type CreateWorkflowRequestStruct struct {
-	Category          uint   `json:"category"`
-	SubmitUserConfirm *uint  `json:"submitUserConfirm"`
-	TargetCategory    uint   `json:"targetCategory"`
-	Self              *uint  `json:"self"`
-	Name              string `json:"name" validate:"required"`
-	Desc              string `json:"desc"`
-	Creator           string `json:"creator"`
+	Uuid              string  `json:"uuid"`
+	Category          ReqUint `json:"category"`
+	SubmitUserConfirm ReqUint `json:"submitUserConfirm"`
+	TargetCategory    ReqUint `json:"targetCategory"`
+	Self              ReqUint `json:"self"`
+	Name              string  `json:"name" validate:"required"`
+	Desc              string  `json:"desc"`
+	Creator           string  `json:"creator"`
 }
 
 // 翻译需要校验的字段名称
@@ -47,14 +48,24 @@ func (s CreateWorkflowRequestStruct) FieldTrans() map[string]string {
 	return m
 }
 
+// 更新流程结构体
+type UpdateWorkflowRequestStruct struct {
+	Category          *ReqUint `json:"category"`
+	SubmitUserConfirm *ReqUint `json:"submitUserConfirm"`
+	TargetCategory    *ReqUint `json:"targetCategory"`
+	Self              *ReqUint `json:"self"`
+	Name              *string  `json:"name"`
+	Desc              *string  `json:"desc"`
+}
+
 // 更新流程流水线结构体
 type UpdateWorkflowLineRequestStruct struct {
-	Id      uint   `json:"id"`
-	FlowId  uint   `json:"flowId" validate:"required"`
-	RoleId  *uint  `json:"roleId"`
-	UserIds []uint `json:"userIds"`
-	Name    string `json:"name" validate:"required"`
-	Edit    *uint  `json:"edit"`
+	Id      uint    `json:"id"`
+	FlowId  ReqUint `json:"flowId" validate:"required"`
+	RoleId  ReqUint `json:"roleId"`
+	UserIds []uint  `json:"userIds"`
+	Name    string  `json:"name" validate:"required"`
+	Edit    ReqUint `json:"edit"`
 }
 
 // 翻译需要校验的字段名称

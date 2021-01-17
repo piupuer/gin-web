@@ -9,13 +9,14 @@ import (
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	uuid "github.com/satori/go.uuid"
 )
 
 // 获取全部审批日志(目前有1: 请假)
 func GetWorkflowApprovings(c *gin.Context) {
 	// 绑定参数
 	var req request.WorkflowApprovingListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -69,7 +70,7 @@ func GetWorkflowApprovings(c *gin.Context) {
 func GetWorkflows(c *gin.Context) {
 	// 绑定参数
 	var req request.WorkflowListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -98,7 +99,7 @@ func GetWorkflows(c *gin.Context) {
 func GetWorkflowLines(c *gin.Context) {
 	// 绑定参数
 	var req request.WorkflowLineListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -138,7 +139,7 @@ func CreateWorkflow(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateWorkflowRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -154,7 +155,8 @@ func CreateWorkflow(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
 	s := service.New(c)
-	err = s.CreateWorkflow(&req)
+	req.Uuid = uuid.NewV4().String()
+	err = s.Create(req, new(models.SysWorkflow))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -166,7 +168,7 @@ func CreateWorkflow(c *gin.Context) {
 func UpdateWorkflowLineIncremental(c *gin.Context) {
 	// 绑定参数
 	var req request.UpdateWorkflowLineIncrementalRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -192,8 +194,8 @@ func UpdateWorkflowLineIncremental(c *gin.Context) {
 // 更新工作流
 func UpdateWorkflowById(c *gin.Context) {
 	// 绑定参数
-	var req models.SysWorkflow
-	err := c.Bind(&req)
+	var req request.UpdateWorkflowRequestStruct
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -208,7 +210,7 @@ func UpdateWorkflowById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateWorkflowById(workflowId, req)
+	err = s.UpdateById(workflowId, &models.SysWorkflow{}, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -220,7 +222,7 @@ func UpdateWorkflowById(c *gin.Context) {
 func UpdateWorkflowLogApproval(c *gin.Context) {
 	// 绑定参数
 	var req request.WorkflowTransitionRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -249,7 +251,7 @@ func UpdateWorkflowLogApproval(c *gin.Context) {
 // 批量删除工作流
 func BatchDeleteWorkflowByIds(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -258,7 +260,7 @@ func BatchDeleteWorkflowByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteWorkflowByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysWorkflow))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

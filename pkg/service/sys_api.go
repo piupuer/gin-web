@@ -22,7 +22,9 @@ import (
 func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
-	query := s.tx.Table(new(models.SysApi).TableName())
+	query := s.tx.
+		Table(new(models.SysApi).TableName()).
+		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
 		query = query.Where("method LIKE ?", fmt.Sprintf("%%%s%%", method))
@@ -55,7 +57,7 @@ func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 }
 
 // 根据权限编号获取以api分类分组的权限接口
-func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
+func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
 	// 接口树
 	tree := make([]response.ApiGroupByCategoryResponseStruct, 0)
 	// 有权限访问的id列表
@@ -66,14 +68,35 @@ func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response
 	if err != nil {
 		return tree, accessIds, err
 	}
+	var currentRoleId uint
+	// 非超级管理员
+	if *currentRole.Sort != models.SysRoleSuperAdminSort {
+		currentRoleId = currentRole.Id
+	}
 	// 查询当前角色拥有api访问权限的casbin规则
+	currentCasbins, err := s.GetCasbinListByRoleId(currentRoleId)
+	// 查询指定角色拥有api访问权限的casbin规则(当前角色只能在自己权限范围内操作, 不得越权)
 	casbins, err := s.GetCasbinListByRoleId(roleId)
 	if err != nil {
 		return tree, accessIds, err
 	}
 
-	// 通过分类进行分组归纳
+	// 找到当前角色的全部api
+	newApi := make([]models.SysApi, 0)
 	for _, api := range allApi {
+		path := api.Path
+		method := api.Method
+		for _, currentCasbin := range currentCasbins {
+			// 该api有权限
+			if path == currentCasbin.V1 && method == currentCasbin.V2 {
+				newApi = append(newApi, api)
+				break
+			}
+		}
+	}
+
+	// 通过分类进行分组归纳
+	for _, api := range newApi {
 		category := api.Category
 		path := api.Path
 		method := api.Method
@@ -121,10 +144,11 @@ func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(roleId uint) ([]response
 
 // 创建接口
 func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error) {
-	var api models.SysApi
-	utils.Struct2StructByJson(req, &api)
-	// 创建数据
-	err = s.tx.Create(&api).Error
+	api := new(models.SysApi)
+	err = s.Create(req, &api)
+	if err != nil {
+		return err
+	}
 	// 添加了角色
 	if len(req.RoleIds) > 0 {
 		// 查询角色关键字
@@ -149,27 +173,29 @@ func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error
 }
 
 // 更新接口
-func (s *MysqlService) UpdateApiById(id uint, req models.SysApi) (err error) {
+func (s *MysqlService) UpdateApiById(id uint, req request.UpdateApiRequestStruct) (err error) {
 	var api models.SysApi
-	query := s.tx.Model(api).Where("id = ?", id).First(&api)
+	query := s.tx.Model(&api).Where("id = ?", id).First(&api)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	var m models.SysApi
-	utils.CompareDifferenceStructByJson(api, req, &m)
+	m := make(map[string]interface{}, 0)
+	utils.CompareDifferenceStruct2SnakeKeyByJson(api, req, &m)
 
 	// 记录update前的旧数据, 执行Updates后api会变成新数据
 	oldApi := api
 	// 更新指定列
 	err = query.Updates(m).Error
 
-	var diff models.SysApi
 	// 对比api发生了哪些变化
-	utils.CompareDifferenceStructByJson(oldApi, api, &diff)
+	diff := make(map[string]interface{}, 0)
+	utils.CompareDifferenceStruct2SnakeKeyByJson(oldApi, api, &diff)
 
-	if diff.Path != "" || diff.Method != "" {
+	path, ok1 := diff["path"]
+	method, ok2 := diff["method"]
+	if (ok1 && path != "") || (ok2 && method != "") {
 		// path或method变化, 需要更新casbin规则
 		// 查找当前接口都有哪些角色在使用
 		oldCasbins := s.GetRoleCasbins(models.SysRoleCasbin{

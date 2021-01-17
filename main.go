@@ -24,19 +24,20 @@ func main() {
 	}()
 
 	// 初始化配置
-	initialize.InitConfig()
+	initialize.Config()
 
 	// 初始化日志
 	initialize.Logger()
 
-	if global.Conf.System.UseRedis {
-		// 初始化数据库
-		initialize.Redis()
-	}
+	// 初始化redis数据库
+	initialize.Redis()
 
-	// 初始化数据库
+	// 初始化mysql数据库
 	initialize.Mysql()
 
+	// 初始化casbin策略管理器
+	initialize.CasbinEnforcer()
+	
 	// 初始校验器
 	initialize.Validate()
 
@@ -45,13 +46,14 @@ func main() {
 	// 初始化路由
 	r := initialize.Routers()
 
-	if global.Conf.System.InitData {
-		// 初始化数据
-		initialize.InitData()
-	}
+	// 初始化数据
+	initialize.Data()
 
 	// 初始化定时任务
-	initialize.InitCron()
+	initialize.Cron()
+	
+	// 初始化对象存储
+	initialize.Oss()
 
 	host := "0.0.0.0"
 	port := global.Conf.System.Port

@@ -9,14 +9,16 @@ import (
 
 // 获取所有请假(当前用户)
 func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.SysLeave, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetLeaves(req)
 	}
 	var err error
 	list := make([]models.SysLeave, 0)
-	query := s.redis.Table(new(models.SysLeave).TableName())
-	query = query.Where("user_id", "=", req.UserId)
+	query := s.redis.
+		Table(new(models.SysLeave).TableName()).
+		Where("user_id", "=", req.UserId).
+		Order("created_at DESC")
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
@@ -43,7 +45,7 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 
 // 获取请假审批日志(指定请假编号)
 func (s *RedisService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowLog, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetLeaveApprovalLogs(leaveId)
 	}

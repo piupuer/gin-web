@@ -1,5 +1,10 @@
 package models
 
+import (
+	"fmt"
+	"gin-web/pkg/global"
+)
+
 // 流程相关的常量
 const (
 	// 流程类别
@@ -49,7 +54,7 @@ var SysWorkflowLogStateConst = map[uint]string{
 // 流程
 type SysWorkflow struct {
 	Model
-	Uuid              string `gorm:"unique;comment:'唯一标识'" json:"uuid"`
+	Uuid              string `gorm:"index:idx_uuid,unique;comment:'唯一标识'" json:"uuid"`
 	Category          uint   `gorm:"default:1;comment:'类别(1:每个流水线有一个人通过 2:每个流水线必须所有人审批通过(指定了Users) 其他自行扩展)'" json:"category"`
 	SubmitUserConfirm *uint  `gorm:"type:tinyint(1);default:0;comment:'是否需要提交人确认'" json:"submitUserConfirm"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
 	TargetCategory    uint   `gorm:"default:1;comment:'目标类别(1:请假(需要关联SysUser表) 其他自行扩展)'" json:"targetCategory"`
@@ -72,7 +77,7 @@ type SysWorkflowLine struct {
 	End    *uint       `gorm:"default:0;comment:'是否到达末尾'" json:"end"`
 	RoleId uint        `gorm:"comment:'审批人角色编号(拥有该角色才能审批)'" json:"roleId"`
 	Role   SysRole     `gorm:"foreignkey:RoleId" json:"role"`
-	Users  []SysUser   `gorm:"many2many:relation_user_workflow_line;comment:'审批人列表(指定了具体审批人, 则不再使用角色判断)'" json:"users"`
+	Users  []SysUser   `gorm:"many2many:sys_user_workflow_line_relation;comment:'审批人列表(指定了具体审批人, 则不再使用角色判断)'" json:"users"`
 	Edit   *uint       `gorm:"type:tinyint(1);default:1;comment:'是否有编辑权限'" json:"edit"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
 	Name   string      `gorm:"comment:'名称'" json:"name"`
 }
@@ -88,8 +93,7 @@ type RelationUserWorkflowLine struct {
 }
 
 func (m RelationUserWorkflowLine) TableName() string {
-	// 多对多关系表在tag中写死, 不能加自定义表前缀
-	return "relation_user_workflow_line"
+	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "sys_user_workflow_line_relation")
 }
 
 // 流程日志: 任何一种工作流程都会关联到某一张表, 需要targetId

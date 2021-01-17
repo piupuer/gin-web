@@ -8,6 +8,11 @@ import (
 	"unicode"
 )
 
+// 是否空字符串
+func StrIsEmpty(str string) bool {
+	return str == "null" || strings.TrimSpace(str) == ""
+}
+
 // 字符串转uint数组, 默认逗号分割
 func Str2UintArr(str string) (ids []uint) {
 	idArr := strings.Split(str, ",")
@@ -17,6 +22,15 @@ func Str2UintArr(str string) (ids []uint) {
 	return
 }
 
+// 字符串转int
+func Str2Int(str string) int {
+	num, err := strconv.Atoi(str)
+	if err != nil {
+		return 0
+	}
+	return num
+}
+
 // 字符串转uint
 func Str2Uint(str string) uint {
 	num, err := strconv.ParseUint(str, 10, 32)
@@ -24,6 +38,41 @@ func Str2Uint(str string) uint {
 		return 0
 	}
 	return uint(num)
+}
+
+// 字符串转uint
+func Str2Uint32(str string) uint32 {
+	num, err := strconv.ParseUint(str, 10, 32)
+	if err != nil {
+		return 0
+	}
+	return uint32(num)
+}
+
+// 字符串转uint
+func Str2Bool(str string) bool {
+	b, err := strconv.ParseBool(str)
+	if err != nil {
+		return false
+	}
+	return b
+}
+
+// 字符串转float64
+func Str2Float64(str string) float64 {
+	num, err := strconv.ParseFloat(str, 64)
+	if err != nil {
+		return 0
+	}
+	return num
+}
+
+// 字符串转uint数组, 默认逗号分割
+func UintArr2IntArr(arr []uint) (newArr []int) {
+	for _, v := range arr {
+		newArr = append(newArr, int(v))
+	}
+	return
 }
 
 var (

@@ -18,7 +18,7 @@ const (
 )
 
 // 初始化配置文件
-func InitConfig() {
+func Config() {
 	if os.Getenv("TEST_CONF") == "" {
 		panic("[单元测试]请检查环境变量TEST_CONF")
 	}
@@ -62,6 +62,11 @@ func InitConfig() {
 	// 转换为结构体
 	if err := v.Unmarshal(&global.Conf); err != nil {
 		panic(fmt.Sprintf("[单元测试]初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
+	}
+
+	// 表前缀去掉后缀_
+	if strings.TrimSpace(global.Conf.Mysql.TablePrefix) != "" && strings.HasSuffix(global.Conf.Mysql.TablePrefix, "_") {
+		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")
 	}
 
 	// 初始化OperationLogDisabledPaths

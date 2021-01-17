@@ -12,7 +12,7 @@ import (
 
 // 登录校验
 func (s *RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.LoginCheck(user)
 	}
@@ -30,13 +30,23 @@ func (s *RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 }
 
 func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUsers(req)
 	}
 	var err error
 	list := make([]models.SysUser, 0)
-	query := s.redis.Table(new(models.SysUser).TableName())
+	query := s.redis.
+		Table(new(models.SysUser).TableName()).
+		Order("created_at DESC")
+	// 非超级管理员
+	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
+		roleIds, err := s.GetRoleIdsBySort(*req.CurrentRole.Sort)
+		if err != nil {
+			return list, err
+		}
+		query = query.Where("roleId", "in", roleIds)
+	}
 	username := strings.TrimSpace(req.Username)
 	if username != "" {
 		query = query.Where("username", "contains", username)
@@ -72,7 +82,7 @@ func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 
 // 获取单个用户
 func (s *RedisService) GetUserById(id uint) (models.SysUser, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUserById(id)
 	}

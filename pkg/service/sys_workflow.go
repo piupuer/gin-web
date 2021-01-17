@@ -7,7 +7,6 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/service/strategy"
 	"gin-web/pkg/utils"
-	uuid "github.com/satori/go.uuid"
 	"github.com/thedevsaddam/gojsonq/v2"
 	"gorm.io/gorm"
 	"strings"
@@ -24,7 +23,9 @@ func (s *MysqlService) GetWorkflowByTargetCategory(targetCategory uint) (models.
 func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]models.SysWorkflow, error) {
 	var err error
 	list := make([]models.SysWorkflow, 0)
-	query := s.tx.Table(new(models.SysWorkflow).TableName())
+	query := s.tx.
+		Table(new(models.SysWorkflow).TableName()).
+		Order("created_at DESC")
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		query = query.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
@@ -33,17 +34,17 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 	if creator != "" {
 		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
-	if req.Category > 0 {
-		query = query.Where("category = ?", req.Category)
+	if req.Category != nil {
+		query = query.Where("category = ?", *req.Category)
 	}
-	if req.TargetCategory > 0 {
-		query = query.Where("targetCategory = ?", req.TargetCategory)
+	if req.TargetCategory != nil {
+		query = query.Where("target_category = ?", *req.TargetCategory)
 	}
 	if req.Self != nil {
 		query = query.Where("self = ?", *req.Self)
 	}
 	if req.SubmitUserConfirm != nil {
-		query = query.Where("submitUserConfirm = ?", *req.SubmitUserConfirm)
+		query = query.Where("submit_user_confirm = ?", *req.SubmitUserConfirm)
 	}
 
 	// 查询条数
@@ -65,7 +66,7 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
-	query := s.tx.Model(new (models.SysWorkflowLine)).Preload("Users")
+	query := s.tx.Model(new(models.SysWorkflowLine)).Preload("Users")
 	if req.FlowId > 0 {
 		query = query.Where("flow_id = ?", req.FlowId)
 	}
@@ -194,39 +195,6 @@ func (s *MysqlService) GetWorkflowLineBySort(flowId uint, sort uint) (models.Sys
 	return line, err
 }
 
-// 创建工作流
-func (s *MysqlService) CreateWorkflow(req *request.CreateWorkflowRequestStruct) (err error) {
-	var flow models.SysWorkflow
-	utils.Struct2StructByJson(req, &flow)
-	// 生成uuid
-	flow.Uuid = uuid.NewV4().String()
-	// 创建数据
-	err = s.tx.Create(&flow).Error
-	return
-}
-
-// 更新工作流
-func (s *MysqlService) UpdateWorkflowById(id uint, req models.SysWorkflow) (err error) {
-	var oldWorkflow models.SysWorkflow
-	query := s.tx.Model(oldWorkflow).Where("id = ?", id).First(&oldWorkflow)
-	if query.Error == gorm.ErrRecordNotFound {
-		return fmt.Errorf("记录不存在")
-	}
-
-	// 比对增量字段
-	var m models.SysWorkflow
-	utils.CompareDifferenceStructByJson(oldWorkflow, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	return
-}
-
-// 批量删除工作流
-func (s *MysqlService) DeleteWorkflowByIds(ids []uint) (err error) {
-	return s.tx.Where("id IN (?)", ids).Delete(models.SysWorkflow{}).Error
-}
-
 // 更新流程流水线
 func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkflowLineIncrementalRequestStruct) (err error) {
 	// 查询流程以及流水线
@@ -288,9 +256,9 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 			}
 		}
 		query := s.tx.Model(&line)
-		if item.RoleId != nil {
+		if item.RoleId > 0 {
 			// 需要强制更新roleId
-			query = query.Update("role_id", item.RoleId)
+			query = query.Where("role_id = ?", item.RoleId)
 		}
 		// 更新数据, 替换users
 		err = query.Updates(&line).Association("Users").Replace(&us)

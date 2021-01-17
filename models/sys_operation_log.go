@@ -10,6 +10,7 @@ type SysOperationLog struct {
 	ApiDesc    string        `json:"apiDesc" gorm:"comment:'接口说明'"`
 	Path       string        `json:"path" gorm:"comment:'访问路径'"`
 	Method     string        `json:"method" gorm:"comment:'请求方式'"`
+	Header     string        `json:"header" gorm:"type:blob;comment:'请求header(通过二进制存储节省空间)'"`
 	Body       string        `json:"body" gorm:"type:blob;comment:'请求主体(通过二进制存储节省空间)'"`
 	Data       string        `json:"data" gorm:"type:blob;comment:'响应数据(通过二进制存储节省空间)'"`
 	Status     int           `json:"status" gorm:"comment:'响应状态码'"`

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"gin-web/pkg/global"
 	"io/ioutil"
 	"net/http"
 )
@@ -18,14 +17,14 @@ func GetIpRealLocation(ip string) string {
 	resp, err := http.Get(fmt.Sprintf("https://restapi.amap.com/v3/ip?ip=%s&key=%s", ip, "9130aaac2b7a920b8bbd5dc9647fbe9e"))
 	address := "未知地址"
 	if err != nil {
-		global.Log.Error(fmt.Sprintf("[GetIpRealLocation]IP地址查询失败: %v", err))
+		fmt.Println(fmt.Sprintf("[GetIpRealLocation]IP地址查询失败: %v", err))
 		return address
 	}
 	defer resp.Body.Close()
 	// 读取响应数据
 	data, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		global.Log.Error(fmt.Sprintf("[GetIpRealLocation]IP地址查询失败: %v", err))
+		fmt.Println(fmt.Sprintf("[GetIpRealLocation]IP地址查询失败: %v", err))
 		return address
 	}
 	// json数据转结构体

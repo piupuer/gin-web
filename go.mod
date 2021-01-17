@@ -7,7 +7,6 @@ require (
 	github.com/appleboy/gin-jwt/v2 v2.6.3
 	github.com/casbin/casbin/v2 v2.2.2
 	github.com/casbin/gorm-adapter/v3 v3.0.3
-	github.com/casbin/redis-adapter/v2 v2.0.1
 	github.com/codahale/hdrhistogram v0.9.0 // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/cznic/sortutil v0.0.0-20181122101858-f5f958428db8 // indirect
@@ -16,7 +15,7 @@ require (
 	github.com/gin-gonic/gin v1.6.2
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
-	github.com/go-redis/redis v6.15.7+incompatible
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gobuffalo/packr/v2 v2.8.0
 	github.com/golang/snappy v0.0.2 // indirect
@@ -24,12 +23,15 @@ require (
 	github.com/jinzhu/gorm v1.9.12
 	github.com/jmoiron/sqlx v1.2.0 // indirect
 	github.com/juju/testing v0.0.0-20200923013621-75df6121fbb0 // indirect
+	github.com/minio/minio-go/v7 v7.0.5
 	github.com/myesui/uuid v1.0.0 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/ngaut/pools v0.0.0-20180318154953-b7bc8c42aac7 // indirect
 	github.com/ngaut/sync2 v0.0.0-20141008032647-7a24ed77b2ef // indirect
 	github.com/opentracing/opentracing-go v1.2.0 // indirect
+	github.com/panjf2000/ants v1.3.0
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pingcap/goleveldb v0.0.0-20191226122134-f82aafb29989 // indirect
 	github.com/pingcap/kvproto v0.0.0-20200927054727-1290113160f0 // indirect
 	github.com/pingcap/tidb v2.0.11+incompatible // indirect
@@ -37,8 +39,9 @@ require (
 	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
+	github.com/shopspring/decimal v0.0.0-20200227202807-02e2044944cc
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
-	github.com/siddontang/go-mysql v0.0.0-20200424072754-803944a6e4ea
+	github.com/siddontang/go-mysql v1.1.0
 	github.com/silenceper/wechat/v2 v2.0.2
 	github.com/spf13/viper v1.6.3
 	github.com/thedevsaddam/gojsonq/v2 v2.5.2
@@ -54,5 +57,5 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 	gorm.io/driver/mysql v1.0.2
-	gorm.io/gorm v1.20.2
+	gorm.io/gorm v1.20.6
 )

@@ -1,11 +1,14 @@
 package initialize
 
 import (
+	"context"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
+	"time"
 )
 
 // 初始化mysql数据库
@@ -33,12 +36,36 @@ func Mysql() {
 		global.Conf.Mysql.Query,
 	)
 	global.Log.Info("数据库连接DSN: ", showDsn)
+	init := false
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
+	defer cancel()
+	go func() {
+		for {
+			select {
+			case <-ctx.Done():
+				if !init {
+					panic(fmt.Sprintf("初始化mysql异常: 连接超时(%ds)", global.Conf.System.ConnectTimeout))
+				}
+				// 此处需return避免协程空跑
+				return
+			}
+		}
+	}()
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
+		// 指定表前缀
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: global.Conf.Mysql.TablePrefix + "_",
+		},
 	})
 	if err != nil {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))
+	}
+	init = true
+	// 开启mysql日志
+	if global.Conf.Mysql.LogMode {
+		db = db.Debug()
 	}
 	global.Mysql = db
 	// 表结构
@@ -64,6 +91,7 @@ func autoMigrate() {
 		new(models.SysOperationLog),
 		new(models.SysMessage),
 		new(models.SysMessageLog),
+		new(models.SysMachine),
 	)
 }
 
@@ -72,16 +100,16 @@ func binlog() {
 		new(models.SysUser).TableName(),
 		new(models.SysRole).TableName(),
 		new(models.SysMenu).TableName(),
+		new(models.RelationMenuRole).TableName(),
 		new(models.SysApi).TableName(),
 		new(models.SysCasbin).TableName(),
-		new(models.RelationRoleMenu).TableName(),
 		new(models.SysWorkflow).TableName(),
 		new(models.SysWorkflowLine).TableName(),
 		new(models.SysWorkflowLog).TableName(),
 		new(models.RelationUserWorkflowLine).TableName(),
 		new(models.SysLeave).TableName(),
-		new(models.SysOperationLog).TableName(),
 		new(models.SysMessage).TableName(),
 		new(models.SysMessageLog).TableName(),
+		new(models.SysMachine).TableName(),
 	})
 }

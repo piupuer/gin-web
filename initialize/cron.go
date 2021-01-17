@@ -15,7 +15,7 @@ import (
 )
 
 // 初始化定时任务
-func InitCron() {
+func Cron() {
 	go func() {
 		// 新建cron实例
 		c := cron.New()
@@ -154,29 +154,20 @@ func (s *WeChatTplMessageJob) Run() {
 	}
 	msg.MiniProgram.AppID = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramAppId
 	msg.MiniProgram.PagePath = global.Conf.WeChat.Official.TplMessageCronTask.MiniProgramPagePath
-	// 一次发送给2个人
-	s.sendOne(msg)
-	s.sendOne(msg)
+	s.send(msg)
 	global.Log.Infof("[定时任务][微信模板消息]任务结束")
 }
 
 // 发送单条消息
-func (s *WeChatTplMessageJob) sendOne(msg message.TemplateMessage)  {
-	// 不得超过最大长度
-	if len(s.Users) <= s.Current {
-		s.Current = 0
-	}
-	currentUser := s.Users[s.Current]
-	msg.ToUser = currentUser
-	err := wechat.SendTplMessage(&msg)
-	if err == nil {
-		global.Log.Infof("[定时任务][微信模板消息]发送成功, 接收人%s, 当前索引%d", currentUser, s.Current)
-	} else {
-		global.Log.Errorf("[定时任务][微信模板消息]发送失败, 接收人%s, 当前索引%d, 错误信息%v", currentUser, s.Current, err)
-	}
-	s.Current++
-	// 保存到redis
-	if global.Conf.System.UseRedis {
-		global.Redis.Set(CurrentIndexKey, s.Current, 0)
+func (s *WeChatTplMessageJob) send(msg message.TemplateMessage) {
+	for _, user := range s.Users {
+		currentUser := user
+		msg.ToUser = currentUser
+		err := wechat.SendTplMessage(&msg)
+		if err == nil {
+			global.Log.Infof("[定时任务][微信模板消息]发送成功, 接收人%s", currentUser)
+		} else {
+			global.Log.Errorf("[定时任务][微信模板消息]发送失败, 接收人%s, 错误信息%v", currentUser, err)
+		}
 	}
 }

@@ -12,17 +12,17 @@ import (
 )
 
 const (
-	configBoxName = "gin-conf-box"
-	configType    = "yml"
-	// 配置文件目录, packr.Box基于当前包目录, 文件名需要写完整, 即使viper可以自动获取
-	configPath        = "../conf"
-	developmentConfig = "config.dev.yml"
-	stagingConfig     = "config.stage.yml"
-	productionConfig  = "config.prod.yml"
+	configBoxName         = "gin-conf-box"
+	configType            = "yml"
+	configPath            = "../conf" // 配置文件目录, packr.Box基于当前包目录, 文件名需要写完整, 即使viper可以自动获取
+	developmentConfig     = "config.dev.yml"
+	stagingConfig         = "config.stage.yml"
+	productionConfig      = "config.prod.yml"
+	defaultConnectTimeout = 5
 )
 
 // 初始化配置文件
-func InitConfig() {
+func Config() {
 	// 初始化配置盒子
 	var box global.CustomConfBox
 	ginWebConf := strings.ToLower(os.Getenv("GIN_WEB_CONF"))
@@ -68,6 +68,25 @@ func InitConfig() {
 	// 转换为结构体
 	if err := v.Unmarshal(&global.Conf); err != nil {
 		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
+	}
+
+	if global.Conf.System.ConnectTimeout < 1 {
+		global.Conf.System.ConnectTimeout = defaultConnectTimeout
+	}
+
+	if strings.TrimSpace(global.Conf.System.UrlPathPrefix) == "" {
+		global.Conf.System.UrlPathPrefix = "api"
+	}
+
+	if strings.TrimSpace(global.Conf.System.ApiVersion) == "" {
+		global.Conf.System.UrlPathPrefix = "v1"
+	}
+
+	global.Conf.Redis.BinlogPos = fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, global.Conf.Redis.BinlogPos)
+
+	// 表前缀去掉后缀_
+	if strings.TrimSpace(global.Conf.Mysql.TablePrefix) != "" && strings.HasSuffix(global.Conf.Mysql.TablePrefix, "_") {
+		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")
 	}
 
 	// 初始化OperationLogDisabledPaths

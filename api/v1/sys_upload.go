@@ -19,8 +19,8 @@ import (
 // 解压上传的zip文件
 func UploadUnZip(c *gin.Context) {
 	var filePart request.FilePartInfo
-	_ = c.Bind(&filePart)
-	if strings.TrimSpace(filePart.Filename) == ""{
+	_ = c.ShouldBind(&filePart)
+	if strings.TrimSpace(filePart.Filename) == "" {
 		response.FailWithMsg("文件名不存在")
 		return
 	}
@@ -49,9 +49,9 @@ func UploadUnZip(c *gin.Context) {
 // 判断文件块是否存在
 func UploadFileChunkExists(c *gin.Context) {
 	var filePart request.FilePartInfo
-	_ = c.Bind(&filePart)
+	_ = c.ShouldBind(&filePart)
 	// 校验请求
-	err := validateReq(filePart)
+	err := filePart.ValidateReq()
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -63,13 +63,12 @@ func UploadFileChunkExists(c *gin.Context) {
 // 合并分片文件
 func UploadMerge(c *gin.Context) {
 	var filePart request.FilePartInfo
-	_ = c.Bind(&filePart)
-	// 通过文件唯一标识找确定文件
-	// 获取块文件名
-	chunkName := filePart.GetChunkFilename(filePart.CurrentCheckChunkNumber)
-	chunkDir, _ := filepath.Split(chunkName)
+	_ = c.ShouldBind(&filePart)
+	// 获取
+	rootDir := filePart.GetUploadRootPath()
+	mergeFileName := fmt.Sprintf("%s/%s", rootDir, filePart.Filename)
 	// 创建merge file
-	mergeFile, err := os.OpenFile(fmt.Sprintf("%s/%s", chunkDir, filePart.Filename), os.O_CREATE|os.O_WRONLY, os.ModePerm)
+	mergeFile, err := os.OpenFile(mergeFileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -120,8 +119,6 @@ func UploadMerge(c *gin.Context) {
 						defer func() {
 							// 关闭文件
 							f.Close()
-							// 删除分片
-							os.Remove(currentChunkName)
 						}()
 						b, err := ioutil.ReadAll(f)
 						if err != nil {
@@ -138,9 +135,23 @@ func UploadMerge(c *gin.Context) {
 	// 等待协程全部处理结束
 	wg.Wait()
 
+	previewUrl := "未开启对象存储, 无预览地址"
+	if global.Conf.Upload.Minio.Enable {
+		// 写入minio对象存储
+		err = global.Minio.PutLocalObject(global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
+		if err != nil {
+			response.FailWithMsg(fmt.Sprintf("写入minio对象存储失败, %v", err))
+			return
+		}
+		previewUrl = global.Minio.GetObjectPreviewUrl(global.Conf.Upload.Minio.Bucket, mergeFileName)
+	}
+	// 删除分片文件所在路径
+	os.RemoveAll(filePart.GetChunkRootPath())
+
 	// 回写文件信息
 	var res response.UploadMergeResponseStruct
-	res.Filename = chunkDir + filePart.Filename
+	res.Filename = mergeFileName
+	res.PreviewUrl = previewUrl
 	response.SuccessWithData(res)
 }
 
@@ -176,7 +187,7 @@ func UploadFile(c *gin.Context) {
 	filePart.Filename = strings.TrimSpace(c.Request.FormValue("filename"))
 
 	// 校验请求
-	err = validateReq(filePart)
+	err = filePart.ValidateReq()
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -212,51 +223,6 @@ func UploadFile(c *gin.Context) {
 	filePart.Complete = checkChunkComplete(filePart)
 	// 回写响应数据
 	response.SuccessWithData(filePart)
-}
-
-// 请求校验
-func validateReq(filePart request.FilePartInfo) error {
-	// 文件大小不能为0
-	if filePart.ChunkNumber == 0 ||
-		filePart.ChunkSize == 0 ||
-		filePart.TotalSize == 0 ||
-		filePart.Identifier == "" ||
-		filePart.Filename == "" {
-		return fmt.Errorf("文件名称或大小不合法")
-	}
-
-	// 块编号不能超出总块数
-	totalChunk := filePart.GetTotalChunk()
-	if filePart.ChunkNumber > totalChunk {
-		return fmt.Errorf("文件块编号不合法")
-	}
-
-	// 继续比较当前文件大小
-	if filePart.CurrentSize != nil {
-		// 不能超出文件大小最大值
-		if int64(*filePart.CurrentSize) > int64(global.Conf.Upload.SingleMaxSize)<<20 {
-			return fmt.Errorf("文件大小超出最大值%dMB, 当前%dB", global.Conf.Upload.SingleMaxSize, int64(*filePart.CurrentSize))
-		}
-
-		// 正常块, 当前文件大小必须等于块大小
-		if filePart.ChunkNumber < totalChunk && *filePart.CurrentSize != filePart.ChunkSize {
-			return fmt.Errorf("文件块大小不一致[%d:%d]", filePart.CurrentSize, filePart.ChunkSize)
-		}
-
-		// 当前块为最后一块
-		// 总块数>1
-		if totalChunk > 1 &&
-			filePart.ChunkNumber == totalChunk &&
-			*filePart.CurrentSize != filePart.TotalSize%filePart.ChunkSize+filePart.ChunkSize {
-			return fmt.Errorf("文件块大小不一致(末尾块)[%d:%d]", filePart.CurrentSize, filePart.TotalSize%filePart.ChunkSize+filePart.ChunkSize)
-		}
-		// 总块数=1
-		if totalChunk == 1 &&
-			*filePart.CurrentSize != filePart.TotalSize {
-			return fmt.Errorf("文件块大小不一致(首块)[%d:%d]", filePart.CurrentSize, filePart.TotalSize)
-		}
-	}
-	return nil
 }
 
 // 检查文件块, 主要用于判断文件完整性

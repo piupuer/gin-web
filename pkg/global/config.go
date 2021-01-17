@@ -18,8 +18,11 @@ type Configuration struct {
 
 type SystemConfiguration struct {
 	UrlPathPrefix               string   `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
+	ApiVersion                  string   `mapstructure:"api-version" json:"apiVersion"`
 	Port                        int      `mapstructure:"port" json:"port"`
+	ConnectTimeout              int      `mapstructure:"connect-timeout" json:"connectTimeout"`
 	UseRedis                    bool     `mapstructure:"use-redis" json:"useRedis"`
+	UseRedisService             bool     `mapstructure:"use-redis-service" json:"useRedisService"`
 	Transaction                 bool     `mapstructure:"transaction" json:"transaction"`
 	InitData                    bool     `mapstructure:"init-data" json:"initData"`
 	OperationLogKey             string   `mapstructure:"operation-log-key" json:"operationLogKey"`
@@ -30,6 +33,7 @@ type SystemConfiguration struct {
 	RSAPrivateKey               string   `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
 	RSAPublicBytes              []byte   `mapstructure:"-" json:"-"`
 	RSAPrivateBytes             []byte   `mapstructure:"-" json:"-"`
+	IdempotenceTokenName        string   `mapstructure:"idempotence-token-name" json:"idempotenceTokenName"`
 }
 
 type LogsConfiguration struct {
@@ -78,12 +82,22 @@ type RateLimitConfiguration struct {
 }
 
 type UploadConfiguration struct {
-	SaveDir                      string `mapstructure:"save-dir" json:"saveDir"`
-	SingleMaxSize                uint   `mapstructure:"single-max-size" json:"singleMaxSize"`
-	MergeConcurrentCount         uint   `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
-	CompressImageCronTask        string `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
-	CompressImageRootDir         string `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
-	CompressImageOriginalSaveDir string `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
+	Minio                        UploadOssMinioConfiguration `mapstructure:"oss-minio" json:"ossMinio"`
+	SaveDir                      string                      `mapstructure:"save-dir" json:"saveDir"`
+	SingleMaxSize                uint                        `mapstructure:"single-max-size" json:"singleMaxSize"`
+	MergeConcurrentCount         uint                        `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
+	CompressImageCronTask        string                      `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
+	CompressImageRootDir         string                      `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
+	CompressImageOriginalSaveDir string                      `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
+}
+
+type UploadOssMinioConfiguration struct {
+	Enable   bool   `mapstructure:"enable" json:"enable"`
+	Bucket   string `mapstructure:"bucket" json:"bucket"`
+	Endpoint string `mapstructure:"endpoint" json:"endpoint"`
+	AccessId string `mapstructure:"access-id" json:"accessId"`
+	Secret   string `mapstructure:"secret" json:"secret"`
+	UseHttps bool   `mapstructure:"use-https" json:"useHttps"`
 }
 
 type WeChatConfiguration struct {

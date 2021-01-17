@@ -10,13 +10,15 @@ import (
 
 // 获取所有操作日志
 func (s *RedisService) GetOperationLogs(req *request.OperationLogListRequestStruct) ([]models.SysOperationLog, error) {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetOperationLogs(req)
 	}
 	var err error
 	list := make([]models.SysOperationLog, 0)
-	query := s.redis.Table(new(models.SysOperationLog).TableName())
+	query := s.redis.
+		Table(new(models.SysOperationLog).TableName()).
+		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
 		query = query.Where("method", "contains", method)
@@ -38,7 +40,6 @@ func (s *RedisService) GetOperationLogs(req *request.OperationLogListRequestStru
 		s, _ := strconv.Atoi(status)
 		query = query.Where("status", "contains", s)
 	}
-	query = query.Order("id DESC")
 	// 查询条数
 	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {

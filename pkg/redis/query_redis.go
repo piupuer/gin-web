@@ -54,7 +54,8 @@ func (s *QueryRedis) getInstance() *QueryRedis {
 	if s.clone > 0 {
 		tx := &QueryRedis{
 			redis: s.redis,
-			// clone此时为0, 同一链式操作不再clone
+			// 表命名相关(主要针对表前缀)
+			NamingStrategy: global.Mysql.NamingStrategy,
 		}
 
 		if s.clone == 1 {

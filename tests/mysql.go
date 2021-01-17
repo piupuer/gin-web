@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/global"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 )
 
 // 初始化mysql数据库
@@ -25,6 +26,10 @@ func Mysql() {
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
+		// 指定表前缀
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: global.Conf.Mysql.TablePrefix + "_",
+		},
 	})
 	if err != nil {
 		panic(fmt.Sprintf("[单元测试]初始化mysql异常: %v", err))
@@ -49,5 +54,6 @@ func autoMigrate() {
 		new(models.SysOperationLog),
 		new(models.SysMessage),
 		new(models.SysMessageLog),
+		new(models.SysMachine),
 	)
 }

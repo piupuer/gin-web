@@ -44,9 +44,9 @@ func Routers() *gin.Engine {
 	apiGroup.GET("/ping", api.Ping)
 
 	// 方便统一添加路由前缀
-	v1Group := apiGroup.Group("v1")
+	v1Group := apiGroup.Group(global.Conf.System.ApiVersion)
 	router.InitPublicRouter(v1Group)                       // 注册公共路由
-	router.InitBaseRouter(v1Group, authMiddleware)         // 注册基础路由, 不会鉴权
+	router.InitBaseRouter(v1Group, authMiddleware)         // 注册基础路由
 	router.InitUserRouter(v1Group, authMiddleware)         // 注册用户路由
 	router.InitMenuRouter(v1Group, authMiddleware)         // 注册菜单路由
 	router.InitRoleRouter(v1Group, authMiddleware)         // 注册角色路由
@@ -56,6 +56,7 @@ func Routers() *gin.Engine {
 	router.InitUploadRouter(v1Group, authMiddleware)       // 注册文件上传路由
 	router.InitOperationLogRouter(v1Group, authMiddleware) // 注册操作日志路由
 	router.InitMessageRouter(v1Group, authMiddleware)      // 注册消息中心路由
+	router.InitMachineRouter(v1Group, authMiddleware)      // 注册机器路由
 
 	global.Log.Info("初始化路由完成")
 	return r

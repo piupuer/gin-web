@@ -4,15 +4,17 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"gin-web/pkg/global"
+	"gorm.io/gorm"
+	"strings"
 	"time"
 )
 
 // 由于gorm提供的base model没有json tag, 使用自定义
 type Model struct {
-	Id        uint       `gorm:"primary_key;comment:'自增编号'" json:"id"`
-	CreatedAt LocalTime  `gorm:"comment:'创建时间'" json:"createdAt"`
-	UpdatedAt LocalTime  `gorm:"comment:'更新时间'" json:"updatedAt"`
-	DeletedAt *LocalTime `gorm:"comment:'删除时间(软删除)'" sql:"index" json:"deletedAt"`
+	Id        uint           `gorm:"primary_key;comment:'自增编号'" json:"id"`
+	CreatedAt LocalTime      `gorm:"comment:'创建时间'" json:"createdAt"`
+	UpdatedAt LocalTime      `gorm:"comment:'更新时间'" json:"updatedAt"`
+	DeletedAt gorm.DeletedAt `gorm:"comment:'删除时间(软删除)'" sql:"index" json:"deletedAt"`
 }
 
 // 表名设置
@@ -27,20 +29,26 @@ type LocalTime struct {
 }
 
 func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
+	str := strings.Trim(string(data), "\"")
 	// ""空值不进行解析
-	if len(data) == 2 {
+	// 避免环包调用, 不再调用utils
+	if str == "null" || strings.TrimSpace(str) == "" {
 		*t = LocalTime{Time: time.Time{}}
 		return
 	}
 
-	// 指定解析的格式
-	now, err := time.Parse(`"`+global.SecLocalTimeFormat+`"`, string(data))
-	*t = LocalTime{Time: now}
+	// 设置str
+	t.SetString(str)
 	return
 }
 
 func (t LocalTime) MarshalJSON() ([]byte, error) {
-	output := fmt.Sprintf("\"%s\"", t.Format(global.SecLocalTimeFormat))
+	s := t.Format(global.SecLocalTimeFormat)
+	// 处理时间0值
+	if t.IsZero() {
+		s = ""
+	}
+	output := fmt.Sprintf("\"%s\"", s)
 	return []byte(output), nil
 }
 
@@ -71,4 +79,16 @@ func (t LocalTime) String() string {
 // 只需要日期
 func (t LocalTime) DateString() string {
 	return t.Format(global.DateLocalTimeFormat)
+}
+
+// 设置字符串
+func (t *LocalTime) SetString(str string) *LocalTime {
+	if t != nil {
+		// 指定解析的格式(设置转为本地格式)
+		now, err := time.ParseInLocation(global.SecLocalTimeFormat, str, time.Local)
+		if err == nil {
+			*t = LocalTime{Time: now}
+		}
+	}
+	return t
 }

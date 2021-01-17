@@ -11,7 +11,7 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (s *MysqlService) GetUnDeleteMessages(req request.MessageListRequestStruct) ([]response.MessageListResponseStruct, error) {
+func (s *MysqlService) GetUnDeleteMessages(req *request.MessageListRequestStruct) ([]response.MessageListResponseStruct, error) {
 	sysMessageLogTableName := new(models.SysMessageLog).TableName()
 	sysMessageTableName := new(models.SysMessage).TableName()
 	sysUserTableName := new(models.SysUser).TableName()
@@ -37,7 +37,9 @@ func (s *MysqlService) GetUnDeleteMessages(req request.MessageListRequestStruct)
 		Joins(fmt.Sprintf("LEFT JOIN %s AS fromUser ON %s.from_user_id = fromUser.id", sysUserTableName, sysMessageTableName))
 
 	// 添加条件
-	query = query.Where(fmt.Sprintf("%s.to_user_id = ?", sysMessageLogTableName), req.ToUserId)
+	query = query.
+		Order(fmt.Sprintf("%s.created_at DESC", sysMessageLogTableName)).
+		Where(fmt.Sprintf("%s.to_user_id = ?", sysMessageLogTableName), req.ToUserId)
 	title := strings.TrimSpace(req.Title)
 	if title != "" {
 		query = query.Where(fmt.Sprintf("%s.title LIKE ?", sysMessageTableName), fmt.Sprintf("%%%s%%", title))
@@ -47,7 +49,7 @@ func (s *MysqlService) GetUnDeleteMessages(req request.MessageListRequestStruct)
 		query = query.Where(fmt.Sprintf("%s.content LIKE ?", sysMessageTableName), fmt.Sprintf("%%%s%%", content))
 	}
 	if req.Type != nil {
-		query = query.Where(fmt.Sprintf("%s.type = ?", sysMessageTableName), *req.Type)
+		query = query.Where("type = ?", *req.Type)
 	}
 	if req.Status != nil {
 		query = query.Where(fmt.Sprintf("%s.status = ?", sysMessageLogTableName), *req.Status)
@@ -182,26 +184,28 @@ func (s *MysqlService) SyncMessageByUserIds(userIds []uint) error {
 
 // 创建消息
 func (s *MysqlService) CreateMessage(req *request.PushMessageRequestStruct) error {
-	message := models.SysMessage{
-		FromUserId: req.FromUserId,
-		Title:      req.Title,
-		Content:    req.Content,
-		Type:       *req.Type,
-		Role:       models.SysRole{},
-	}
-	switch *req.Type {
-	case models.SysMessageTypeOneToOne:
-		if len(req.ToUserIds) == 0 {
-			return fmt.Errorf("接收人不得为空")
+	if req.Type != nil {
+		message := models.SysMessage{
+			FromUserId: req.FromUserId,
+			Title:      req.Title,
+			Content:    req.Content,
+			Type:       uint(*req.Type),
+			Role:       models.SysRole{},
 		}
-		return s.BatchCreateOneToOneMessage(message, req.ToUserIds)
-	case models.SysMessageTypeOneToMany:
-		if len(req.ToRoleIds) == 0 {
-			return fmt.Errorf("接收角色不得为空")
+		switch uint(*req.Type) {
+		case models.SysMessageTypeOneToOne:
+			if len(req.ToUserIds) == 0 {
+				return fmt.Errorf("接收人不得为空")
+			}
+			return s.BatchCreateOneToOneMessage(message, req.ToUserIds)
+		case models.SysMessageTypeOneToMany:
+			if len(req.ToRoleIds) == 0 {
+				return fmt.Errorf("接收角色不得为空")
+			}
+			return s.BatchCreateOneToManyMessage(message, req.ToRoleIds)
+		case models.SysMessageTypeSystem:
+			return s.CreateSystemMessage(message)
 		}
-		return s.BatchCreateOneToManyMessage(message, req.ToRoleIds)
-	case models.SysMessageTypeSystem:
-		return s.CreateSystemMessage(message)
 	}
 	return fmt.Errorf("消息类型不合法")
 }

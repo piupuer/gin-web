@@ -90,10 +90,39 @@ func (stmt *Statement) Where(key, cond string, val interface{}) *Statement {
 		newKeys = append(newKeys, utils.CamelCaseLowerFirst(item))
 	}
 	key = strings.Join(newKeys, ".")
-	// 如果参数为uint, redis存的json转换为int, 因此这里转一下类型
-	if item, ok := val.(uint); ok {
-		val = int(item)
+	// 处理一下参数
+	m1 := map[string]interface{}{
+		"key": val,
 	}
+	var m2 map[string]interface{}
+	utils.Struct2StructByJson(m1, &m2)
+	v := m2["key"]
+	// 对于数组单独处理(用[]interface{}值相等, 类型不相等, 需要转为具体的已知类型)
+	arr, ok := v.([]interface{})
+	if ok {
+		newArr1 := make([]string, 0)
+		newArr2 := make([]float64, 0)
+		newArr3 := make([]int, 0)
+		// json中的数组类型无非三种形式[]string/[]float64/[]int
+		for _, item := range arr {
+			switch item.(type) {
+			case string:
+				newArr1 = append(newArr1, item.(string))
+			case float64:
+				newArr2 = append(newArr2, item.(float64))
+			case int:
+				newArr3 = append(newArr3, item.(int))
+			}
+		}
+		if len(newArr1) > 0 {
+			v = newArr1
+		} else if len(newArr2) > 0 {
+			v = newArr2
+		} else if len(newArr3) > 0 {
+			v = newArr3
+		}
+	}
+
 	var whereConditions []whereCondition
 	// 保留旧数据
 	for _, condition := range stmt.whereConditions {
@@ -102,7 +131,7 @@ func (stmt *Statement) Where(key, cond string, val interface{}) *Statement {
 		}
 	}
 	// 添加新数据
-	whereConditions = append(whereConditions, whereCondition{key, cond, val})
+	whereConditions = append(whereConditions, whereCondition{key, cond, v})
 	stmt.whereConditions = whereConditions
 	return stmt
 }

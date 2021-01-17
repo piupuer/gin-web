@@ -28,6 +28,7 @@
 - `MessageCenter` 消息中心(websocket长连接保证实时性, 活跃用户上线时新增消息表, 不活跃用户不管, 有效降低数据量)
 - `testing` 测试标准包, 快速进行单元测试
 - `Grafana Loki` 轻量日志收集工具loki, 支持分布式日志收集(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
+- `Minio` 轻量对象存储服务(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
 
 ## 中间件
 
@@ -38,6 +39,7 @@
 - `Cors 跨域中间件` -- 所有请求均可跨域访问
 - `JwtAuth` 权限认证中间件 -- 处理登录、登出、无状态token校验
 - `CasbinMiddleware` 权限访问中间件 -- 基于Cabin RBAC, 对不同角色访问不同API进行校验
+- `Idempotence` 接口幂等性中间件 -- 保证接口不受网络波动影响而重复点击或提交(目前针对create接口加了处理，可根据实际情况更改)
 
 
 ## 默认菜单
@@ -59,10 +61,13 @@
   - 上传示例1
   - 上传示例2(主要是针对ZIP压缩包上传及解压)
 
-## 在线演示(服务器配置低, 慢的话多等待一下)
+## 在线演示(前端静态文件已上传至阿里云OSS, 访问速度飞起)
 
 [传送门](http://106.75.132.201/)
+<br/>
 [日志收集器Grafana传送门](http://106.75.132.201:3000/) (test/123456)
+<br/>
+[Minio对象存储](http://106.75.132.201:9005/) (minio/minio123)
 
 ## 快速开始
 
