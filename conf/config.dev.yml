@@ -6,6 +6,8 @@ system:
   api-version: v1
   # 程序监听端口
   port: 10000
+  # 性能调试端口
+  pprof-port: 10005
   # 连接超时时间(秒, 初始化连接mysql/redis等默认超时时间设置, 小于1无效)
   connect-timeout: 10
   # 是否开启redis

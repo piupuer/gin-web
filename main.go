@@ -66,7 +66,8 @@ func main() {
 
 	go func() {
 		// 加入pprof性能分析
-		if err := http.ListenAndServe(":8005", nil); err != nil {
+		global.Log.Info("Debug pprof is running at ", fmt.Sprintf("%s:%d", host, global.Conf.System.PprofPort))
+		if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, global.Conf.System.PprofPort), nil); err != nil {
 			global.Log.Error("listen pprof error: ", err)
 		}
 	}()
