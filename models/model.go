@@ -10,7 +10,7 @@ import (
 
 // 由于gorm提供的base model没有json tag, 使用自定义
 type Model struct {
-	Id        uint      `gorm:"primary_key;comment:'自增编号'" json:"id"`
+	Id        uint      `gorm:"primaryKey;comment:'自增编号'" json:"id"`
 	CreatedAt LocalTime `gorm:"comment:'创建时间'" json:"createdAt"`
 	UpdatedAt LocalTime `gorm:"comment:'更新时间'" json:"updatedAt"`
 	DeletedAt DeletedAt `gorm:"index:idx_deleted_at;comment:'删除时间(软删除)'" json:"deletedAt"`
