@@ -58,6 +58,8 @@ func Mysql() {
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix: global.Conf.Mysql.TablePrefix + "_",
 		},
+		// 查询全部字段, 某些情况下*不走索引
+		QueryFields: true,
 	})
 	if err != nil {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))
