@@ -159,6 +159,8 @@ func UpdateRoleMenusById(c *gin.Context) {
 		response.FailWithMsg(err.Error())
 		return
 	}
+	// 清理菜单树缓存
+	menuTreeCache.Flush()
 	response.Success()
 }
 
@@ -199,6 +201,8 @@ func UpdateRoleApisById(c *gin.Context) {
 		response.FailWithMsg(err.Error())
 		return
 	}
+	// 清理菜单树缓存
+	menuTreeCache.Flush()
 	response.Success()
 }
 

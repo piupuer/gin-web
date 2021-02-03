@@ -30,7 +30,7 @@ func GetMenuTree(c *gin.Context) {
 	}
 
 	// 创建服务
-	s := cache_service.New(c)
+	s := service.New(c)
 	menus, err := s.GetMenuTree(user.RoleId)
 	if err != nil {
 		response.FailWithMsg(err.Error())

@@ -79,10 +79,20 @@ func (s *MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, 
 	// 获取菜单增量
 	incremental := req.GetIncremental(menuIds, allMenu)
 	// 查询所有菜单
-	var incrementalMenus []models.SysMenu
-	err = s.tx.Where("id in (?)", incremental).Find(&incrementalMenus).Error
+	incrementalMenus := make([]models.SysMenu, 0)
+	err = s.tx.
+		Model(&models.SysMenu{}).
+		Where("id in (?)", incremental).
+		Find(&incrementalMenus).Error
 	if err != nil {
 		return
+	}
+	// 去除菜单增量中包含子菜单的父菜单
+	newIncrementalMenus := make([]models.SysMenu, 0)
+	for _, menu := range incrementalMenus {
+		if !hasChildrenMenu(menu.Id, allMenu) {
+			newIncrementalMenus = append(newIncrementalMenus, menu)
+		}
 	}
 	// 查询role
 	var role models.SysRole
