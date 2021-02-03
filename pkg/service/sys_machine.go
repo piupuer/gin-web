@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"gin-web/models"
-	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
 	"gorm.io/gorm"
@@ -15,38 +14,38 @@ import (
 func (s *MysqlService) GetMachines(req *request.MachineListRequestStruct) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
-	db := global.Mysql.
+	query := s.tx.
 		Table(new(models.SysMachine).TableName()).
 		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
 	if host != "" {
-		db = db.Where("host LIKE ?", fmt.Sprintf("%%%s%%", host))
+		query = query.Where("host LIKE ?", fmt.Sprintf("%%%s%%", host))
 	}
 	loginName := strings.TrimSpace(req.LoginName)
 	if loginName != "" {
-		db = db.Where("login_name LIKE ?", fmt.Sprintf("%%%s%%", loginName))
+		query = query.Where("login_name LIKE ?", fmt.Sprintf("%%%s%%", loginName))
 	}
 	creator := strings.TrimSpace(req.Creator)
 	if creator != "" {
-		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
+		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {
-			db = db.Where("status = ?", 1)
+			query = query.Where("status = ?", 1)
 		} else {
-			db = db.Where("status = ?", 0)
+			query = query.Where("status = ?", 0)
 		}
 	}
 	// 查询条数
-	err = db.Count(&req.PageInfo.Total).Error
+	err = query.Count(&req.PageInfo.Total).Error
 	if err == nil {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
-			err = db.Find(&list).Error
+			err = query.Find(&list).Error
 		} else {
 			// 获取分页参数
 			limit, offset := req.GetLimit()
-			err = db.Limit(limit).Offset(offset).Find(&list).Error
+			err = query.Limit(limit).Offset(offset).Find(&list).Error
 		}
 	}
 	return list, err
