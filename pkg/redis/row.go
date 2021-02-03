@@ -90,16 +90,21 @@ func RowChange(e *canal.RowsEvent) {
 			newRow := changeRows[i+1]
 			// 通过历史数据changeRows[0]去匹配需要更新的数据所在索引
 			index := getOldRowIndex(newRows, oldRow, e.Table)
-			if deletedAtIndex >= 0 && oldRow[deletedAtIndex] == nil && newRow[deletedAtIndex] != nil {
-				// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
-				if index < rowCount-1 {
-					newRows = append(newRows[:index], newRows[index+1:]...)
+			if len(newRows) > 0 && index >= 0 {
+				if deletedAtIndex >= 0 && oldRow[deletedAtIndex] == nil && newRow[deletedAtIndex] != nil {
+					// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
+					if index < rowCount-1 {
+						newRows = append(newRows[:index], newRows[index+1:]...)
+					} else {
+						newRows = append(newRows[:index])
+					}
 				} else {
-					newRows = append(newRows[:index])
+					// 执行更新
+					newRows[index] = getRow(newRow, e.Table)
 				}
 			} else {
-				// 执行更新
-				newRows[index] = getRow(newRow, e.Table)
+				// 可能是数据反写
+				newRows = append(newRows, getRow(newRow, e.Table))
 			}
 		}
 
