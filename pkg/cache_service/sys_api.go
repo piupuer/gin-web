@@ -39,7 +39,7 @@ func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 	}
 	// 查询条数
 	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
+	if err == nil && req.PageInfo.Total > 0 {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
 			err = query.Find(&list).Error

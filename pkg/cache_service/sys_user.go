@@ -67,7 +67,7 @@ func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 		query = query.Where("status", "=", *req.Status)
 	}
 	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
+	if err == nil && req.PageInfo.Total > 0 {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
 			err = query.Find(&list).Error
