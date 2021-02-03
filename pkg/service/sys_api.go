@@ -242,5 +242,5 @@ func (s *MysqlService) DeleteApiByIds(ids []uint) (err error) {
 	}
 	// 删除所有规则
 	s.BatchDeleteRoleCasbins(casbins)
-	return query.Delete(models.SysApi{}).Error
+	return query.Delete(&models.SysApi{}).Error
 }

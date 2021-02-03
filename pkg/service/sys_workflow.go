@@ -234,7 +234,7 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 	// 1. 删除流水线
 	for _, item := range req.Delete {
 		// 删除流水线
-		err = s.tx.Where("id = ?", item.Id).Delete(models.SysWorkflowLine{}).Error
+		err = s.tx.Where("id = ?", item.Id).Delete(&models.SysWorkflowLine{}).Error
 		if err != nil {
 			return
 		}

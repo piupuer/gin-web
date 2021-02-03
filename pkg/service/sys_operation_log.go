@@ -45,8 +45,3 @@ func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStru
 	}
 	return list, err
 }
-
-// 批量删除操作日志
-func (s *MysqlService) DeleteOperationLogByIds(ids []uint) (err error) {
-	return s.tx.Where("id IN (?)", ids).Delete(models.SysOperationLog{}).Error
-}
