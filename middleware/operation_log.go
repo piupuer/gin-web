@@ -5,10 +5,10 @@ import (
 	"fmt"
 	v1 "gin-web/api/v1"
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
+	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/casbin/casbin/v2/util"
 	"github.com/gin-gonic/gin"
@@ -185,7 +185,7 @@ func getApiDesc(c *gin.Context, method, path string) string {
 		apiMap, _ = oldCache2.(map[string][]models.SysApi)
 	} else {
 		// 获取当前接口
-		s := cache_service.New(c)
+		s := service.New(c)
 		apis, err := s.GetApis(&request.ApiListRequestStruct{
 			PageInfo: response.PageInfo{
 				NoPagination: true,

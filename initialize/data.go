@@ -3,11 +3,9 @@ package initialize
 import (
 	"gin-web/models"
 	"gin-web/pkg/global"
-	"gin-web/pkg/request"
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"strings"
 )

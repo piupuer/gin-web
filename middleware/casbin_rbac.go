@@ -2,7 +2,6 @@ package middleware
 
 import (
 	v1 "gin-web/api/v1"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/response"
 	"github.com/gin-gonic/gin"

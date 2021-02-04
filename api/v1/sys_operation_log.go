@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
