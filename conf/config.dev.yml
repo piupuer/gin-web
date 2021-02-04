@@ -6,10 +6,14 @@ system:
   api-version: v1
   # 程序监听端口
   port: 10000
+  # 性能调试端口
+  pprof-port: 10005
   # 连接超时时间(秒, 初始化连接mysql/redis等默认超时时间设置, 小于1无效)
   connect-timeout: 10
   # 是否开启redis
   use-redis: true
+  # 是否使用redis service(pkg.cache_service包, 表数据量大时redis存全量json销量并没有mysql高)
+  use-redis-service: true
   # 开启全局事务管理器
   transaction: true
   # 是否初始化数据(没有初始数据时使用, 已发布正式版谨慎使用)
@@ -24,6 +28,8 @@ system:
   rsa-public-key: gin-web-rsa.pub
   # rsa私钥文件路径(conf相对路径, 也可以填绝对路径)
   rsa-private-key: gin-web-rsa
+  # 幂等性token名称
+  idempotence-token-name: api-idempotence-token
 
 logs:
   # 日志等级(-1:Debug, 0:Info, -1<=level<=5, 参照zap.level源码)
@@ -84,8 +90,8 @@ jwt:
   key: secret key
   # token过期时间, 小时
   timeout: 24
-  # token更新时间, 小时
-  max-refresh: 24
+  # 刷新token最大过期时间, 小时
+  max-refresh: 168
 
 # 速率限制配置
 rate-limit:

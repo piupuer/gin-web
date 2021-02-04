@@ -43,7 +43,7 @@ func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 	}
 	// 查询条数
 	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
+	if err == nil && req.PageInfo.Total > 0 {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
 			err = query.Find(&list).Error
@@ -94,7 +94,7 @@ func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 			}
 		}
 	}
-	
+
 	// 通过分类进行分组归纳
 	for _, api := range newApi {
 		category := api.Category
@@ -144,10 +144,11 @@ func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 
 // 创建接口
 func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error) {
-	var api models.SysApi
-	utils.Struct2StructByJson(req, &api)
-	// 创建数据
-	err = s.tx.Create(&api).Error
+	api := new(models.SysApi)
+	err = s.Create(req, &api)
+	if err != nil {
+		return err
+	}
 	// 添加了角色
 	if len(req.RoleIds) > 0 {
 		// 查询角色关键字
@@ -172,27 +173,29 @@ func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error
 }
 
 // 更新接口
-func (s *MysqlService) UpdateApiById(id uint, req models.SysApi) (err error) {
+func (s *MysqlService) UpdateApiById(id uint, req request.UpdateApiRequestStruct) (err error) {
 	var api models.SysApi
-	query := s.tx.Model(api).Where("id = ?", id).First(&api)
+	query := s.tx.Model(&api).Where("id = ?", id).First(&api)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
 
 	// 比对增量字段
-	var m models.SysApi
-	utils.CompareDifferenceStructByJson(api, req, &m)
+	m := make(map[string]interface{}, 0)
+	utils.CompareDifferenceStruct2SnakeKeyByJson(api, req, &m)
 
 	// 记录update前的旧数据, 执行Updates后api会变成新数据
 	oldApi := api
 	// 更新指定列
 	err = query.Updates(m).Error
 
-	var diff models.SysApi
 	// 对比api发生了哪些变化
-	utils.CompareDifferenceStructByJson(oldApi, api, &diff)
+	diff := make(map[string]interface{}, 0)
+	utils.CompareDifferenceStruct2SnakeKeyByJson(oldApi, api, &diff)
 
-	if diff.Path != "" || diff.Method != "" {
+	path, ok1 := diff["path"]
+	method, ok2 := diff["method"]
+	if (ok1 && path != "") || (ok2 && method != "") {
 		// path或method变化, 需要更新casbin规则
 		// 查找当前接口都有哪些角色在使用
 		oldCasbins := s.GetRoleCasbins(models.SysRoleCasbin{
@@ -239,5 +242,5 @@ func (s *MysqlService) DeleteApiByIds(ids []uint) (err error) {
 	}
 	// 删除所有规则
 	s.BatchDeleteRoleCasbins(casbins)
-	return query.Delete(models.SysApi{}).Error
+	return query.Delete(&models.SysApi{}).Error
 }

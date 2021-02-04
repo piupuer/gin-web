@@ -25,7 +25,7 @@ type ptyRequestMsg struct {
 // 启动shell连接
 func MachineShellWs(c *gin.Context) {
 	var req request.MachineShellWsRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 
 	conn, err := upgrade.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
@@ -40,7 +40,7 @@ func MachineShellWs(c *gin.Context) {
 	// 建立连接
 	client, err := utils.GetSshClient(utils.SshConfig{
 		Host:      req.Host,
-		Port:      req.SshPort,
+		Port:      int(req.SshPort),
 		LoginName: req.LoginName,
 		LoginPwd:  req.LoginPwd,
 	})
@@ -86,12 +86,14 @@ func MachineShellWs(c *gin.Context) {
 	modeList = append(modeList, 0)
 
 	// 发送pty
+	rows := uint32(req.Rows)
+	cols := uint32(req.Cols)
 	ptyReq := ptyRequestMsg{
 		Term:     "xterm",
-		Columns:  req.Cols,
-		Rows:     req.Rows,
-		Width:    req.Cols * 8,
-		Height:   req.Rows * 8,
+		Columns:  rows,
+		Rows:     cols,
+		Width:    rows,
+		Height:   cols,
 		Modelist: string(modeList),
 	}
 	ok, err := channel.SendRequest("pty-req", true, ssh.Marshal(&ptyReq))

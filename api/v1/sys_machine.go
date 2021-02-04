@@ -14,7 +14,7 @@ import (
 func GetMachines(c *gin.Context) {
 	// 绑定参数
 	var req request.MachineListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -44,7 +44,7 @@ func CreateMachine(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateMachineRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -60,7 +60,7 @@ func CreateMachine(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
 	s := service.New(c)
-	err = s.CreateMachine(&req)
+	err = s.Create(req, new(models.SysMachine))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -71,16 +71,13 @@ func CreateMachine(c *gin.Context) {
 // 更新机器
 func UpdateMachineById(c *gin.Context) {
 	// 绑定参数
-	var req models.SysMachine
-	var machineInfo request.CreateMachineRequestStruct
-	err := c.Bind(&req)
+	var req request.UpdateMachineRequestStruct
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
 	}
 
-	// 将部分参数转为pwd, 如果值不为空, 可能会用到
-	utils.Struct2StructByJson(req, &machineInfo)
 	// 获取path中的machineId
 	machineId := utils.Str2Uint(c.Param("machineId"))
 	if machineId == 0 {
@@ -91,7 +88,7 @@ func UpdateMachineById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateMachineById(machineId, req)
+	err = s.UpdateById(machineId, &models.SysMachine{}, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -122,7 +119,7 @@ func ConnectMachineById(c *gin.Context) {
 // 批量删除机器
 func BatchDeleteMachineByIds(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -131,7 +128,7 @@ func BatchDeleteMachineByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteMachineByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysMachine))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

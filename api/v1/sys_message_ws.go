@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"errors"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
@@ -32,34 +33,31 @@ const (
 	HeartBeatMaxRetryCount = 3
 
 	// 消息请求类型
+	// 第1个数字: 1请求, 2响应
+	// 第2个数字: 消息种类(请求和响应的消息种类没有直接联系)
+	// 第3个数字: 种类排序
 	// 心跳消息
-	MessageReqHeartBeat uint = 0
-	// 连接断开
-	MessageReqDisconnect uint = 1
+	MessageReqHeartBeat string = "1-1-1"
 	// 推送新消息
-	MessageReqPush uint = 2
+	MessageReqPush string = "1-2-1"
 	// 批量已读
-	MessageReqBatchRead uint = 3
+	MessageReqBatchRead string = "1-2-2"
 	// 批量删除
-	MessageReqBatchDeleted uint = 4
+	MessageReqBatchDeleted string = "1-2-3"
 	// 全部已读
-	MessageReqAllRead uint = 5
+	MessageReqAllRead string = "1-2-4"
 	// 全部删除
-	MessageReqAllDeleted uint = 6
+	MessageReqAllDeleted string = "1-2-5"
 
 	// 消息响应类型
 	// 心跳消息
-	MessageRespHeartBeat uint = 0
+	MessageRespHeartBeat string = "2-1-1"
 	// 普通消息
-	MessageRespNormal uint = 1
-	// 连接断开
-	MessageRespDisconnect uint = 2
+	MessageRespNormal string = "2-2-1"
 	// 未读数
-	MessageRespUnRead uint = 3
+	MessageRespUnRead string = "2-3-1"
 	// 用户上线
-	MessageRespOnline uint = 4
-	// 用户离线
-	MessageRespOffline uint = 5
+	MessageRespOnline string = "2-4-1"
 )
 
 var (
@@ -85,9 +83,11 @@ type MessageHub struct {
 	// 客户端取消注册(用户下线通道)
 	UnRegister chan *MessageClient
 	// 广播通道
-	Broadcast chan MessageResp
+	Broadcast chan MessageBroadcast
 	// 刷新用户消息通道
 	RefreshUserMessage chan []uint
+	// 幂等性token校验方法
+	CheckIdempotenceTokenFunc func(token string) bool
 }
 
 // 消息客户端
@@ -109,7 +109,7 @@ type MessageClient struct {
 // 消息请求
 type MessageReq struct {
 	// 消息类型, 见const
-	Type uint `json:"type"`
+	Type string `json:"type"`
 	// 数据内容
 	Data interface{} `json:"data"`
 }
@@ -117,20 +117,27 @@ type MessageReq struct {
 // 消息响应
 type MessageResp struct {
 	// 消息类型, 见const
-	Type uint `json:"type"`
+	Type string `json:"type"`
 	// 消息详情
 	Detail response.Resp `json:"detail"`
 }
 
+// 消息广播
+type MessageBroadcast struct {
+	MessageResp
+	UserIds []uint `json:"-"`
+}
+
 // 启动消息中心仓库
-func StartMessageHub() {
+func StartMessageHub(checkIdempotenceTokenFunc func(token string) bool) {
 	// 初始化
 	hub.Mysql = service.New(nil)
 	hub.Clients = make(map[string]*MessageClient)
 	hub.Register = make(chan *MessageClient)
 	hub.UnRegister = make(chan *MessageClient)
-	hub.Broadcast = make(chan MessageResp)
+	hub.Broadcast = make(chan MessageBroadcast)
 	hub.RefreshUserMessage = make(chan []uint)
+	hub.CheckIdempotenceTokenFunc = checkIdempotenceTokenFunc
 	go hub.run()
 }
 
@@ -169,7 +176,12 @@ func MessageWs(c *gin.Context) {
 			"user": user,
 		}),
 	}
-	hub.Broadcast <- msg
+
+	// 通知除自己之外的人
+	hub.Broadcast <- MessageBroadcast{
+		MessageResp: msg,
+		UserIds:     utils.ContainsUintThenRemove(hub.UserIds, user.Id),
+	}
 }
 
 // 运行仓库
@@ -183,22 +195,26 @@ func (h *MessageHub) run() {
 			}
 			h.Clients[client.Key] = client
 			global.Log.Debug("用户上线: ", client.Key)
-		// 用户下线	
+		// 用户下线
 		case client := <-h.UnRegister:
 			if _, ok := h.Clients[client.Key]; ok {
 				delete(h.Clients, client.Key)
 				// 关闭发送通道
 				close(client.Send)
+				utils.ContainsUintThenRemove(hub.UserIds, client.User.Id)
 				global.Log.Debug("用户下线: ", client.Key)
 			}
-		// 广播(全部用户均可接收)	
-		case message := <-h.Broadcast:
+		// 广播(全部用户均可接收)
+		case broadcast := <-h.Broadcast:
 			for _, client := range h.Clients {
-				select {
-				case client.Send <- message:
+				// 通知指定用户
+				if utils.ContainsUint(broadcast.UserIds, client.User.Id) {
+					select {
+					case client.Send <- broadcast.MessageResp:
+					}
 				}
 			}
-		// 刷新客户端消息	
+		// 刷新客户端消息
 		case userIds := <-h.RefreshUserMessage:
 			// 同步用户消息
 			hub.Mysql.SyncMessageByUserIds(userIds)
@@ -254,18 +270,19 @@ func (c *MessageClient) receive() {
 			// 参数校验
 			err = global.NewValidatorError(global.Validate.Struct(data), data.FieldTrans())
 			detail := response.GetSuccess()
-			if err != nil {
-				detail = response.GetFailWithMsg(err.Error())
-			} else {
-				data.FromUserId = c.User.Id
-				err = hub.Mysql.CreateMessage(&data)
-				if err != nil {
-					detail = response.GetFailWithMsg(err.Error())
+			if err == nil {
+				if !hub.CheckIdempotenceTokenFunc(data.IdempotenceToken) {
+					err = errors.New(response.IdempotenceTokenInvalidMsg)
+				} else {
+					data.FromUserId = c.User.Id
+					err = hub.Mysql.CreateMessage(&data)
 				}
 			}
 			if err == nil {
 				// 刷新条数
 				hub.RefreshUserMessage <- hub.UserIds
+			} else {
+				detail = response.GetFailWithMsg(err.Error())
 			}
 			// 发送响应
 			c.Send <- MessageResp{
@@ -361,7 +378,7 @@ func (c *MessageClient) send() {
 				hub.UnRegister <- c
 				return
 			}
-		// 长时间无新消息	
+		// 长时间无新消息
 		case <-ticker.C:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			// 发送ping消息

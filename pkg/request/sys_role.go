@@ -8,7 +8,7 @@ import (
 type RoleListRequestStruct struct {
 	Name              string `json:"name" form:"name"`
 	Keyword           string `json:"keyword" form:"keyword"`
-	CurrentRoleSort   uint
+	CurrentRoleSort   uint   `json:"currentRoleSort"`
 	Status            *uint  `json:"status" form:"status"`
 	Creator           string `json:"creator" form:"creator"`
 	response.PageInfo        // 分页参数
@@ -16,13 +16,13 @@ type RoleListRequestStruct struct {
 
 // 创建角色结构体
 type CreateRoleRequestStruct struct {
-	Name            string `json:"name" validate:"required"`
-	Keyword         string `json:"keyword" validate:"required"`
-	CurrentRoleSort uint
-	Sort            *uint  `json:"sort" validate:"required"`
-	Desc            string `json:"desc"`
-	Status          *uint  `json:"status"`
-	Creator         string `json:"creator"`
+	CurrentRoleSort uint     `json:"currentRoleSort"`
+	Name            string   `json:"name" validate:"required"`
+	Keyword         string   `json:"keyword" validate:"required"`
+	Sort            *ReqUint `json:"sort" validate:"required"`
+	Desc            string   `json:"desc"`
+	Status          *ReqUint `json:"status"`
+	Creator         string   `json:"creator"`
 }
 
 // 翻译需要校验的字段名称
@@ -32,4 +32,14 @@ func (s CreateRoleRequestStruct) FieldTrans() map[string]string {
 	m["Keyword"] = "角色关键字"
 	m["Sort"] = "角色排序"
 	return m
+}
+
+// 更新角色结构体
+type UpdateRoleRequestStruct struct {
+	Name    *string  `json:"name"`
+	Keyword *string  `json:"keyword"`
+	Sort    *ReqUint `json:"sort"`
+	Desc    *string  `json:"desc"`
+	Status  *ReqUint `json:"status"`
+	Creator *string  `json:"creator"`
 }

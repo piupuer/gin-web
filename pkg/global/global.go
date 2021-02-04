@@ -2,6 +2,8 @@ package global
 
 import (
 	"errors"
+	"gin-web/pkg/oss"
+	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-redis/redis"
@@ -25,6 +27,10 @@ var (
 	Mysql *gorm.DB
 	// redis实例
 	Redis *redis.Client
+	// cabin实例
+	CasbinEnforcer *casbin.Enforcer
+	// minio实例
+	Minio *oss.MinioOss
 	// validation.v9校验器
 	Validate *validator.Validate
 	// validation.v9相关翻译器
@@ -75,7 +81,10 @@ func GetTx(c *gin.Context) *gorm.DB {
 	// 默认使用无事务的mysql
 	tx := Mysql
 	if c != nil {
-		method := c.Request.Method
+		method := ""
+		if c.Request != nil {
+			method = c.Request.Method
+		}
 		if !(method == "OPTIONS" || method == "GET" || !Conf.System.Transaction) {
 			// 从context对象中读取事务对象
 			txKey, exists := c.Get("tx")

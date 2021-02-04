@@ -36,12 +36,12 @@ var (
 type SysMessage struct {
 	Model
 	FromUserId uint       `gorm:"comment:'消息发送者'" json:"fromUserId"`
-	FromUser   SysUser    `gorm:"foreignkey:FromUserId" json:"fromUser"`
+	FromUser   SysUser    `gorm:"foreignKey:FromUserId" json:"fromUser"`
 	Title      string     `gorm:"comment:'消息标题'" json:"title"`
 	Content    string     `gorm:"comment:'消息内容'" json:"content"`
 	Type       uint       `gorm:"type:tinyint;default:0;comment:'消息类型(0: 一对一私信, 1: 一对多群发[主要通过角色指定], 2: 系统消息)'" json:"type"`
 	RoleId     uint       `gorm:"comment:'一对多角色编号'" json:"roleId"`
-	Role       SysRole    `gorm:"foreignkey:RoleId" json:"role"`
+	Role       SysRole    `gorm:"foreignKey:RoleId" json:"role"`
 	ExpiredAt  *LocalTime `gorm:"comment:'过期时间'" json:"expiredAt"`
 }
 
@@ -53,9 +53,9 @@ func (m SysMessage) TableName() string {
 type SysMessageLog struct {
 	Model
 	ToUserId  uint       `gorm:"comment:'消息接收者'" json:"toUserId"`
-	ToUser    SysUser    `gorm:"foreignkey:ToUserId" json:"toUser"`
+	ToUser    SysUser    `gorm:"foreignKey:ToUserId" json:"toUser"`
 	MessageId uint       `gorm:"comment:'消息编号'" json:"messageId"`
-	Message   SysMessage `gorm:"foreignkey:MessageId" json:"message"`
+	Message   SysMessage `gorm:"foreignKey:MessageId" json:"message"`
 	Status    uint       `gorm:"type:tinyint;default:0;comment:'消息状态(0: 未读, 1: 已读, 2: 删除)'" json:"status"`
 }
 

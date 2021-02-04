@@ -1,10 +1,5 @@
 package models
 
-import (
-	"fmt"
-	"gin-web/pkg/global"
-)
-
 // 系统菜单表
 type SysMenu struct {
 	Model
@@ -21,22 +16,12 @@ type SysMenu struct {
 	Breadcrumb *uint     `gorm:"type:tinyint(1);default:1;comment:'面包屑可见性(可见/隐藏, 默认可见)'" json:"breadcrumb"`
 	ParentId   uint      `gorm:"default:0;comment:'父菜单编号(编号为0时表示根菜单)'" json:"parentId"`
 	Creator    string    `gorm:"comment:'创建人'" json:"creator"`
-	Children   []SysMenu `gorm:"-" json:"children"`                          // 子菜单集合
-	Roles      []SysRole `gorm:"many2many:relation_role_menu;" json:"roles"` // 角色菜单多对多关系
+	Children   []SysMenu `gorm:"-" json:"children"`                              // 子菜单集合
+	Roles      []SysRole `gorm:"many2many:sys_menu_role_relation;" json:"roles"` // 角色菜单多对多关系
 }
 
 func (m SysMenu) TableName() string {
 	return m.Model.TableName("sys_menu")
-}
-
-// 角色与菜单关联关系
-type RelationRoleMenu struct {
-	SysRoleId uint `json:"sysRoleId"`
-	SysMenuId uint `json:"sysMenuId"`
-}
-
-func (m RelationRoleMenu) TableName() string {
-	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "relation_role_menu")
 }
 
 // 获取选中列表

@@ -33,7 +33,7 @@ func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStru
 	}
 	// 查询条数
 	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
+	if err == nil && req.PageInfo.Total > 0 {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
 			err = query.Find(&list).Error
@@ -44,9 +44,4 @@ func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStru
 		}
 	}
 	return list, err
-}
-
-// 批量删除操作日志
-func (s *MysqlService) DeleteOperationLogByIds(ids []uint) (err error) {
-	return s.tx.Where("id IN (?)", ids).Delete(models.SysOperationLog{}).Error
 }

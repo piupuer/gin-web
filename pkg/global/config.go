@@ -20,8 +20,10 @@ type SystemConfiguration struct {
 	UrlPathPrefix               string   `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
 	ApiVersion                  string   `mapstructure:"api-version" json:"apiVersion"`
 	Port                        int      `mapstructure:"port" json:"port"`
+	PprofPort                   int      `mapstructure:"pprof-port" json:"pprofPort"`
 	ConnectTimeout              int      `mapstructure:"connect-timeout" json:"connectTimeout"`
 	UseRedis                    bool     `mapstructure:"use-redis" json:"useRedis"`
+	UseRedisService             bool     `mapstructure:"use-redis-service" json:"useRedisService"`
 	Transaction                 bool     `mapstructure:"transaction" json:"transaction"`
 	InitData                    bool     `mapstructure:"init-data" json:"initData"`
 	OperationLogKey             string   `mapstructure:"operation-log-key" json:"operationLogKey"`
@@ -32,6 +34,7 @@ type SystemConfiguration struct {
 	RSAPrivateKey               string   `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
 	RSAPublicBytes              []byte   `mapstructure:"-" json:"-"`
 	RSAPrivateBytes             []byte   `mapstructure:"-" json:"-"`
+	IdempotenceTokenName        string   `mapstructure:"idempotence-token-name" json:"idempotenceTokenName"`
 }
 
 type LogsConfiguration struct {

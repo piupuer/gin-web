@@ -2,20 +2,31 @@ package middleware
 
 import (
 	"bytes"
+	"fmt"
 	v1 "gin-web/api/v1"
 	"gin-web/models"
+	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
-	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/casbin/casbin/v2/util"
 	"github.com/gin-gonic/gin"
+	"github.com/patrickmn/go-cache"
 	"io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"strings"
+	"sync"
 	"time"
+)
+
+var (
+	// 定期缓存, 避免每次频繁查询数据库
+	apiCache = cache.New(24*time.Hour, 48*time.Hour)
+	// 日志缓存
+	logCache = make([]models.SysOperationLog, 0)
+	logLock  sync.Mutex
 )
 
 // 操作日志
@@ -54,7 +65,6 @@ func OperationLog(c *gin.Context) {
 		contentType := c.Request.Header.Get("Content-Type")
 		// 二进制文件类型需要特殊处理
 		if strings.Contains(contentType, "multipart/form-data") {
-
 			contentTypeArr := strings.Split(contentType, "; ")
 			if len(contentTypeArr) == 2 {
 				// 读取boundary
@@ -78,6 +88,11 @@ func OperationLog(c *gin.Context) {
 				body = []byte(utils.Struct2Json(params))
 			}
 		}
+		// 记录header
+		header := make(map[string]string, 0)
+		for k, v := range c.Request.Header {
+			header[k] = strings.Join(v, " | ")
+		}
 		log := models.SysOperationLog{
 			Model: models.Model{
 				// 记录最后时间
@@ -91,6 +106,8 @@ func OperationLog(c *gin.Context) {
 			Method: c.Request.Method,
 			// 请求路径(去除url前缀)
 			Path: strings.TrimPrefix(c.Request.URL.Path, "/"+global.Conf.System.UrlPathPrefix),
+			// 请求头
+			Header: utils.Struct2Json(header),
 			// 请求体
 			Body: string(body),
 			// 请求耗时
@@ -113,29 +130,7 @@ func OperationLog(c *gin.Context) {
 			log.RoleName = "未登录"
 		}
 
-		// 获取当前接口
-		cache := service.New(c)
-		apis, err := cache.GetApis(&request.ApiListRequestStruct{
-			Method: log.Method,
-			PageInfo: response.PageInfo{
-				NoPagination: true,
-			},
-		})
-		match := false
-		if err == nil {
-			for _, api := range apis {
-				// 通过casbin KeyMatch2来匹配url规则
-				match = util.KeyMatch2(log.Path, api.Path)
-				if match {
-					log.ApiDesc = api.Desc
-					break
-				}
-			}
-		}
-		if !match {
-			log.ApiDesc = "无"
-		}
-
+		log.ApiDesc = getApiDesc(c, log.Method, log.Path)
 		// 获取Ip所在地
 		log.IpLocation = utils.GetIpRealLocation(log.Ip)
 
@@ -148,6 +143,10 @@ func OperationLog(c *gin.Context) {
 			data = utils.Struct2Json(resp)
 			// 是自定义的响应类型
 			if item, ok := resp.(response.Resp); ok {
+				// 未登录操作信息无需写入日志
+				if item.Code == response.Unauthorized {
+					return
+				}
 				log.Status = item.Code
 			}
 		} else {
@@ -155,8 +154,71 @@ func OperationLog(c *gin.Context) {
 		}
 		// gzip压缩
 		log.Data = data
-		// 异步, 写入数据库
-		go global.Mysql.Create(&log)
+		// 记录操作时间
+		log.CreatedAt = models.LocalTime{
+			Time: time.Now(),
+		}
+		// 操作日志晚点写入数据库(有条件的可以将日志吐到mq, 闲时再写入数据库)
+		logLock.Lock()
+		logCache = append(logCache, log)
+		if len(logCache) >= 100 {
+			logs := logCache
+			go global.Mysql.Create(&logs)
+			logCache = make([]models.SysOperationLog, 0)
+		}
+		logLock.Unlock()
 	}()
 	c.Next()
+}
+
+// 获取接口描述
+func getApiDesc(c *gin.Context, method, path string) string {
+	desc := "无"
+	apiMap := make(map[string][]models.SysApi, 0)
+	oldCache1, ok1 := apiCache.Get(fmt.Sprintf("%s_%s", method, path))
+	if ok1 {
+		desc, _ = oldCache1.(string)
+		return desc
+	}
+	oldCache2, ok2 := apiCache.Get("apiMap")
+	if ok2 {
+		apiMap, _ = oldCache2.(map[string][]models.SysApi)
+	} else {
+		// 获取当前接口
+		s := cache_service.New(c)
+		apis, err := s.GetApis(&request.ApiListRequestStruct{
+			PageInfo: response.PageInfo{
+				NoPagination: true,
+			},
+		})
+		if err == nil {
+			// 区分不同请求方式存储api
+			for _, api := range apis {
+				arr := make([]models.SysApi, 0)
+				if list, ok := apiMap[api.Method]; ok {
+					arr = append(list, api)
+				} else {
+					arr = append(arr, api)
+				}
+				apiMap[api.Method] = arr
+			}
+		}
+		// 写入缓存
+		apiCache.Add("apiMap", apiMap, cache.DefaultExpiration)
+	}
+
+	// 匹配路由
+	for _, api := range apiMap[method] {
+		// 通过casbin KeyMatch2来匹配url规则
+		match := util.KeyMatch2(path, api.Path)
+		if match {
+			desc = api.Desc
+			break
+		}
+	}
+
+	// 写入缓存
+	apiCache.Add(fmt.Sprintf("%s_%s", method, path), desc, cache.DefaultExpiration)
+
+	return desc
 }

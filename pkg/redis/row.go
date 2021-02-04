@@ -2,6 +2,7 @@ package redis
 
 import (
 	"fmt"
+	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/siddontang/go-mysql/canal"
@@ -42,6 +43,12 @@ func RowChange(e *canal.RowsEvent) {
 			if eV, ok := eItem.([]uint8); ok {
 				row[j] = string(eV)
 			} else {
+				columnType := e.Table.Columns[j].RawType
+				// 转为本地时间
+				// grom v2时间类型全部是datetime(3)
+				if t, ok := eItem.(string); ok && columnType == "datetime(3)" {
+					eItem = new(models.LocalTime).SetString(t)
+				}
 				row[j] = eItem
 			}
 		}
@@ -83,16 +90,21 @@ func RowChange(e *canal.RowsEvent) {
 			newRow := changeRows[i+1]
 			// 通过历史数据changeRows[0]去匹配需要更新的数据所在索引
 			index := getOldRowIndex(newRows, oldRow, e.Table)
-			if deletedAtIndex >= 0 && oldRow[deletedAtIndex] == nil && newRow[deletedAtIndex] != nil {
-				// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
-				if index < rowCount-1 {
-					newRows = append(newRows[:index], newRows[index+1:]...)
+			if len(newRows) > 0 && index >= 0 {
+				if deletedAtIndex >= 0 && oldRow[deletedAtIndex] == nil && newRow[deletedAtIndex] != nil {
+					// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
+					if index < rowCount-1 {
+						newRows = append(newRows[:index], newRows[index+1:]...)
+					} else {
+						newRows = append(newRows[:index])
+					}
 				} else {
-					newRows = append(newRows[:index])
+					// 执行更新
+					newRows[index] = getRow(newRow, e.Table)
 				}
 			} else {
-				// 执行更新
-				newRows[index] = getRow(newRow, e.Table)
+				// 可能是数据反写
+				newRows = append(newRows, getRow(newRow, e.Table))
 			}
 		}
 
@@ -170,17 +182,6 @@ func getRow(data []interface{}, table *schema.Table) map[string]interface{} {
 		global.Log.Warn(fmt.Sprintf("数据字段可能不匹配, columns: %v, data: %v", table.Columns, data))
 	}
 	return row
-}
-
-// 获取当前日志位置
-func GetCurrentPos() mysql.Position {
-	var pos mysql.Position
-	p, err := global.Redis.Get(global.Conf.Redis.BinlogPos).Result()
-	if err == nil {
-		// 将旧数据解析为对象
-		utils.Json2Struct(p, &pos)
-	}
-	return pos
 }
 
 // mysql日志位置发生变化

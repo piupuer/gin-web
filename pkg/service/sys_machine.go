@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"gin-web/models"
-	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
 	"gorm.io/gorm"
@@ -15,86 +14,41 @@ import (
 func (s *MysqlService) GetMachines(req *request.MachineListRequestStruct) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
-	db := global.Mysql.
+	query := s.tx.
 		Table(new(models.SysMachine).TableName()).
 		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
 	if host != "" {
-		db = db.Where("host LIKE ?", fmt.Sprintf("%%%s%%", host))
+		query = query.Where("host LIKE ?", fmt.Sprintf("%%%s%%", host))
 	}
 	loginName := strings.TrimSpace(req.LoginName)
 	if loginName != "" {
-		db = db.Where("login_name LIKE ?", fmt.Sprintf("%%%s%%", loginName))
+		query = query.Where("login_name LIKE ?", fmt.Sprintf("%%%s%%", loginName))
 	}
 	creator := strings.TrimSpace(req.Creator)
 	if creator != "" {
-		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
+		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {
-			db = db.Where("status = ?", 1)
+			query = query.Where("status = ?", 1)
 		} else {
-			db = db.Where("status = ?", 0)
+			query = query.Where("status = ?", 0)
 		}
 	}
 	// 查询条数
-	err = db.Count(&req.PageInfo.Total).Error
-	if err == nil {
+	err = query.Count(&req.PageInfo.Total).Error
+	if err == nil && req.PageInfo.Total > 0 {
 		if req.PageInfo.NoPagination {
 			// 不使用分页
-			err = db.Find(&list).Error
+			err = query.Find(&list).Error
 		} else {
 			// 获取分页参数
 			limit, offset := req.GetLimit()
-			err = db.Limit(limit).Offset(offset).Find(&list).Error
+			err = query.Limit(limit).Offset(offset).Find(&list).Error
 		}
 	}
 	return list, err
-}
-
-// 创建机器
-func (s *MysqlService) CreateMachine(req *request.CreateMachineRequestStruct) (err error) {
-	var machine models.SysMachine
-	utils.Struct2StructByJson(req, &machine)
-	var oldMachine models.SysMachine
-	query := s.tx.Model(oldMachine).Where("host = ?", machine.Host).First(&oldMachine)
-	if query.Error != gorm.ErrRecordNotFound {
-		return errors.New("主机地址重复, 请添加其他主机")
-	}
-
-	// 创建数据
-	err = s.tx.Create(&machine).Error
-	if err != nil {
-		return err
-	}
-	// 连接机器
-	s.ConnectMachine(machine.Id)
-	return
-}
-
-// 更新机器
-func (s *MysqlService) UpdateMachineById(id uint, req models.SysMachine) (err error) {
-	var oldMachine models.SysMachine
-	query := s.tx.Model(oldMachine).Where("id = ?", id).First(&oldMachine)
-	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
-	}
-
-	// 比对增量字段
-	var m models.SysMachine
-	utils.CompareDifferenceStructByJson(oldMachine, req, &m)
-
-	// 更新指定列
-	err = query.Updates(m).Error
-	
-	// 连接机器
-	s.ConnectMachine(oldMachine.Id)
-	return
-}
-
-// 批量删除机器
-func (s *MysqlService) DeleteMachineByIds(ids []uint) (err error) {
-	return s.tx.Where("id IN (?)", ids).Delete(models.SysMachine{}).Error
 }
 
 // 验证机器状态
@@ -128,7 +82,13 @@ func (s *MysqlService) ConnectMachine(id uint) error {
 
 // 初始化机器信息
 func initRemoteMachine(machine *models.SysMachine) error {
-	config := machine.GetSshConfig(2)
+	config := utils.SshConfig{
+		LoginName: machine.LoginName,
+		LoginPwd:  machine.LoginPwd,
+		Port:      machine.SshPort,
+		Host:      machine.Host,
+		Timeout:   2,
+	}
 	cmds := []string{
 		// 查看系统版本
 		"lsb_release -d | cut -f 2 -d : | awk '$1=$1'",

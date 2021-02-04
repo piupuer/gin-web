@@ -10,10 +10,10 @@ import (
 
 // 由于gorm提供的base model没有json tag, 使用自定义
 type Model struct {
-	Id        uint       `gorm:"primary_key;comment:'自增编号'" json:"id"`
-	CreatedAt LocalTime  `gorm:"comment:'创建时间'" json:"createdAt"`
-	UpdatedAt LocalTime  `gorm:"comment:'更新时间'" json:"updatedAt"`
-	DeletedAt *LocalTime `gorm:"comment:'删除时间(软删除)'" sql:"index" json:"deletedAt"`
+	Id        uint      `gorm:"primaryKey;comment:'自增编号'" json:"id"`
+	CreatedAt LocalTime `gorm:"comment:'创建时间'" json:"createdAt"`
+	UpdatedAt LocalTime `gorm:"comment:'更新时间'" json:"updatedAt"`
+	DeletedAt DeletedAt `gorm:"index:idx_deleted_at;comment:'删除时间(软删除)'" json:"deletedAt"`
 }
 
 // 表名设置
@@ -30,19 +30,24 @@ type LocalTime struct {
 func (t *LocalTime) UnmarshalJSON(data []byte) (err error) {
 	str := strings.Trim(string(data), "\"")
 	// ""空值不进行解析
+	// 避免环包调用, 不再调用utils
 	if str == "null" || strings.TrimSpace(str) == "" {
 		*t = LocalTime{Time: time.Time{}}
 		return
 	}
 
-	// 指定解析的格式(设置转为本地格式)
-	now, err := time.ParseInLocation(`"`+global.SecLocalTimeFormat+`"`, string(data), time.Local)
-	*t = LocalTime{Time: now}
+	// 设置str
+	t.SetString(str)
 	return
 }
 
 func (t LocalTime) MarshalJSON() ([]byte, error) {
-	output := fmt.Sprintf("\"%s\"", t.Format(global.SecLocalTimeFormat))
+	s := t.Format(global.SecLocalTimeFormat)
+	// 处理时间0值
+	if t.IsZero() {
+		s = ""
+	}
+	output := fmt.Sprintf("\"%s\"", s)
 	return []byte(output), nil
 }
 
@@ -67,10 +72,59 @@ func (t *LocalTime) Scan(v interface{}) error {
 
 // 用于 fmt.Println 和后续验证场景
 func (t LocalTime) String() string {
+	if t.IsZero() {
+		return ""
+	}
 	return t.Format(global.SecLocalTimeFormat)
 }
 
 // 只需要日期
 func (t LocalTime) DateString() string {
+	if t.IsZero() {
+		return ""
+	}
 	return t.Format(global.DateLocalTimeFormat)
+}
+
+// 只需要月份
+func (t LocalTime) MonthString() string {
+	if t.IsZero() {
+		return ""
+	}
+	return t.Format(global.MonthLocalTimeFormat)
+}
+
+// 设置字符串
+func (t *LocalTime) SetString(str string) *LocalTime {
+	if t != nil {
+		// 指定解析的格式(设置转为本地格式)
+		now, err := time.ParseInLocation(global.SecLocalTimeFormat, str, time.Local)
+		if err == nil {
+			*t = LocalTime{Time: now}
+		}
+	}
+	return t
+}
+
+// 设置时分
+func (t *LocalTime) SetHourAndMinuteString(str string) *LocalTime {
+	if t != nil {
+		if len(str) != 5 {
+			str = "00:00"
+		}
+		dateStart := t.TodayStart().Format(global.DateLocalTimeFormat)
+		return t.SetString(fmt.Sprintf("%s %s:00", dateStart, str))
+	}
+	return t
+}
+
+// 获取今日0点
+func (t *LocalTime) TodayStart() *LocalTime {
+	if t != nil {
+		now := time.Now()
+		// 取当日毫秒数
+		dateStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
+		t.Time = dateStart
+	}
+	return t
 }

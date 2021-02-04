@@ -13,7 +13,7 @@ import (
 func GetOperationLogs(c *gin.Context) {
 	// 绑定参数
 	var req request.OperationLogListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -45,7 +45,7 @@ func BatchDeleteOperationLogByIds(c *gin.Context) {
 		return
 	}
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -54,7 +54,7 @@ func BatchDeleteOperationLogByIds(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 删除数据
-	err = s.DeleteOperationLogByIds(req.GetUintIds())
+	err = s.DeleteByIds(req.GetUintIds(), new(models.SysOperationLog))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

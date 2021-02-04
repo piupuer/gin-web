@@ -15,7 +15,7 @@ import (
 func GetRoles(c *gin.Context) {
 	// 绑定参数
 	var req request.RoleListRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -49,7 +49,7 @@ func CreateRole(c *gin.Context) {
 	user := GetCurrentUser(c)
 	// 绑定参数
 	var req request.CreateRoleRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
@@ -62,7 +62,7 @@ func CreateRole(c *gin.Context) {
 		return
 	}
 
-	if *user.Role.Sort > *req.Sort {
+	if req.Sort != nil && *user.Role.Sort > uint(*req.Sort) {
 		response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
 		return
 	}
@@ -71,7 +71,7 @@ func CreateRole(c *gin.Context) {
 	req.Creator = user.Nickname + user.Username
 	// 创建服务
 	s := service.New(c)
-	err = s.CreateRole(&req)
+	err = s.Create(req, new(models.SysRole))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -82,20 +82,17 @@ func CreateRole(c *gin.Context) {
 // 更新角色
 func UpdateRoleById(c *gin.Context) {
 	// 绑定参数
-	var req models.SysRole
-	var roleInfo request.CreateRoleRequestStruct
-	err := c.Bind(&req)
+	var req request.UpdateRoleRequestStruct
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
 	}
 
-	utils.Struct2StructByJson(req, &roleInfo)
-
-	if roleInfo.Sort != nil {
+	if req.Sort != nil {
 		// 绑定当前用户角色排序(隐藏特定用户)
 		user := GetCurrentUser(c)
-		if *user.Role.Sort > *roleInfo.Sort {
+		if req.Sort != nil && *user.Role.Sort > uint(*req.Sort) {
 			response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
 			return
 		}
@@ -109,7 +106,7 @@ func UpdateRoleById(c *gin.Context) {
 	}
 
 	user := GetCurrentUser(c)
-	if roleInfo.Status != nil && *roleInfo.Status == models.SysRoleStatusDisabled && roleId == user.RoleId {
+	if req.Status != nil && uint(*req.Status) == models.SysRoleStatusDisabled && roleId == user.RoleId {
 		response.FailWithMsg("不能禁用自己所在的角色")
 		return
 	}
@@ -117,7 +114,7 @@ func UpdateRoleById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateRoleById(roleId, req)
+	err = s.UpdateById(roleId, &models.SysRole{}, req)
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
@@ -129,7 +126,7 @@ func UpdateRoleById(c *gin.Context) {
 func UpdateRoleMenusById(c *gin.Context) {
 	// 绑定参数
 	var req request.UpdateIncrementalIdsRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg(fmt.Sprintf("参数绑定失败, %v", err))
 		return
@@ -161,6 +158,8 @@ func UpdateRoleMenusById(c *gin.Context) {
 		response.FailWithMsg(err.Error())
 		return
 	}
+	// 清理菜单树缓存
+	menuTreeCache.Flush()
 	response.Success()
 }
 
@@ -168,7 +167,7 @@ func UpdateRoleMenusById(c *gin.Context) {
 func UpdateRoleApisById(c *gin.Context) {
 	// 绑定参数
 	var req request.UpdateIncrementalIdsRequestStruct
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg(fmt.Sprintf("参数绑定失败, %v", err))
 		return
@@ -201,13 +200,15 @@ func UpdateRoleApisById(c *gin.Context) {
 		response.FailWithMsg(err.Error())
 		return
 	}
+	// 清理菜单树缓存
+	menuTreeCache.Flush()
 	response.Success()
 }
 
 // 批量删除角色
 func BatchDeleteRoleByIds(c *gin.Context) {
 	var req request.Req
-	err := c.Bind(&req)
+	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
 		return
