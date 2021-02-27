@@ -96,8 +96,13 @@ func refresh(tables []string) {
 			}
 			newRows = append(newRows, row)
 		}
+		// 压缩后写入
+		compress, err := utils.CompressStrByZlib(utils.Struct2Json(newRows))
+		if err != nil {
+			panic(fmt.Sprintf("刷新redis数据失败, %v", err))
+		}
 		// 将数据转为json字符串写入redis, expiration=0永不过期
-		err = global.Redis.Set(cacheKey, utils.Struct2Json(newRows), 0).Err()
+		err = global.Redis.Set(cacheKey, *compress, 0).Err()
 		if err != nil {
 			panic(fmt.Sprintf("刷新redis数据失败, %v", err))
 		}

@@ -119,10 +119,13 @@ func (s *QueryRedis) get(tableName string) *gojsonq.JSONQ {
 		// 缓存键由数据库名与表名组成
 		cacheKey := fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, tableName)
 		var err error
-		jsonStr, err = s.redis.Get(cacheKey).Result()
+		str, err := s.redis.Get(cacheKey).Result()
 		global.Log.Debug(fmt.Sprintf("[QueryRedis.get]读取redis缓存: %s", tableName))
 		if err != nil {
 			global.Log.Debug(fmt.Sprintf("[QueryRedis.get]读取redis缓存异常: %v", err))
+		} else {
+			// 解压缩字符串
+			jsonStr = utils.DeCompressStrByZlib(str)
 		}
 		if jsonStr == "" {
 			// 如果是空字符串, 将其设置为空数组, 否则list会被转为nil
