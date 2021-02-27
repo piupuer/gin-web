@@ -35,7 +35,11 @@ func GetWorkflowApprovings(c *gin.Context) {
 	respStruct := make([]response.WorkflowLogsListResponseStruct, 0)
 	for _, log := range approvings {
 		respStruct = append(respStruct, response.WorkflowLogsListResponseStruct{
-			Id:                    log.Id,
+			BaseData: response.BaseData{
+				Id:        log.Id,
+				CreatedAt: log.CreatedAt,
+				UpdatedAt: log.UpdatedAt,
+			},
 			FlowName:              log.Flow.Name,
 			FlowId:                log.Flow.Id,
 			FlowUuid:              log.Flow.Uuid,
@@ -53,8 +57,6 @@ func GetWorkflowApprovings(c *gin.Context) {
 			ApprovalUserNickname:  log.ApprovalUser.Nickname,
 			ApprovalOpinion:       log.ApprovalOpinion,
 			ApprovingUserIds:      log.ApprovingUserIds,
-			CreatedAt:             log.Model.CreatedAt,
-			UpdatedAt:             log.Model.UpdatedAt,
 		})
 	}
 	// 返回分页数据

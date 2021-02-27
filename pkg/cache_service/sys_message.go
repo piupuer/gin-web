@@ -59,14 +59,17 @@ func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 
 	for _, log := range messageLogs {
 		res := response.MessageListResponseStruct{
-			Id:           log.Id,
+			BaseData: response.BaseData{
+				Id:        log.Id,
+				CreatedAt: log.CreatedAt,
+				UpdatedAt: log.UpdatedAt,
+			},
 			Status:       log.Status,
 			ToUserId:     log.ToUserId,
 			ToUsername:   log.ToUser.Username,
 			Type:         log.Message.Type,
 			Title:        log.Message.Title,
 			Content:      log.Message.Content,
-			CreatedAt:    log.Message.CreatedAt,
 			FromUserId:   log.Message.FromUserId,
 			FromUsername: log.Message.FromUser.Username,
 		}

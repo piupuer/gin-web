@@ -69,6 +69,10 @@ func GetLeaveApprovalLogs(c *gin.Context) {
 		respStruct = append(respStruct, response.LeaveLogListResponseStruct{
 			LeaveId: leaveId,
 			Log: response.WorkflowLogsListResponseStruct{
+				BaseData: response.BaseData{
+					CreatedAt: log.CreatedAt,
+					UpdatedAt: log.UpdatedAt,
+				},
 				FlowName:              log.Flow.Name,
 				FlowUuid:              log.Flow.Uuid,
 				FlowCategoryStr:       models.SysWorkflowCategoryConst[log.Flow.Category],
@@ -80,8 +84,6 @@ func GetLeaveApprovalLogs(c *gin.Context) {
 				ApprovalUsername:      log.ApprovalUser.Username,
 				ApprovalUserNickname:  log.ApprovalUser.Nickname,
 				ApprovalOpinion:       log.ApprovalOpinion,
-				CreatedAt:             log.Model.CreatedAt,
-				UpdatedAt:             log.Model.UpdatedAt,
 			},
 		})
 	}
