@@ -23,7 +23,7 @@ func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 	var err error
 	list := make([]models.SysApi, 0)
 	query := s.tx.
-		Table(new(models.SysApi).TableName()).
+		Model(&models.SysApi{}).
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {

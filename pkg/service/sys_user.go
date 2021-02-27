@@ -30,7 +30,7 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 	var err error
 	list := make([]models.SysUser, 0)
 	query := s.tx.
-		Model(models.SysUser{}).
+		Model(&models.SysUser{}).
 		Order("created_at DESC")
 	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {

@@ -12,7 +12,7 @@ func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	var err error
 	list := make([]models.SysLeave, 0)
 	query := s.tx.
-		Table(new(models.SysLeave).TableName()).
+		Model(&models.SysLeave{}).
 		Order("created_at DESC").
 		Where("user_id = ?", req.UserId)
 	if req.Status != nil {

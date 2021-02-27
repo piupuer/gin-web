@@ -30,7 +30,7 @@ func (s *MysqlService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 		fmt.Sprintf("fromUser.username AS from_username"),
 	}
 	query := s.tx.
-		Table(sysMessageLogTableName).
+		Model(&models.SysMessageLog{}).
 		Select(fields).
 		Joins(fmt.Sprintf("LEFT JOIN %s ON %s.message_id = %s.id", sysMessageTableName, sysMessageLogTableName, sysMessageTableName)).
 		Joins(fmt.Sprintf("LEFT JOIN %s AS toUser ON %s.to_user_id = toUser.id", sysUserTableName, sysMessageLogTableName)).
@@ -78,7 +78,7 @@ func (s *MysqlService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 func (s *MysqlService) GetUnReadMessageCount(userId uint) (int64, error) {
 	var total int64
 	err := s.tx.
-		Table(new(models.SysMessageLog).TableName()).
+		Model(&models.SysMessageLog{}).
 		Where("to_user_id = ?", userId).
 		Where("status = ?", models.SysMessageLogStatusUnRead).
 		Count(&total).Error
@@ -108,7 +108,7 @@ func (s *MysqlService) UpdateAllMessageDeleted(userId uint) error {
 // 批量更新消息状态
 func (s *MysqlService) BatchUpdateMessageStatus(messageLogIds []uint, status uint) error {
 	return s.tx.
-		Table(new(models.SysMessageLog).TableName()).
+		Model(&models.SysMessageLog{}).
 		// 已删除的消息不再标记
 		Where("status != ?", models.SysMessageLogStatusDeleted).
 		Where("id IN (?)", messageLogIds).
@@ -120,7 +120,7 @@ func (s *MysqlService) UpdateAllMessageStatus(userId uint, status uint) error {
 	var log models.SysMessageLog
 	log.ToUserId = userId
 	return s.tx.
-		Table(log.TableName()).
+		Model(&log).
 		// 已删除的消息不再标记
 		Where("status != ?", models.SysMessageLogStatusDeleted).
 		Where(&log).

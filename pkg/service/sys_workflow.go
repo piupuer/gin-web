@@ -24,7 +24,7 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 	var err error
 	list := make([]models.SysWorkflow, 0)
 	query := s.tx.
-		Table(new(models.SysWorkflow).TableName()).
+		Model(&models.SysWorkflow{}).
 		Order("created_at DESC")
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
@@ -66,7 +66,7 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
-	query := s.tx.Model(new(models.SysWorkflowLine)).Preload("Users")
+	query := s.tx.Model(&models.SysWorkflowLine{}).Preload("Users")
 	if req.FlowId > 0 {
 		query = query.Where("flow_id = ?", req.FlowId)
 	}
@@ -626,7 +626,7 @@ func (s *MysqlService) updateLog(status uint, approvalOpinion string, approval m
 	// 审批人以及意见
 	updateLog.ApprovalUserId = approval.Id
 	updateLog.ApprovalOpinion = approvalOpinion
-	err := s.tx.Table(updateLog.TableName()).Where("id = ?", lastLog.Id).Updates(&updateLog).Error
+	err := s.tx.Model(&updateLog).Where("id = ?", lastLog.Id).Updates(&updateLog).Error
 	return err
 }
 

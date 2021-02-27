@@ -13,7 +13,7 @@ func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStru
 	var err error
 	list := make([]models.SysOperationLog, 0)
 	query := global.Mysql.
-		Table(new(models.SysOperationLog).TableName()).
+		Model(&models.SysOperationLog{}).
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
