@@ -49,16 +49,10 @@ func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil && req.PageInfo.Total > 0 {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&messageLogs).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&messageLogs).Error
-		}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &messageLogs)
+	if err != nil {
+		return nil, err
 	}
 	// 将数据转为响应格式
 	list := make([]response.MessageListResponseStruct, 0)

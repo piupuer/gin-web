@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"gin-web/pkg/global"
+	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -23,6 +24,62 @@ func New(c *gin.Context) MysqlService {
 		tx: tx,
 		db: global.Mysql,
 	}
+}
+
+// 查询, model需使用指针, 否则可能无法绑定数据
+func (s *MysqlService) Find(query *gorm.DB, page *response.PageInfo, model interface{}) (err error) {
+	// 获取model值
+	rv := reflect.ValueOf(model)
+	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Slice) {
+		return fmt.Errorf("model必须是非空指针数组类型")
+	}
+
+	if !page.NoPagination {
+		// 查询条数
+		err = query.Count(&page.Total).Error
+		if err == nil && page.Total > 0 {
+			// 获取分页参数
+			limit, offset := page.GetLimit()
+			err = query.Limit(limit).Offset(offset).Find(model).Error
+		}
+	} else {
+		// 不使用分页
+		err = query.Find(model).Error
+		if err == nil {
+			page.Total = int64(rv.Elem().Len())
+			// 获取分页参数
+			page.GetLimit()
+		}
+	}
+	return
+}
+
+// Scan查询, 适用于多表联合查询, model需使用指针, 否则可能无法绑定数据
+func (s *MysqlService) Scan(query *gorm.DB, page *response.PageInfo, model interface{}) (err error) {
+	// 获取model值
+	rv := reflect.ValueOf(model)
+	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Slice) {
+		return fmt.Errorf("model必须是非空指针数组类型")
+	}
+
+	if !page.NoPagination {
+		// 查询条数
+		err = query.Count(&page.Total).Error
+		if err == nil && page.Total > 0 {
+			// 获取分页参数
+			limit, offset := page.GetLimit()
+			err = query.Limit(limit).Offset(offset).Scan(model).Error
+		}
+	} else {
+		// 不使用分页
+		err = query.Scan(model).Error
+		if err == nil {
+			page.Total = int64(rv.Elem().Len())
+			// 获取分页参数
+			page.GetLimit()
+		}
+	}
+	return
 }
 
 // 创建, model需使用指针, 否则可能无法插入数据

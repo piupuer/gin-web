@@ -22,18 +22,8 @@ func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	if desc != "" {
 		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil && req.PageInfo.Total > 0 {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 

@@ -59,18 +59,8 @@ func (s *MysqlService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 	}
 
 	// 多表联合查询不用Find用Scan
-	// 查询条数
-	err := query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Scan(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Scan(&list).Error
-		}
-	}
+	// 查询列表
+	err := s.Scan(query, &req.PageInfo, &list)
 	return list, err
 }
 

@@ -68,6 +68,11 @@ func (s *PageInfo) GetLimit() (int, int) {
 	limit := pageSize
 	offset := limit * (pageNum - 1)
 
+	s.PageNum = uint(pageNum)
+	s.PageSize = uint(pageSize)
+	if s.NoPagination {
+		s.PageSize = uint(total)
+	}
 	// gorm v2参数从interface改为int, 这里也需要相应改变
 	return int(limit), int(offset)
 }
