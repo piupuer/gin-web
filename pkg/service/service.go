@@ -91,7 +91,7 @@ func (s *MysqlService) Create(req interface{}, model interface{}) (err error) {
 }
 
 // 根据编号更新
-func (s *MysqlService) UpdateById(id uint, model interface{}, req interface{}) error {
+func (s *MysqlService) UpdateById(id uint, req interface{}, model interface{}) error {
 	// 获取model值
 	rv := reflect.ValueOf(model)
 	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Struct) {

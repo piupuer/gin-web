@@ -200,7 +200,7 @@ func UpdateUserById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(userId, &models.SysUser{}, req)
+	err = s.UpdateById(userId, req, new(models.SysUser))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

@@ -115,7 +115,7 @@ func UpdateRoleById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(roleId, &models.SysRole{}, req)
+	err = s.UpdateById(roleId, req, new(models.SysRole))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

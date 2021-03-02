@@ -212,7 +212,7 @@ func UpdateWorkflowById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(workflowId, &models.SysWorkflow{}, req)
+	err = s.UpdateById(workflowId, req, new(models.SysWorkflow))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

@@ -144,7 +144,7 @@ func UpdateLeaveById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(leaveId, &models.SysLeave{}, req)
+	err = s.UpdateById(leaveId, req, new(models.SysLeave))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

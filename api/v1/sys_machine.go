@@ -89,7 +89,7 @@ func UpdateMachineById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(machineId, &models.SysMachine{}, req)
+	err = s.UpdateById(machineId, req, new(models.SysMachine))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
