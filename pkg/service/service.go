@@ -263,6 +263,7 @@ func (s *MysqlService) Find(query *gorm.DB, page *response.PageInfo, model inter
 			page.GetLimit()
 		}
 	}
+	page.CountCache = &countCache
 	return
 }
 
