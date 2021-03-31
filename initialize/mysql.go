@@ -94,6 +94,8 @@ func autoMigrate() {
 		new(models.SysMessage),
 		new(models.SysMessageLog),
 		new(models.SysMachine),
+		new(models.SysDict),
+		new(models.SysDictData),
 	)
 }
 
@@ -113,6 +115,8 @@ func binlog() {
 		new(models.SysMessage).TableName(),
 		new(models.SysMessageLog).TableName(),
 		new(models.SysMachine).TableName(),
+		new(models.SysDict).TableName(),
+		new(models.SysDictData).TableName(),
 	}, []string{
 		// 下列表会随着使用时间数据量越来越大, 不适合将整个表json存入redis
 		new(models.SysOperationLog).TableName(),
