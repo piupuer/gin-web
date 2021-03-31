@@ -67,7 +67,7 @@ func GenIdempotenceToken() string {
 	} else {
 		idempotenceLock.Lock()
 		defer idempotenceLock.Unlock()
-		idempotenceMap.Add(token, 1, cache.DefaultExpiration)
+		idempotenceMap.Set(token, 1, cache.DefaultExpiration)
 	}
 	return token
 }

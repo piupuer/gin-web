@@ -38,7 +38,7 @@ func GetUserInfo(c *gin.Context) {
 	}
 	resp.RoleSort = *user.Role.Sort
 	// 写入缓存
-	userInfoCache.Add(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
+	userInfoCache.Set(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
 	response.SuccessWithData(resp)
 }
 
@@ -123,7 +123,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	s := cache_service.New(c)
 	newUser, _ = s.GetUserById(u.Id)
 	// 写入缓存
-	userByIdCache.Add(fmt.Sprintf("%d", u.Id), newUser, cache.DefaultExpiration)
+	userByIdCache.Set(fmt.Sprintf("%d", u.Id), newUser, cache.DefaultExpiration)
 	return newUser
 }
 
