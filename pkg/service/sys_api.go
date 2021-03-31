@@ -12,14 +12,14 @@ import (
 )
 
 // 注意golang坑, 返回值有数组时, 不要为了return方便使用命名返回值
-// 如func GetApis(req *request.ApiListRequestStruct) (apis []models.SysApi, err error) {
+// 如func GetApis(req *request.ApiRequestStruct) (apis []models.SysApi, err error) {
 // 这会导致apis被初始化无穷大的集合, 代码无法断点调试: collecting data..., 几秒后程序异常退出:
 // error layer=rpc writing response:write tcp xxx write: broken pipe
 // error layer=rpc rpc:read tcp xxx read: connection reset by peer
 // exit code 0
 // 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
 // 获取所有接口
-func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
+func (s *MysqlService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
 	query := s.tx.

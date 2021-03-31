@@ -10,7 +10,7 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct) ([]response.MessageListResponseStruct, error) {
+func (s *RedisService) GetUnDeleteMessages(req *request.MessageRequestStruct) ([]response.MessageListResponseStruct, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUnDeleteMessages(req)

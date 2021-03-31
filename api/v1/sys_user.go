@@ -20,6 +20,7 @@ var (
 	userInfoCache = cache.New(24*time.Hour, 48*time.Hour)
 	userByIdCache = cache.New(24*time.Hour, 48*time.Hour)
 )
+
 // 获取当前用户信息
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
@@ -45,7 +46,7 @@ func GetUserInfo(c *gin.Context) {
 // 获取用户列表
 func GetUsers(c *gin.Context) {
 	// 绑定参数
-	var req request.UserListRequestStruct
+	var req request.UserRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

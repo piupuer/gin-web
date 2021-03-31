@@ -14,7 +14,7 @@ import (
 // 获取请假列表
 func GetLeaves(c *gin.Context) {
 	// 绑定参数
-	var req request.LeaveListRequestStruct
+	var req request.LeaveRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -46,7 +46,7 @@ func GetLeaves(c *gin.Context) {
 // 获取请假列表
 func GetLeaveApprovalLogs(c *gin.Context) {
 	// 绑定参数
-	var req request.LeaveListRequestStruct
+	var req request.LeaveRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

@@ -15,7 +15,7 @@ import (
 // 获取全部审批日志(目前有1: 请假)
 func GetWorkflowApprovings(c *gin.Context) {
 	// 绑定参数
-	var req request.WorkflowApprovingListRequestStruct
+	var req request.WorkflowApprovingRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -71,7 +71,7 @@ func GetWorkflowApprovings(c *gin.Context) {
 // 获取工作流列表
 func GetWorkflows(c *gin.Context) {
 	// 绑定参数
-	var req request.WorkflowListRequestStruct
+	var req request.WorkflowRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -100,7 +100,7 @@ func GetWorkflows(c *gin.Context) {
 // 获取工作流列表
 func GetWorkflowLines(c *gin.Context) {
 	// 绑定参数
-	var req request.WorkflowLineListRequestStruct
+	var req request.WorkflowLineRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

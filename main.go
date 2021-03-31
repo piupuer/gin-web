@@ -6,7 +6,7 @@ import (
 	"gin-web/initialize"
 	"gin-web/pkg/global"
 	"net/http"
-  // 加入pprof性能分析
+	// 加入pprof性能分析
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -37,7 +37,7 @@ func main() {
 
 	// 初始化casbin策略管理器
 	initialize.CasbinEnforcer()
-	
+
 	// 初始校验器
 	initialize.Validate()
 
@@ -51,7 +51,7 @@ func main() {
 
 	// 初始化定时任务
 	initialize.Cron()
-	
+
 	// 初始化对象存储
 	initialize.Oss()
 
@@ -71,7 +71,7 @@ func main() {
 			global.Log.Error("listen pprof error: ", err)
 		}
 	}()
-	
+
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {

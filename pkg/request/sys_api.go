@@ -5,7 +5,7 @@ import (
 )
 
 // 获取接口列表结构体
-type ApiListRequestStruct struct {
+type ApiRequestStruct struct {
 	Method            string `json:"method" form:"method"`
 	Path              string `json:"path" form:"path"`
 	Category          string `json:"category" form:"category"`
@@ -41,5 +41,5 @@ type UpdateApiRequestStruct struct {
 	Desc     *string `json:"desc"`
 	Title    *string `json:"title"`
 	Creator  *string `json:"creator"`
-	RoleIds  []uint `json:"roleIds"`
+	RoleIds  []uint  `json:"roleIds"`
 }

@@ -11,7 +11,7 @@ import (
 )
 
 // 获取所有接口
-func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
+func (s *RedisService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetApis(req)

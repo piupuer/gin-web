@@ -5,7 +5,7 @@ import (
 )
 
 // 获取流程列表结构体
-type WorkflowListRequestStruct struct {
+type WorkflowRequestStruct struct {
 	Uuid              string `json:"uuid" form:"uuid"`
 	Category          *uint  `json:"category" form:"category"`
 	SubmitUserConfirm *uint  `json:"submitUserConfirm" form:"submitUserConfirm"`
@@ -18,13 +18,13 @@ type WorkflowListRequestStruct struct {
 }
 
 // 获取流水线结构体
-type WorkflowLineListRequestStruct struct {
+type WorkflowLineRequestStruct struct {
 	FlowId            uint `json:"flowId" form:"flowId"`
 	response.PageInfo      // 分页参数
 }
 
 // 获取待审批列表结构体
-type WorkflowApprovingListRequestStruct struct {
+type WorkflowApprovingRequestStruct struct {
 	ApprovalUserId    uint `json:"approvalUserId"`
 	response.PageInfo      // 分页参数
 }

@@ -8,7 +8,7 @@ import (
 )
 
 // 获取所有请假(当前用户)
-func (s *MysqlService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.SysLeave, error) {
+func (s *MysqlService) GetLeaves(req *request.LeaveRequestStruct) ([]models.SysLeave, error) {
 	var err error
 	list := make([]models.SysLeave, 0)
 	query := s.tx.

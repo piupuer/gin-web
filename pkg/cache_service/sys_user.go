@@ -29,7 +29,7 @@ func (s *RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 	return &u, err
 }
 
-func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
+func (s *RedisService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUsers(req)

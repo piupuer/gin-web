@@ -5,7 +5,7 @@ import (
 )
 
 // 获取消息列表结构体
-type MessageListRequestStruct struct {
+type MessageRequestStruct struct {
 	ToUserId          uint   `json:"toUserId"`
 	Title             string `json:"title" form:"title"`
 	Content           string `json:"content" form:"content"`

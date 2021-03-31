@@ -26,7 +26,7 @@ func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 }
 
 // 获取用户
-func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
+func (s *MysqlService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
 	query := s.tx.

@@ -11,7 +11,7 @@ import (
 )
 
 // 获取机器
-func (s *MysqlService) GetMachines(req *request.MachineListRequestStruct) ([]models.SysMachine, error) {
+func (s *MysqlService) GetMachines(req *request.MachineRequestStruct) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
 	query := s.tx.

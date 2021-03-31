@@ -26,7 +26,7 @@ func (s *RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (s *RedisService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
+func (s *RedisService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetRoles(req)

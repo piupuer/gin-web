@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (s *RedisService) GetMachines(req *request.MachineListRequestStruct) ([]models.SysMachine, error) {
+func (s *RedisService) GetMachines(req *request.MachineRequestStruct) ([]models.SysMachine, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetMachines(req)

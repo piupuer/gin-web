@@ -3,7 +3,7 @@ package request
 import "gin-web/pkg/response"
 
 // 获取机器列表结构体
-type MachineListRequestStruct struct {
+type MachineRequestStruct struct {
 	Id                uint   `json:"id" form:"id"`
 	Host              string `json:"host" form:"host"`
 	SshPort           int    `json:"sshPort" form:"sshPort"`

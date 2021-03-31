@@ -14,7 +14,7 @@ import (
 // 获取机器列表
 func GetMachines(c *gin.Context) {
 	// 绑定参数
-	var req request.MachineListRequestStruct
+	var req request.MachineRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

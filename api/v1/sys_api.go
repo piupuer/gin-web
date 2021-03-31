@@ -13,7 +13,7 @@ import (
 // 获取接口列表
 func GetApis(c *gin.Context) {
 	// 绑定参数
-	var req request.ApiListRequestStruct
+	var req request.ApiRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

@@ -20,7 +20,7 @@ func (s *MysqlService) GetWorkflowByTargetCategory(targetCategory uint) (models.
 }
 
 // 获取所有工作流
-func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]models.SysWorkflow, error) {
+func (s *MysqlService) GetWorkflows(req *request.WorkflowRequestStruct) ([]models.SysWorkflow, error) {
 	var err error
 	list := make([]models.SysWorkflow, 0)
 	query := s.tx.
@@ -53,7 +53,7 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 }
 
 // 获取所有流水线
-func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
+func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineRequestStruct) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
 	query := s.tx.Model(&models.SysWorkflowLine{}).Preload("Users")
@@ -67,7 +67,7 @@ func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStru
 }
 
 // 查询待审批目标列表(指定用户)
-func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingListRequestStruct) ([]models.SysWorkflowLog, error) {
+func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingRequestStruct) ([]models.SysWorkflowLog, error) {
 	// 查询需要审核的日志
 	logs := make([]models.SysWorkflowLog, 0)
 	list := make([]models.SysWorkflowLog, 0)
