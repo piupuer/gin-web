@@ -1,9 +1,5 @@
 package response
 
-import (
-	"gin-web/models"
-)
-
 // User login response structure
 type LoginResponseStruct struct {
 	Username  string `json:"username"`  // 登录用户名
@@ -25,14 +21,13 @@ type UserInfoResponseStruct struct {
 
 // 用户信息响应, 字段含义见models.SysUser
 type UserListResponseStruct struct {
-	Id           uint             `json:"id"`
-	Username     string           `json:"username"`
-	Mobile       string           `json:"mobile"`
-	Avatar       string           `json:"avatar"`
-	Nickname     string           `json:"nickname"`
-	Introduction string           `json:"introduction"`
-	Status       *uint            `json:"status"`
-	RoleId       uint             `json:"roleId"`
-	Creator      string           `json:"creator"`
-	CreatedAt    models.LocalTime `json:"createdAt"`
+	BaseData
+	Username     string `json:"username"`
+	Mobile       string `json:"mobile"`
+	Avatar       string `json:"avatar"`
+	Nickname     string `json:"nickname"`
+	Introduction string `json:"introduction"`
+	Status       *uint  `json:"status"`
+	RoleId       uint   `json:"roleId"`
+	Creator      string `json:"creator"`
 }

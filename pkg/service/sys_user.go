@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"gin-web/models"
-	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
@@ -27,11 +26,11 @@ func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 }
 
 // 获取用户
-func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
+func (s *MysqlService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
-	db := global.Mysql.
-		Model(models.SysUser{}).
+	query := s.tx.
+		Model(&models.SysUser{}).
 		Order("created_at DESC")
 	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
@@ -39,43 +38,33 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 		if err != nil {
 			return list, err
 		}
-		db = db.Where("role_id IN (?)", roleIds)
+		query = query.Where("role_id IN (?)", roleIds)
 	}
 	username := strings.TrimSpace(req.Username)
 	if username != "" {
-		db = db.Where("username LIKE ?", fmt.Sprintf("%%%s%%", username))
+		query = query.Where("username LIKE ?", fmt.Sprintf("%%%s%%", username))
 	}
 	mobile := strings.TrimSpace(req.Mobile)
 	if mobile != "" {
-		db = db.Where("mobile LIKE ?", fmt.Sprintf("%%%s%%", mobile))
+		query = query.Where("mobile LIKE ?", fmt.Sprintf("%%%s%%", mobile))
 	}
 	nickname := strings.TrimSpace(req.Nickname)
 	if nickname != "" {
-		db = db.Where("nickname LIKE ?", fmt.Sprintf("%%%s%%", nickname))
+		query = query.Where("nickname LIKE ?", fmt.Sprintf("%%%s%%", nickname))
 	}
 	creator := strings.TrimSpace(req.Creator)
 	if creator != "" {
-		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
+		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {
-			db = db.Where("status = ?", 1)
+			query = query.Where("status = ?", 1)
 		} else {
-			db = db.Where("status = ?", 0)
+			query = query.Where("status = ?", 0)
 		}
 	}
-	// 查询条数
-	err = db.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = db.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = db.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 

@@ -3,26 +3,7 @@ package cache_service
 import (
 	"gin-web/models"
 	"gin-web/pkg/global"
-	"gin-web/pkg/service"
 )
-
-// 获取权限菜单树
-func (s *RedisService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
-	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
-		// 不使用redis
-		return s.mysql.GetMenuTree(roleId)
-	}
-	tree := make([]models.SysMenu, 0)
-	var role models.SysRole
-	err := s.redis.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id", "=", roleId).First(&role).Error
-	menus := make([]models.SysMenu, 0)
-	if err != nil {
-		return menus, err
-	}
-	// 生成菜单树
-	tree = service.GenMenuTree(nil, role.Menus)
-	return tree, nil
-}
 
 // 获取所有菜单
 func (s *RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
@@ -34,7 +15,7 @@ func (s *RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 	// 获取全部菜单
 	menus := s.getAllMenu(currentRole)
 	// 生成菜单树
-	tree = service.GenMenuTree(nil, menus)
+	tree = s.mysql.GenMenuTree(0, menus)
 	return tree
 }
 
@@ -53,7 +34,7 @@ func (s *RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uin
 	// 查询角色拥有菜单
 	roleMenus := s.getRoleMenus(roleId)
 	// 生成菜单树
-	tree = service.GenMenuTree(nil, allMenu)
+	tree = s.mysql.GenMenuTree(0, allMenu)
 	// 获取id列表
 	for _, menu := range roleMenus {
 		accessIds = append(accessIds, menu.Id)
@@ -67,8 +48,14 @@ func (s *RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uin
 func (s *RedisService) getRoleMenus(roleId uint) []models.SysMenu {
 	var role models.SysRole
 	// 根据权限编号获取菜单
-	err := s.redis.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id", "=", roleId).First(&role).Error
-	global.Log.Warn("[getRoleMenu]", err)
+	err := s.redis.
+		Table(new(models.SysRole).TableName()).
+		Preload("Menus").
+		Where("id", "=", roleId).
+		First(&role).Error
+	if err != nil {
+		global.Log.Warn("[getRoleMenu]", err)
+	}
 	return role.Menus
 }
 
@@ -92,11 +79,20 @@ func (s *RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 			menuIds = append(menuIds, relation.SysMenuId)
 		}
 		// 查询所有菜单
-		err = s.redis.Table(new(models.SysMenu).TableName()).Order("sort").Where("id", "in", menuIds).Find(&menus).Error
+		err = s.redis.
+			Table(new(models.SysMenu).TableName()).
+			Where("id", "in", menuIds).
+			Order("sort").
+			Find(&menus).Error
 	} else {
-		err = s.redis.Table(new(models.SysMenu).TableName()).Order("sort").Find(&menus).Error
+		err = s.redis.
+			Table(new(models.SysMenu).TableName()).
+			Order("sort").
+			Find(&menus).Error
 	}
 
-	global.Log.Warn("[getAllMenu]", err)
+	if err != nil {
+		global.Log.Warn("[getAllMenu]", err)
+	}
 	return menus
 }

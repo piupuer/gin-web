@@ -5,20 +5,35 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
-	"github.com/thedevsaddam/gojsonq/v2"
 )
 
 // 获取权限菜单树
 func (s *MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	tree := make([]models.SysMenu, 0)
-	var role models.SysRole
-	err := s.tx.Table(new(models.SysRole).TableName()).Preload("Menus").Where("id = ?", roleId).Find(&role).Error
 	menus := make([]models.SysMenu, 0)
+	// 查询全部菜单
+	allMenu := make([]models.SysMenu, 0)
+	err := s.tx.
+		Model(&models.SysMenu{}).
+		Find(&allMenu).Error
 	if err != nil {
 		return menus, err
 	}
+	// 查询当前权限
+	var role models.SysRole
+	err = s.tx.
+		Model(&models.SysRole{}).
+		Preload("Menus").
+		Where("id = ?", roleId).
+		First(&role).Error
+	if err != nil {
+		return menus, err
+	}
+	// 子级菜单需要将全部父级菜单加上
+	_, newMenus := addParentMenu(role.Menus, allMenu)
+
 	// 生成菜单树
-	tree = GenMenuTree(nil, role.Menus)
+	tree = s.GenMenuTree(0, newMenus)
 	return tree, nil
 }
 
@@ -27,31 +42,44 @@ func (s *MysqlService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 	tree := make([]models.SysMenu, 0)
 	menus := s.getAllMenu(currentRole)
 	// 生成菜单树
-	tree = GenMenuTree(nil, menus)
+	tree = s.GenMenuTree(0, menus)
 	return tree
 }
 
 // 生成菜单树
-func GenMenuTree(parent *models.SysMenu, menus []models.SysMenu) []models.SysMenu {
-	tree := make([]models.SysMenu, 0)
-	// parentId默认为0, 表示根菜单
-	var parentId uint
-	if parent != nil {
-		parentId = parent.Id
-	} else {
-		// 将菜单转为json再排序
-		newMenus := make([]models.SysMenu, 0)
-		list := gojsonq.New().FromString(utils.Struct2Json(menus)).SortBy("sort").Get()
-		// 再转为json
-		utils.Struct2StructByJson(list, &newMenus)
-		menus = newMenus
+// parentId: 父菜单编号
+// roleMenus: 有权限的菜单列表
+func (s *MysqlService) GenMenuTree(parentId uint, roleMenus []models.SysMenu) []models.SysMenu {
+	roleMenuIds := make([]uint, 0)
+	// 查询全部菜单
+	allMenu := make([]models.SysMenu, 0)
+	err := s.tx.
+		Model(&models.SysMenu{}).
+		Find(&allMenu).Error
+	if err != nil {
+		return roleMenus
 	}
+	// 加上父级菜单
+	_, newRoleMenus := addParentMenu(roleMenus, allMenu)
+	for _, menu := range newRoleMenus {
+		if !utils.ContainsUint(roleMenuIds, menu.Id) {
+			roleMenuIds = append(roleMenuIds, menu.Id)
+		}
+	}
+	return genMenuTree(parentId, roleMenuIds, allMenu)
+}
 
-	for _, menu := range menus {
+func genMenuTree(parentId uint, roleMenuIds []uint, allMenu []models.SysMenu) []models.SysMenu {
+	tree := make([]models.SysMenu, 0)
+	for _, menu := range allMenu {
+		if !utils.ContainsUint(roleMenuIds, menu.Id) {
+			// 无权限
+			continue
+		}
 		// 父菜单编号一致
 		if menu.ParentId == parentId {
 			// 递归获取子菜单
-			menu.Children = GenMenuTree(&menu, menus)
+			menu.Children = genMenuTree(menu.Id, roleMenuIds, allMenu)
 			// 加入菜单树
 			tree = append(tree, menu)
 		}
@@ -70,7 +98,7 @@ func (s *MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uin
 	// 查询角色拥有菜单
 	roleMenus := s.getRoleMenus(roleId)
 	// 生成菜单树
-	tree = GenMenuTree(nil, allMenu)
+	tree = s.GenMenuTree(0, allMenu)
 	// 获取id列表
 	for _, menu := range roleMenus {
 		accessIds = append(accessIds, menu.Id)
@@ -82,11 +110,10 @@ func (s *MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uin
 
 // 创建菜单
 func (s *MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuRequestStruct) (err error) {
-	menu := new(models.SysMenu)
-	err = s.Create(req, &menu)
-	if err != nil {
-		return
-	}
+	var menu models.SysMenu
+	utils.Struct2StructByJson(req, &menu)
+	// 创建数据
+	err = s.tx.Create(&menu).Error
 	// 自己创建的菜单需绑定权限
 	menuReq := request.UpdateIncrementalIdsRequestStruct{
 		Create: []uint{menu.Id},
@@ -99,8 +126,13 @@ func (s *MysqlService) CreateMenu(currentRole models.SysRole, req *request.Creat
 func (s *MysqlService) getRoleMenus(roleId uint) []models.SysMenu {
 	var role models.SysRole
 	// 根据权限编号获取菜单
-	err := s.tx.Preload("Menus").Where("id = ?", roleId).First(&role).Error
-	global.Log.Warn("[getRoleMenu]", err)
+	err := s.tx.
+		Preload("Menus").
+		Where("id = ?", roleId).
+		First(&role).Error
+	if err != nil {
+		global.Log.Warn("[getRoleMenu]", err)
+	}
 	return role.Menus
 }
 
@@ -110,7 +142,7 @@ func (s *MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	// 查询关系表
 	relations := make([]models.RelationMenuRole, 0)
 	menuIds := make([]uint, 0)
-	query := s.tx.Model(models.RelationMenuRole{})
+	query := s.tx.Model(&models.RelationMenuRole{})
 	var err error
 	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
@@ -123,11 +155,89 @@ func (s *MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 			menuIds = append(menuIds, relation.SysMenuId)
 		}
 		// 查询所有菜单
-		err = s.tx.Order("sort").Where("id IN (?)", menuIds).Find(&menus).Error
+		err = s.tx.
+			Where("id IN (?)", menuIds).
+			Order("sort").
+			Find(&menus).Error
 	} else {
-		err = s.tx.Order("sort").Find(&menus).Error
+		err = s.tx.
+			Order("sort").
+			Find(&menus).Error
 	}
-
-	global.Log.Warn("[getAllMenu]", err)
+	if err != nil {
+		global.Log.Warn("[getAllMenu]", err)
+	}
 	return menus
+}
+
+// 给定菜单, 如果父菜单不存在则加入列表
+func addParentMenu(menus, all []models.SysMenu) ([]uint, []models.SysMenu) {
+	parentIds := make([]uint, 0)
+	menuIds := make([]uint, 0)
+	for _, menu := range menus {
+		if menu.ParentId > 0 {
+			parentIds = append(parentIds, menu.ParentId)
+			// 向上获取父级菜单
+			parentMenuIds := getParentMenuIds(menu.ParentId, all)
+			if len(parentMenuIds) > 0 {
+				parentIds = append(parentIds, parentMenuIds...)
+			}
+		}
+		menuIds = append(menuIds, menu.Id)
+	}
+	// 合并父级菜单
+	if len(parentIds) > 0 {
+		menuIds = append(menuIds, parentIds...)
+	}
+	newMenuIds := make([]uint, 0)
+	newMenus := make([]models.SysMenu, 0)
+	for _, menu := range all {
+		for _, id := range menuIds {
+			// 保证id一致且不重复
+			if id == menu.Id && !utils.ContainsUint(newMenuIds, id) {
+				newMenus = append(newMenus, menu)
+				newMenuIds = append(newMenuIds, id)
+			}
+		}
+	}
+	return newMenuIds, newMenus
+}
+
+// 获取全部父级菜单id
+func getParentMenuIds(menuId uint, all []models.SysMenu) []uint {
+	var currentMenu models.SysMenu
+	parentIds := make([]uint, 0)
+	for _, menu := range all {
+		if menuId == menu.Id {
+			currentMenu = menu
+			break
+		}
+	}
+	if currentMenu.ParentId == 0 {
+		return parentIds
+	}
+	parentIds = append(parentIds, currentMenu.ParentId)
+	// 继续向上寻找
+	newParentIds := getParentMenuIds(currentMenu.ParentId, all)
+	if len(newParentIds) > 0 {
+		parentIds = append(parentIds, newParentIds...)
+	}
+	return parentIds
+}
+
+// 是否包含子菜单
+func hasChildrenMenu(menuId uint, all []models.SysMenu) bool {
+	var currentMenu models.SysMenu
+	for _, menu := range all {
+		if menuId == menu.Id {
+			currentMenu = menu
+			break
+		}
+	}
+	for _, menu := range all {
+		if menu.ParentId == currentMenu.Id {
+			return true
+		}
+	}
+	return false
 }

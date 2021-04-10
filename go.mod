@@ -5,8 +5,8 @@ go 1.14
 require (
 	github.com/HdrHistogram/hdrhistogram-go v0.9.0 // indirect
 	github.com/appleboy/gin-jwt/v2 v2.6.3
-	github.com/casbin/casbin/v2 v2.2.2
-	github.com/casbin/gorm-adapter/v3 v3.0.3
+	github.com/casbin/casbin/v2 v2.21.0
+	github.com/casbin/gorm-adapter/v3 v3.2.0
 	github.com/codahale/hdrhistogram v0.9.0 // indirect
 	github.com/cznic/mathutil v0.0.0-20181122101859-297441e03548 // indirect
 	github.com/cznic/sortutil v0.0.0-20181122101858-f5f958428db8 // indirect
@@ -57,5 +57,5 @@ require (
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/stretchr/testify.v1 v1.2.2 // indirect
 	gorm.io/driver/mysql v1.0.2
-	gorm.io/gorm v1.20.6
+	gorm.io/gorm v1.20.12
 )

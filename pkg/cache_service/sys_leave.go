@@ -8,7 +8,7 @@ import (
 )
 
 // 获取所有请假(当前用户)
-func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.SysLeave, error) {
+func (s *RedisService) GetLeaves(req *request.LeaveRequestStruct) ([]models.SysLeave, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetLeaves(req)
@@ -26,20 +26,8 @@ func (s *RedisService) GetLeaves(req *request.LeaveListRequestStruct) ([]models.
 	if desc != "" {
 		query = query.Where("desc", "contains", desc)
 	}
-	// TODO 按id逆序
-	// query = query.SortBy("id", "desc")
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 

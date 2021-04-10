@@ -11,7 +11,7 @@ import (
 )
 
 // 获取所有接口
-func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
+func (s *RedisService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetApis(req)
@@ -37,18 +37,8 @@ func (s *RedisService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 	if creator != "" {
 		query = query.Where("creator", "contains", creator)
 	}
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 

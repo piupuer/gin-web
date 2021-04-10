@@ -20,6 +20,7 @@ var (
 	userInfoCache = cache.New(24*time.Hour, 48*time.Hour)
 	userByIdCache = cache.New(24*time.Hour, 48*time.Hour)
 )
+
 // 获取当前用户信息
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
@@ -38,14 +39,14 @@ func GetUserInfo(c *gin.Context) {
 	}
 	resp.RoleSort = *user.Role.Sort
 	// 写入缓存
-	userInfoCache.Add(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
+	userInfoCache.Set(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
 	response.SuccessWithData(resp)
 }
 
 // 获取用户列表
 func GetUsers(c *gin.Context) {
 	// 绑定参数
-	var req request.UserListRequestStruct
+	var req request.UserRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -123,7 +124,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	s := cache_service.New(c)
 	newUser, _ = s.GetUserById(u.Id)
 	// 写入缓存
-	userByIdCache.Add(fmt.Sprintf("%d", u.Id), newUser, cache.DefaultExpiration)
+	userByIdCache.Set(fmt.Sprintf("%d", u.Id), newUser, cache.DefaultExpiration)
 	return newUser
 }
 
@@ -200,7 +201,7 @@ func UpdateUserById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(userId, &models.SysUser{}, req)
+	err = s.UpdateById(userId, req, new(models.SysUser))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

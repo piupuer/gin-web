@@ -5,7 +5,7 @@ import (
 )
 
 // 获取角色列表结构体
-type RoleListRequestStruct struct {
+type RoleRequestStruct struct {
 	Name              string `json:"name" form:"name"`
 	Keyword           string `json:"keyword" form:"keyword"`
 	CurrentRoleSort   uint   `json:"currentRoleSort"`

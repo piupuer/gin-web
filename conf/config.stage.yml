@@ -2,6 +2,7 @@
 system:
   url-path-prefix: stage-api
   port: 9090
+  pprof-port: 9005
 
 mysql:
   database: gin_web_stage

@@ -18,7 +18,7 @@ type ChangePwdRequestStruct struct {
 }
 
 // 获取用户列表结构体
-type UserListRequestStruct struct {
+type UserRequestStruct struct {
 	CurrentRole       models.SysRole `json:"currentRole"`
 	Username          string         `json:"username" form:"username"`
 	Mobile            string         `json:"mobile" form:"mobile"`

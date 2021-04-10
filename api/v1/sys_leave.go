@@ -14,7 +14,7 @@ import (
 // 获取请假列表
 func GetLeaves(c *gin.Context) {
 	// 绑定参数
-	var req request.LeaveListRequestStruct
+	var req request.LeaveRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -46,7 +46,7 @@ func GetLeaves(c *gin.Context) {
 // 获取请假列表
 func GetLeaveApprovalLogs(c *gin.Context) {
 	// 绑定参数
-	var req request.LeaveListRequestStruct
+	var req request.LeaveRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -69,6 +69,10 @@ func GetLeaveApprovalLogs(c *gin.Context) {
 		respStruct = append(respStruct, response.LeaveLogListResponseStruct{
 			LeaveId: leaveId,
 			Log: response.WorkflowLogsListResponseStruct{
+				BaseData: response.BaseData{
+					CreatedAt: log.CreatedAt,
+					UpdatedAt: log.UpdatedAt,
+				},
 				FlowName:              log.Flow.Name,
 				FlowUuid:              log.Flow.Uuid,
 				FlowCategoryStr:       models.SysWorkflowCategoryConst[log.Flow.Category],
@@ -80,8 +84,6 @@ func GetLeaveApprovalLogs(c *gin.Context) {
 				ApprovalUsername:      log.ApprovalUser.Username,
 				ApprovalUserNickname:  log.ApprovalUser.Nickname,
 				ApprovalOpinion:       log.ApprovalOpinion,
-				CreatedAt:             log.Model.CreatedAt,
-				UpdatedAt:             log.Model.UpdatedAt,
 			},
 		})
 	}
@@ -142,7 +144,7 @@ func UpdateLeaveById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(leaveId, &models.SysLeave{}, req)
+	err = s.UpdateById(leaveId, req, new(models.SysLeave))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

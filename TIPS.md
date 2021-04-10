@@ -8,3 +8,10 @@
 - [ ] 目前gorm v1.20.2版本中, 请使用Model().Preload().Count()替代Table().Preload().Count(), 否则可能会出现空指针异常（等后面gorm官方修复后会同步更新）
 - [ ] 接收参数建议使用c.ShouldBind方法, 避免主动抛出400错误
 - [ ] 接收JSON参数如需兼容字符串和数字, 例如{"name": 1}和{"name": "1"}，请使用request.ReqUint/ReqFloat64(一般是POST/PATCH请求, 开启Content-Type:application/json, GET请求通过form-mapping解析因此不支持)
+- [ ] gorm的unique标签最好配合index使用, 指定具体的索引名称
+- [ ] gorm标签属性冒号后不能跟空格
+- [ ] 使用gorm.Updates方法进行map[string]interface{}增量更新, key为蛇形而不是驼峰, 如user_mobile
+- [ ] 建议定义更新结构体时(request.UpdateXxxRequestStruct)全部使用指针变量, 避免零值被赋值到数据库, 如request.UpdateRoleRequestStruct
+- [ ] gorm中的tag, column后面的值大小写敏感
+- [ ] GET请求绑定时间字符串不能用models.LocalTime而是用string, c.Bind源码中使用form tag, 还没用到自定义UnmarshalJSON就已经报错
+- [ ] 前后端通信JSON可通过zlib或gzip压缩, 提高网络传输效率(redis存JSON也适用, 节省存储空间)

@@ -20,11 +20,11 @@ func (s *MysqlService) GetWorkflowByTargetCategory(targetCategory uint) (models.
 }
 
 // 获取所有工作流
-func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]models.SysWorkflow, error) {
+func (s *MysqlService) GetWorkflows(req *request.WorkflowRequestStruct) ([]models.SysWorkflow, error) {
 	var err error
 	list := make([]models.SysWorkflow, 0)
 	query := s.tx.
-		Table(new(models.SysWorkflow).TableName()).
+		Model(&models.SysWorkflow{}).
 		Order("created_at DESC")
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
@@ -47,47 +47,27 @@ func (s *MysqlService) GetWorkflows(req *request.WorkflowListRequestStruct) ([]m
 		query = query.Where("submit_user_confirm = ?", *req.SubmitUserConfirm)
 	}
 
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 
 // 获取所有流水线
-func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineListRequestStruct) ([]models.SysWorkflowLine, error) {
+func (s *MysqlService) GetWorkflowLines(req *request.WorkflowLineRequestStruct) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
-	query := s.tx.Model(new(models.SysWorkflowLine)).Preload("Users")
+	query := s.tx.Model(&models.SysWorkflowLine{}).Preload("Users")
 	if req.FlowId > 0 {
 		query = query.Where("flow_id = ?", req.FlowId)
 	}
 
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 
 // 查询待审批目标列表(指定用户)
-func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingListRequestStruct) ([]models.SysWorkflowLog, error) {
+func (s *MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingRequestStruct) ([]models.SysWorkflowLog, error) {
 	// 查询需要审核的日志
 	logs := make([]models.SysWorkflowLog, 0)
 	list := make([]models.SysWorkflowLog, 0)
@@ -234,7 +214,7 @@ func (s *MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkfl
 	// 1. 删除流水线
 	for _, item := range req.Delete {
 		// 删除流水线
-		err = s.tx.Where("id = ?", item.Id).Delete(models.SysWorkflowLine{}).Error
+		err = s.tx.Where("id = ?", item.Id).Delete(&models.SysWorkflowLine{}).Error
 		if err != nil {
 			return
 		}
@@ -626,7 +606,7 @@ func (s *MysqlService) updateLog(status uint, approvalOpinion string, approval m
 	// 审批人以及意见
 	updateLog.ApprovalUserId = approval.Id
 	updateLog.ApprovalOpinion = approvalOpinion
-	err := s.tx.Table(updateLog.TableName()).Where("id = ?", lastLog.Id).Updates(&updateLog).Error
+	err := s.tx.Model(&updateLog).Where("id = ?", lastLog.Id).Updates(&updateLog).Error
 	return err
 }
 

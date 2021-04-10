@@ -12,18 +12,18 @@ import (
 )
 
 // 注意golang坑, 返回值有数组时, 不要为了return方便使用命名返回值
-// 如func GetApis(req *request.ApiListRequestStruct) (apis []models.SysApi, err error) {
+// 如func GetApis(req *request.ApiRequestStruct) (apis []models.SysApi, err error) {
 // 这会导致apis被初始化无穷大的集合, 代码无法断点调试: collecting data..., 几秒后程序异常退出:
 // error layer=rpc writing response:write tcp xxx write: broken pipe
 // error layer=rpc rpc:read tcp xxx read: connection reset by peer
 // exit code 0
 // 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
 // 获取所有接口
-func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysApi, error) {
+func (s *MysqlService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
 	query := s.tx.
-		Table(new(models.SysApi).TableName()).
+		Model(&models.SysApi{}).
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
@@ -41,18 +41,8 @@ func (s *MysqlService) GetApis(req *request.ApiListRequestStruct) ([]models.SysA
 	if creator != "" {
 		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 
@@ -242,5 +232,5 @@ func (s *MysqlService) DeleteApiByIds(ids []uint) (err error) {
 	}
 	// 删除所有规则
 	s.BatchDeleteRoleCasbins(casbins)
-	return query.Delete(models.SysApi{}).Error
+	return query.Delete(&models.SysApi{}).Error
 }

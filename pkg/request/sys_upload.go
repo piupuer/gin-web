@@ -12,6 +12,7 @@ const (
 	// 上传分片文件临时目录
 	ChunkTmpPath = "chunks"
 )
+
 // 文件分片信息结构体
 type FilePartInfo struct {
 	// 当前文件大小(post传输时值非空)

@@ -10,7 +10,7 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct) ([]response.MessageListResponseStruct, error) {
+func (s *RedisService) GetUnDeleteMessages(req *request.MessageRequestStruct) ([]response.MessageListResponseStruct, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUnDeleteMessages(req)
@@ -49,30 +49,27 @@ func (s *RedisService) GetUnDeleteMessages(req *request.MessageListRequestStruct
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&messageLogs).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&messageLogs).Error
-		}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &messageLogs)
+	if err != nil {
+		return nil, err
 	}
 	// 将数据转为响应格式
 	list := make([]response.MessageListResponseStruct, 0)
 
 	for _, log := range messageLogs {
 		res := response.MessageListResponseStruct{
-			Id:           log.Id,
+			BaseData: response.BaseData{
+				Id:        log.Id,
+				CreatedAt: log.CreatedAt,
+				UpdatedAt: log.UpdatedAt,
+			},
 			Status:       log.Status,
 			ToUserId:     log.ToUserId,
 			ToUsername:   log.ToUser.Username,
 			Type:         log.Message.Type,
 			Title:        log.Message.Title,
 			Content:      log.Message.Content,
-			CreatedAt:    log.Message.CreatedAt,
 			FromUserId:   log.Message.FromUserId,
 			FromUsername: log.Message.FromUser.Username,
 		}

@@ -9,7 +9,7 @@ import (
 )
 
 // 获取所有操作日志
-func (s *RedisService) GetOperationLogs(req *request.OperationLogListRequestStruct) ([]models.SysOperationLog, error) {
+func (s *RedisService) GetOperationLogs(req *request.OperationLogRequestStruct) ([]models.SysOperationLog, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetOperationLogs(req)
@@ -40,17 +40,7 @@ func (s *RedisService) GetOperationLogs(req *request.OperationLogListRequestStru
 		s, _ := strconv.Atoi(status)
 		query = query.Where("status", "contains", s)
 	}
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }

@@ -57,6 +57,7 @@ func Routers() *gin.Engine {
 	router.InitOperationLogRouter(v1Group, authMiddleware) // 注册操作日志路由
 	router.InitMessageRouter(v1Group, authMiddleware)      // 注册消息中心路由
 	router.InitMachineRouter(v1Group, authMiddleware)      // 注册机器路由
+	router.InitDictRouter(v1Group, authMiddleware)         // 注册数据字典路由
 
 	global.Log.Info("初始化路由完成")
 	return r

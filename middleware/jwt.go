@@ -102,7 +102,7 @@ func authorizator(data interface{}, c *gin.Context) bool {
 			utils.Json2Struct(userStr, &user)
 			// 将用户保存到context, api调用时取数据方便
 			// 写入缓存
-			authorizatorCache.Add(userStr, user, cache.DefaultExpiration)
+			authorizatorCache.Set(userStr, user, cache.DefaultExpiration)
 		}
 		c.Set("user", user)
 		return true

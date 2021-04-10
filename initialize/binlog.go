@@ -16,9 +16,9 @@ import (
 )
 
 // 使用siddontang/go-mysql监听mysql binlog
-func MysqlBinlog(tables []string) {
-	if !global.Conf.System.UseRedis {
-		global.Log.Info("未使用redis, 无需初始化mysql binlog监听器")
+func MysqlBinlog(tables, ignoreTables []string) {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
+		global.Log.Info("未使用redis或未开启binlog, 无需初始化mysql binlog监听器")
 		return
 	}
 	// 监听器配置
@@ -42,8 +42,12 @@ func MysqlBinlog(tables []string) {
 	if err != nil {
 		global.Log.Infof("初始化mysql binlog监听器失败: ", err)
 	}
+	// 添加忽略表
+	c.AddDumpIgnoreTables(cfg.Dump.TableDB, ignoreTables...)
 	// 设置事件处理器
-	c.SetEventHandler(&BinlogEventHandler{})
+	c.SetEventHandler(&BinlogEventHandler{
+		IgnoreTables: ignoreTables,
+	})
 	// 刷新数据
 	refresh(tables)
 	// 从最后一个位置开始运行
@@ -55,6 +59,7 @@ func MysqlBinlog(tables []string) {
 // 自定义事件处理器
 type BinlogEventHandler struct {
 	canal.DummyEventHandler
+	IgnoreTables []string
 }
 
 // 同步器启动时, 刷新redis数据
@@ -91,8 +96,13 @@ func refresh(tables []string) {
 			}
 			newRows = append(newRows, row)
 		}
+		// 压缩后写入
+		compress, err := utils.CompressStrByZlib(utils.Struct2Json(newRows))
+		if err != nil {
+			panic(fmt.Sprintf("刷新redis数据失败, %v", err))
+		}
 		// 将数据转为json字符串写入redis, expiration=0永不过期
-		err = global.Redis.Set(cacheKey, utils.Struct2Json(newRows), 0).Err()
+		err = global.Redis.Set(cacheKey, *compress, 0).Err()
 		if err != nil {
 			panic(fmt.Sprintf("刷新redis数据失败, %v", err))
 		}
@@ -101,8 +111,7 @@ func refresh(tables []string) {
 
 // 数据行发生变化
 func (s *BinlogEventHandler) OnRow(e *canal.RowsEvent) error {
-	// 操作日志表无需写入
-	if e.Table.Name == new(models.SysOperationLog).TableName() {
+	if utils.Contains(s.IgnoreTables, e.Table.Name) {
 		return nil
 	}
 	// 避免监听器发生未知异常导致程序退出, 这里加defer

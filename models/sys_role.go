@@ -31,7 +31,7 @@ type SysRole struct {
 	Sort    *uint     `gorm:"default:1;comment:'角色排序(排序越大权限越低, 不能查看比自己序号小的角色, 不能编辑同序号用户权限, 排序为0表示超级管理员)'" json:"sort"`
 	Creator string    `gorm:"comment:'创建人'" json:"creator"`
 	Menus   []SysMenu `gorm:"many2many:sys_menu_role_relation;" json:"menus"` // 角色菜单多对多关系
-	Users   []SysUser `gorm:"foreignkey:RoleId"`                              // 一个角色有多个user
+	Users   []SysUser `gorm:"foreignKey:RoleId"`                              // 一个角色有多个user
 }
 
 func (m SysRole) TableName() string {

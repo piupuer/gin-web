@@ -72,11 +72,11 @@ func (m SysWorkflow) TableName() string {
 type SysWorkflowLine struct {
 	Model
 	FlowId uint        `gorm:"comment:'流程编号'" json:"flowId"`
-	Flow   SysWorkflow `gorm:"foreignkey:FlowId" json:"flow"`
+	Flow   SysWorkflow `gorm:"foreignKey:FlowId" json:"flow"`
 	Sort   uint        `gorm:"comment:'排序'" json:"sort"`
 	End    *uint       `gorm:"default:0;comment:'是否到达末尾'" json:"end"`
 	RoleId uint        `gorm:"comment:'审批人角色编号(拥有该角色才能审批)'" json:"roleId"`
-	Role   SysRole     `gorm:"foreignkey:RoleId" json:"role"`
+	Role   SysRole     `gorm:"foreignKey:RoleId" json:"role"`
 	Users  []SysUser   `gorm:"many2many:sys_user_workflow_line_relation;comment:'审批人列表(指定了具体审批人, 则不再使用角色判断)'" json:"users"`
 	Edit   *uint       `gorm:"type:tinyint(1);default:1;comment:'是否有编辑权限'" json:"edit"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
 	Name   string      `gorm:"comment:'名称'" json:"name"`
@@ -100,17 +100,17 @@ func (m RelationUserWorkflowLine) TableName() string {
 type SysWorkflowLog struct {
 	Model
 	FlowId           uint            `gorm:"comment:'流程编号'" json:"flowId"`
-	Flow             SysWorkflow     `gorm:"foreignkey:FlowId" json:"flow"`
+	Flow             SysWorkflow     `gorm:"foreignKey:FlowId" json:"flow"`
 	TargetId         uint            `gorm:"comment:'目标表编号'" json:"targetId"`
 	CurrentLineId    uint            `gorm:"comment:'当前审批线编号'" json:"currentLineId"`
-	CurrentLine      SysWorkflowLine `gorm:"foreignkey:CurrentLineId" json:"currentLine"`
+	CurrentLine      SysWorkflowLine `gorm:"foreignKey:CurrentLineId" json:"currentLine"`
 	Status           *uint           `gorm:"default:0;comment:'状态(0:提交 1:批准 2:拒绝 3:取消 4:重启 5:结束)'" json:"status"`
 	End              *uint           `gorm:"default:0;comment:'是否到达末尾'" json:"end"`
 	SubmitUserId     uint            `gorm:"comment:'提交人编号'" json:"submitUserId"`
-	SubmitUser       SysUser         `gorm:"foreignkey:SubmitUserId" json:"submitUser"`
+	SubmitUser       SysUser         `gorm:"foreignKey:SubmitUserId" json:"submitUser"`
 	SubmitDetail     string          `gorm:"comment:'提交明细(待审批可避免二次查询)'" json:"submitDetail"`
 	ApprovalUserId   uint            `gorm:"comment:'审批人编号'" json:"approvalUserId"`
-	ApprovalUser     SysUser         `gorm:"foreignkey:ApprovalUserId" json:"approvalUser"`
+	ApprovalUser     SysUser         `gorm:"foreignKey:ApprovalUserId" json:"approvalUser"`
 	ApprovalOpinion  string          `gorm:"comment:'审批意见'" json:"approvalOpinion"`
 	ApprovingUserIds []uint          `gorm:"-" json:"approvingUserIds"` // status为0提交时有效, 表示审批人列表, 无需保存到数据库
 }

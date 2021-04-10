@@ -29,7 +29,7 @@ func (s *RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 	return &u, err
 }
 
-func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
+func (s *RedisService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUsers(req)
@@ -66,17 +66,8 @@ func (s *RedisService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 

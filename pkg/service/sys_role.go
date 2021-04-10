@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"gin-web/models"
-	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gorm.io/gorm"
 	"strings"
@@ -14,7 +13,7 @@ import (
 func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
-	err := s.tx.Model(models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
+	err := s.tx.Model(&models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
 	if err != nil {
 		return roleIds, err
 	}
@@ -25,44 +24,34 @@ func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
+func (s *MysqlService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
-	db := global.Mysql.
-		Table(new(models.SysRole).TableName()).
+	query := s.tx.
+		Model(&models.SysRole{}).
 		Order("created_at DESC").
 		Where("sort >= ?", req.CurrentRoleSort)
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
-		db = db.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
+		query = query.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
 	}
 	keyword := strings.TrimSpace(req.Keyword)
 	if keyword != "" {
-		db = db.Where("keyword LIKE ?", fmt.Sprintf("%%%s%%", keyword))
+		query = query.Where("keyword LIKE ?", fmt.Sprintf("%%%s%%", keyword))
 	}
 	creator := strings.TrimSpace(req.Creator)
 	if creator != "" {
-		db = db.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
+		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {
-			db = db.Where("status = ?", 1)
+			query = query.Where("status = ?", 1)
 		} else {
-			db = db.Where("status = ?", 0)
+			query = query.Where("status = ?", 0)
 		}
 	}
-	// 查询条数
-	err = db.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = db.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = db.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 
@@ -80,10 +69,20 @@ func (s *MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, 
 	// 获取菜单增量
 	incremental := req.GetIncremental(menuIds, allMenu)
 	// 查询所有菜单
-	var incrementalMenus []models.SysMenu
-	err = s.tx.Where("id in (?)", incremental).Find(&incrementalMenus).Error
+	incrementalMenus := make([]models.SysMenu, 0)
+	err = s.tx.
+		Model(&models.SysMenu{}).
+		Where("id in (?)", incremental).
+		Find(&incrementalMenus).Error
 	if err != nil {
 		return
+	}
+	// 去除菜单增量中包含子菜单的父菜单
+	newIncrementalMenus := make([]models.SysMenu, 0)
+	for _, menu := range incrementalMenus {
+		if !hasChildrenMenu(menu.Id, allMenu) {
+			newIncrementalMenus = append(newIncrementalMenus, menu)
+		}
 	}
 	// 查询role
 	var role models.SysRole

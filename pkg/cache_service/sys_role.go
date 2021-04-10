@@ -26,7 +26,7 @@ func (s *RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (s *RedisService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
+func (s *RedisService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetRoles(req)
@@ -56,16 +56,7 @@ func (s *RedisService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 			query = query.Where("status", "=", 0)
 		}
 	}
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }

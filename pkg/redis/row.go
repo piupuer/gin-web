@@ -58,10 +58,12 @@ func RowChange(e *canal.RowsEvent) {
 	// 缓存键由数据库名与表名组成
 	cacheKey := fmt.Sprintf("%s_%s", database, table)
 	// 读取redis历史数据
-	oldRows, err := global.Redis.Get(cacheKey).Result()
+	oldRowsStr, err := global.Redis.Get(cacheKey).Result()
 	newRows := make([]map[string]interface{}, 0)
 	changeRows := make([][]interface{}, 0)
 	if err == nil {
+		// 解压缩字符串
+		oldRows := utils.DeCompressStrByZlib(oldRowsStr)
 		// 将旧数据解析为对象
 		utils.Json2Struct(oldRows, &newRows)
 	}
@@ -90,16 +92,21 @@ func RowChange(e *canal.RowsEvent) {
 			newRow := changeRows[i+1]
 			// 通过历史数据changeRows[0]去匹配需要更新的数据所在索引
 			index := getOldRowIndex(newRows, oldRow, e.Table)
-			if deletedAtIndex >= 0 && oldRow[deletedAtIndex] == nil && newRow[deletedAtIndex] != nil {
-				// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
-				if index < rowCount-1 {
-					newRows = append(newRows[:index], newRows[index+1:]...)
+			if len(newRows) > 0 && index >= 0 {
+				if deletedAtIndex >= 0 && oldRow[deletedAtIndex] == nil && newRow[deletedAtIndex] != nil {
+					// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
+					if index < rowCount-1 {
+						newRows = append(newRows[:index], newRows[index+1:]...)
+					} else {
+						newRows = append(newRows[:index])
+					}
 				} else {
-					newRows = append(newRows[:index])
+					// 执行更新
+					newRows[index] = getRow(newRow, e.Table)
 				}
 			} else {
-				// 执行更新
-				newRows[index] = getRow(newRow, e.Table)
+				// 可能是数据反写
+				newRows = append(newRows, getRow(newRow, e.Table))
 			}
 		}
 
@@ -129,8 +136,14 @@ func RowChange(e *canal.RowsEvent) {
 		}
 		break
 	}
+	// 压缩后写入
+	compress, err := utils.CompressStrByZlib(utils.Struct2Json(newRows))
+	if err != nil {
+		global.Log.Error("同步binlog增量数据到redis失败: ", err, e)
+		return
+	}
 	// 将数据转为json字符串写入redis, expiration=0永不过期
-	err = global.Redis.Set(cacheKey, utils.Struct2Json(newRows), 0).Err()
+	err = global.Redis.Set(cacheKey, *compress, 0).Err()
 	if err != nil {
 		global.Log.Error("同步binlog增量数据到redis失败: ", err, e)
 	}

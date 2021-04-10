@@ -1,10 +1,11 @@
 # production
 system:
   port: 8080
+  pprof-port: 8005
 
 mysql:
   database: gin_web_prod
-  
+
 logs:
   level: 0
 
