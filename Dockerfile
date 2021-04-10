@@ -78,8 +78,8 @@ RUN apk update \
 # 暴露端口
 EXPOSE 8080
 
-# 启动应用(daemon off后台运行)
-CMD ["./main-prod", "-g", "daemon off;"]
+# 启动应用
+CMD ["./main-prod"]
 
 # 设置健康检查
 HEALTHCHECK --interval=5s --timeout=3s \
