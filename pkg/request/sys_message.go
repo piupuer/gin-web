@@ -33,3 +33,11 @@ func (s PushMessageRequestStruct) FieldTrans() map[string]string {
 	m["Content"] = "消息内容"
 	return m
 }
+
+// websocket消息请求
+type MessageWsRequestStruct struct {
+	// 消息类型, 见const
+	Type string `json:"type"`
+	// 数据内容
+	Data interface{} `json:"data"`
+}

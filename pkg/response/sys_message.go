@@ -12,3 +12,11 @@ type MessageListResponseStruct struct {
 	FromUserId   uint   `json:"fromUserId"`
 	FromUsername string `json:"fromUsername"`
 }
+
+// websocket消息响应
+type MessageWsResponseStruct struct {
+	// 消息类型, 见const
+	Type string `json:"type"`
+	// 消息详情
+	Detail Resp `json:"detail"`
+}
