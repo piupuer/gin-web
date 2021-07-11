@@ -100,25 +100,26 @@ func autoMigrate() {
 }
 
 func binlog() {
-	MysqlBinlog([]string{
-		new(models.SysUser).TableName(),
-		new(models.SysRole).TableName(),
-		new(models.SysMenu).TableName(),
-		new(models.RelationMenuRole).TableName(),
-		new(models.SysApi).TableName(),
-		new(models.SysCasbin).TableName(),
-		new(models.SysWorkflow).TableName(),
-		new(models.SysWorkflowLine).TableName(),
-		new(models.SysWorkflowLog).TableName(),
-		new(models.RelationUserWorkflowLine).TableName(),
-		new(models.SysLeave).TableName(),
-		new(models.SysMessage).TableName(),
-		new(models.SysMessageLog).TableName(),
-		new(models.SysMachine).TableName(),
-		new(models.SysDict).TableName(),
-		new(models.SysDictData).TableName(),
-	}, []string{
-		// 下列表会随着使用时间数据量越来越大, 不适合将整个表json存入redis
-		new(models.SysOperationLog).TableName(),
-	})
+	MysqlBinlog(
+		[]string{
+			// 下列表会随着使用时间数据量越来越大, 不适合将整个表json存入redis
+			new(models.SysOperationLog).TableName(),
+		},
+		new(models.SysUser),
+		new(models.SysRole),
+		new(models.SysMenu),
+		new(models.RelationMenuRole),
+		new(models.SysApi),
+		new(models.SysCasbin),
+		new(models.SysWorkflow),
+		new(models.SysWorkflowLine),
+		new(models.SysWorkflowLog),
+		new(models.RelationUserWorkflowLine),
+		new(models.SysLeave),
+		new(models.SysMessage),
+		new(models.SysMessageLog),
+		new(models.SysMachine),
+		new(models.SysDict),
+		new(models.SysDictData),
+	)
 }
