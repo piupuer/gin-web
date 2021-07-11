@@ -60,11 +60,19 @@ type MysqlConfiguration struct {
 }
 
 type RedisConfiguration struct {
-	Host      string `mapstructure:"host" json:"host"`
-	Port      int    `mapstructure:"port" json:"port"`
-	Password  string `mapstructure:"password" json:"password"`
-	Database  int    `mapstructure:"database" json:"database"`
-	BinlogPos string `mapstructure:"binlog-pos" json:"binlogPos"`
+	Host      string                     `mapstructure:"host" json:"host"`
+	Port      int                        `mapstructure:"port" json:"port"`
+	Sentinel  RedisSentinelConfiguration `mapstructure:"sentinel" json:"sentinel"`
+	Password  string                     `mapstructure:"password" json:"password"`
+	Database  int                        `mapstructure:"database" json:"database"`
+	BinlogPos string                     `mapstructure:"binlog-pos" json:"binlogPos"`
+}
+
+type RedisSentinelConfiguration struct {
+	Enable     bool     `mapstructure:"enable" json:"enable"`
+	MasterName string   `mapstructure:"master-name" json:"masterName"`
+	Addresses  string   `mapstructure:"addresses" json:"addresses"`
+	AddressArr []string `mapstructure:"-" json:"-"`
 }
 
 type CasbinConfiguration struct {
