@@ -5,9 +5,9 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
-	"github.com/siddontang/go-mysql/canal"
-	"github.com/siddontang/go-mysql/mysql"
-	"github.com/siddontang/go-mysql/schema"
+	"github.com/go-mysql-org/go-mysql/canal"
+	"github.com/go-mysql-org/go-mysql/mysql"
+	"github.com/go-mysql-org/go-mysql/schema"
 )
 
 const (

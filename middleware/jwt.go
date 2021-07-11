@@ -10,7 +10,6 @@ import (
 	"gin-web/pkg/utils"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
-	"github.com/patrickmn/go-cache"
 	"time"
 )
 
@@ -36,11 +35,8 @@ func InitAuth() (*jwt.GinJWTMiddleware, error) {
 
 func payloadFunc(data interface{}) jwt.MapClaims {
 	if v, ok := data.(map[string]interface{}); ok {
-		var user models.SysUser
-		// 将用户json转为结构体
-		utils.JsonI2Struct(v["user"], &user)
 		return jwt.MapClaims{
-			jwt.IdentityKey: user.Id,
+			jwt.IdentityKey: v["user"],
 			"user":          v["user"],
 		}
 	}
@@ -60,6 +56,12 @@ func login(c *gin.Context) (interface{}, error) {
 	var req request.RegisterAndLoginRequestStruct
 	// 请求json绑定
 	_ = c.ShouldBindJSON(&req)
+
+	// 参数校验
+	err := global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
+	if err != nil {
+		return nil, err
+	}
 
 	// 密码通过RSA解密
 	decodeData, err := utils.RSADecrypt([]byte(req.Password), global.Conf.System.RSAPrivateBytes)
@@ -81,42 +83,29 @@ func login(c *gin.Context) (interface{}, error) {
 	}
 	// 将用户以json格式写入, payloadFunc/authorizator会使用到
 	return map[string]interface{}{
-		"user": utils.Struct2Json(user),
+		"user": fmt.Sprintf("%d", user.Id),
 	}, nil
 }
 
-var (
-	// 定期缓存, 避免每次频繁查询
-	authorizatorCache = cache.New(24*time.Hour, 48*time.Hour)
-)
-
 func authorizator(data interface{}, c *gin.Context) bool {
 	if v, ok := data.(map[string]interface{}); ok {
-		userStr := v["user"].(string)
-		oldCache, ok := authorizatorCache.Get(userStr)
-		var user models.SysUser
-		if ok {
-			user, _ = oldCache.(models.SysUser)
-		} else {
-			// 将用户json转为结构体
-			utils.Json2Struct(userStr, &user)
+		if userIdStr, ok := v["user"].(string); ok {
+			userId := utils.Str2Uint(userIdStr)
 			// 将用户保存到context, api调用时取数据方便
-			// 写入缓存
-			authorizatorCache.Set(userStr, user, cache.DefaultExpiration)
+			c.Set("user", userId)
+			return true
 		}
-		c.Set("user", user)
-		return true
 	}
 	return false
 }
 
 func unauthorized(c *gin.Context, code int, message string) {
 	global.Log.Debug(fmt.Sprintf("JWT认证失败, 错误码%d, 错误信息%s", code, message))
-	if message == response.LoginCheckErrorMsg {
-		response.FailWithMsg(response.LoginCheckErrorMsg)
+	if message == response.LoginCheckErrorMsg || message == response.ForbiddenMsg || message == response.UserDisabledMsg {
+		response.FailWithMsg(message)
 		return
 	}
-	response.FailWithCode(response.Unauthorized)
+	response.FailWithCodeAndMsg(response.Unauthorized, message)
 }
 
 func loginResponse(c *gin.Context, code int, token string, expires time.Time) {

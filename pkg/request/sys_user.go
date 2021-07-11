@@ -7,8 +7,15 @@ import (
 
 // User login structure
 type RegisterAndLoginRequestStruct struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
+	Username string `json:"username" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
+func (s RegisterAndLoginRequestStruct) FieldTrans() map[string]string {
+	m := make(map[string]string, 0)
+	m["Username"] = "用户名"
+	m["Password"] = "密码"
+	return m
 }
 
 // 修改密码结构体
@@ -24,6 +31,9 @@ type UserRequestStruct struct {
 	Mobile            string         `json:"mobile" form:"mobile"`
 	Avatar            string         `json:"avatar" form:"avatar"`
 	Nickname          string         `json:"nickname" form:"nickname"`
+	UsernameOr        string         `json:"usernameOr" form:"usernameOr"`
+	MobileOr          string         `json:"mobileOr" form:"mobileOr"`
+	NicknameOr        string         `json:"nicknameOr" form:"nicknameOr"`
 	Introduction      string         `json:"introduction" form:"introduction"`
 	Status            *uint          `json:"status" form:"status"`
 	RoleId            uint           `json:"roleId" form:"roleId"`
