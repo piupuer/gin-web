@@ -19,6 +19,7 @@ const (
 	InternalServerErrorMsg     = "服务器内部错误"
 	IdempotenceTokenEmptyMsg   = "幂等性token为空"
 	IdempotenceTokenInvalidMsg = "幂等性token失效, 重复提交"
+	UserDisabledMsg            = "账户已被禁用, 请联系网站管理员"
 )
 
 var CustomError = map[int]string{

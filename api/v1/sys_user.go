@@ -37,6 +37,7 @@ func GetUserInfo(c *gin.Context) {
 	resp.Roles = []string{
 		"admin",
 	}
+	resp.Keyword = user.Role.Keyword
 	resp.RoleSort = *user.Role.Sort
 	// 写入缓存
 	userInfoCache.Set(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
@@ -109,22 +110,22 @@ func ChangePwd(c *gin.Context) {
 
 // 获取当前请求用户信息
 func GetCurrentUser(c *gin.Context) models.SysUser {
-	user, exists := c.Get("user")
+	userId, exists := c.Get("user")
 	var newUser models.SysUser
 	if !exists {
 		return newUser
 	}
-	u, _ := user.(models.SysUser)
-	oldCache, ok := userByIdCache.Get(fmt.Sprintf("%d", u.Id))
+	uid, _ := userId.(uint)
+	oldCache, ok := userByIdCache.Get(fmt.Sprintf("%d", uid))
 	if ok {
 		u, _ := oldCache.(models.SysUser)
 		return u
 	}
 	// 创建服务
-	s := cache_service.New(c)
-	newUser, _ = s.GetUserById(u.Id)
+	s := service.New(c)
+	newUser, _ = s.GetUserById(uid)
 	// 写入缓存
-	userByIdCache.Set(fmt.Sprintf("%d", u.Id), newUser, cache.DefaultExpiration)
+	userByIdCache.Set(fmt.Sprintf("%d", uid), newUser, cache.DefaultExpiration)
 	return newUser
 }
 
@@ -206,6 +207,8 @@ func UpdateUserById(c *gin.Context) {
 		response.FailWithMsg(err.Error())
 		return
 	}
+	userInfoCache.Delete(fmt.Sprintf("%d", user.Id))
+	userByIdCache.Delete(fmt.Sprintf("%d", user.Id))
 	response.Success()
 }
 
@@ -232,5 +235,7 @@ func BatchDeleteUserByIds(c *gin.Context) {
 		response.FailWithMsg(err.Error())
 		return
 	}
+	userInfoCache.Delete(fmt.Sprintf("%d", user.Id))
+	userByIdCache.Delete(fmt.Sprintf("%d", user.Id))
 	response.Success()
 }
