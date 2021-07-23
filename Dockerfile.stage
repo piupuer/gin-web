@@ -38,8 +38,11 @@ RUN cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2 && go build &
 # 回到app目录运行packr2命令
 RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2/packr2 build
 
+# 安装支持远程调试组件
+RUN cd $GOPATH/pkg/mod/github.com/go-delve/delve@v1.7.0 && go install github.com/go-delve/delve/cmd/dlv && ls -lh
+
 # 构建应用
-RUN go build -o main-stage .
+RUN go build -gcflags "all=-N -l" -o main-stage .
 
 # mysqldump需要一些依赖库这里直接使用alpine-glibc
 # alpine镜像瘦身
@@ -58,6 +61,8 @@ WORKDIR $APP_HOME
 COPY --from=gin-web $APP_HOME/conf ./conf/
 COPY --from=gin-web $APP_HOME/main-stage .
 COPY --from=gin-web $APP_HOME/gitversion .
+COPY --from=gin-web $APP_HOME/stage.sh .
+COPY --from=gin-web /go/bin/dlv .
 
 # 拷贝mysqldump文件(binlog刷到redis会用到)
 COPY docker-conf/mysql/mysqldump /usr/bin/mysqldump
@@ -79,7 +84,7 @@ RUN apk update \
 EXPOSE 9090
 
 # 启动应用
-CMD ["./main-stage"]
+CMD ["./stage.sh"]
 
 # 设置健康检查
 HEALTHCHECK --interval=5s --timeout=3s \
