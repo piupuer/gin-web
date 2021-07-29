@@ -3,7 +3,7 @@ package request
 import "gin-web/pkg/response"
 
 // 获取菜单列表结构体
-type MenuListRequestStruct struct {
+type MenuRequestStruct struct {
 	Name              string `json:"name" form:"name"`
 	Title             string `json:"title" form:"title"`
 	Path              string `json:"path" form:"path"`

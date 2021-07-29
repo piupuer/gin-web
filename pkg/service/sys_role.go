@@ -13,7 +13,7 @@ import (
 func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
-	err := s.tx.Model(models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
+	err := s.tx.Model(&models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
 	if err != nil {
 		return roleIds, err
 	}
@@ -24,11 +24,11 @@ func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.SysRole, error) {
+func (s *MysqlService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
 	query := s.tx.
-		Table(new(models.SysRole).TableName()).
+		Model(&models.SysRole{}).
 		Order("created_at DESC").
 		Where("sort >= ?", req.CurrentRoleSort)
 	name := strings.TrimSpace(req.Name)
@@ -50,18 +50,8 @@ func (s *MysqlService) GetRoles(req *request.RoleListRequestStruct) ([]models.Sy
 			query = query.Where("status = ?", 0)
 		}
 	}
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil && req.PageInfo.Total > 0 {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 

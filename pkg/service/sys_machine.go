@@ -11,11 +11,11 @@ import (
 )
 
 // 获取机器
-func (s *MysqlService) GetMachines(req *request.MachineListRequestStruct) ([]models.SysMachine, error) {
+func (s *MysqlService) GetMachines(req *request.MachineRequestStruct) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
 	query := s.tx.
-		Table(new(models.SysMachine).TableName()).
+		Model(&models.SysMachine{}).
 		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
 	if host != "" {
@@ -36,25 +36,15 @@ func (s *MysqlService) GetMachines(req *request.MachineListRequestStruct) ([]mod
 			query = query.Where("status = ?", 0)
 		}
 	}
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil && req.PageInfo.Total > 0 {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 
 // 验证机器状态
 func (s *MysqlService) ConnectMachine(id uint) error {
 	var oldMachine models.SysMachine
-	query := s.tx.Model(oldMachine).Where("id = ?", id).First(&oldMachine)
+	query := s.tx.Model(&oldMachine).Where("id = ?", id).First(&oldMachine)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}

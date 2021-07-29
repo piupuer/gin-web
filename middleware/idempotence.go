@@ -14,10 +14,11 @@ import (
 // 幂等性中间件
 
 var (
+	expire = 24 * time.Hour
 	// 记录是否加锁
 	idempotenceLock sync.Mutex
 	// 存取token(redis未开启的情况下)
-	idempotenceMap = cache.New(24*time.Hour, 48*time.Hour)
+	idempotenceMap = cache.New(expire, 48*time.Hour)
 )
 
 // redis lua脚本(先读取key, 直接删除, 获取删除标志)
@@ -62,11 +63,11 @@ func GenIdempotenceToken() string {
 	token := uuid.NewV4().String()
 	// 写入redis或map
 	if global.Conf.System.UseRedis {
-		global.Redis.Set(token, true, 0)
+		global.Redis.Set(token, true, expire)
 	} else {
 		idempotenceLock.Lock()
 		defer idempotenceLock.Unlock()
-		idempotenceMap.Add(token, 1, cache.DefaultExpiration)
+		idempotenceMap.Set(token, 1, cache.DefaultExpiration)
 	}
 	return token
 }

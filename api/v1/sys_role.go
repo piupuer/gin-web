@@ -14,7 +14,7 @@ import (
 // 获取角色列表
 func GetRoles(c *gin.Context) {
 	// 绑定参数
-	var req request.RoleListRequestStruct
+	var req request.RoleRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -114,7 +114,7 @@ func UpdateRoleById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(roleId, &models.SysRole{}, req)
+	err = s.UpdateById(roleId, req, new(models.SysRole))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return

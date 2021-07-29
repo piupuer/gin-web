@@ -19,6 +19,7 @@ var (
 	userInfoCache = cache.New(24*time.Hour, 48*time.Hour)
 	userByIdCache = cache.New(24*time.Hour, 48*time.Hour)
 )
+
 // 获取当前用户信息
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
@@ -35,16 +36,17 @@ func GetUserInfo(c *gin.Context) {
 	resp.Roles = []string{
 		"admin",
 	}
+	resp.Keyword = user.Role.Keyword
 	resp.RoleSort = *user.Role.Sort
 	// 写入缓存
-	userInfoCache.Add(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
+	userInfoCache.Set(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
 	response.SuccessWithData(resp)
 }
 
 // 获取用户列表
 func GetUsers(c *gin.Context) {
 	// 绑定参数
-	var req request.UserListRequestStruct
+	var req request.UserRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")
@@ -107,22 +109,22 @@ func ChangePwd(c *gin.Context) {
 
 // 获取当前请求用户信息
 func GetCurrentUser(c *gin.Context) models.SysUser {
-	user, exists := c.Get("user")
+	userId, exists := c.Get("user")
 	var newUser models.SysUser
 	if !exists {
 		return newUser
 	}
-	u, _ := user.(models.SysUser)
-	oldCache, ok := userByIdCache.Get(fmt.Sprintf("%d", u.Id))
+	uid, _ := userId.(uint)
+	oldCache, ok := userByIdCache.Get(fmt.Sprintf("%d", uid))
 	if ok {
 		u, _ := oldCache.(models.SysUser)
 		return u
 	}
 	// 创建服务
 	s := service.New(c)
-	newUser, _ = s.GetUserById(u.Id)
+	newUser, _ = s.GetUserById(uid)
 	// 写入缓存
-	userByIdCache.Add(fmt.Sprintf("%d", u.Id), newUser, cache.DefaultExpiration)
+	userByIdCache.Set(fmt.Sprintf("%d", uid), newUser, cache.DefaultExpiration)
 	return newUser
 }
 
@@ -199,11 +201,13 @@ func UpdateUserById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(userId, &models.SysUser{}, req)
+	err = s.UpdateById(userId, req, new(models.SysUser))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
 	}
+	userInfoCache.Delete(fmt.Sprintf("%d", user.Id))
+	userByIdCache.Delete(fmt.Sprintf("%d", user.Id))
 	response.Success()
 }
 
@@ -230,5 +234,7 @@ func BatchDeleteUserByIds(c *gin.Context) {
 		response.FailWithMsg(err.Error())
 		return
 	}
+	userInfoCache.Delete(fmt.Sprintf("%d", user.Id))
+	userByIdCache.Delete(fmt.Sprintf("%d", user.Id))
 	response.Success()
 }

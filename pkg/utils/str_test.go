@@ -108,9 +108,9 @@ func TestDecodeStrFromBase64(t *testing.T) {
 		want string
 	}{
 		{
-			name:"case1",
-			args:args{str:"b2s="},
-			want:"ok",
+			name: "case1",
+			args: args{str: "b2s="},
+			want: "ok",
 		},
 	}
 	for _, tt := range tests {

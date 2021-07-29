@@ -9,11 +9,11 @@ import (
 )
 
 // 获取操作日志
-func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStruct) ([]models.SysOperationLog, error) {
+func (s *MysqlService) GetOperationLogs(req *request.OperationLogRequestStruct) ([]models.SysOperationLog, error) {
 	var err error
 	list := make([]models.SysOperationLog, 0)
 	query := global.Mysql.
-		Table(new(models.SysOperationLog).TableName()).
+		Model(&models.SysOperationLog{}).
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
@@ -31,17 +31,7 @@ func (s *MysqlService) GetOperationLogs(req *request.OperationLogListRequestStru
 	if status != "" {
 		query = query.Where("status LIKE ?", fmt.Sprintf("%%%s%%", status))
 	}
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil && req.PageInfo.Total > 0 {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }

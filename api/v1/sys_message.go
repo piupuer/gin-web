@@ -10,7 +10,7 @@ import (
 // 获取全部消息
 func GetAllMessages(c *gin.Context) {
 	// 绑定参数
-	var req request.MessageListRequestStruct
+	var req request.MessageRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

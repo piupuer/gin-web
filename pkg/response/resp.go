@@ -1,29 +1,40 @@
 package response
 
 import (
+	"gin-web/models"
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 )
 
 // http请求响应封装
 type Resp struct {
-	Code int         `json:"code"` // 错误代码代码
+	Code int         `json:"code"` // 错误代码
 	Data interface{} `json:"data"` // 数据内容
 	Msg  string      `json:"msg"`  // 消息提示
 }
 
 // 分页封装
 type PageInfo struct {
-	PageNum      uint  `json:"pageNum" form:"pageNum"`           // 当前页码
-	PageSize     uint  `json:"pageSize" form:"pageSize"`         // 每页显示条数
-	Total        int64 `json:"total"`                            // 数据总条数(gorm v2 Count方法参数从interface改为int64, 这里也需要相应改变)
-	NoPagination bool  `json:"noPagination" form:"noPagination"` // 不使用分页
+	PageNum      uint   `json:"pageNum" form:"pageNum"`           // 当前页码
+	PageSize     uint   `json:"pageSize" form:"pageSize"`         // 每页显示条数
+	Total        int64  `json:"total"`                            // 数据总条数(gorm v2 Count方法参数从interface改为int64, 这里也需要相应改变)
+	NoPagination bool   `json:"noPagination" form:"noPagination"` // 不使用分页
+	CountCache   *bool  `json:"countCache" form:"countCache"`     // 缓存总条数
+	SkipCount    bool   `json:"skipCount" form:"skipCount"`       // 跳过条数查询
+	LimitPrimary string `json:"-"`                                // 当数据量很大时, limit通过指定字段(该字段一般是自增id或有索引)来优化, 可提高查询效率(如果不传则不优化)
 }
 
 // 带分页数据封装
 type PageData struct {
 	PageInfo
 	List interface{} `json:"list"` // 数据列表
+}
+
+// 基础数据封装(如Id/CreatedAt/UpdatedAt等较常用字段，基本上响应结构体都会用上)
+type BaseData struct {
+	Id        uint             `json:"id"`
+	CreatedAt models.LocalTime `json:"createdAt"`
+	UpdatedAt models.LocalTime `json:"updatedAt"`
 }
 
 // 计算limit/offset, 如果需要用到返回的PageSize, PageNum, 务必保证Total值有效
@@ -45,11 +56,6 @@ func (s *PageInfo) GetLimit() (int, int) {
 		pageNum = int64(s.PageNum)
 	}
 
-	// 如果偏移量比总条数还多
-	if total > 0 && pageNum > total {
-		pageNum = total
-	}
-
 	// 计算最大页码
 	maxPageNum := total/pageSize + 1
 	if total%pageSize == 0 {
@@ -59,15 +65,29 @@ func (s *PageInfo) GetLimit() (int, int) {
 	if maxPageNum < 1 {
 		maxPageNum = 1
 	}
-
-	// 超出最后一页
-	if pageNum > maxPageNum {
+	// 如果偏移量比总条数还多
+	if total > 0 && pageNum > total {
 		pageNum = maxPageNum
 	}
 
 	limit := pageSize
 	offset := limit * (pageNum - 1)
+	// 页码小于1设置为第1页数据
+	if s.PageNum < 1 {
+		offset = 0
+	}
 
+	// 超出最后一页设置为空数据
+	if int64(s.PageNum) > maxPageNum {
+		pageNum = maxPageNum + 1
+		offset = limit * maxPageNum
+	}
+
+	s.PageNum = uint(pageNum)
+	s.PageSize = uint(pageSize)
+	if s.NoPagination {
+		s.PageSize = uint(total)
+	}
 	// gorm v2参数从interface改为int, 这里也需要相应改变
 	return int(limit), int(offset)
 }
@@ -118,6 +138,14 @@ func FailWithCode(code int) {
 	msg := CustomError[NotOk]
 	if val, ok := CustomError[code]; ok {
 		msg = val
+	}
+	Result(code, msg, map[string]interface{}{})
+}
+
+func FailWithCodeAndMsg(code int, msg string) {
+	// 查找给定的错误码存在对应的错误信息, 默认使用NotOk
+	if msg == "" {
+		msg = CustomError[NotOk]
 	}
 	Result(code, msg, map[string]interface{}{})
 }

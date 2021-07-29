@@ -518,6 +518,54 @@ func Data() {
 			Category: "machine",
 			Desc:     "批量删除机器",
 		},
+		{
+			Method:   "GET",
+			Path:     "/v1/dict/list",
+			Category: "dict",
+			Desc:     "获取数据字典列表",
+		},
+		{
+			Method:   "POST",
+			Path:     "/v1/dict/create",
+			Category: "dict",
+			Desc:     "创建数据字典",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/dict/update/:dictId",
+			Category: "dict",
+			Desc:     "更新数据字典",
+		},
+		{
+			Method:   "DELETE",
+			Path:     "/v1/dict/delete/batch",
+			Category: "dict",
+			Desc:     "批量删除数据字典",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/dict/data/list",
+			Category: "dict",
+			Desc:     "获取数据字典数据列表",
+		},
+		{
+			Method:   "POST",
+			Path:     "/v1/dict/data/create",
+			Category: "dict",
+			Desc:     "创建数据字典数据",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/dict/data/update/:dictDataId",
+			Category: "dict",
+			Desc:     "更新数据字典数据",
+		},
+		{
+			Method:   "DELETE",
+			Path:     "/v1/dict/data/delete/batch",
+			Category: "dict",
+			Desc:     "批量删除数据字典数据",
+		},
 	}
 	newApis := make([]models.SysApi, 0)
 	newRoleCasbins := make([]models.SysRoleCasbin, 0)

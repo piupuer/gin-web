@@ -5,7 +5,7 @@ system:
 
 mysql:
   database: gin_web_prod
-  
+
 logs:
   level: 0
 

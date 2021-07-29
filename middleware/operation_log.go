@@ -204,7 +204,7 @@ func getApiDesc(c *gin.Context, method, path string) string {
 			}
 		}
 		// 写入缓存
-		apiCache.Add("apiMap", apiMap, cache.DefaultExpiration)
+		apiCache.Set("apiMap", apiMap, cache.DefaultExpiration)
 	}
 
 	// 匹配路由
@@ -218,7 +218,7 @@ func getApiDesc(c *gin.Context, method, path string) string {
 	}
 
 	// 写入缓存
-	apiCache.Add(fmt.Sprintf("%s_%s", method, path), desc, cache.DefaultExpiration)
+	apiCache.Set(fmt.Sprintf("%s_%s", method, path), desc, cache.DefaultExpiration)
 
 	return desc
 }

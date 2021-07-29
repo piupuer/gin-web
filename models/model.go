@@ -101,6 +101,15 @@ func (t *LocalTime) SetString(str string) *LocalTime {
 		now, err := time.ParseInLocation(global.SecLocalTimeFormat, str, time.Local)
 		if err == nil {
 			*t = LocalTime{Time: now}
+			return t
+		}
+		nowDate, err := time.ParseInLocation(global.DateLocalTimeFormat, str, time.Local)
+		if err == nil {
+			*t = LocalTime{Time: nowDate}
+		}
+		nowMonth, err := time.ParseInLocation(global.MonthLocalTimeFormat, str, time.Local)
+		if err == nil {
+			*t = LocalTime{Time: nowMonth}
 		}
 	}
 	return t
@@ -121,10 +130,89 @@ func (t *LocalTime) SetHourAndMinuteString(str string) *LocalTime {
 // 获取今日0点
 func (t *LocalTime) TodayStart() *LocalTime {
 	if t != nil {
-		now := time.Now()
+		if t.IsZero() {
+			t.Time = time.Now()
+		}
+		now := t.Time
 		// 取当日毫秒数
 		dateStart := time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, now.Location())
 		t.Time = dateStart
 	}
 	return t
+}
+
+// 获取明天0点
+func (t *LocalTime) TomorrowStart() *LocalTime {
+	if t != nil {
+		t.Time = t.TodayStart().Time.AddDate(0, 0, 1)
+	}
+	return t
+}
+
+// 获取下个月0点
+func (t *LocalTime) NextMonthStart() *LocalTime {
+	if t != nil {
+		t.Time = t.TodayStart().Time.AddDate(0, 1, 0)
+	}
+	return t
+}
+
+// 获取当前日期与目标日期之间的全部日期
+func (t *LocalTime) GetDates(str string) []string {
+	res := make([]string, 0)
+	endT := new(LocalTime).SetString(str).TodayStart()
+	end := *endT
+	start := *t.TodayStart()
+	// 交换位置
+	if start.Time.After(end.Time) {
+		tmp := start
+		start = end
+		end = tmp
+	}
+	endStr := end.DateString()
+	startStr := start.DateString()
+	if startStr == endStr {
+		res = append(res, startStr)
+		return res
+	}
+	for {
+		current := start.AddDate(0, 0, 1)
+		currentStr := start.DateString()
+		start.Time = current
+		res = append(res, currentStr)
+		if currentStr == endStr {
+			break
+		}
+	}
+	return res
+}
+
+// 获取当前日期与目标日期之间的全部月份
+func (t *LocalTime) GetMonths(str string) []string {
+	res := make([]string, 0)
+	endT := new(LocalTime).SetString(str).TodayStart()
+	end := *endT
+	start := *t.TodayStart()
+	// 交换位置
+	if start.Time.After(end.Time) {
+		tmp := start
+		start = end
+		end = tmp
+	}
+	endStr := end.MonthString()
+	startStr := start.MonthString()
+	if startStr == endStr {
+		res = append(res, startStr)
+		return res
+	}
+	for {
+		current := start.AddDate(0, 1, 0)
+		currentStr := start.MonthString()
+		start.Time = current
+		res = append(res, currentStr)
+		if currentStr == endStr {
+			break
+		}
+	}
+	return res
 }

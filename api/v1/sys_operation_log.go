@@ -13,7 +13,7 @@ import (
 // 获取操作日志列表
 func GetOperationLogs(c *gin.Context) {
 	// 绑定参数
-	var req request.OperationLogListRequestStruct
+	var req request.OperationLogRequestStruct
 	err := c.ShouldBind(&req)
 	if err != nil {
 		response.FailWithMsg("参数绑定失败, 请检查数据类型")

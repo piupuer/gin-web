@@ -82,6 +82,12 @@ go run main.go
 > 启动成功之后, 可在浏览器中输入: [http://127.0.0.1:10000/api/ping](http://127.0.0.1:10000/api/ping), 若不能访问请检查Go环境变量或数据库配置是否正确
 
 
+## 文档(逐步完善中)
+
+### 一、[安装步骤](https://github.com/piupuer/gin-web/blob/dev/docs/install.md)
+### 二、nginx配置反向代理去除端口(筹备中)
+
+
 ## 项目结构概览
 
 ```

@@ -142,7 +142,7 @@ func (s *MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	// 查询关系表
 	relations := make([]models.RelationMenuRole, 0)
 	menuIds := make([]uint, 0)
-	query := s.tx.Model(models.RelationMenuRole{})
+	query := s.tx.Model(&models.RelationMenuRole{})
 	var err error
 	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {

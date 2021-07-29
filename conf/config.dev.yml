@@ -72,6 +72,14 @@ redis:
   host: docker-redis
   # 端口
   port: 6379
+  # 哨兵模式(开启后, 单机配置host/port将失效)
+  sentinel:
+    # 是否开启
+    enable: false
+    # 集群名称
+    master-name:
+    # 哨兵连接地址(ip:port), 逗号隔开
+    addresses:
   # 密码(默认为空)
   password:
   # 数据库编号

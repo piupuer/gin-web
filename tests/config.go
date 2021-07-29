@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	configType = "yml"
+	configType        = "yml"
 	developmentConfig = "config.dev.yml"
 	stagingConfig     = "config.stage.yml"
 	productionConfig  = "config.prod.yml"

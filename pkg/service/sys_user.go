@@ -26,11 +26,11 @@ func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 }
 
 // 获取用户
-func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.SysUser, error) {
+func (s *MysqlService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
 	query := s.tx.
-		Model(models.SysUser{}).
+		Model(&models.SysUser{}).
 		Order("created_at DESC")
 	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
@@ -63,18 +63,8 @@ func (s *MysqlService) GetUsers(req *request.UserListRequestStruct) ([]models.Sy
 			query = query.Where("status = ?", 0)
 		}
 	}
-	// 查询条数
-	err = query.Count(&req.PageInfo.Total).Error
-	if err == nil && req.PageInfo.Total > 0 {
-		if req.PageInfo.NoPagination {
-			// 不使用分页
-			err = query.Find(&list).Error
-		} else {
-			// 获取分页参数
-			limit, offset := req.GetLimit()
-			err = query.Limit(limit).Offset(offset).Find(&list).Error
-		}
-	}
+	// 查询列表
+	err = s.Find(query, &req.PageInfo, &list)
 	return list, err
 }
 

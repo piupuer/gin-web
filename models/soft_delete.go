@@ -25,7 +25,7 @@ func (t *DeletedAt) UnmarshalJSON(data []byte) (err error) {
 		*t = DeletedAt{Time: time.Time{}}
 		return
 	}
-	
+
 	// 设置str
 	t.SetString(str)
 	return

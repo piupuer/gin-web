@@ -6,7 +6,7 @@ import (
 )
 
 // 获取操作日志列表结构体
-type OperationLogListRequestStruct struct {
+type OperationLogRequestStruct struct {
 	Method            string `json:"method" form:"method"`
 	Path              string `json:"path" form:"path"`
 	Username          string `json:"username" form:"username"`
@@ -16,7 +16,7 @@ type OperationLogListRequestStruct struct {
 }
 
 // 翻译需要校验的字段名称
-func (s OperationLogListRequestStruct) FieldTrans() map[string]string {
+func (s OperationLogRequestStruct) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Status"] = "响应状态码"
 	return m

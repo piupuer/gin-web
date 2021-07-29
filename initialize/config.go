@@ -8,6 +8,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/spf13/viper"
 	"os"
+	"strconv"
 	"strings"
 )
 
@@ -70,6 +71,9 @@ func Config() {
 		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
 
+	// 从环境变量中加载配置: 如config.yml中system.port, 对应的环境变量为CFG_SYSTEM_PORT
+	readConfigFromEnv(&global.Conf)
+
 	if global.Conf.System.ConnectTimeout < 1 {
 		global.Conf.System.ConnectTimeout = defaultConnectTimeout
 	}
@@ -113,6 +117,12 @@ func Config() {
 		global.Conf.System.RSAPrivateBytes = privateBytes
 	}
 
+	// 初始化Sentinel.Addresses
+	global.Conf.Redis.Sentinel.AddressArr = make([]string, 0)
+	if strings.TrimSpace(global.Conf.Redis.Sentinel.Addresses) != "" {
+		global.Conf.Redis.Sentinel.AddressArr = strings.Split(global.Conf.Redis.Sentinel.Addresses, ",")
+	}
+
 	fmt.Println("初始化配置文件完成, 环境变量GIN_WEB_CONF: ", global.ConfBox.ConfEnv)
 }
 
@@ -126,4 +136,69 @@ func readConfig(v *viper.Viper, configFile string) {
 	if err = v.ReadConfig(bytes.NewReader(config)); err != nil {
 		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
+}
+
+// 从环境变量中加载配置(适用于docker镜像中不方便临时修改配置, 直接修改环境变量重启即可)
+func readConfigFromEnv(defaultConfig *global.Configuration) {
+	cfgMap := make(map[string]interface{}, 0)
+	utils.Struct2StructByJson(defaultConfig, &cfgMap)
+	newMap := parseCfgMap("", cfgMap)
+	utils.Struct2StructByJson(newMap, &defaultConfig)
+}
+
+func parseCfgMap(parentKey string, m map[string]interface{}) map[string]interface{} {
+	if parentKey == "" {
+		parentKey = "CFG"
+	}
+	newMap := make(map[string]interface{}, 0)
+	// json的几种基础类型(string/bool/float64)
+	for key, item := range m {
+		newKey := strings.ToUpper(fmt.Sprintf("%s_%s", utils.SnakeCase(parentKey), utils.SnakeCase(key)))
+		switch item.(type) {
+		case map[string]interface{}:
+			// 仍然是map, 继续向下解析
+			itemM, _ := item.(map[string]interface{})
+			newMap[key] = parseCfgMap(newKey, itemM)
+			continue
+		case string:
+			env := strings.TrimSpace(os.Getenv(newKey))
+			if env != "" {
+				newMap[key] = env
+				fmt.Println(fmt.Sprintf("[从环境变量中加载配置]读取到%s: %v", newKey, newMap[key]))
+				continue
+			}
+		case bool:
+			env := strings.TrimSpace(os.Getenv(newKey))
+			if env != "" {
+				itemB, ok := item.(bool)
+				b, err := strconv.ParseBool(env)
+				if ok && err == nil {
+					if itemB && !b {
+						// 原值为true, 现为false
+						newMap[key] = false
+						fmt.Println(fmt.Sprintf("[从环境变量中加载配置]读取到%s: %v", newKey, newMap[key]))
+						continue
+					} else if !itemB && b {
+						// 原值为false, 现为true
+						newMap[key] = true
+						fmt.Println(fmt.Sprintf("[从环境变量中加载配置]读取到%s: %v", newKey, newMap[key]))
+						continue
+					}
+				}
+			}
+		case float64:
+			env := strings.TrimSpace(os.Getenv(newKey))
+			if env != "" {
+				v, err := strconv.ParseFloat(env, 64)
+				if err == nil {
+					newMap[key] = v
+					fmt.Println(fmt.Sprintf("[从环境变量中加载配置]读取到%s: %v", newKey, newMap[key]))
+					continue
+				}
+			}
+		}
+		// 值没有发生变化
+		newMap[key] = item
+	}
+	return newMap
 }

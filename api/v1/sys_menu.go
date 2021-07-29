@@ -39,7 +39,7 @@ func GetMenuTree(c *gin.Context) {
 	var resp []response.MenuTreeResponseStruct
 	utils.Struct2StructByJson(menus, &resp)
 	// 写入缓存
-	menuTreeCache.Add(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
+	menuTreeCache.Set(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
 	response.SuccessWithData(resp)
 }
 
@@ -121,7 +121,7 @@ func UpdateMenuById(c *gin.Context) {
 	// 创建服务
 	s := service.New(c)
 	// 更新数据
-	err = s.UpdateById(menuId, &models.SysMenu{}, req)
+	err = s.UpdateById(menuId, req, new(models.SysMenu))
 	if err != nil {
 		response.FailWithMsg(err.Error())
 		return
