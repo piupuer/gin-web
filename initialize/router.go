@@ -19,6 +19,8 @@ func Routers() *gin.Engine {
 
 	// 添加速率访问中间件
 	r.Use(middleware.RateLimiter())
+	// 添加跨域中间件, 让请求支持跨域
+	r.Use(middleware.Cors)
 	// 添加访问记录
 	r.Use(middleware.AccessLog)
 	// 添加操作日志
@@ -27,9 +29,6 @@ func Routers() *gin.Engine {
 	r.Use(middleware.Exception)
 	// 添加全局事务处理中间件
 	r.Use(middleware.Transaction)
-	// 添加跨域中间件, 让请求支持跨域
-	r.Use(middleware.Cors())
-	global.Log.Info("请求已支持跨域")
 
 	// 初始化jwt auth中间件
 	authMiddleware, err := middleware.InitAuth()
