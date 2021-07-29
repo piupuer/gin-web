@@ -14,21 +14,11 @@ require (
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gobuffalo/packr/v2 v2.7.1
-	github.com/gorilla/websocket v1.4.2
-	github.com/minio/minio-go/v7 v7.0.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/ngaut/pools v0.0.0-20180318154953-b7bc8c42aac7 // indirect
-	github.com/ngaut/sync2 v0.0.0-20141008032647-7a24ed77b2ef // indirect
-	github.com/opentracing/opentracing-go v1.2.0 // indirect
 	github.com/panjf2000/ants v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/pingcap/goleveldb v0.0.0-20191226122134-f82aafb29989 // indirect
-	github.com/pingcap/kvproto v0.0.0-20200927054727-1290113160f0 // indirect
-	github.com/pingcap/tidb v2.0.11+incompatible // indirect
 	github.com/pkg/errors v0.9.1
-	github.com/remyoudompheng/bigfft v0.0.0-20200410134404-eec4a21b6bb0 // indirect
-	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
@@ -40,6 +30,7 @@ require (
 	go.uber.org/zap v1.18.1
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
 	golang.org/x/text v0.3.6
+	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
 	gorm.io/driver/mysql v1.1.1
 	gorm.io/gorm v1.21.11
