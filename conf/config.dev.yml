@@ -12,8 +12,6 @@ system:
   connect-timeout: 10
   # 是否开启redis
   use-redis: true
-  # 是否使用redis service(pkg.cache_service包, 表数据量大时redis存全量json销量并没有mysql高)
-  use-redis-service: true
   # 开启全局事务管理器
   transaction: true
   # 是否初始化数据(没有初始数据时使用, 已发布正式版谨慎使用)

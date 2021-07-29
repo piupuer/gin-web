@@ -86,7 +86,6 @@ func autoMigrate() {
 		new(models.SysOperationLog),
 		new(models.SysMessage),
 		new(models.SysMessageLog),
-		new(models.SysMachine),
 		new(models.SysDict),
 		new(models.SysDictData),
 	)
