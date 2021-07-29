@@ -59,9 +59,6 @@ COPY --from=gin-web $APP_HOME/conf ./conf/
 COPY --from=gin-web $APP_HOME/main-prod .
 COPY --from=gin-web $APP_HOME/gitversion .
 
-# 拷贝mysqldump文件(binlog刷到redis会用到)
-COPY docker-conf/mysql/mysqldump /usr/bin/mysqldump
-
 # alpine时区修改
 # apk仓库使用国内源
 # 设置时区为上海
