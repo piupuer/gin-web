@@ -7,3 +7,9 @@ const (
 	DateLocalTimeFormat  = "2006-01-02"
 	MonthLocalTimeFormat = "2006-01"
 )
+
+// request id
+const (
+	RequestIdHeader     = "X-Request-Id"
+	RequestIdContextKey = "RequestId"
+)

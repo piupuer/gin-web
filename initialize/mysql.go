@@ -5,8 +5,11 @@ import (
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
+	"gin-web/pkg/service"
+	"go.uber.org/zap/zapcore"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 	"time"
 )
@@ -51,6 +54,10 @@ func Mysql() {
 			}
 		}
 	}()
+	colorful := false
+	if global.Conf.Logs.Level <= zapcore.DebugLevel {
+		colorful = true
+	}
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -60,15 +67,17 @@ func Mysql() {
 		},
 		// 查询全部字段, 某些情况下*不走索引
 		QueryFields: true,
+		Logger:      global.NewGormZapLogger(
+			global.Log.Desugar(),
+			logger.Config{
+				Colorful: colorful,
+			},
+		),
 	})
 	if err != nil {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))
 	}
 	init = true
-	// 开启mysql日志
-	if global.Conf.Mysql.LogMode {
-		db = db.Debug()
-	}
 	global.Mysql = db
 	// 表结构
 	autoMigrate()
@@ -79,7 +88,8 @@ func Mysql() {
 
 // 自动迁移表结构
 func autoMigrate() {
-	global.Mysql.AutoMigrate(
+	s := service.New(nil)
+	global.Mysql.WithContext(s.RequestIdContext(requestId)).AutoMigrate(
 		new(models.SysUser),
 		new(models.SysRole),
 		new(models.SysMenu),

@@ -21,6 +21,8 @@ func Routers() *gin.Engine {
 	r.Use(middleware.RateLimiter())
 	// 添加跨域中间件, 让请求支持跨域
 	r.Use(middleware.Cors)
+	// 添加request id中间件
+	r.Use(middleware.RequestId)
 	// 添加访问记录
 	r.Use(middleware.AccessLog)
 	// 添加操作日志

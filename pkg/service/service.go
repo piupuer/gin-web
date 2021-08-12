@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"gin-web/pkg/global"
@@ -8,6 +9,7 @@ import (
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
+	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"reflect"
 	"strings"
@@ -15,24 +17,41 @@ import (
 )
 
 type MysqlService struct {
-	tx *gorm.DB // 事务对象实例
-	db *gorm.DB // 无事务对象实例
+	ctx *gin.Context // 上下文
+	tx  *gorm.DB     // 事务对象实例
+	db  *gorm.DB     // 无事务对象实例
 }
 
 // 初始化服务
 func New(c *gin.Context) MysqlService {
 	// 获取事务对象
 	tx := global.GetTx(c)
-	return MysqlService{
-		tx: tx,
-		db: global.Mysql,
+	s := MysqlService{
+		ctx: c,
 	}
+	rc := s.RequestIdContext("")
+	s.tx = tx.WithContext(rc)
+	s.tx.Debug()
+	s.db = global.Mysql.WithContext(rc)
+	return s
 }
 
 var (
 	findByIdsCache = cache.New(24*time.Hour, 48*time.Hour)
 	findCountCache = cache.New(5*time.Minute, 48*time.Hour)
 )
+
+// 获取携带request id的上下文
+func (s *MysqlService) RequestIdContext(requestId string) context.Context {
+	if s.ctx != nil && requestId == "" {
+		requestId = s.ctx.GetString(global.RequestIdContextKey)
+	}
+	if requestId == "" {
+		uuid4 := uuid.NewV4()
+		requestId = uuid4.String()
+	}
+	return context.WithValue(context.Background(), global.RequestIdContextKey, requestId)
+}
 
 // 查询指定id, model需使用指针, 否则可能无法绑定数据
 func (s *MysqlService) FindById(id uint, model interface{}, setCache bool) (err error) {

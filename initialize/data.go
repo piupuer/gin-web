@@ -22,6 +22,8 @@ func Data() {
 	if !global.Conf.System.InitData {
 		return
 	}
+	s := service.New(nil)
+	db := global.Mysql.WithContext(s.RequestIdContext(requestId))
 	// 1. 初始化角色
 	newRoles := make([]models.SysRole, 0)
 	roles := []models.SysRole{
@@ -41,7 +43,7 @@ func Data() {
 		id := uint(i + 1)
 		roles[i].Id = id
 		oldRole := models.SysRole{}
-		err := global.Mysql.Where("id = ?", id).First(&oldRole).Error
+		err := db.Where("id = ?", id).First(&oldRole).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			role.Id = id
 			role.Creator = creator
@@ -53,7 +55,7 @@ func Data() {
 		}
 	}
 	if len(newRoles) > 0 {
-		global.Mysql.Create(&newRoles)
+		db.Create(&newRoles)
 	}
 
 	// 2. 初始化菜单
@@ -193,7 +195,7 @@ func Data() {
 		},
 	}
 	menus = genMenu(0, menus, roles[0])
-	createMenu(menus)
+	createMenu(db, menus)
 
 	// 3. 初始化用户
 	// 默认头像
@@ -220,7 +222,7 @@ func Data() {
 	for i, user := range users {
 		id := uint(i + 1)
 		oldUser := models.SysUser{}
-		err := global.Mysql.Where("id = ?", id).First(&oldUser).Error
+		err := db.Where("id = ?", id).First(&oldUser).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			user.Id = id
 			user.Creator = creator
@@ -231,7 +233,7 @@ func Data() {
 		}
 	}
 	if len(newUsers) > 0 {
-		global.Mysql.Create(&newUsers)
+		db.Create(&newUsers)
 	}
 
 	// 4. 初始化接口
@@ -650,7 +652,7 @@ func Data() {
 	for i, api := range apis {
 		id := uint(i + 1)
 		oldApi := models.SysApi{}
-		err := global.Mysql.Where("id = ?", id).First(&oldApi).Error
+		err := db.Where("id = ?", id).First(&oldApi).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			api.Id = id
 			api.Creator = creator
@@ -689,7 +691,7 @@ func Data() {
 		}
 	}
 	if len(newApis) > 0 {
-		global.Mysql.Create(&newApis)
+		db.Create(&newApis)
 	}
 	if len(newRoleCasbins) > 0 {
 		s := service.New(nil)
@@ -741,15 +743,15 @@ func genMenu(parentId uint, menus []models.SysMenu, superRole models.SysRole) []
 }
 
 // 创建菜单
-func createMenu(menus []models.SysMenu) {
+func createMenu(db *gorm.DB, menus []models.SysMenu) {
 	for _, menu := range menus {
 		oldMenu := models.SysMenu{}
-		err := global.Mysql.Where("id = ?", menu.Id).First(&oldMenu).Error
+		err := db.Where("id = ?", menu.Id).First(&oldMenu).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			global.Mysql.Create(&menu)
+			db.Create(&menu)
 		}
 		if len(menu.Children) > 0 {
-			createMenu(menu.Children)
+			createMenu(db, menu.Children)
 		}
 	}
 }

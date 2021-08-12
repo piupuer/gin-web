@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/gobuffalo/packr/v2"
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"os"
 	"strconv"
@@ -21,6 +22,8 @@ const (
 	productionConfig      = "config.prod.yml"
 	defaultConnectTimeout = 5
 )
+
+var requestId = uuid.NewV4().String() // 生成启动时request id
 
 // 初始化配置文件
 func Config() {

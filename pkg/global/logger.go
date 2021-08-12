@@ -1,10 +1,15 @@
 package global
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"github.com/natefinch/lumberjack"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/utils"
 	"os"
 	"time"
 )
@@ -46,12 +51,127 @@ func InitLogger() {
 		Conf.Logs.Level,                                                                // 日志等级
 	)
 
-	logger := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
-	Log = logger.Sugar()
+	l := zap.New(
+		core,
+		zap.AddCaller(),
+		zap.AddCallerSkip(1),
+	)
+	Log = NewGormZapLogger(l, logger.Config{}).log.Sugar()
 	Log.Debug("初始化日志完成")
 }
 
 // zap日志自定义本地时间格式
 func ZapLogLocalTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 	enc.AppendString(t.Format(MsecLocalTimeFormat))
+}
+
+// zap logger for gorm
+type GormZapLogger struct {
+	log *zap.Logger
+	logger.Config
+	infoStr, warnStr, errStr            string
+	traceStr, traceErrStr, traceWarnStr string
+}
+
+// New logger like gorm2
+func NewGormZapLogger(zapLogger *zap.Logger, config logger.Config) *GormZapLogger {
+	var (
+		infoStr      = "%s\n[info] "
+		warnStr      = "%s\n[warn] "
+		errStr       = "%s\n[error] "
+		traceStr     = "%v%s\n[%.3fms] [rows:%v] %s"
+		traceWarnStr = "%v%s %s\n[%.3fms] [rows:%v] %s"
+		traceErrStr  = "%v%s %s\n[%.3fms] [rows:%v] %s"
+	)
+
+	if config.Colorful {
+		infoStr = logger.Green + "%s\n" + logger.Reset + logger.Green + "[info] " + logger.Reset
+		warnStr = logger.BlueBold + "%s\n" + logger.Reset + logger.Magenta + "[warn] " + logger.Reset
+		errStr = logger.Magenta + "%s\n" + logger.Reset + logger.Red + "[error] " + logger.Reset
+		traceStr = "%v" + logger.Green + "%s\n" + logger.Reset + logger.Yellow + "[%.3fms] " + logger.BlueBold + "[rows:%v]" + logger.Reset + " %s"
+		traceWarnStr = "%v" + logger.Green + "%s " + logger.Yellow + "%s\n" + logger.Reset + logger.RedBold + "[%.3fms] " + logger.Yellow + "[rows:%v]" + logger.Magenta + " %s" + logger.Reset
+		traceErrStr = "%v" + logger.RedBold + "%s " + logger.MagentaBold + "%s\n" + logger.Reset + logger.Yellow + "[%.3fms] " + logger.BlueBold + "[rows:%v]" + logger.Reset + " %s"
+	}
+
+	l := &GormZapLogger{
+		log: zapLogger,
+		Config: logger.Config{
+			SlowThreshold:             200 * time.Millisecond,
+			Colorful:                  false,
+			IgnoreRecordNotFoundError: false,
+			LogLevel:                  logger.Warn,
+		},
+		infoStr:      infoStr,
+		warnStr:      warnStr,
+		errStr:       errStr,
+		traceStr:     traceStr,
+		traceWarnStr: traceWarnStr,
+		traceErrStr:  traceErrStr,
+	}
+	return l
+}
+
+// LogMode gorm log mode
+func (l *GormZapLogger) LogMode(level logger.LogLevel) logger.Interface {
+	l.LogLevel = level
+	return l
+}
+
+// Info print info
+func (l GormZapLogger) Debug(ctx context.Context, msg string, args ...interface{}) {
+	if l.log.Core().Enabled(zapcore.DebugLevel) {
+		l.log.Sugar().Infof(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, args...)...)
+	}
+}
+
+// Info print info
+func (l GormZapLogger) Info(ctx context.Context, msg string, args ...interface{}) {
+	if l.log.Core().Enabled(zapcore.InfoLevel) {
+		l.log.Sugar().Infof(l.infoStr+msg, append([]interface{}{utils.FileWithLineNum()}, args...)...)
+	}
+}
+
+// Warn print warn messages
+func (l GormZapLogger) Warn(ctx context.Context, msg string, args ...interface{}) {
+	if l.log.Core().Enabled(zapcore.WarnLevel) {
+		l.log.Sugar().Warnf(l.warnStr+msg, append([]interface{}{utils.FileWithLineNum()}, args...)...)
+	}
+}
+
+// Error print error messages
+func (l GormZapLogger) Error(ctx context.Context, msg string, args ...interface{}) {
+	if l.log.Core().Enabled(zapcore.ErrorLevel) {
+		l.log.Sugar().Errorf(l.errStr+msg, append([]interface{}{utils.FileWithLineNum()}, args...)...)
+	}
+}
+
+// Trace print sql message
+func (l GormZapLogger) Trace(ctx context.Context, begin time.Time, fc func() (string, int64), err error) {
+	if !l.log.Core().Enabled(zapcore.DPanicLevel) || l.LogLevel <= logger.Silent {
+		return
+	}
+	lineNum := utils.FileWithLineNum()
+	elapsed := time.Since(begin)
+	elapsedF := float64(elapsed.Nanoseconds()) / 1e6
+	sql, rows := fc()
+	row := "-"
+	if rows > -1 {
+		row = fmt.Sprintf("%d", rows)
+	}
+	v := ctx.Value(RequestIdContextKey)
+	requestId := ""
+	if v != nil {
+		requestId = fmt.Sprintf("%v ", v)
+	}
+	switch {
+	case l.log.Core().Enabled(zapcore.ErrorLevel) && err != nil && (!l.IgnoreRecordNotFoundError || !errors.Is(err, gorm.ErrRecordNotFound)):
+		l.log.Error(fmt.Sprintf(l.traceErrStr, requestId, lineNum, err, elapsedF, row, sql))
+	case l.log.Core().Enabled(zapcore.WarnLevel) && elapsed > l.SlowThreshold && l.SlowThreshold != 0:
+		slowLog := fmt.Sprintf("SLOW SQL >= %v", l.SlowThreshold)
+		l.log.Warn(fmt.Sprintf(l.traceWarnStr, requestId, lineNum, slowLog, elapsedF, row, sql))
+	case l.log.Core().Enabled(zapcore.DebugLevel):
+		l.log.Debug(fmt.Sprintf(l.traceStr, requestId, lineNum, elapsedF, row, sql))
+	case l.log.Core().Enabled(zapcore.InfoLevel):
+		l.log.Info(fmt.Sprintf(l.traceStr, requestId, lineNum, elapsedF, row, sql))
+	}
 }
