@@ -17,6 +17,10 @@ func Routers() *gin.Engine {
 	// 创建不带中间件的路由:
 	r := gin.New()
 
+	// 替换gin默认的路由打印
+	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
+		global.Log.Debug(ctx, "[gin-route] %-6s %-40s --> %s (%d handlers)", httpMethod, absolutePath, handlerName, nuHandlers)
+	}
 	// 添加速率访问中间件
 	r.Use(middleware.RateLimiter(ctx))
 	// 添加跨域中间件, 让请求支持跨域
@@ -60,6 +64,6 @@ func Routers() *gin.Engine {
 	router.InitMachineRouter(v1Group, authMiddleware)      // 注册机器路由
 	router.InitDictRouter(v1Group, authMiddleware)         // 注册数据字典路由
 
-	global.Log.Info(ctx,"初始化路由完成")
+	global.Log.Info(ctx, "初始化路由完成")
 	return r
 }
