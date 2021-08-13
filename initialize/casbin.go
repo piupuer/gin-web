@@ -15,7 +15,7 @@ func CasbinEnforcer() {
 		panic(fmt.Sprintf("初始化casbin策略管理器: %v", err))
 	}
 	global.CasbinEnforcer = e
-	global.Log.Info("初始化casbin策略管理器完成")
+	global.Log.Info(ctx, "初始化casbin策略管理器完成")
 }
 
 func mysqlCasbin() (*casbin.Enforcer, error) {

@@ -9,7 +9,6 @@ import (
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
-	uuid "github.com/satori/go.uuid"
 	"gorm.io/gorm"
 	"reflect"
 	"strings"
@@ -29,9 +28,11 @@ func New(c *gin.Context) MysqlService {
 	s := MysqlService{
 		ctx: c,
 	}
+	if s.ctx == nil {
+		s.ctx = &gin.Context{}
+	}
 	rc := s.RequestIdContext("")
 	s.tx = tx.WithContext(rc)
-	s.tx.Debug()
 	s.db = global.Mysql.WithContext(rc)
 	return s
 }
@@ -46,11 +47,7 @@ func (s *MysqlService) RequestIdContext(requestId string) context.Context {
 	if s.ctx != nil && requestId == "" {
 		requestId = s.ctx.GetString(global.RequestIdContextKey)
 	}
-	if requestId == "" {
-		uuid4 := uuid.NewV4()
-		requestId = uuid4.String()
-	}
-	return context.WithValue(context.Background(), global.RequestIdContextKey, requestId)
+	return global.RequestIdContext(requestId)
 }
 
 // 查询指定id, model需使用指针, 否则可能无法绑定数据
@@ -240,7 +237,7 @@ func (s *MysqlService) Find(query *gorm.DB, page *response.PageInfo, model inter
 					findCountCache.Set(cacheKey, page.Total, cache.DefaultExpiration)
 				}
 			} else {
-				global.Log.Debug(fmt.Sprintf("条数缓存命中: %s, total: %d", cacheKey, page.Total))
+				global.Log.Debug(s.ctx, "条数缓存命中: %s, total: %d", cacheKey, page.Total)
 			}
 		}
 		if page.Total > 0 || page.SkipCount {

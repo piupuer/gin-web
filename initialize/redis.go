@@ -11,7 +11,7 @@ import (
 // 初始化redis数据库
 func Redis() {
 	if !global.Conf.System.UseRedis {
-		global.Log.Info("未使用redis, 无需初始化")
+		global.Log.Info(ctx, "未使用redis, 无需初始化")
 		return
 	}
 	init := false
@@ -56,5 +56,5 @@ func Redis() {
 	}
 
 	init = true
-	global.Log.Info("初始化redis完成")
+	global.Log.Info(ctx, "初始化redis完成")
 }

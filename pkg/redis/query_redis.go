@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis"
 	"github.com/thedevsaddam/gojsonq/v2"
 	"gorm.io/gorm"
@@ -19,6 +20,7 @@ import (
 
 // 自定义redis查询结构
 type QueryRedis struct {
+	ctx *gin.Context
 	// 错误信息
 	Error error
 	// redis对象
@@ -32,8 +34,12 @@ type QueryRedis struct {
 }
 
 // 初始化服务
-func New() *QueryRedis {
+func New(ctx *gin.Context) *QueryRedis {
+	if ctx == nil {
+		ctx = &gin.Context{}
+	}
 	return &QueryRedis{
+		ctx:   ctx,
 		redis: global.Redis,
 		// 初始化时应该为1, 链式操作时才能clone
 		clone: 1,
@@ -53,6 +59,7 @@ func (s *QueryRedis) AddError(err error) error {
 func (s *QueryRedis) getInstance() *QueryRedis {
 	if s.clone > 0 {
 		tx := &QueryRedis{
+			ctx:   s.ctx,
 			redis: s.redis,
 			// 表命名相关(主要针对表前缀)
 			NamingStrategy: global.Mysql.NamingStrategy,
@@ -120,9 +127,9 @@ func (s *QueryRedis) get(tableName string) *gojsonq.JSONQ {
 		cacheKey := fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, tableName)
 		var err error
 		str, err := s.redis.Get(cacheKey).Result()
-		global.Log.Debug(fmt.Sprintf("[QueryRedis.get]读取redis缓存: %s", tableName))
+		global.Log.Debug(s.ctx, "[QueryRedis.get]读取redis缓存: %s", tableName)
 		if err != nil {
-			global.Log.Debug(fmt.Sprintf("[QueryRedis.get]读取redis缓存异常: %v", err))
+			global.Log.Debug(s.ctx, "[QueryRedis.get]读取redis缓存异常: %v", err)
 		} else {
 			// 解压缩字符串
 			jsonStr = utils.DeCompressStrByZlib(str)

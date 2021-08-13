@@ -684,7 +684,7 @@ func (s *MysqlService) getHistoryApprovalUsers(log models.SysWorkflowLog) []uint
 		"status > ?", models.SysWorkflowLogStateSubmit, // 状态非提交
 	).Order("id DESC").Find(&logs).Error
 	if err != nil {
-		global.Log.Warn("[getHistoryApprovalUsers]", err)
+		global.Log.Warn(s.ctx, "[getHistoryApprovalUsers]", err)
 	}
 	// 保留连续审核通过记录
 	l := len(logs)

@@ -1,6 +1,7 @@
 package global
 
 import (
+	"context"
 	"errors"
 	"gin-web/pkg/oss"
 	"github.com/casbin/casbin/v2"
@@ -8,8 +9,8 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-redis/redis"
 	"github.com/gobuffalo/packr/v2"
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v9"
 	"gorm.io/gorm"
 	"io/ioutil"
@@ -22,7 +23,7 @@ var (
 	// packr盒子用于打包配置文件到golang编译后的二进制程序中
 	ConfBox *CustomConfBox
 	// zap日志
-	Log *zap.SugaredLogger
+	Log *GormZapLogger
 	// mysql实例
 	Mysql *gorm.DB
 	// redis实例
@@ -96,4 +97,13 @@ func GetTx(c *gin.Context) *gorm.DB {
 		}
 	}
 	return tx
+}
+
+// 获取携带request id的上下文
+func RequestIdContext(requestId string) context.Context {
+	if requestId == "" {
+		uuid4 := uuid.NewV4()
+		requestId = uuid4.String()
+	}
+	return context.WithValue(context.Background(), RequestIdContextKey, requestId)
 }

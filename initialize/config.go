@@ -2,11 +2,11 @@ package initialize
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/gobuffalo/packr/v2"
-	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"os"
 	"strconv"
@@ -23,10 +23,11 @@ const (
 	defaultConnectTimeout = 5
 )
 
-var requestId = uuid.NewV4().String() // 生成启动时request id
+var ctx context.Context // 生成启动时request id
 
 // 初始化配置文件
-func Config() {
+func Config(c context.Context) {
+	ctx = c
 	// 初始化配置盒子
 	var box global.CustomConfBox
 	ginWebConf := strings.ToLower(os.Getenv("GIN_WEB_CONF"))

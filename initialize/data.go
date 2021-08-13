@@ -22,8 +22,7 @@ func Data() {
 	if !global.Conf.System.InitData {
 		return
 	}
-	s := service.New(nil)
-	db := global.Mysql.WithContext(s.RequestIdContext(requestId))
+	db := global.Mysql.WithContext(ctx)
 	// 1. 初始化角色
 	newRoles := make([]models.SysRole, 0)
 	roles := []models.SysRole{

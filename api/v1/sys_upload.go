@@ -32,7 +32,7 @@ func UploadUnZip(c *gin.Context) {
 	// 解压文件到当前目录
 	unzipFiles, err := utils.UnZip(fullName, baseDir)
 	if err != nil {
-		global.Log.Error(fmt.Sprintf("无法解压文件: %v", err))
+		global.Log.Error(c, "无法解压文件: %v", err)
 		response.FailWithMsg("无法解压文件")
 		return
 	}
@@ -138,12 +138,12 @@ func UploadMerge(c *gin.Context) {
 	previewUrl := "未开启对象存储, 无预览地址"
 	if global.Conf.Upload.Minio.Enable {
 		// 写入minio对象存储
-		err = global.Minio.PutLocalObject(global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
+		err = global.Minio.PutLocalObject(c, global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
 		if err != nil {
 			response.FailWithMsg(fmt.Sprintf("写入minio对象存储失败, %v", err))
 			return
 		}
-		previewUrl = global.Minio.GetObjectPreviewUrl(global.Conf.Upload.Minio.Bucket, mergeFileName)
+		previewUrl = global.Minio.GetObjectPreviewUrl(c, global.Conf.Upload.Minio.Bucket, mergeFileName)
 	}
 	// 删除分片文件所在路径
 	os.RemoveAll(filePart.GetChunkRootPath())

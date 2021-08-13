@@ -29,7 +29,7 @@ func MachineShellWs(c *gin.Context) {
 
 	conn, err := upgrade.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		global.Log.Error("升级websocket连接失败", err)
+		global.Log.Error(c, "升级websocket连接失败: %v", err)
 		return
 	}
 	// 结束后自动关闭
@@ -45,7 +45,7 @@ func MachineShellWs(c *gin.Context) {
 		LoginPwd:  req.LoginPwd,
 	})
 	if err != nil {
-		global.Log.Error(fmt.Sprintf("建立ssh连接失败%v", err))
+		global.Log.Error(c, "建立ssh连接失败: %v", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("\n"+err.Error()))
 		return
 	}
@@ -53,7 +53,7 @@ func MachineShellWs(c *gin.Context) {
 	// 开启ssh通道
 	channel, incomingRequests, err := client.Conn.OpenChannel("session", nil)
 	if err != nil {
-		global.Log.Error(fmt.Sprintf("建立ssh通道失败%v", err))
+		global.Log.Error(c, "建立ssh通道失败: %v", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("\n"+err.Error()))
 		return
 	}
@@ -98,7 +98,7 @@ func MachineShellWs(c *gin.Context) {
 	}
 	ok, err := channel.SendRequest("pty-req", true, ssh.Marshal(&ptyReq))
 	if !ok || err != nil {
-		global.Log.Error(fmt.Sprintf("发送pty失败%v", err))
+		global.Log.Error(c, "发送pty失败: %v", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("\n"+err.Error()))
 		return
 	}
@@ -106,7 +106,7 @@ func MachineShellWs(c *gin.Context) {
 	// 发送shell
 	ok, err = channel.SendRequest("shell", true, nil)
 	if !ok || err != nil {
-		global.Log.Error(fmt.Sprintf("发送shell失败%v", err))
+		global.Log.Error(c, "发送shell失败: %v", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("\n"+err.Error()))
 		return
 	}
@@ -124,7 +124,7 @@ func MachineShellWs(c *gin.Context) {
 			for {
 				x, size, err := br.ReadRune()
 				if err != nil {
-					global.Log.Warn(fmt.Sprintf("读取shell警告%v", err))
+					global.Log.Warn(c, "读取shell警告: %v", err)
 					break
 				}
 				if size > 0 {
@@ -140,7 +140,7 @@ func MachineShellWs(c *gin.Context) {
 					err = conn.WriteMessage(websocket.TextMessage, buf)
 					buf = []byte{}
 					if err != nil {
-						global.Log.Error(fmt.Sprintf("数据写出到%s失败%v", conn.RemoteAddr(), err))
+						global.Log.Error(c, "数据写出到%s失败%v", conn.RemoteAddr(), err)
 						return
 					}
 				}
@@ -186,7 +186,7 @@ func MachineShellWs(c *gin.Context) {
 		m, p, err := conn.ReadMessage()
 		active = time.Now()
 		if err != nil {
-			global.Log.Warn(fmt.Sprintf("连接%s已断开", conn.RemoteAddr()))
+			global.Log.Warn(c, "连接%s已断开", conn.RemoteAddr())
 			break
 		}
 
@@ -195,7 +195,7 @@ func MachineShellWs(c *gin.Context) {
 			if err := utils.IsSafetyCmd(cmd); err != nil {
 				err = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("\r\n\r\n%s\r\n\r\n", err.Error())))
 				if err != nil {
-					global.Log.Warn(fmt.Sprintf("回写数据失败%v", err))
+					global.Log.Warn(c, "回写数据失败: %v", err)
 					break
 				}
 				continue

@@ -37,7 +37,7 @@ func OperationLog(c *gin.Context) {
 	var body []byte
 	body, err := ioutil.ReadAll(c.Request.Body)
 	if err != nil {
-		global.Log.Error("读取请求体失败: ", err)
+		global.Log.Error(c, "读取请求体失败: %v", err)
 	} else {
 		// gin参数只能读取一次, 这里将其回写, 否则c.Next中的接口无法读取
 		c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(body))

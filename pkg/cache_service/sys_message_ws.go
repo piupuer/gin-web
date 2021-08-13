@@ -1,6 +1,7 @@
 package cache_service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"gin-web/models"
@@ -83,6 +84,7 @@ type MessageHub struct {
 
 // 消息客户端
 type MessageClient struct {
+	ctx context.Context
 	// 当前socket key
 	Key string
 	// 当前socket连接实例
@@ -123,6 +125,7 @@ func (s *RedisService) StartMessageHub(checkIdempotenceTokenFunc func(token stri
 func (s *RedisService) MessageWs(conn *websocket.Conn, key string, user models.SysUser, ip string) {
 	// 注册到消息仓库
 	client := &MessageClient{
+		ctx:  s.ctx,
 		Key:  key,
 		Conn: conn,
 		User: user,
@@ -164,14 +167,14 @@ func (h *MessageHub) run() {
 				h.UserIds = append(h.UserIds, client.User.Id)
 			}
 			h.Clients[client.Key] = client
-			global.Log.Debug("[消息中心][广播]用户上线: ", fmt.Sprintf("%d-%s", client.User.Id, client.Ip))
+			global.Log.Debug(h.Service.ctx, "[消息中心][广播]用户上线: %d-%s", client.User.Id, client.Ip)
 		// 用户下线
 		case client := <-h.UnRegister:
 			if _, ok := h.Clients[client.Key]; ok {
 				delete(h.Clients, client.Key)
 				// 关闭发送通道
 				close(client.Send)
-				global.Log.Debug("[消息中心][广播]用户下线: ", fmt.Sprintf("%d-%s", client.User.Id, client.Ip))
+				global.Log.Debug(h.Service.ctx, "[消息中心][广播]用户下线: %d-%s", client.User.Id, client.Ip)
 			}
 		// 广播(全部用户均可接收)
 		case broadcast := <-h.Broadcast:
@@ -212,7 +215,7 @@ func (c *MessageClient) receive() {
 	defer func() {
 		c.Conn.Close()
 		if err := recover(); err != nil {
-			global.Log.Error("[消息中心][接收端]连接可能已断开: ", err)
+			global.Log.Error(c.ctx, "[消息中心][接收端]连接可能已断开: %v", err)
 		}
 	}()
 loop:
@@ -226,14 +229,14 @@ loop:
 		c.RetryCount = 0
 
 		if err != nil {
-			global.Log.Error("[消息中心][接收端]接收数据失败: ", err)
+			global.Log.Error(c.ctx, "[消息中心][接收端]接收数据失败: %v", err)
 			hub.UnRegister <- c
 			break loop
 		}
 		// 解压数据
 		// data := utils.DeCompressStrByZlib(string(msg))
 		data := string(msg)
-		global.Log.Debug("[消息中心][接收端]接收数据成功: ", c.User.Id, data)
+		global.Log.Debug(c.ctx, "[消息中心][接收端]接收数据成功: %d, %s", c.User.Id, data)
 		// 数据转为json
 		var req request.MessageWsRequestStruct
 		utils.Json2Struct(data, &req)
@@ -339,7 +342,7 @@ func (c *MessageClient) send() {
 		ticker.Stop()
 		c.Conn.Close()
 		if err := recover(); err != nil {
-			global.Log.Error("[消息中心][发送端]连接可能已断开: ", err)
+			global.Log.Error(c.ctx, "[消息中心][发送端]连接可能已断开: %v", err)
 		}
 	}()
 	for {
@@ -358,7 +361,7 @@ func (c *MessageClient) send() {
 
 			// 发送文本消息
 			if err := c.writeMessage(websocket.TextMessage, utils.Struct2Json(msg)); err != nil {
-				global.Log.Error("[消息中心][发送端]发送数据失败: ", err)
+				global.Log.Error(c.ctx, "[消息中心][发送端]发送数据失败: %v", err)
 				// 强制下线
 				hub.UnRegister <- c
 				return
@@ -368,7 +371,7 @@ func (c *MessageClient) send() {
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			// 发送ping消息
 			if err := c.writeMessage(websocket.PingMessage, "ping"); err != nil {
-				global.Log.Error("[消息中心][发送端]发送数据失败: ", err)
+				global.Log.Error(c.ctx, "[消息中心][发送端]发送数据失败: %v", err)
 				// 强制下线
 				hub.UnRegister <- c
 				return
@@ -382,7 +385,7 @@ func (c *MessageClient) writeMessage(messageType int, data string) error {
 	// 字符串压缩
 	// s, _ := utils.CompressStrByZlib(data)
 	s := &data
-	global.Log.Debug("[消息中心][writeMessage]", *s)
+	global.Log.Debug(c.ctx, "[消息中心][writeMessage] %v", *s)
 	return c.Conn.WriteMessage(messageType, []byte(*s))
 }
 
@@ -394,7 +397,7 @@ func (c *MessageClient) heartBeat() {
 		ticker.Stop()
 		c.Conn.Close()
 		if err := recover(); err != nil {
-			global.Log.Error("[消息中心][心跳]连接可能已断开: ", err)
+			global.Log.Error(c.ctx, "[消息中心][心跳]连接可能已断开: %v", err)
 		}
 	}()
 loop:
@@ -406,10 +409,10 @@ loop:
 			for _, client := range hub.Clients {
 				infos = append(infos, fmt.Sprintf("%d-%s", client.User.Id, client.Ip))
 			}
-			global.Log.Debug("[消息中心][心跳]当前活跃连接: ", strings.Join(infos, ","))
+			global.Log.Debug(c.ctx, "[消息中心][心跳]当前活跃连接: %v", strings.Join(infos, ","))
 			last := time.Now().Sub(c.LastActiveTime.Time)
 			if c.RetryCount > HeartBeatMaxRetryCount {
-				global.Log.Error(fmt.Sprintf("[消息中心][心跳]尝试发送心跳多次(%d)无响应", c.RetryCount))
+				global.Log.Error(c.ctx, "[消息中心][心跳]尝试发送心跳多次(%d)无响应", c.RetryCount)
 				hub.UnRegister <- c
 				break loop
 			}

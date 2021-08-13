@@ -28,7 +28,7 @@ func StartMessageHub(checkIdempotenceTokenFunc func(token string) bool) cache_se
 func MessageWs(c *gin.Context) {
 	conn, err := upgrade.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		global.Log.Error("创建消息连接失败", err)
+		global.Log.Error(c, "创建消息连接失败", err)
 		return
 	}
 
