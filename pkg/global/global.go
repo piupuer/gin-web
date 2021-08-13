@@ -1,7 +1,6 @@
 package global
 
 import (
-	"context"
 	"errors"
 	"gin-web/pkg/oss"
 	"github.com/casbin/casbin/v2"
@@ -102,10 +101,12 @@ func GetTx(c *gin.Context) *gorm.DB {
 }
 
 // 获取携带request id的上下文
-func RequestIdContext(requestId string) context.Context {
+func RequestIdContext(requestId string) *gin.Context {
 	if requestId == "" {
 		uuid4 := uuid.NewV4()
 		requestId = uuid4.String()
 	}
-	return context.WithValue(context.Background(), RequestIdContextKey, requestId)
+	ctx := gin.Context{}
+	ctx.Set(RequestIdContextKey, requestId)
+	return &ctx
 }

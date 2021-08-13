@@ -2,10 +2,10 @@ package initialize
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/packr/v2"
 	"github.com/spf13/viper"
 	"os"
@@ -23,10 +23,10 @@ const (
 	defaultConnectTimeout = 5
 )
 
-var ctx context.Context // 生成启动时request id
+var ctx *gin.Context // 生成启动时request id
 
 // 初始化配置文件
-func Config(c context.Context) {
+func Config(c *gin.Context) {
 	ctx = c
 	// 初始化配置盒子
 	var box global.CustomConfBox

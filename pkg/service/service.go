@@ -23,14 +23,14 @@ type MysqlService struct {
 
 // 初始化服务
 func New(c *gin.Context) MysqlService {
-	// 获取事务对象
-	tx := global.GetTx(c)
+	nc:= gin.Context{}
+	if c != nil {
+		nc = *c
+	}
 	s := MysqlService{
-		ctx: c,
+		ctx: &nc,
 	}
-	if s.ctx == nil {
-		s.ctx = &gin.Context{}
-	}
+	tx := global.GetTx(&nc)
 	rc := s.RequestIdContext("")
 	s.tx = tx.WithContext(rc)
 	s.db = global.Mysql.WithContext(rc)

@@ -20,19 +20,18 @@ type RedisService struct {
 
 // 初始化服务
 func New(c *gin.Context) RedisService {
+	nc := gin.Context{}
+	if c != nil {
+		nc = *c
+	}
 	s := RedisService{
-		ctx: c,
+		ctx: &nc,
 	}
 	rc := s.RequestIdContext("")
-	if s.ctx == nil {
-		s.ctx = &gin.Context{}
-	}
 	s.ctx.Set(global.RequestIdContextKey, rc.Value(global.RequestIdContextKey))
-	return RedisService{
-		ctx:   s.ctx,
-		mysql: service.New(s.ctx),
-		redis: redis.New(s.ctx),
-	}
+	s.mysql = service.New(s.ctx)
+	s.redis = redis.New(s.ctx)
+	return s
 }
 
 // 获取携带request id的上下文

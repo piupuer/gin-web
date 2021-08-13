@@ -34,12 +34,13 @@ type QueryRedis struct {
 }
 
 // 初始化服务
-func New(ctx *gin.Context) *QueryRedis {
-	if ctx == nil {
-		ctx = &gin.Context{}
+func New(c *gin.Context) *QueryRedis {
+	nc:= gin.Context{}
+	if c != nil {
+		nc = *c
 	}
 	return &QueryRedis{
-		ctx:   ctx,
+		ctx:   &nc,
 		redis: global.Redis,
 		// 初始化时应该为1, 链式操作时才能clone
 		clone: 1,

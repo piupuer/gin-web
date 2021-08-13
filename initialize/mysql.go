@@ -38,7 +38,7 @@ func Mysql() {
 	)
 	global.Log.Info(ctx, "数据库连接DSN: %s", showDsn)
 	init := false
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
 	go func() {
 		for {
