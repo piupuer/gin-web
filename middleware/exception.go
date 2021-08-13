@@ -16,9 +16,10 @@ func Exception(c *gin.Context) {
 			global.Log.Error(c, "[Exception]未知异常: %v\n堆栈信息: %v", err, string(debug.Stack()))
 			// 服务器异常
 			resp := response.Resp{
-				Code: response.InternalServerError,
-				Data: map[string]interface{}{},
-				Msg:  response.CustomError[response.InternalServerError],
+				Code:      response.InternalServerError,
+				Data:      map[string]interface{}{},
+				Msg:       response.CustomError[response.InternalServerError],
+				RequestId: c.GetString(global.RequestIdContextKey),
 			}
 			// 以json方式写入响应
 			response.JSON(c, http.StatusOK, resp)
