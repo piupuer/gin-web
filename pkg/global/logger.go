@@ -10,23 +10,9 @@ import (
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/utils"
 	"reflect"
+	"strings"
 	"time"
 )
-
-/**
- * 初始化日志
- * filename 日志文件路径
- * level 日志级别
- * maxSize 每个日志文件保存的最大尺寸 单位：M
- * maxBackups 日志文件最多保存多少个备份
- * maxAge 文件最多保存多少天
- * compress 是否压缩
- * serviceName 服务名
- * 由于zap不具备日志切割功能, 这里使用lumberjack配合
- */
-func InitLogger() {
-
-}
 
 // zap日志自定义本地时间格式
 func ZapLogLocalTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
@@ -50,10 +36,10 @@ func NewGormZapLogger(zapLogger *zap.Logger, config logger.Config) *GormZapLogge
 	)
 
 	if config.Colorful {
-		normalStr = "%v" + logger.Green + "%s " + logger.Reset
-		traceStr = "%v" + logger.Green + "%s\n" + logger.Reset + logger.Yellow + "[%.3fms] " + logger.BlueBold + "[rows:%v]" + logger.Reset + " %s"
-		traceWarnStr = "%v" + logger.Green + "%s " + logger.Yellow + "%s\n" + logger.Reset + logger.RedBold + "[%.3fms] " + logger.Yellow + "[rows:%v]" + logger.Magenta + " %s" + logger.Reset
-		traceErrStr = "%v" + logger.RedBold + "%s " + logger.MagentaBold + "%s\n" + logger.Reset + logger.Yellow + "[%.3fms] " + logger.BlueBold + "[rows:%v]" + logger.Reset + " %s"
+		normalStr = logger.Cyan + "%v" + logger.Blue + "%s " + logger.Reset
+		traceStr = logger.Cyan + "%v" + logger.Blue + "%s\n" + logger.Reset + logger.Yellow + "[%.3fms] " + logger.BlueBold + "[rows:%v]" + logger.Reset + " %s"
+		traceWarnStr = logger.Cyan + "%v" + logger.Blue + "%s " + logger.Yellow + "%s\n" + logger.Reset + logger.RedBold + "[%.3fms] " + logger.Yellow + "[rows:%v]" + logger.Magenta + " %s" + logger.Reset
+		traceErrStr = logger.Cyan + "%v" + logger.RedBold + "%s " + logger.MagentaBold + "%s\n" + logger.Reset + logger.Yellow + "[%.3fms] " + logger.BlueBold + "[rows:%v]" + logger.Reset + " %s"
 	}
 
 	l := &GormZapLogger{
@@ -79,7 +65,7 @@ func (l *GormZapLogger) LogMode(level logger.LogLevel) logger.Interface {
 func (l GormZapLogger) Debug(ctx context.Context, format string, args ...interface{}) {
 	if l.log.Core().Enabled(zapcore.DebugLevel) {
 		requestId := getRequestId(ctx)
-		l.log.Sugar().Debugf(l.normalStr+format, append([]interface{}{requestId, utils.FileWithLineNum()}, args...)...)
+		l.log.Sugar().Debugf(l.normalStr+format, append([]interface{}{requestId, removePrefix(utils.FileWithLineNum())}, args...)...)
 	}
 }
 
@@ -87,7 +73,7 @@ func (l GormZapLogger) Debug(ctx context.Context, format string, args ...interfa
 func (l GormZapLogger) Info(ctx context.Context, format string, args ...interface{}) {
 	if l.log.Core().Enabled(zapcore.InfoLevel) {
 		requestId := getRequestId(ctx)
-		l.log.Sugar().Infof(l.normalStr+format, append([]interface{}{requestId, utils.FileWithLineNum()}, args...)...)
+		l.log.Sugar().Infof(l.normalStr+format, append([]interface{}{requestId, removePrefix(utils.FileWithLineNum())}, args...)...)
 	}
 }
 
@@ -95,7 +81,7 @@ func (l GormZapLogger) Info(ctx context.Context, format string, args ...interfac
 func (l GormZapLogger) Warn(ctx context.Context, format string, args ...interface{}) {
 	if l.log.Core().Enabled(zapcore.WarnLevel) {
 		requestId := getRequestId(ctx)
-		l.log.Sugar().Warnf(l.normalStr+format, append([]interface{}{requestId, utils.FileWithLineNum()}, args...)...)
+		l.log.Sugar().Warnf(l.normalStr+format, append([]interface{}{requestId, removePrefix(utils.FileWithLineNum())}, args...)...)
 	}
 }
 
@@ -103,7 +89,7 @@ func (l GormZapLogger) Warn(ctx context.Context, format string, args ...interfac
 func (l GormZapLogger) Error(ctx context.Context, format string, args ...interface{}) {
 	if l.log.Core().Enabled(zapcore.ErrorLevel) {
 		requestId := getRequestId(ctx)
-		l.log.Sugar().Errorf(l.normalStr+format, append([]interface{}{requestId, utils.FileWithLineNum()}, args...)...)
+		l.log.Sugar().Errorf(l.normalStr+format, append([]interface{}{requestId, removePrefix(utils.FileWithLineNum())}, args...)...)
 	}
 }
 
@@ -112,7 +98,7 @@ func (l GormZapLogger) Trace(ctx context.Context, begin time.Time, fc func() (st
 	if !l.log.Core().Enabled(zapcore.DPanicLevel) || l.LogLevel <= logger.Silent {
 		return
 	}
-	lineNum := utils.FileWithLineNum()
+	lineNum := removePrefix(utils.FileWithLineNum())
 	elapsed := time.Since(begin)
 	elapsedF := float64(elapsed.Nanoseconds()) / 1e6
 	sql, rows := fc()
@@ -147,4 +133,9 @@ func getRequestId(ctx context.Context) string {
 		requestId = fmt.Sprintf("%v ", v)
 	}
 	return requestId
+}
+
+func removePrefix(s string) string {
+	s = strings.TrimPrefix(s, RuntimeRoot)
+	return s
 }

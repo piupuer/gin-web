@@ -36,6 +36,8 @@ var (
 	Validate *validator.Validate
 	// validation.v9相关翻译器
 	Translator ut.Translator
+	// 运行时根目录
+	RuntimeRoot string
 )
 
 // 自定义配置盒子

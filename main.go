@@ -6,6 +6,9 @@ import (
 	"gin-web/initialize"
 	"gin-web/pkg/global"
 	"net/http"
+	"runtime"
+	"strings"
+
 	// 加入pprof性能分析
 	_ "net/http/pprof"
 	"os"
@@ -24,6 +27,10 @@ func main() {
 			global.Log.Error(ctx, "项目启动失败: %v\n堆栈信息: %v", err, string(debug.Stack()))
 		}
 	}()
+
+	// get runtime root
+	_, file, _, _ := runtime.Caller(0)
+	global.RuntimeRoot = strings.TrimSuffix(file, "main.go")
 
 	// 初始化配置
 	initialize.Config(ctx)
