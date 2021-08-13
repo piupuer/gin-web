@@ -61,11 +61,14 @@ func Config(c *gin.Context) {
 	// 读取当前go运行环境变量
 	env := strings.ToLower(os.Getenv("GIN_WEB_MODE"))
 	configName := ""
-	if env == "staging" {
+	if env == global.Stage {
 		configName = stagingConfig
-	} else if env == "production" {
+	} else if env == global.Prod {
 		configName = productionConfig
+	} else {
+		env = global.Dev
 	}
+	global.Mode = env
 	if configName != "" {
 		// 读取不同环境中的差异部分
 		readConfig(v, configName)

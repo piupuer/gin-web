@@ -29,8 +29,21 @@ func Logger() {
 
 	// 时间格式
 	enConfig.EncodeTime = global.ZapLogLocalTimeEncoder
-	// level字母大写
-	enConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+
+	colorful := false
+	if global.Conf.Logs.Level <= zapcore.DebugLevel {
+		colorful = true
+	}
+	if global.Mode == global.Prod {
+		colorful = false
+	}
+	if colorful {
+		// level字母大写+颜色
+		enConfig.EncodeLevel = zapcore.CapitalColorLevelEncoder
+	} else {
+		// level字母大写
+		enConfig.EncodeLevel = zapcore.CapitalLevelEncoder
+	}
 
 	core := zapcore.NewCore(
 		zapcore.NewConsoleEncoder(enConfig),                                            // 编码器配置
@@ -39,10 +52,6 @@ func Logger() {
 	)
 
 	l := zap.New(core)
-	colorful := false
-	if global.Conf.Logs.Level <= zapcore.DebugLevel {
-		colorful = true
-	}
 	global.Log = global.NewGormZapLogger(l, logger.Config{
 		Colorful: colorful,
 	})

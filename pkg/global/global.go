@@ -17,6 +17,8 @@ import (
 )
 
 var (
+	// 当前模式
+	Mode string
 	// 系统配置
 	Conf Configuration
 	// packr盒子用于打包配置文件到golang编译后的二进制程序中

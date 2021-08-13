@@ -23,8 +23,12 @@ var ctx = global.RequestIdContext("") // 生成启动时request id
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			// 将异常写入日志
-			global.Log.Error(ctx, "项目启动失败: %v\n堆栈信息: %v", err, string(debug.Stack()))
+			if global.Log != nil {
+				// 将异常写入日志
+				global.Log.Error(ctx, "项目启动失败: %v\n堆栈信息: %v", err, string(debug.Stack()))
+			} else {
+				fmt.Printf("项目启动失败: %v\n堆栈信息: %v\n", err, string(debug.Stack()))
+			}
 		}
 	}()
 
