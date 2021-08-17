@@ -11,11 +11,11 @@ import (
 // 初始化redis数据库
 func Redis() {
 	if !global.Conf.System.UseRedis {
-		global.Log.Info("未使用redis, 无需初始化")
+		global.Log.Info(ctx, "未使用redis, 无需初始化")
 		return
 	}
 	init := false
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
 	go func() {
 		for {
@@ -56,5 +56,5 @@ func Redis() {
 	}
 
 	init = true
-	global.Log.Info("初始化redis完成")
+	global.Log.Info(ctx, "初始化redis完成")
 }

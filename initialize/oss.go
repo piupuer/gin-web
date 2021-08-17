@@ -19,7 +19,7 @@ func Oss() {
 // 初始化minio对象存储
 func Minio() {
 	if !global.Conf.Upload.Minio.Enable {
-		global.Log.Info("未开启minio, 无需初始化")
+		global.Log.Info(ctx, "未开启minio, 无需初始化")
 		return
 	}
 	init := false
@@ -38,6 +38,7 @@ func Minio() {
 		}
 	}()
 	minio := oss.GetMinio(
+		global.Log,
 		global.Conf.Upload.Minio.Endpoint,
 		global.Conf.Upload.Minio.AccessId,
 		global.Conf.Upload.Minio.Secret,
@@ -45,8 +46,8 @@ func Minio() {
 	)
 
 	// 初始化一个默认存储桶
-	minio.MakeBucket(global.Conf.Upload.Minio.Bucket)
+	minio.MakeBucket(ctx, global.Conf.Upload.Minio.Bucket)
 	init = true
 	global.Minio = minio
-	global.Log.Info("初始化对象存储: minio完成")
+	global.Log.Info(ctx, "初始化对象存储: minio完成")
 }

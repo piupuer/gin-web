@@ -10,7 +10,7 @@ import (
 
 func TestQueryRedis_Count(t *testing.T) {
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var count int64
 	var u models.SysUser
 	tableName := u.TableName()
@@ -22,7 +22,7 @@ func TestQueryRedis_Count(t *testing.T) {
 
 func TestQueryRedis_Table(t *testing.T) {
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var u models.SysUser
 	tableName := u.TableName()
 	var count int64
@@ -35,7 +35,7 @@ func TestQueryRedis_Table(t *testing.T) {
 
 func TestQueryRedis_Find(t *testing.T) {
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var u models.SysUser
 	var us []models.SysUser
 	tableName := u.TableName()
@@ -48,7 +48,7 @@ func TestQueryRedis_Find(t *testing.T) {
 
 func TestQueryRedis_First(t *testing.T) {
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var u models.SysUser
 	var us models.SysUser
 	tableName := u.TableName()
@@ -62,7 +62,7 @@ func TestQueryRedis_First(t *testing.T) {
 func TestQueryRedis_Preload(t *testing.T) {
 	// 测试preload belongsTo关联
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var u models.SysUser
 	var us []models.SysUser
 	tableName := u.TableName()
@@ -76,7 +76,7 @@ func TestQueryRedis_Preload(t *testing.T) {
 func TestQueryRedis_Preload1(t *testing.T) {
 	// 测试preload hasMany关联
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var u models.SysRole
 	var us []models.SysRole
 	tableName := u.TableName()
@@ -90,7 +90,7 @@ func TestQueryRedis_Preload1(t *testing.T) {
 func TestQueryRedis_Preload2(t *testing.T) {
 	// 测试preload 多个字段
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var u models.SysUser
 	var us []models.SysUser
 	tableName := u.TableName()
@@ -104,7 +104,7 @@ func TestQueryRedis_Preload2(t *testing.T) {
 func TestQueryRedis_Preload3(t *testing.T) {
 	// 测试preload many2many关联
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var u models.SysRole
 	var us models.SysRole
 	tableName := u.TableName()
@@ -118,7 +118,7 @@ func TestQueryRedis_Preload3(t *testing.T) {
 func TestQueryRedis_Multi(t *testing.T) {
 	// 测试多次查询
 	tests.InitTestEnv()
-	query := New()
+	query := New(nil)
 	var us []models.SysUser
 	var us2 []models.SysUser
 	var us3 []models.SysUser

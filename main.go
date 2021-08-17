@@ -6,6 +6,9 @@ import (
 	"gin-web/initialize"
 	"gin-web/pkg/global"
 	"net/http"
+	"runtime"
+	"strings"
+
 	// 加入pprof性能分析
 	_ "net/http/pprof"
 	"os"
@@ -15,16 +18,26 @@ import (
 	"time"
 )
 
+var ctx = global.RequestIdContext("") // 生成启动时request id
+
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			// 将异常写入日志
-			global.Log.Error(fmt.Sprintf("项目启动失败: %v\n堆栈信息: %v", err, string(debug.Stack())))
+			if global.Log != nil {
+				// 将异常写入日志
+				global.Log.Error(ctx, "项目启动失败: %v\n堆栈信息: %v", err, string(debug.Stack()))
+			} else {
+				fmt.Printf("项目启动失败: %v\n堆栈信息: %v\n", err, string(debug.Stack()))
+			}
 		}
 	}()
 
+	// get runtime root
+	_, file, _, _ := runtime.Caller(0)
+	global.RuntimeRoot = strings.TrimSuffix(file, "main.go")
+
 	// 初始化配置
-	initialize.Config()
+	initialize.Config(ctx)
 
 	// 初始化日志
 	initialize.Logger()
@@ -66,9 +79,9 @@ func main() {
 
 	go func() {
 		// 加入pprof性能分析
-		global.Log.Info("Debug pprof is running at ", fmt.Sprintf("%s:%d", host, global.Conf.System.PprofPort))
+		global.Log.Info(ctx, "Debug pprof is running at %s:%d", host, global.Conf.System.PprofPort)
 		if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, global.Conf.System.PprofPort), nil); err != nil {
-			global.Log.Error("listen pprof error: ", err)
+			global.Log.Error(ctx, "listen pprof error: %v", err)
 		}
 	}()
 
@@ -76,11 +89,11 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			global.Log.Error("listen error: ", err)
+			global.Log.Error(ctx, "listen error: %v", err)
 		}
 	}()
 
-	global.Log.Info(fmt.Sprintf("Server is running at %s:%d/%s", host, port, global.Conf.System.UrlPathPrefix))
+	global.Log.Info(ctx, "Server is running at %s:%d/%s", host, port, global.Conf.System.UrlPathPrefix)
 
 	// Wait for interrupt signal to gracefully shutdown the server with
 	// a timeout of 5 seconds.
@@ -90,15 +103,15 @@ func main() {
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	global.Log.Info("Shutting down server...")
+	global.Log.Info(ctx, "Shutting down server...")
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		global.Log.Error("Server forced to shutdown: ", err)
+		global.Log.Error(ctx, "Server forced to shutdown: %v", err)
 	}
 
-	global.Log.Info("Server exiting")
+	global.Log.Info(ctx, "Server exiting")
 }

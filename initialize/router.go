@@ -17,8 +17,16 @@ func Routers() *gin.Engine {
 	// 创建不带中间件的路由:
 	r := gin.New()
 
+	// 替换gin默认的路由打印
+	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
+		global.Log.Debug(ctx, "[gin-route] %-6s %-40s --> %s (%d handlers)", httpMethod, absolutePath, handlerName, nuHandlers)
+	}
 	// 添加速率访问中间件
-	r.Use(middleware.RateLimiter())
+	r.Use(middleware.RateLimiter(ctx))
+	// 添加跨域中间件, 让请求支持跨域
+	r.Use(middleware.Cors)
+	// 添加request id中间件
+	r.Use(middleware.RequestId)
 	// 添加访问记录
 	r.Use(middleware.AccessLog)
 	// 添加操作日志
@@ -27,9 +35,6 @@ func Routers() *gin.Engine {
 	r.Use(middleware.Exception)
 	// 添加全局事务处理中间件
 	r.Use(middleware.Transaction)
-	// 添加跨域中间件, 让请求支持跨域
-	r.Use(middleware.Cors())
-	global.Log.Info("请求已支持跨域")
 
 	// 初始化jwt auth中间件
 	authMiddleware, err := middleware.InitAuth()
@@ -37,7 +42,7 @@ func Routers() *gin.Engine {
 	if err != nil {
 		panic(fmt.Sprintf("初始化jwt auth中间件失败: %v", err))
 	}
-	global.Log.Info("初始化jwt auth中间件完成")
+	global.Log.Info(ctx, "初始化jwt auth中间件完成")
 
 	apiGroup := r.Group(global.Conf.System.UrlPathPrefix)
 	// ping
@@ -59,6 +64,6 @@ func Routers() *gin.Engine {
 	router.InitMachineRouter(v1Group, authMiddleware)      // 注册机器路由
 	router.InitDictRouter(v1Group, authMiddleware)         // 注册数据字典路由
 
-	global.Log.Info("初始化路由完成")
+	global.Log.Info(ctx, "初始化路由完成")
 	return r
 }

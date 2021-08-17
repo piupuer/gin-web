@@ -100,7 +100,7 @@ func authorizator(data interface{}, c *gin.Context) bool {
 }
 
 func unauthorized(c *gin.Context, code int, message string) {
-	global.Log.Debug(fmt.Sprintf("JWT认证失败, 错误码%d, 错误信息%s", code, message))
+	global.Log.Debug(c, "JWT认证失败, 错误码%d, 错误信息%s", code, message)
 	if message == response.LoginCheckErrorMsg || message == response.ForbiddenMsg || message == response.UserDisabledMsg {
 		response.FailWithMsg(message)
 		return

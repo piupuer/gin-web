@@ -39,6 +39,7 @@ type SystemConfiguration struct {
 
 type LogsConfiguration struct {
 	Level      zapcore.Level `mapstructure:"level" json:"level"`
+	NoSql      bool          `mapstructure:"no-sql" json:"noSql"`
 	Path       string        `mapstructure:"path" json:"path"`
 	MaxSize    int           `mapstructure:"max-size" json:"maxSize"`
 	MaxBackups int           `mapstructure:"max-backups" json:"maxBackups"`
@@ -53,7 +54,6 @@ type MysqlConfiguration struct {
 	Host        string `mapstructure:"host" json:"host"`
 	Port        int    `mapstructure:"port" json:"port"`
 	Query       string `mapstructure:"query" json:"query"`
-	LogMode     bool   `mapstructure:"log-mode" json:"logMode"`
 	TablePrefix string `mapstructure:"table-prefix" json:"tablePrefix"`
 	Charset     string `mapstructure:"charset" json:"charset"`
 	Collation   string `mapstructure:"collation" json:"collation"`

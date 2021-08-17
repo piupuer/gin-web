@@ -22,7 +22,7 @@ func Mysql() {
 		global.Conf.Mysql.Collation,
 		global.Conf.Mysql.Query,
 	)
-	global.Log.Debug("[单元测试]数据库连接DSN: ", dsn)
+	global.Log.Debug(ctx, "[单元测试]数据库连接DSN: %v", dsn)
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -37,7 +37,7 @@ func Mysql() {
 	global.Mysql = db
 	// 表结构
 	autoMigrate()
-	global.Log.Debug("[单元测试]初始化mysql完成")
+	global.Log.Debug(ctx, "[单元测试]初始化mysql完成")
 }
 
 // 自动迁移表结构

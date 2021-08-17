@@ -1,6 +1,7 @@
 package initialize
 
 import (
+	"context"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
@@ -20,7 +21,7 @@ import (
 // 使用siddontang/go-mysql监听mysql binlog
 func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
-		global.Log.Info("未使用redis或未开启binlog, 无需初始化mysql binlog监听器")
+		global.Log.Info(ctx, "未使用redis或未开启binlog, 无需初始化mysql binlog监听器")
 		return
 	}
 	l := len(tableModels)
@@ -35,7 +36,8 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	}
 	// 监听器配置
 	cfg := canal.NewDefaultConfig()
-	cfg.Addr = fmt.Sprintf(fmt.Sprintf("%s:%d", global.Conf.Mysql.Host, global.Conf.Mysql.Port))
+	
+	cfg.Addr = fmt.Sprintf("%s:%d", global.Conf.Mysql.Host, global.Conf.Mysql.Port)
 	cfg.User = global.Conf.Mysql.Username
 	cfg.Password = global.Conf.Mysql.Password
 	// 数据库类型mysql/mariadb
@@ -52,12 +54,13 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	// 创建canal实例
 	c, err := canal.NewCanal(cfg)
 	if err != nil {
-		global.Log.Infof("初始化mysql binlog监听器失败: ", err)
+		global.Log.Info(ctx, "初始化mysql binlog监听器失败: %v", err)
 	}
 	// 添加忽略表
 	c.AddDumpIgnoreTables(cfg.Dump.TableDB, ignoreTables...)
 	// 设置事件处理器
 	c.SetEventHandler(&BinlogEventHandler{
+		ctx:          global.RequestIdContext(""),
 		IgnoreTables: ignoreTables,
 	})
 	// 刷新数据
@@ -65,11 +68,12 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	// 从最后一个位置开始运行
 	pos, _ := c.GetMasterPos()
 	go c.RunFrom(pos)
-	global.Log.Info("初始化mysql binlog监听器完成")
+	global.Log.Info(ctx, "初始化mysql binlog监听器完成")
 }
 
 // 自定义事件处理器
 type BinlogEventHandler struct {
+	ctx context.Context
 	canal.DummyEventHandler
 	IgnoreTables []string
 }
@@ -187,13 +191,13 @@ func (s *BinlogEventHandler) OnRow(e *canal.RowsEvent) error {
 	defer func() {
 		if err := recover(); err != nil {
 			// 将异常写入日志
-			global.Log.Error(fmt.Sprintf("[OnRow]未知异常: %v\n堆栈信息: %v", err, string(debug.Stack())))
+			global.Log.Error(s.ctx, "[OnRow]未知异常: %v\n堆栈信息: %v", err, string(debug.Stack()))
 			return
 		}
 	}()
-	global.Log.Debug(fmt.Sprintf("行变化: %s %v", e.Action, e.Rows))
+	global.Log.Debug(s.ctx, "行变化: %s %v", e.Action, e.Rows)
 	// 同步数据到redis
-	redis.RowChange(e)
+	redis.RowChange(s.ctx, e)
 	return nil
 }
 
@@ -210,7 +214,7 @@ func (s *BinlogEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replicati
 			// 将数据转为json字符串写入redis, expiration=0永不过期
 			err := global.Redis.Del(cacheKey).Err()
 			if err != nil {
-				global.Log.Errorf("删除表%s, 同步binlog增量数据到redis失败: %v", table, err)
+				global.Log.Error(s.ctx, "删除表%s, 同步binlog增量数据到redis失败: %v", table, err)
 			}
 		}
 	}
@@ -228,7 +232,7 @@ func (s *BinlogEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replicati
 			// 将数据转为json字符串写入redis, expiration=0永不过期
 			err := global.Redis.Del(cacheKey).Err()
 			if err != nil {
-				global.Log.Errorf("清空表%s, 同步binlog增量数据到redis失败: %v", table, err)
+				global.Log.Error(s.ctx, "清空表%s, 同步binlog增量数据到redis失败: %v", table, err)
 			}
 		}
 	}
@@ -241,12 +245,12 @@ func (s *BinlogEventHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, 
 	defer func() {
 		if err := recover(); err != nil {
 			// 将异常写入日志
-			global.Log.Error(fmt.Sprintf("[OnPosSynced]未知异常: %v\n堆栈信息: %v", err, string(debug.Stack())))
+			global.Log.Error(s.ctx, "[OnPosSynced]未知异常: %v\n堆栈信息: %v", err, string(debug.Stack()))
 			return
 		}
 	}()
-	global.Log.Debug(fmt.Sprintf("日志位置变化: %s %v %t", pos, set, force))
-	redis.PosChange(pos)
+	global.Log.Debug(s.ctx, "日志位置变化: %s %v %t", pos, set, force)
+	redis.PosChange(s.ctx, pos)
 	return nil
 }
 

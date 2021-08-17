@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/gobuffalo/packr/v2"
 	"github.com/spf13/viper"
 	"os"
@@ -22,8 +23,11 @@ const (
 	defaultConnectTimeout = 5
 )
 
+var ctx *gin.Context // 生成启动时request id
+
 // 初始化配置文件
-func Config() {
+func Config(c *gin.Context) {
+	ctx = c
 	// 初始化配置盒子
 	var box global.CustomConfBox
 	ginWebConf := strings.ToLower(os.Getenv("GIN_WEB_CONF"))
@@ -57,11 +61,14 @@ func Config() {
 	// 读取当前go运行环境变量
 	env := strings.ToLower(os.Getenv("GIN_WEB_MODE"))
 	configName := ""
-	if env == "staging" {
+	if env == global.Stage {
 		configName = stagingConfig
-	} else if env == "production" {
+	} else if env == global.Prod {
 		configName = productionConfig
+	} else {
+		env = global.Dev
 	}
+	global.Mode = env
 	if configName != "" {
 		// 读取不同环境中的差异部分
 		readConfig(v, configName)

@@ -9,7 +9,7 @@ import (
 // 可以根据项目实际需要动态设定, 这里用到了3个字段 角色关键字/资源名称/请求类型
 type SysCasbin struct {
 	Id    uint   `gorm:"primaryKey;autoIncrement"`
-	PType string `gorm:"size:100;index:idx_casbin_unique;comment:'策略类型'"`
+	PType string `gorm:"column:ptype;size:100;index:idx_casbin_unique;comment:'策略类型'"`
 	V0    string `gorm:"size:100;index:idx_casbin_unique;comment:'角色关键字'"`
 	V1    string `gorm:"size:100;index:idx_casbin_unique;comment:'资源名称'"`
 	V2    string `gorm:"size:100;index:idx_casbin_unique;comment:'请求类型'"`

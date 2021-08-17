@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -35,25 +34,23 @@ func AccessLog(c *gin.Context) {
 
 	if reqMethod == "OPTIONS" {
 		global.Log.Info(
-			fmt.Sprintf(
-				"%s %s %d %s %s",
-				reqMethod,
-				reqUri,
-				statusCode,
-				execTime.String(),
-				clientIP,
-			),
+			c,
+			"%s %s %d %s %s",
+			reqMethod,
+			reqUri,
+			statusCode,
+			execTime.String(),
+			clientIP,
 		)
 	} else {
 		global.Log.Info(
-			fmt.Sprintf(
-				"%s %s %d %s %s",
-				reqMethod,
-				reqUri,
-				statusCode,
-				execTime.String(),
-				clientIP,
-			),
+			c,
+			"%s %s %d %s %s",
+			reqMethod,
+			reqUri,
+			statusCode,
+			execTime.String(),
+			clientIP,
 		)
 	}
 }

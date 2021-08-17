@@ -26,9 +26,11 @@ func StartMessageHub(checkIdempotenceTokenFunc func(token string) bool) cache_se
 
 // 启动消息连接
 func MessageWs(c *gin.Context) {
-	conn, err := upgrade.Upgrade(c.Writer, c.Request, nil)
+	h := make(http.Header)
+	h.Add(global.RequestIdHeader, c.GetString(global.RequestIdContextKey))
+	conn, err := upgrade.Upgrade(c.Writer, c.Request, h)
 	if err != nil {
-		global.Log.Error("创建消息连接失败", err)
+		global.Log.Error(c, "创建消息连接失败", err)
 		return
 	}
 

@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"context"
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 	"github.com/ulule/limiter/v3"
@@ -9,7 +10,7 @@ import (
 	"time"
 )
 
-func RateLimiter() gin.HandlerFunc {
+func RateLimiter(ctx context.Context) gin.HandlerFunc {
 	// 创建速率配置
 	rate := limiter.Rate{
 		Period: time.Second,
@@ -21,7 +22,7 @@ func RateLimiter() gin.HandlerFunc {
 	// 创建速率实例, 必须是真实的请求
 	instance := limiter.New(store, rate, limiter.WithTrustForwardHeader(true))
 
-	global.Log.Infof("初始化速率限制中间件完成")
+	global.Log.Info(ctx,"初始化速率限制中间件完成")
 
 	// 生成gin中间件
 	return mgin.NewMiddleware(instance)

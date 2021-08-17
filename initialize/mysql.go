@@ -7,6 +7,7 @@ import (
 	"gin-web/pkg/global"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 	"time"
 )
@@ -35,9 +36,9 @@ func Mysql() {
 		global.Conf.Mysql.Collation,
 		global.Conf.Mysql.Query,
 	)
-	global.Log.Info("数据库连接DSN: ", showDsn)
+	global.Log.Info(ctx, "数据库连接DSN: %s", showDsn)
 	init := false
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
 	go func() {
 		for {
@@ -51,6 +52,13 @@ func Mysql() {
 			}
 		}
 	}()
+	// 不显示sql语句
+	var l logger.Interface
+	if global.Conf.Logs.NoSql {
+		l = global.Log.LogMode(logger.Silent)
+	} else {
+		l = global.Log
+	}
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -60,26 +68,23 @@ func Mysql() {
 		},
 		// 查询全部字段, 某些情况下*不走索引
 		QueryFields: true,
+		Logger:      l,
 	})
 	if err != nil {
 		panic(fmt.Sprintf("初始化mysql异常: %v", err))
 	}
 	init = true
-	// 开启mysql日志
-	if global.Conf.Mysql.LogMode {
-		db = db.Debug()
-	}
 	global.Mysql = db
 	// 表结构
 	autoMigrate()
-	global.Log.Info("初始化mysql完成")
+	global.Log.Info(ctx, "初始化mysql完成")
 	// 初始化数据库日志监听器
 	binlog()
 }
 
 // 自动迁移表结构
 func autoMigrate() {
-	global.Mysql.AutoMigrate(
+	global.Mysql.WithContext(ctx).AutoMigrate(
 		new(models.SysUser),
 		new(models.SysRole),
 		new(models.SysMenu),

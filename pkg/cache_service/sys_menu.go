@@ -54,7 +54,7 @@ func (s *RedisService) getRoleMenus(roleId uint) []models.SysMenu {
 		Where("id", "=", roleId).
 		First(&role).Error
 	if err != nil {
-		global.Log.Warn("[getRoleMenu]", err)
+		global.Log.Warn(s.ctx, "[getRoleMenu]", err)
 	}
 	return role.Menus
 }
@@ -92,7 +92,7 @@ func (s *RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	}
 
 	if err != nil {
-		global.Log.Warn("[getAllMenu]", err)
+		global.Log.Warn(s.ctx, "[getAllMenu]", err)
 	}
 	return menus
 }
