@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"fmt"
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 	"time"
@@ -32,8 +33,8 @@ func AccessLog(c *gin.Context) {
 	// 请求IP
 	clientIP := c.ClientIP()
 
-	if reqMethod == "OPTIONS" {
-		global.Log.Info(
+	if reqMethod == "OPTIONS" || reqUri == fmt.Sprintf("/%s/ping", global.Conf.System.UrlPathPrefix) {
+		global.Log.Debug(
 			c,
 			"%s %s %d %s %s",
 			reqMethod,
