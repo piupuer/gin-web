@@ -17,6 +17,8 @@ const (
 	productionConfig  = "config.prod.yml"
 )
 
+var ctx = global.RequestIdContext("") // 生成启动时request id
+
 // 初始化配置文件
 func Config() {
 	if os.Getenv("TEST_CONF") == "" {

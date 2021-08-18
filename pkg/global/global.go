@@ -7,8 +7,8 @@ import (
 	ut "github.com/go-playground/universal-translator"
 	"github.com/go-redis/redis"
 	"github.com/gobuffalo/packr/v2"
+	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
-	"go.uber.org/zap"
 	"gopkg.in/go-playground/validator.v9"
 	"gorm.io/gorm"
 	"io/ioutil"
@@ -16,12 +16,14 @@ import (
 )
 
 var (
+	// 当前模式
+	Mode string
 	// 系统配置
 	Conf Configuration
 	// packr盒子用于打包配置文件到golang编译后的二进制程序中
 	ConfBox *CustomConfBox
 	// zap日志
-	Log *zap.SugaredLogger
+	Log *GormZapLogger
 	// mysql实例
 	Mysql *gorm.DB
 	// redis实例
@@ -32,6 +34,8 @@ var (
 	Validate *validator.Validate
 	// validation.v9相关翻译器
 	Translator ut.Translator
+	// 运行时根目录
+	RuntimeRoot string
 )
 
 // 自定义配置盒子
@@ -93,4 +97,15 @@ func GetTx(c *gin.Context) *gorm.DB {
 		}
 	}
 	return tx
+}
+
+// 获取携带request id的上下文
+func RequestIdContext(requestId string) *gin.Context {
+	if requestId == "" {
+		uuid4 := uuid.NewV4()
+		requestId = uuid4.String()
+	}
+	ctx := gin.Context{}
+	ctx.Set(RequestIdContextKey, requestId)
+	return &ctx
 }

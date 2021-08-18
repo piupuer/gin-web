@@ -32,6 +32,8 @@ system:
 logs:
   # 日志等级(-1:Debug, 0:Info, -1<=level<=5, 参照zap.level源码)
   level: -1
+  # 隐藏sql相关的日志(=true时, 即便是level=-1仍然不会显示sql)
+  no-sql: true
   # 日志路径
   path: logs
   # 文件最大大小, M
@@ -56,8 +58,6 @@ mysql:
   port: 3306
   # 连接字符串查询参数
   query: parseTime=True&loc=Local&timeout=10000ms
-  # 是否打印日志
-  log-mode: true
   # 数据库表前缀(无需再末尾添加下划线, 程序内部自动处理)
   table-prefix: tb
   # 编码方式

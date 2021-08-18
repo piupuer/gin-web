@@ -32,7 +32,7 @@ func UploadUnZip(c *gin.Context) {
 	// 解压文件到当前目录
 	unzipFiles, err := utils.UnZip(fullName, baseDir)
 	if err != nil {
-		global.Log.Error(fmt.Sprintf("无法解压文件: %v", err))
+		global.Log.Error(c, "无法解压文件: %v", err)
 		response.FailWithMsg("无法解压文件")
 		return
 	}

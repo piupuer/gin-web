@@ -30,6 +30,7 @@ func Transaction(c *gin.Context) {
 						tx.Rollback()
 					}
 				}
+				resp.RequestId = c.GetString(global.RequestIdContextKey)
 				// 以json方式写入响应
 				response.JSON(c, http.StatusOK, resp)
 				c.Abort()

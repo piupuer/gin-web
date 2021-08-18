@@ -1,6 +1,7 @@
 package service
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"gin-web/pkg/global"
@@ -15,24 +16,39 @@ import (
 )
 
 type MysqlService struct {
-	tx *gorm.DB // 事务对象实例
-	db *gorm.DB // 无事务对象实例
+	ctx *gin.Context // 上下文
+	tx  *gorm.DB     // 事务对象实例
+	db  *gorm.DB     // 无事务对象实例
 }
 
 // 初始化服务
 func New(c *gin.Context) MysqlService {
-	// 获取事务对象
-	tx := global.GetTx(c)
-	return MysqlService{
-		tx: tx,
-		db: global.Mysql,
+	nc:= gin.Context{}
+	if c != nil {
+		nc = *c
 	}
+	s := MysqlService{
+		ctx: &nc,
+	}
+	tx := global.GetTx(&nc)
+	rc := s.RequestIdContext("")
+	s.tx = tx.WithContext(rc)
+	s.db = global.Mysql.WithContext(rc)
+	return s
 }
 
 var (
 	findByIdsCache = cache.New(24*time.Hour, 48*time.Hour)
 	findCountCache = cache.New(5*time.Minute, 48*time.Hour)
 )
+
+// 获取携带request id的上下文
+func (s *MysqlService) RequestIdContext(requestId string) context.Context {
+	if s.ctx != nil && requestId == "" {
+		requestId = s.ctx.GetString(global.RequestIdContextKey)
+	}
+	return global.RequestIdContext(requestId)
+}
 
 // 查询指定id, model需使用指针, 否则可能无法绑定数据
 func (s *MysqlService) FindById(id uint, model interface{}, setCache bool) (err error) {
@@ -221,7 +237,7 @@ func (s *MysqlService) Find(query *gorm.DB, page *response.PageInfo, model inter
 					findCountCache.Set(cacheKey, page.Total, cache.DefaultExpiration)
 				}
 			} else {
-				global.Log.Debug(fmt.Sprintf("条数缓存命中: %s, total: %d", cacheKey, page.Total))
+				global.Log.Debug(s.ctx, "条数缓存命中: %s, total: %d", cacheKey, page.Total)
 			}
 		}
 		if page.Total > 0 || page.SkipCount {

@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"context"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
@@ -16,7 +17,7 @@ const (
 )
 
 // mysql数据行发生变化, 同步数据到redis
-func RowChange(e *canal.RowsEvent) {
+func RowChange(ctx context.Context, e *canal.RowsEvent) {
 	database := e.Table.Schema
 	table := e.Table.Name
 	// 默认以id为主键, 查找id的索引位置
@@ -78,7 +79,7 @@ func RowChange(e *canal.RowsEvent) {
 	case canal.InsertAction:
 		// 插入数据
 		for _, changeRow := range changeRows {
-			row := getRow(changeRow, e.Table)
+			row := getRow(ctx, changeRow, e.Table)
 			if row[deletedAtName] == nil {
 				// 由于gorm默认执行软删除, 当delete_at为空时才加入redis缓存
 				newRows = append(newRows, row)
@@ -91,7 +92,7 @@ func RowChange(e *canal.RowsEvent) {
 			oldRow := changeRows[i]
 			newRow := changeRows[i+1]
 			// 通过历史数据changeRows[0]去匹配需要更新的数据所在索引
-			index := getOldRowIndex(newRows, oldRow, e.Table)
+			index := getOldRowIndex(ctx, newRows, oldRow, e.Table)
 			if len(newRows) > 0 && index >= 0 {
 				if deletedAtIndex >= 0 && oldRow[deletedAtIndex] == nil && newRow[deletedAtIndex] != nil {
 					// 由于gorm默认执行软删除, 当delete_at发生变化时清理redis缓存
@@ -102,11 +103,11 @@ func RowChange(e *canal.RowsEvent) {
 					}
 				} else {
 					// 执行更新
-					newRows[index] = getRow(newRow, e.Table)
+					newRows[index] = getRow(ctx, newRow, e.Table)
 				}
 			} else {
 				// 可能是数据反写
-				newRows = append(newRows, getRow(newRow, e.Table))
+				newRows = append(newRows, getRow(ctx, newRow, e.Table))
 			}
 		}
 
@@ -117,7 +118,7 @@ func RowChange(e *canal.RowsEvent) {
 		indexes := make([]int, 0)
 		for _, changeRow := range changeRows {
 			// 找到没有改变的数据所在索引
-			index := getOldRowIndex(newRows, changeRow, e.Table)
+			index := getOldRowIndex(ctx, newRows, changeRow, e.Table)
 			if index > -1 {
 				indexes = append(indexes, index)
 			}
@@ -139,19 +140,19 @@ func RowChange(e *canal.RowsEvent) {
 	// 压缩后写入
 	compress, err := utils.CompressStrByZlib(utils.Struct2Json(newRows))
 	if err != nil {
-		global.Log.Error("同步binlog增量数据到redis失败: ", err, e)
+		global.Log.Error(ctx, "同步binlog增量数据到redis失败: %v, %v", err, e)
 		return
 	}
 	// 将数据转为json字符串写入redis, expiration=0永不过期
 	err = global.Redis.Set(cacheKey, *compress, 0).Err()
 	if err != nil {
-		global.Log.Error("同步binlog增量数据到redis失败: ", err, e)
+		global.Log.Error(ctx, "同步binlog增量数据到redis失败: %v, %v", err, e)
 	}
 }
 
 // 获取旧数据所在行索引
-func getOldRowIndex(oldRows []map[string]interface{}, data []interface{}, table *schema.Table) int {
-	newRow := getRow(data, table)
+func getOldRowIndex(ctx context.Context, oldRows []map[string]interface{}, data []interface{}, table *schema.Table) int {
+	newRow := getRow(ctx, data, table)
 	for i, row := range oldRows {
 		// 比对增量字段
 		m := make(map[string]interface{}, 0)
@@ -165,7 +166,7 @@ func getOldRowIndex(oldRows []map[string]interface{}, data []interface{}, table 
 }
 
 // 获取一列
-func getRow(data []interface{}, table *schema.Table) map[string]interface{} {
+func getRow(ctx context.Context, data []interface{}, table *schema.Table) map[string]interface{} {
 	row := make(map[string]interface{}, 0)
 	count := len(data)
 	for i, column := range table.Columns {
@@ -187,15 +188,15 @@ func getRow(data []interface{}, table *schema.Table) map[string]interface{} {
 		}
 	}
 	if count != len(table.Columns) {
-		global.Log.Warn(fmt.Sprintf("数据字段可能不匹配, columns: %v, data: %v", table.Columns, data))
+		global.Log.Warn(ctx, "数据字段可能不匹配, columns: %v, data: %v", table.Columns, data)
 	}
 	return row
 }
 
 // mysql日志位置发生变化
-func PosChange(pos mysql.Position) {
+func PosChange(ctx context.Context, pos mysql.Position) {
 	err := global.Redis.Set(global.Conf.Redis.BinlogPos, utils.Struct2Json(pos), 0).Err()
 	if err != nil {
-		global.Log.Error("同步binlog当前位置到redis失败: ", err, pos)
+		global.Log.Error(ctx, "同步binlog当前位置到redis失败: %v, %v", err, pos)
 	}
 }

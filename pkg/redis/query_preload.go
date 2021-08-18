@@ -71,7 +71,7 @@ func preload(db *QueryRedis, rels []*schema.Relationship) {
 	}
 
 	// 全新的实例
-	ins := New()
+	ins := New(db.ctx)
 
 	if rel.JoinTable != nil {
 		// 多对多关系

@@ -8,9 +8,10 @@ import (
 
 // http请求响应封装
 type Resp struct {
-	Code int         `json:"code"` // 错误代码
-	Data interface{} `json:"data"` // 数据内容
-	Msg  string      `json:"msg"`  // 消息提示
+	Code      int         `json:"code"`      // 错误代码
+	Data      interface{} `json:"data"`      // 数据内容
+	Msg       string      `json:"msg"`       // 消息提示
+	RequestId string      `json:"requestId"` // 请求id
 }
 
 // 分页封装
