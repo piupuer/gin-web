@@ -35,7 +35,7 @@ logs:
   # 日志等级(-1:Debug, 0:Info, -1<=level<=5, 参照zap.level源码)
   level: -1
   # 隐藏sql相关的日志(=true时, 即便是level=-1仍然不会显示sql)
-  no-sql: true
+  no-sql: false
   # 日志路径
   path: logs
   # 文件最大大小, M

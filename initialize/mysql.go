@@ -57,7 +57,7 @@ func Mysql() {
 	if global.Conf.Logs.NoSql {
 		l = global.Log.LogMode(logger.Silent)
 	} else {
-		l = global.Log
+		l = global.Log.LogMode(logger.Info)
 	}
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)

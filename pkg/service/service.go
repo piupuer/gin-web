@@ -23,7 +23,7 @@ type MysqlService struct {
 
 // 初始化服务
 func New(c *gin.Context) MysqlService {
-	nc:= gin.Context{}
+	nc := gin.Context{}
 	if c != nil {
 		nc = *c
 	}
