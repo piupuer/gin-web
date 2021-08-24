@@ -35,7 +35,7 @@ func New(c *gin.Context) RedisService {
 }
 
 // 获取携带request id的上下文
-func (s *RedisService) RequestIdContext(requestId string) context.Context {
+func (s RedisService) RequestIdContext(requestId string) context.Context {
 	if s.ctx != nil && requestId == "" {
 		requestId = s.ctx.GetString(global.RequestIdContextKey)
 	}
@@ -43,7 +43,7 @@ func (s *RedisService) RequestIdContext(requestId string) context.Context {
 }
 
 // 查询, model需使用指针, 否则可能无法绑定数据
-func (s *RedisService) Find(query *redis.QueryRedis, page *response.PageInfo, model interface{}) (err error) {
+func (s RedisService) Find(query *redis.QueryRedis, page *response.PageInfo, model interface{}) (err error) {
 	// 获取model值
 	rv := reflect.ValueOf(model)
 	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Slice) {

@@ -18,7 +18,7 @@ type LeaveApproval struct {
 	lastLog  models.SysWorkflowLog
 }
 
-func (s *LeaveApproval) UpdateTarget() error {
+func (s LeaveApproval) UpdateTarget() error {
 	var err error
 	if *s.lastLog.Status > models.SysWorkflowLogStateSubmit {
 		var leave models.SysLeave

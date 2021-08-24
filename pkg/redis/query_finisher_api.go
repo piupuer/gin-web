@@ -1,7 +1,7 @@
 package redis
 
 // 查询列表
-func (s *QueryRedis) Find(dest interface{}) *QueryRedis {
+func (s QueryRedis) Find(dest interface{}) *QueryRedis {
 	ins := s.getInstance()
 	if !ins.check() {
 		return ins
@@ -18,7 +18,7 @@ func (s *QueryRedis) Find(dest interface{}) *QueryRedis {
 }
 
 // 查询一条
-func (s *QueryRedis) First(dest interface{}) *QueryRedis {
+func (s QueryRedis) First(dest interface{}) *QueryRedis {
 	ins := s.getInstance()
 	ins.Statement.limit = 1
 	ins.Statement.first = true
@@ -27,7 +27,7 @@ func (s *QueryRedis) First(dest interface{}) *QueryRedis {
 }
 
 // 获取总数
-func (s *QueryRedis) Count(count *int64) *QueryRedis {
+func (s QueryRedis) Count(count *int64) *QueryRedis {
 	ins := s.getInstance()
 	ins.Statement.Dest = count
 	ins.Statement.count = true

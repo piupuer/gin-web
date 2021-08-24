@@ -8,7 +8,7 @@ import (
 )
 
 // 获取所有请假(当前用户)
-func (s *RedisService) GetLeaves(req *request.LeaveRequestStruct) ([]models.SysLeave, error) {
+func (s RedisService) GetLeaves(req *request.LeaveRequestStruct) ([]models.SysLeave, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetLeaves(req)
@@ -32,7 +32,7 @@ func (s *RedisService) GetLeaves(req *request.LeaveRequestStruct) ([]models.SysL
 }
 
 // 获取请假审批日志(指定请假编号)
-func (s *RedisService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowLog, error) {
+func (s RedisService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowLog, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetLeaveApprovalLogs(leaveId)

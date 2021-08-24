@@ -11,7 +11,7 @@ import (
 )
 
 // 登录校验
-func (s *RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
+func (s RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.LoginCheck(user)
@@ -29,7 +29,7 @@ func (s *RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 	return &u, err
 }
 
-func (s *RedisService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
+func (s RedisService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUsers(req)
@@ -72,7 +72,7 @@ func (s *RedisService) GetUsers(req *request.UserRequestStruct) ([]models.SysUse
 }
 
 // 获取单个用户
-func (s *RedisService) GetUserById(id uint) (models.SysUser, error) {
+func (s RedisService) GetUserById(id uint) (models.SysUser, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUserById(id)

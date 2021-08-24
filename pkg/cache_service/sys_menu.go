@@ -6,7 +6,7 @@ import (
 )
 
 // 获取所有菜单
-func (s *RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
+func (s RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetMenus(currentRole)
@@ -20,7 +20,7 @@ func (s *RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 }
 
 // 根据权限编号获取全部菜单
-func (s *RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
+func (s RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetAllMenuByRoleId(currentRole, roleId)
@@ -45,7 +45,7 @@ func (s *RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uin
 }
 
 // 获取权限菜单, 非菜单树
-func (s *RedisService) getRoleMenus(roleId uint) []models.SysMenu {
+func (s RedisService) getRoleMenus(roleId uint) []models.SysMenu {
 	var role models.SysRole
 	// 根据权限编号获取菜单
 	err := s.redis.
@@ -60,7 +60,7 @@ func (s *RedisService) getRoleMenus(roleId uint) []models.SysMenu {
 }
 
 // 获取全部菜单, 非菜单树
-func (s *RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
+func (s RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	menus := make([]models.SysMenu, 0)
 
 	// 查询关系表

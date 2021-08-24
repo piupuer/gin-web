@@ -11,7 +11,7 @@ import (
 )
 
 // 获取机器
-func (s *MysqlService) GetMachines(req *request.MachineRequestStruct) ([]models.SysMachine, error) {
+func (s MysqlService) GetMachines(req *request.MachineRequestStruct) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
 	query := s.tx.
@@ -42,7 +42,7 @@ func (s *MysqlService) GetMachines(req *request.MachineRequestStruct) ([]models.
 }
 
 // 验证机器状态
-func (s *MysqlService) ConnectMachine(id uint) error {
+func (s MysqlService) ConnectMachine(id uint) error {
 	var oldMachine models.SysMachine
 	query := s.tx.Model(&oldMachine).Where("id = ?", id).First(&oldMachine)
 	if query.Error == gorm.ErrRecordNotFound {

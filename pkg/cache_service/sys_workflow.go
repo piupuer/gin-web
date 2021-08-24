@@ -11,14 +11,14 @@ import (
 )
 
 // 获取工作流(指定审批单类型)
-func (s *RedisService) GetWorkflowByTargetCategory(targetCategory uint) (models.SysWorkflow, error) {
+func (s RedisService) GetWorkflowByTargetCategory(targetCategory uint) (models.SysWorkflow, error) {
 	var flow models.SysWorkflow
 	err := s.redis.Table(flow.TableName()).Where("target_category", "=", targetCategory).First(&flow).Error
 	return flow, err
 }
 
 // 获取所有工作流
-func (s *RedisService) GetWorkflows(req *request.WorkflowRequestStruct) ([]models.SysWorkflow, error) {
+func (s RedisService) GetWorkflows(req *request.WorkflowRequestStruct) ([]models.SysWorkflow, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetWorkflows(req)
@@ -53,7 +53,7 @@ func (s *RedisService) GetWorkflows(req *request.WorkflowRequestStruct) ([]model
 }
 
 // 获取所有流水线
-func (s *RedisService) GetWorkflowLines(req *request.WorkflowLineRequestStruct) ([]models.SysWorkflowLine, error) {
+func (s RedisService) GetWorkflowLines(req *request.WorkflowLineRequestStruct) ([]models.SysWorkflowLine, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetWorkflowLines(req)
@@ -71,7 +71,7 @@ func (s *RedisService) GetWorkflowLines(req *request.WorkflowLineRequestStruct) 
 }
 
 // 查询审批日志(指定目标)
-func (s *RedisService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.SysWorkflowLog, error) {
+func (s RedisService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.SysWorkflowLog, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetWorkflowLogs(flowId, targetId)
@@ -89,7 +89,7 @@ func (s *RedisService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.Sys
 }
 
 // 查询待审批目标列表(指定用户)
-func (s *RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingRequestStruct) ([]models.SysWorkflowLog, error) {
+func (s RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingRequestStruct) ([]models.SysWorkflowLog, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetWorkflowApprovings(req)

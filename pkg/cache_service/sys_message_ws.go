@@ -108,9 +108,9 @@ type MessageBroadcast struct {
 }
 
 // 启动消息中心仓库
-func (s *RedisService) StartMessageHub(checkIdempotenceTokenFunc func(token string) bool) MessageHub {
+func (s RedisService) StartMessageHub(checkIdempotenceTokenFunc func(token string) bool) MessageHub {
 	// 初始化参数
-	hub.Service = *s
+	hub.Service = s
 	hub.Clients = make(map[string]*MessageClient)
 	hub.Register = make(chan *MessageClient)
 	hub.UnRegister = make(chan *MessageClient)
@@ -122,7 +122,7 @@ func (s *RedisService) StartMessageHub(checkIdempotenceTokenFunc func(token stri
 }
 
 // 启动消息连接
-func (s *RedisService) MessageWs(conn *websocket.Conn, key string, user models.SysUser, ip string) {
+func (s RedisService) MessageWs(conn *websocket.Conn, key string, user models.SysUser, ip string) {
 	// 注册到消息仓库
 	client := &MessageClient{
 		ctx:  s.ctx,

@@ -19,7 +19,7 @@ import (
 // exit code 0
 // 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
 // 获取所有接口
-func (s *MysqlService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, error) {
+func (s MysqlService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
 	query := s.tx.
@@ -47,7 +47,7 @@ func (s *MysqlService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, 
 }
 
 // 根据权限编号获取以api分类分组的权限接口
-func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
+func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
 	// 接口树
 	tree := make([]response.ApiGroupByCategoryResponseStruct, 0)
 	// 有权限访问的id列表
@@ -133,7 +133,7 @@ func (s *MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 }
 
 // 创建接口
-func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error) {
+func (s MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error) {
 	api := new(models.SysApi)
 	err = s.Create(req, &api)
 	if err != nil {
@@ -163,7 +163,7 @@ func (s *MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error
 }
 
 // 更新接口
-func (s *MysqlService) UpdateApiById(id uint, req request.UpdateApiRequestStruct) (err error) {
+func (s MysqlService) UpdateApiById(id uint, req request.UpdateApiRequestStruct) (err error) {
 	var api models.SysApi
 	query := s.tx.Model(&api).Where("id = ?", id).First(&api)
 	if query.Error == gorm.ErrRecordNotFound {
@@ -216,7 +216,7 @@ func (s *MysqlService) UpdateApiById(id uint, req request.UpdateApiRequestStruct
 }
 
 // 批量删除接口
-func (s *MysqlService) DeleteApiByIds(ids []uint) (err error) {
+func (s MysqlService) DeleteApiByIds(ids []uint) (err error) {
 	var list []models.SysApi
 	query := s.tx.Where("id IN (?)", ids).Find(&list)
 	if query.Error != nil {

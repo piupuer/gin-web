@@ -8,7 +8,7 @@ import (
 )
 
 // 获取所有请假(当前用户)
-func (s *MysqlService) GetLeaves(req *request.LeaveRequestStruct) ([]models.SysLeave, error) {
+func (s MysqlService) GetLeaves(req *request.LeaveRequestStruct) ([]models.SysLeave, error) {
 	var err error
 	list := make([]models.SysLeave, 0)
 	query := s.tx.
@@ -28,7 +28,7 @@ func (s *MysqlService) GetLeaves(req *request.LeaveRequestStruct) ([]models.SysL
 }
 
 // 获取请假审批日志(指定请假编号)
-func (s *MysqlService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowLog, error) {
+func (s MysqlService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowLog, error) {
 	list := make([]models.SysWorkflowLog, 0)
 
 	// 获取请假对应的工作流
@@ -42,7 +42,7 @@ func (s *MysqlService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowL
 }
 
 // 创建请假
-func (s *MysqlService) CreateLeave(req *request.CreateLeaveRequestStruct) (err error) {
+func (s MysqlService) CreateLeave(req *request.CreateLeaveRequestStruct) (err error) {
 	leave := new(models.SysLeave)
 	err = s.Create(req, &leave)
 	if err != nil {

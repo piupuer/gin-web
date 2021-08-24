@@ -57,7 +57,7 @@ func (s *QueryRedis) AddError(err error) error {
 	return s.Error
 }
 
-func (s *QueryRedis) getInstance() *QueryRedis {
+func (s QueryRedis) getInstance() *QueryRedis {
 	if s.clone > 0 {
 		tx := &QueryRedis{
 			ctx:   s.ctx,
@@ -79,11 +79,11 @@ func (s *QueryRedis) getInstance() *QueryRedis {
 		return tx
 	}
 
-	return s
+	return &s
 }
 
 // 校验表名是否正常, 有可能没有执行Table方法
-func (s *QueryRedis) check() bool {
+func (s QueryRedis) check() bool {
 	ins := s.getInstance()
 	// 未指定json字符串时考虑表名称
 	if !ins.Statement.json && strings.TrimSpace(ins.Statement.Table) == "" {
@@ -94,7 +94,7 @@ func (s *QueryRedis) check() bool {
 }
 
 // 执行查询前的一些初始化操作
-func (s *QueryRedis) beforeQuery(db *QueryRedis) *QueryRedis {
+func (s QueryRedis) beforeQuery(db *QueryRedis) *QueryRedis {
 	stmt := db.Statement
 	if stmt.Model == nil {
 		stmt.Model = stmt.Dest

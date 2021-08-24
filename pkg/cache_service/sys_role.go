@@ -8,7 +8,7 @@ import (
 )
 
 // 根据当前角色顺序获取角色编号集合(主要功能是针对不同角色用户登录系统隐藏特定菜单)
-func (s *RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
+func (s RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetRoleIdsBySort(currentRoleSort)
@@ -26,7 +26,7 @@ func (s *RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (s *RedisService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
+func (s RedisService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetRoles(req)

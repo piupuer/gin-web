@@ -8,7 +8,7 @@ import (
 var tableRegexp = regexp.MustCompile(`(?i).+? AS (\w+)\s*(?:$|,)`)
 
 // 指定json字符串
-func (s *QueryRedis) FromString(str string) *QueryRedis {
+func (s QueryRedis) FromString(str string) *QueryRedis {
 	ins := s.getInstance()
 	ins.Statement.FromString(str)
 	ins.Statement.Dest = nil
@@ -16,7 +16,7 @@ func (s *QueryRedis) FromString(str string) *QueryRedis {
 }
 
 // 指定表名称
-func (s *QueryRedis) Table(name string, args ...interface{}) (ins *QueryRedis) {
+func (s QueryRedis) Table(name string, args ...interface{}) (ins *QueryRedis) {
 	ins = s.getInstance()
 	// 降低复杂度, 只支持单表
 	if strings.Contains(name, " ") || strings.Contains(name, "`") || len(args) > 0 {
@@ -31,28 +31,28 @@ func (s *QueryRedis) Table(name string, args ...interface{}) (ins *QueryRedis) {
 }
 
 // 预先加载某一列
-func (s *QueryRedis) Preload(column string) *QueryRedis {
+func (s QueryRedis) Preload(column string) *QueryRedis {
 	return s.getInstance().Statement.Preload(column).DB
 }
 
 // Where条件
-func (s *QueryRedis) Where(key, cond string, val interface{}) *QueryRedis {
+func (s QueryRedis) Where(key, cond string, val interface{}) *QueryRedis {
 	return s.getInstance().Statement.Where(key, cond, val).DB
 }
 
 // 排序
-func (s *QueryRedis) Order(key string) *QueryRedis {
+func (s QueryRedis) Order(key string) *QueryRedis {
 	return s.getInstance().Statement.Order(key).DB
 }
 
 // 分页
-func (s *QueryRedis) Limit(limit int) *QueryRedis {
+func (s QueryRedis) Limit(limit int) *QueryRedis {
 	ins := s.getInstance()
 	ins.Statement.limit = limit
 	return ins
 }
 
-func (s *QueryRedis) Offset(offset int) *QueryRedis {
+func (s QueryRedis) Offset(offset int) *QueryRedis {
 	ins := s.getInstance()
 	ins.Statement.offset = offset
 	return ins
