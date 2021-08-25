@@ -9,6 +9,7 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/golang-module/carbon"
 	"github.com/gorilla/websocket"
 	"strings"
 	"time"
@@ -96,7 +97,7 @@ type MessageClient struct {
 	// 发送消息通道
 	Send chan response.MessageWsResponseStruct
 	// 上次活跃时间
-	LastActiveTime models.LocalTime
+	LastActiveTime carbon.Carbon
 	// 重试次数
 	RetryCount uint
 }
@@ -223,9 +224,7 @@ loop:
 		_, msg, err := c.Conn.ReadMessage()
 
 		// 记录活跃时间
-		c.LastActiveTime = models.LocalTime{
-			Time: time.Now(),
-		}
+		c.LastActiveTime = carbon.Now()
 		c.RetryCount = 0
 
 		if err != nil {

@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/golang-module/carbon"
 	"strings"
 	"time"
 )
@@ -207,11 +208,8 @@ func (s MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toId
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		now := time.Now()
-		d, _ := time.ParseDuration("720h")
-		expired := now.Add(d)
-		message.ExpiredAt = &models.LocalTime{
-			Time: expired,
+		message.ExpiredAt = &carbon.ToTimeString{
+			Carbon: carbon.Now().AddDays(30),
 		}
 	}
 
@@ -241,11 +239,8 @@ func (s MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, toR
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		now := time.Now()
-		d, _ := time.ParseDuration("720h")
-		expired := now.Add(d)
-		message.ExpiredAt = &models.LocalTime{
-			Time: expired,
+		message.ExpiredAt = &carbon.ToTimeString{
+			Carbon: carbon.Now().AddDays(30),
 		}
 	}
 
@@ -272,11 +267,8 @@ func (s MysqlService) CreateSystemMessage(message models.SysMessage) error {
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		now := time.Now()
-		d, _ := time.ParseDuration("720h")
-		expired := now.Add(d)
-		message.ExpiredAt = &models.LocalTime{
-			Time: expired,
+		message.ExpiredAt = &carbon.ToTimeString{
+			Carbon: carbon.Now().AddDays(30),
 		}
 	}
 

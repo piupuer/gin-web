@@ -3,7 +3,7 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"gin-web/models"
+	"github.com/golang-module/carbon"
 	"github.com/shopspring/decimal"
 	"reflect"
 )
@@ -94,11 +94,11 @@ func CompareDifferenceStructByJson(oldStruct interface{}, newStruct interface{},
 					case decimal.Decimal:
 						d, _ := decimal.NewFromString(rv.String())
 						m3[k1] = d
-					case models.LocalTime:
-						t := new(models.LocalTime).SetString(rv.String())
+					case carbon.Carbon:
+						t := carbon.Parse(rv.String())
 						// 时间过滤空值
 						if !t.IsZero() {
-							m3[k1] = *t
+							m3[k1] = t
 						}
 					default:
 						// 强制转换rv赋值给e

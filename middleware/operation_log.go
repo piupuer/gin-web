@@ -12,6 +12,7 @@ import (
 	"gin-web/pkg/utils"
 	"github.com/casbin/casbin/v2/util"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-module/carbon"
 	"github.com/patrickmn/go-cache"
 	"io/ioutil"
 	"mime/multipart"
@@ -32,7 +33,7 @@ var (
 // 操作日志
 func OperationLog(c *gin.Context) {
 	// 开始时间
-	startTime := time.Now()
+	startTime := carbon.Now()
 	// 读取body参数
 	var body []byte
 	body, err := ioutil.ReadAll(c.Request.Body)
@@ -57,7 +58,9 @@ func OperationLog(c *gin.Context) {
 		}
 
 		// 结束时间
-		endTime := time.Now()
+		endTime := carbon.ToDateTimeString{
+			Carbon: carbon.Now(),
+		}
 
 		if len(body) == 0 {
 			body = []byte("{}")
@@ -96,9 +99,7 @@ func OperationLog(c *gin.Context) {
 		log := models.SysOperationLog{
 			Model: models.Model{
 				// 记录最后时间
-				CreatedAt: models.LocalTime{
-					Time: endTime,
-				},
+				CreatedAt: endTime,
 			},
 			// Ip地址
 			Ip: c.ClientIP(),
@@ -111,7 +112,7 @@ func OperationLog(c *gin.Context) {
 			// 请求体
 			Body: string(body),
 			// 请求耗时
-			Latency: endTime.Sub(startTime),
+			Latency: endTime.Time.Sub(startTime.Time),
 			// 浏览器标识
 			UserAgent: c.Request.UserAgent(),
 		}
@@ -155,8 +156,8 @@ func OperationLog(c *gin.Context) {
 		// gzip压缩
 		log.Data = data
 		// 记录操作时间
-		log.CreatedAt = models.LocalTime{
-			Time: time.Now(),
+		log.CreatedAt = carbon.ToDateTimeString{
+			Carbon: carbon.Now(),
 		}
 		// 操作日志晚点写入数据库(有条件的可以将日志吐到mq, 闲时再写入数据库)
 		logLock.Lock()

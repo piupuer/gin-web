@@ -1,5 +1,7 @@
 package models
 
+import "github.com/golang-module/carbon"
+
 const (
 	// 消息类型
 	SysMessageTypeOneToOne     uint   = 0 // 一对一
@@ -35,14 +37,14 @@ var (
 // 系统消息表, 主要记录消息内容
 type SysMessage struct {
 	Model
-	FromUserId uint       `gorm:"comment:'消息发送者'" json:"fromUserId"`
-	FromUser   SysUser    `gorm:"foreignKey:FromUserId" json:"fromUser"`
-	Title      string     `gorm:"comment:'消息标题'" json:"title"`
-	Content    string     `gorm:"comment:'消息内容'" json:"content"`
-	Type       uint       `gorm:"type:tinyint;default:0;comment:'消息类型(0: 一对一私信, 1: 一对多群发[主要通过角色指定], 2: 系统消息)'" json:"type"`
-	RoleId     uint       `gorm:"comment:'一对多角色编号'" json:"roleId"`
-	Role       SysRole    `gorm:"foreignKey:RoleId" json:"role"`
-	ExpiredAt  *LocalTime `gorm:"comment:'过期时间'" json:"expiredAt"`
+	FromUserId uint                 `gorm:"comment:'消息发送者'" json:"fromUserId"`
+	FromUser   SysUser              `gorm:"foreignKey:FromUserId" json:"fromUser"`
+	Title      string               `gorm:"comment:'消息标题'" json:"title"`
+	Content    string               `gorm:"comment:'消息内容'" json:"content"`
+	Type       uint                 `gorm:"type:tinyint;default:0;comment:'消息类型(0: 一对一私信, 1: 一对多群发[主要通过角色指定], 2: 系统消息)'" json:"type"`
+	RoleId     uint                 `gorm:"comment:'一对多角色编号'" json:"roleId"`
+	Role       SysRole              `gorm:"foreignKey:RoleId" json:"role"`
+	ExpiredAt  *carbon.ToTimeString `gorm:"comment:'过期时间'" json:"expiredAt"`
 }
 
 func (m SysMessage) TableName() string {

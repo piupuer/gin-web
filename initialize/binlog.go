@@ -3,13 +3,13 @@ package initialize
 import (
 	"context"
 	"fmt"
-	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/redis"
 	"gin-web/pkg/utils"
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/replication"
+	"github.com/golang-module/carbon"
 	"reflect"
 	"regexp"
 	"runtime/debug"
@@ -145,9 +145,7 @@ func getRows(table string, model interface{}) ([]map[string]interface{}, error) 
 			if exists && val != nil {
 				switch val.(type) {
 				case time.Time:
-					local := models.LocalTime{
-						Time: val.(time.Time),
-					}
+					local := carbon.Time2Carbon(val.(time.Time))
 					s = local.String()
 				case []uint8:
 					vs := string(val.([]uint8))

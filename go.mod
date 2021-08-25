@@ -14,6 +14,7 @@ require (
 	github.com/go-playground/universal-translator v0.17.0
 	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/gobuffalo/packr/v2 v2.7.1
+	github.com/golang-module/carbon v1.5.3 // indirect
 	github.com/gorilla/websocket v1.4.2
 	github.com/minio/minio-go/v7 v7.0.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible

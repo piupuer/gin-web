@@ -10,6 +10,7 @@ import (
 	"gin-web/pkg/utils"
 	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-module/carbon"
 	"time"
 )
 
@@ -111,9 +112,7 @@ func unauthorized(c *gin.Context, code int, message string) {
 func loginResponse(c *gin.Context, code int, token string, expires time.Time) {
 	response.SuccessWithData(map[string]interface{}{
 		"token": token,
-		"expires": models.LocalTime{
-			Time: expires,
-		},
+		"expires": carbon.Time2Carbon(expires),
 	})
 }
 
@@ -124,8 +123,6 @@ func logoutResponse(c *gin.Context, code int) {
 func refreshResponse(c *gin.Context, code int, token string, expires time.Time) {
 	response.SuccessWithData(map[string]interface{}{
 		"token": token,
-		"expires": models.LocalTime{
-			Time: expires,
-		},
+		"expires": carbon.Time2Carbon(expires),
 	})
 }

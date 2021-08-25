@@ -1,83 +1,15 @@
 package models
 
 import (
-	"database/sql/driver"
-	"fmt"
-	"gin-web/pkg/global"
+	"github.com/golang-module/carbon"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 	"gorm.io/gorm/schema"
 	"reflect"
-	"strings"
-	"time"
 )
 
-// 本地时间
 type DeletedAt struct {
-	time.Time
-}
-
-func (t *DeletedAt) UnmarshalJSON(data []byte) (err error) {
-	str := strings.Trim(string(data), "\"")
-	// ""空值不进行解析
-	// 避免环包调用, 不再调用utils
-	if str == "null" || strings.TrimSpace(str) == "" {
-		*t = DeletedAt{Time: time.Time{}}
-		return
-	}
-
-	// 设置str
-	t.SetString(str)
-	return
-}
-
-func (t DeletedAt) MarshalJSON() ([]byte, error) {
-	s := t.Format(global.SecLocalTimeFormat)
-	// 处理时间0值
-	if t.IsZero() {
-		s = ""
-	}
-	output := fmt.Sprintf("\"%s\"", s)
-	return []byte(output), nil
-}
-
-// gorm 写入 mysql 时调用
-func (t DeletedAt) Value() (driver.Value, error) {
-	var zeroTime time.Time
-	if t.UnixNano() == zeroTime.UnixNano() {
-		return nil, nil
-	}
-	return t.Time, nil
-}
-
-// gorm 检出 mysql 时调用
-func (t *DeletedAt) Scan(v interface{}) error {
-	value, ok := v.(time.Time)
-	if ok {
-		*t = DeletedAt{Time: value}
-		return nil
-	}
-	return fmt.Errorf("can not convert %v to DeletedAt", v)
-}
-
-// 用于 fmt.Println 和后续验证场景
-func (t DeletedAt) String() string {
-	if t.IsZero() {
-		return ""
-	}
-	return t.Format(global.SecLocalTimeFormat)
-}
-
-// 设置字符串
-func (t *DeletedAt) SetString(str string) *DeletedAt {
-	if t != nil {
-		// 指定解析的格式(设置转为本地格式)
-		now, err := time.ParseInLocation(global.SecLocalTimeFormat, str, time.Local)
-		if err == nil {
-			*t = DeletedAt{Time: now}
-		}
-	}
-	return t
+	carbon.ToDateTimeString
 }
 
 func (DeletedAt) QueryClauses(f *schema.Field) []clause.Interface {
@@ -165,7 +97,7 @@ func (sd SoftDeleteDeleteClause) ModifyStatement(stmt *gorm.Statement) {
 		if _, ok := stmt.Clauses["WHERE"]; !stmt.DB.AllowGlobalUpdate && !ok {
 			stmt.DB.AddError(gorm.ErrMissingWhereClause)
 		} else {
-			SoftDeleteQueryClause{Field: sd.Field}.ModifyStatement(stmt)
+			SoftDeleteQueryClause(sd).ModifyStatement(stmt)
 		}
 
 		stmt.AddClauseIfNotExists(clause.Update{})
