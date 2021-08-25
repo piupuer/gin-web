@@ -1,5 +1,7 @@
 # development
 system:
+  # 机器编号(多实例部署时会用到)
+  machine-id: 0
   # url前缀
   url-path-prefix: api
   # 接口版本, 紧跟url-path-prefix后

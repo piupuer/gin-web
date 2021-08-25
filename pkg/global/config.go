@@ -17,6 +17,7 @@ type Configuration struct {
 }
 
 type SystemConfiguration struct {
+	MachineId                   uint32   `mapstructure:"machine-id" json:"machineId"`
 	UrlPathPrefix               string   `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
 	ApiVersion                  string   `mapstructure:"api-version" json:"apiVersion"`
 	Port                        int      `mapstructure:"port" json:"port"`
