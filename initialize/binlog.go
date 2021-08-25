@@ -50,8 +50,8 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	cfg.Dump.TableDB = global.Conf.Mysql.Database
 	// 目标表名
 	cfg.Dump.Tables = tableNames
-	// 机器编号
-	cfg.ServerID = global.Conf.System.MachineId
+	// server编号(从1开始)
+	cfg.ServerID = global.Conf.System.MachineId + 1
 
 	// 创建canal实例
 	c, err := canal.NewCanal(cfg)
