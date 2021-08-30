@@ -208,7 +208,7 @@ func (s MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toId
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		message.ExpiredAt = &carbon.ToTimeString{
+		message.ExpiredAt = &carbon.ToDateTimeString{
 			Carbon: carbon.Now().AddDays(30),
 		}
 	}
@@ -239,7 +239,7 @@ func (s MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, toR
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		message.ExpiredAt = &carbon.ToTimeString{
+		message.ExpiredAt = &carbon.ToDateTimeString{
 			Carbon: carbon.Now().AddDays(30),
 		}
 	}
@@ -267,7 +267,7 @@ func (s MysqlService) CreateSystemMessage(message models.SysMessage) error {
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		message.ExpiredAt = &carbon.ToTimeString{
+		message.ExpiredAt = &carbon.ToDateTimeString{
 			Carbon: carbon.Now().AddDays(30),
 		}
 	}
