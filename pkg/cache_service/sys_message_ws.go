@@ -5,13 +5,16 @@ import (
 	"errors"
 	"fmt"
 	"gin-web/models"
+	"gin-web/pkg/ch"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"github.com/golang-module/carbon"
 	"github.com/gorilla/websocket"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -29,6 +32,9 @@ const (
 
 	// 心跳间隔
 	heartBeatPeriod = 10 * time.Second
+
+	// 最后一次活跃上线通知时间间隔
+	lastActiveRegisterPeriod = 10 * time.Minute
 
 	// 心跳最大重试次数
 	HeartBeatMaxRetryCount = 3
@@ -65,20 +71,19 @@ var hub MessageHub
 
 // 消息仓库, 用于维护整个消息中心连接
 type MessageHub struct {
+	lock sync.RWMutex
 	// redis连接
 	Service RedisService
 	// 客户端用户id集合
 	UserIds []uint
+	// 用户最后活跃时间
+	UserLastActive map[uint]int64
 	// 客户端集合(用户id为每个socket key)
 	Clients map[string]*MessageClient
-	// 客户端注册(用户上线通道)
-	Register chan *MessageClient
-	// 客户端取消注册(用户下线通道)
-	UnRegister chan *MessageClient
 	// 广播通道
-	Broadcast chan MessageBroadcast
+	Broadcast *ch.Ch
 	// 刷新用户消息通道
-	RefreshUserMessage chan []uint
+	RefreshUserMessage *ch.Ch
 	// 幂等性token校验方法
 	CheckIdempotenceTokenFunc func(token string) bool
 }
@@ -95,7 +100,7 @@ type MessageClient struct {
 	// 当前登录用户ip地址
 	Ip string
 	// 发送消息通道
-	Send chan response.MessageWsResponseStruct
+	Send *ch.Ch
 	// 上次活跃时间
 	LastActiveTime carbon.Carbon
 	// 重试次数
@@ -113,85 +118,53 @@ func (s RedisService) StartMessageHub(checkIdempotenceTokenFunc func(token strin
 	// 初始化参数
 	hub.Service = s
 	hub.Clients = make(map[string]*MessageClient)
-	hub.Register = make(chan *MessageClient)
-	hub.UnRegister = make(chan *MessageClient)
-	hub.Broadcast = make(chan MessageBroadcast)
-	hub.RefreshUserMessage = make(chan []uint)
+	hub.UserLastActive = make(map[uint]int64)
+	hub.Broadcast = ch.NewCh()
+	hub.RefreshUserMessage = ch.NewCh()
 	hub.CheckIdempotenceTokenFunc = checkIdempotenceTokenFunc
 	go hub.run()
+	go hub.count()
 	return hub
 }
 
 // 启动消息连接
-func (s RedisService) MessageWs(conn *websocket.Conn, key string, user models.SysUser, ip string) {
+func (s RedisService) MessageWs(ctx *gin.Context, conn *websocket.Conn, key string, user models.SysUser, ip string) {
 	// 注册到消息仓库
 	client := &MessageClient{
-		ctx:  s.ctx,
+		ctx:  ctx,
 		Key:  key,
 		Conn: conn,
 		User: user,
 		Ip:   ip,
-		Send: make(chan response.MessageWsResponseStruct),
+		Send: ch.NewCh(),
 	}
-	hub.Register <- client
 
+	go client.register()
 	// 监听数据的接收/发送/心跳
 	go client.receive()
 	go client.send()
 	// go client.heartBeat()
-
-	// 刷新用户消息
-	hub.RefreshUserMessage <- []uint{user.Id}
-
-	// 广播当前用户上线
-	msg := response.MessageWsResponseStruct{
-		Type: MessageRespOnline,
-		Detail: response.GetSuccessWithData(map[string]interface{}{
-			"user": user,
-		}),
-	}
-
-	// 通知除自己之外的人
-	hub.Broadcast <- MessageBroadcast{
-		MessageWsResponseStruct: msg,
-		UserIds:                 utils.ContainsUintThenRemove(hub.UserIds, user.Id),
-	}
 }
 
 // 运行仓库
-func (h *MessageHub) run() {
+func (h MessageHub) run() {
 	for {
 		select {
-		// 新用户上线
-		case client := <-h.Register:
-			if !utils.ContainsUint(h.UserIds, client.User.Id) {
-				h.UserIds = append(h.UserIds, client.User.Id)
-			}
-			h.Clients[client.Key] = client
-			global.Log.Debug(h.Service.ctx, "[消息中心][广播]用户上线: %d-%s", client.User.Id, client.Ip)
-		// 用户下线
-		case client := <-h.UnRegister:
-			if _, ok := h.Clients[client.Key]; ok {
-				delete(h.Clients, client.Key)
-				// 关闭发送通道
-				close(client.Send)
-				global.Log.Debug(h.Service.ctx, "[消息中心][广播]用户下线: %d-%s", client.User.Id, client.Ip)
-			}
 		// 广播(全部用户均可接收)
-		case broadcast := <-h.Broadcast:
-			for _, client := range h.Clients {
+		case data := <-h.Broadcast.C:
+			broadcast := data.(MessageBroadcast)
+			for _, client := range h.getClients() {
 				// 通知指定用户
 				if utils.ContainsUint(broadcast.UserIds, client.User.Id) {
-					select {
-					case client.Send <- broadcast.MessageWsResponseStruct:
-					}
+					client.Send.SafeSend(broadcast)
 				}
 			}
 		// 刷新客户端消息
-		case userIds := <-h.RefreshUserMessage:
+		case data := <-h.RefreshUserMessage.C:
+			userIds := data.([]uint)
 			// 同步用户消息
 			hub.Service.mysql.SyncMessageByUserIds(userIds)
-			for _, client := range h.Clients {
+			for _, client := range h.getClients() {
 				for _, id := range userIds {
 					if client.User.Id == id {
 						// 获取未读消息条数
@@ -203,7 +176,7 @@ func (h *MessageHub) run() {
 								"unReadCount": total,
 							}),
 						}
-						client.Send <- msg
+						client.Send.SafeSend(msg)
 					}
 				}
 			}
@@ -211,15 +184,41 @@ func (h *MessageHub) run() {
 	}
 }
 
+// 活跃连接检查
+func (h MessageHub) count() {
+	// 创建定时器, 超出指定时间间隔
+	ticker := time.NewTicker(heartBeatPeriod)
+	defer func() {
+		ticker.Stop()
+	}()
+	for {
+		select {
+		// 到心跳检测时间
+		case <-ticker.C:
+			infos := make([]string, 0)
+			for _, client := range h.getClients() {
+				infos = append(infos, fmt.Sprintf("%d-%s", client.User.Id, client.Ip))
+			}
+			global.Log.Debug(h.Service.ctx, "[消息中心]当前活跃连接: %v", strings.Join(infos, ","))
+		}
+	}
+}
+
+// 获取client列表
+func (h MessageHub) getClients() map[string]*MessageClient {
+	hub.lock.RLock()
+	defer hub.lock.RUnlock()
+	return hub.Clients
+}
+
 // 接收数据
 func (c *MessageClient) receive() {
 	defer func() {
-		c.Conn.Close()
+		c.close()
 		if err := recover(); err != nil {
-			global.Log.Error(c.ctx, "[消息中心][接收端]连接可能已断开: %v", err)
+			global.Log.Error(c.ctx, "[消息中心][接收端][%s]连接可能已断开: %v", c.Key, err)
 		}
 	}()
-loop:
 	for {
 		_, msg, err := c.Conn.ReadMessage()
 
@@ -228,14 +227,12 @@ loop:
 		c.RetryCount = 0
 
 		if err != nil {
-			global.Log.Error(c.ctx, "[消息中心][接收端]接收数据失败: %v", err)
-			hub.UnRegister <- c
-			break loop
+			panic(err)
 		}
 		// 解压数据
 		// data := utils.DeCompressStrByZlib(string(msg))
 		data := string(msg)
-		global.Log.Debug(c.ctx, "[消息中心][接收端]接收数据成功: %d, %s", c.User.Id, data)
+		global.Log.Debug(c.ctx, "[消息中心][接收端][%s]接收数据成功: %d, %s", c.Key, c.User.Id, data)
 		// 数据转为json
 		var req request.MessageWsRequestStruct
 		utils.Json2Struct(data, &req)
@@ -243,10 +240,10 @@ loop:
 		case MessageReqHeartBeat:
 			if _, ok := req.Data.(float64); ok {
 				// 发送心跳
-				c.Send <- response.MessageWsResponseStruct{
+				c.Send.SafeSend(response.MessageWsResponseStruct{
 					Type:   MessageRespHeartBeat,
 					Detail: response.GetSuccess(),
-				}
+				})
 			}
 		case MessageReqPush:
 			var data request.PushMessageRequestStruct
@@ -266,13 +263,13 @@ loop:
 				detail = response.GetFailWithMsg(err.Error())
 			} else {
 				// 刷新条数
-				hub.RefreshUserMessage <- hub.UserIds
+				hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			}
 			// 发送响应
-			c.Send <- response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResponseStruct{
 				Type:   MessageRespNormal,
 				Detail: detail,
-			}
+			})
 		case MessageReqBatchRead:
 			var data request.Req
 			utils.Struct2StructByJson(req.Data, &data)
@@ -282,12 +279,12 @@ loop:
 				detail = response.GetFailWithMsg(err.Error())
 			}
 			// 刷新条数
-			hub.RefreshUserMessage <- hub.UserIds
+			hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			// 发送响应
-			c.Send <- response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResponseStruct{
 				Type:   MessageRespNormal,
 				Detail: detail,
-			}
+			})
 		case MessageReqBatchDeleted:
 			var data request.Req
 			utils.Struct2StructByJson(req.Data, &data)
@@ -297,12 +294,12 @@ loop:
 				detail = response.GetFailWithMsg(err.Error())
 			}
 			// 刷新条数
-			hub.RefreshUserMessage <- hub.UserIds
+			hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			// 发送响应
-			c.Send <- response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResponseStruct{
 				Type:   MessageRespNormal,
 				Detail: detail,
-			}
+			})
 		case MessageReqAllRead:
 			err = hub.Service.mysql.UpdateAllMessageRead(c.User.Id)
 			detail := response.GetSuccess()
@@ -310,12 +307,12 @@ loop:
 				detail = response.GetFailWithMsg(err.Error())
 			}
 			// 刷新条数
-			hub.RefreshUserMessage <- hub.UserIds
+			hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			// 发送响应
-			c.Send <- response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResponseStruct{
 				Type:   MessageRespNormal,
 				Detail: detail,
-			}
+			})
 		case MessageReqAllDeleted:
 			err = hub.Service.mysql.UpdateAllMessageDeleted(c.User.Id)
 			detail := response.GetSuccess()
@@ -323,12 +320,12 @@ loop:
 				detail = response.GetFailWithMsg(err.Error())
 			}
 			// 刷新条数
-			hub.RefreshUserMessage <- hub.UserIds
+			hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			// 发送响应
-			c.Send <- response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResponseStruct{
 				Type:   MessageRespNormal,
 				Detail: detail,
-			}
+			})
 		}
 	}
 }
@@ -339,52 +336,44 @@ func (c *MessageClient) send() {
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.Conn.Close()
+		c.close()
 		if err := recover(); err != nil {
-			global.Log.Error(c.ctx, "[消息中心][发送端]连接可能已断开: %v", err)
+			global.Log.Error(c.ctx, "[消息中心][发送端][%s]连接可能已断开: %v", c.Key, err)
 		}
 	}()
 	for {
 		select {
 		// 发送通道
-		case msg, ok := <-c.Send:
+		case msg, ok := <-c.Send.C:
 			// 设定回写超时时间
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			if !ok {
 				// send通道已关闭
 				c.writeMessage(websocket.CloseMessage, "closed")
-				// 强制下线
-				hub.UnRegister <- c
-				return
+				panic("connection closed")
 			}
 
 			// 发送文本消息
 			if err := c.writeMessage(websocket.TextMessage, utils.Struct2Json(msg)); err != nil {
-				global.Log.Error(c.ctx, "[消息中心][发送端]发送数据失败: %v", err)
-				// 强制下线
-				hub.UnRegister <- c
-				return
+				panic(err)
 			}
 		// 长时间无新消息
 		case <-ticker.C:
 			c.Conn.SetWriteDeadline(time.Now().Add(writeWait))
 			// 发送ping消息
 			if err := c.writeMessage(websocket.PingMessage, "ping"); err != nil {
-				global.Log.Error(c.ctx, "[消息中心][发送端]发送数据失败: %v", err)
-				// 强制下线
-				hub.UnRegister <- c
-				return
+				panic(err)
 			}
 		}
 	}
 }
 
 // 回写消息
-func (c *MessageClient) writeMessage(messageType int, data string) error {
+func (c MessageClient) writeMessage(messageType int, data string) error {
 	// 字符串压缩
 	// s, _ := utils.CompressStrByZlib(data)
 	s := &data
-	global.Log.Debug(c.ctx, "[消息中心][writeMessage] %v", *s)
+	global.Log.Debug(c.ctx, "[消息中心][发送端][%s] %v", c.Key, *s)
 	return c.Conn.WriteMessage(messageType, []byte(*s))
 }
 
@@ -394,35 +383,81 @@ func (c *MessageClient) heartBeat() {
 	ticker := time.NewTicker(heartBeatPeriod)
 	defer func() {
 		ticker.Stop()
-		c.Conn.Close()
+		c.close()
 		if err := recover(); err != nil {
-			global.Log.Error(c.ctx, "[消息中心][心跳]连接可能已断开: %v", err)
+			global.Log.Error(c.ctx, "[消息中心][接收端][%s]连接可能已断开: %v", c.Key, err)
 		}
 	}()
-loop:
 	for {
 		select {
 		// 到心跳检测时间
 		case <-ticker.C:
-			infos := make([]string, 0)
-			for _, client := range hub.Clients {
-				infos = append(infos, fmt.Sprintf("%d-%s", client.User.Id, client.Ip))
-			}
-			global.Log.Debug(c.ctx, "[消息中心][心跳]当前活跃连接: %v", strings.Join(infos, ","))
 			last := time.Now().Sub(c.LastActiveTime.Time)
 			if c.RetryCount > HeartBeatMaxRetryCount {
-				global.Log.Error(c.ctx, "[消息中心][心跳]尝试发送心跳多次(%d)无响应", c.RetryCount)
-				hub.UnRegister <- c
-				break loop
+				panic(fmt.Sprintf("尝试发送心跳多次(%d)无响应", c.RetryCount))
 			}
 			if last > heartBeatPeriod {
 				// 发送心跳
-				c.Send <- response.MessageWsResponseStruct{
+				c.Send.SafeSend(response.MessageWsResponseStruct{
 					Type:   MessageRespHeartBeat,
 					Detail: response.GetSuccessWithData(c.RetryCount),
-				}
+				})
 				c.RetryCount++
 			}
 		}
 	}
+}
+
+// 用户上线
+func (c *MessageClient) register() {
+	hub.lock.Lock()
+	defer hub.lock.Unlock()
+
+	t := carbon.Now()
+	active, ok := hub.UserLastActive[c.User.Id]
+	last := carbon.CreateFromTimestamp(active)
+	hub.Clients[c.Key] = c
+	if !ok || last.AddDuration(lastActiveRegisterPeriod.String()).Lt(t) {
+		if !utils.ContainsUint(hub.UserIds, c.User.Id) {
+			hub.UserIds = append(hub.UserIds, c.User.Id)
+		}
+		global.Log.Debug(c.ctx, "[消息中心][用户上线][%s]%d-%s", c.Key, c.User.Id, c.Ip)
+		go func() {
+			hub.RefreshUserMessage.SafeSend([]uint{c.User.Id})
+		}()
+
+		// 广播当前用户上线
+		msg := response.MessageWsResponseStruct{
+			Type: MessageRespOnline,
+			Detail: response.GetSuccessWithData(map[string]interface{}{
+				"user": c.User,
+			}),
+		}
+
+		// 通知除自己之外的人
+		go hub.Broadcast.SafeSend(MessageBroadcast{
+			MessageWsResponseStruct: msg,
+			UserIds:                 utils.ContainsUintThenRemove(hub.UserIds, c.User.Id),
+		})
+
+		// 记录最后活跃时间戳
+		hub.UserLastActive[c.User.Id] = t.Timestamp()
+	} else {
+		hub.UserLastActive[c.User.Id] = t.Timestamp()
+	}
+}
+
+// 关闭连接
+func (c *MessageClient) close() {
+	hub.lock.Lock()
+	defer hub.lock.Unlock()
+
+	if _, ok := hub.Clients[c.Key]; ok {
+		delete(hub.Clients, c.Key)
+		// 关闭发送通道
+		c.Send.SafeClose()
+		global.Log.Debug(c.ctx, "[消息中心][用户下线][%s]%d-%s", c.Key, c.User.Id, c.Ip)
+	}
+
+	c.Conn.Close()
 }

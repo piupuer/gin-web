@@ -38,5 +38,5 @@ func MessageWs(c *gin.Context) {
 	user := GetCurrentUser(c)
 	s := cache_service.New(c)
 	// 启动连接
-	s.MessageWs(conn, c.Request.Header.Get("Sec-WebSocket-Key"), user, c.ClientIP())
+	s.MessageWs(c, conn, c.Request.Header.Get("Sec-WebSocket-Key"), user, c.ClientIP())
 }
