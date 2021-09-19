@@ -83,11 +83,7 @@ go run main.go
 > 启动成功之后, 可在浏览器中输入: [http://127.0.0.1:10000/api/ping](http://127.0.0.1:10000/api/ping), 若不能访问请检查Go环境变量或数据库配置是否正确
 
 
-## 文档(逐步完善中)
-
-### 一、[安装步骤](https://github.com/piupuer/gin-web/blob/dev/docs/install.md)
-### 二、[nginx配置反向代理去除端口](https://github.com/piupuer/gin-web/blob/dev/docs/nginx.md)
-### 三、redis一主多从哨兵模式配置(筹备中)
+## [文档](https://github.com/piupuer/gin-web/blob/dev/DOCS.md)
 
 
 ## 项目结构概览
@@ -166,6 +162,8 @@ go run main.go
 [limiter](https://github.com/ulule/limiter): Dead simple rate limit middleware for Go.
 <br/>
 [validator](https://github.com/go-playground/validator): Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving.
+<br/>
+[dcron](https://github.com/libi/dcron): 分布式定时任务库.
 <br/>
 
 日志搜集:
