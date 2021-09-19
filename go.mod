@@ -8,7 +8,6 @@ require (
 	github.com/casbin/gorm-adapter/v3 v3.3.1
 	github.com/foobaz/lossypng v0.0.0-20200814224715-48fa8819852a
 	github.com/gin-gonic/gin v1.7.2
-	github.com/go-delve/delve v1.7.0 // indirect
 	github.com/go-mysql-org/go-mysql v1.3.0
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0

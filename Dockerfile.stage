@@ -40,7 +40,7 @@ RUN cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2 && go build &
 RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2/packr2 build
 
 # 安装支持远程调试组件
-RUN cd $GOPATH/pkg/mod/github.com/go-delve/delve@v1.7.0 && go install github.com/go-delve/delve/cmd/dlv && ls -lh
+RUN go get github.com/go-delve/delve@v1.7.0 && cd $GOPATH/pkg/mod/github.com/go-delve/delve@v1.7.0 && go install github.com/go-delve/delve/cmd/dlv && ls -lh
 
 # 构建应用
 RUN go build -gcflags "all=-N -l" -o main-stage .
