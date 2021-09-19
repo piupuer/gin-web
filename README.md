@@ -22,6 +22,7 @@
 - `Lumberjack` 日志切割工具, 高效分离大日志文件, 按日期保存文件
 - `Viper` 配置管理工具, 支持多种配置文件类型
 - `Packr` 文件打包工具, 轻松将静态文件打包到编译后的二进制应用中
+- `DCron` 分布式定时任务，同一task只在某台机器上执行一次(需要配置redis)
 - `GoFunk` 常用工具包, 某些方法无需重复造轮子
 - `Workflow` 工作流程管理(由于golang工作流相关轮子很少不太符合项目需要, 因此自己写了一个)
 - `Uploader` 大文件分块上传/多文件、文件夹上传Vue组件[vue-uploader](https://github.com/simple-uploader/vue-uploader/)

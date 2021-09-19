@@ -15,3 +15,4 @@
 - [ ] gorm中的tag, column后面的值大小写敏感
 - [ ] GET请求绑定时间字符串不能用models.LocalTime而是用string, c.Bind源码中使用form tag, 还没用到自定义UnmarshalJSON就已经报错
 - [ ] 前后端通信JSON可通过zlib或gzip压缩, 提高网络传输效率(redis存JSON也适用, 节省存储空间)
+- [ ] copier.Copy(toValue interface{}, fromValue interface{})中如果fromValue字段是指针类型, 而toValue对应字段非指针, 可能导致无法复制
