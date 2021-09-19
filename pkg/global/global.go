@@ -6,7 +6,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/gobuffalo/packr/v2"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
@@ -28,7 +28,7 @@ var (
 	// mysql实例
 	Mysql *gorm.DB
 	// redis实例
-	Redis *redis.Client
+	Redis redis.UniversalClient
 	// cabin实例
 	CasbinEnforcer *casbin.Enforcer
 	// minio实例

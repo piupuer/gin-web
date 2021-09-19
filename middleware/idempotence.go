@@ -79,7 +79,7 @@ func GenIdempotenceToken() string {
 func CheckIdempotenceToken(token string) bool {
 	if global.Conf.System.UseRedis {
 		// 执行lua脚本
-		res, err := global.Redis.Eval(lua, []string{idempotencePrefix + token}).String()
+		res, err := global.Redis.Eval(lua, []string{idempotencePrefix + token}).Result()
 		if err != nil || res != "1" {
 			return false
 		}

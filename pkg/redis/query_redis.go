@@ -24,7 +24,7 @@ type QueryRedis struct {
 	// 错误信息
 	Error error
 	// redis对象
-	redis *redis.Client
+	redis redis.UniversalClient
 	// 是否需要克隆
 	clone int
 	// 查询声明, 类似于之前版本的search

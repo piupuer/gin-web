@@ -70,22 +70,11 @@ mysql:
   collation: utf8mb4_general_ci
 
 redis:
-  # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
-  host: docker-redis
-  # 端口
-  port: 6379
-  # 哨兵模式(开启后, 单机配置host/port将失效)
-  sentinel:
-    # 是否开启
-    enable: false
-    # 集群名称
-    master-name:
-    # 哨兵连接地址(ip:port), 逗号隔开
-    addresses:
-  # 密码(默认为空)
-  password:
-  # 数据库编号
-  database: 0
+  # uri地址, 目前支持3种地址类型, 暂时不支持cluster地址
+  # redis://[:password@]host[:port][/dbnumber]
+  # redis-socket://[:password@]path[?db=dbnumber]
+  # redis-sentinel://[:password@]host1[:port][,host2:[:port]][,hostN:[:port]][?master=masterName]
+  uri: 'redis://127.0.0.1:6379/0'
   # binlog位置缓存键
   binlog-pos: mysql_binlog_pos
 

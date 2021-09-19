@@ -11,15 +11,16 @@ require (
 	github.com/go-mysql-org/go-mysql v1.3.0
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
-	github.com/go-redis/redis v6.15.9+incompatible
+	github.com/go-redis/redis/v7 v7.4.0
 	github.com/gobuffalo/packr/v2 v2.7.1
-	github.com/golang-module/carbon v1.5.3 // indirect
+	github.com/golang-module/carbon v1.5.4
 	github.com/gorilla/websocket v1.4.2
 	github.com/minio/minio-go/v7 v7.0.12
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/panjf2000/ants v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/piupuer/go-helper v0.0.0-20210918062810-8425bbdd6d2d
 	github.com/pkg/errors v0.9.1
 	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
@@ -28,7 +29,7 @@ require (
 	github.com/silenceper/wechat/v2 v2.0.6
 	github.com/spf13/viper v1.8.1
 	github.com/thedevsaddam/gojsonq/v2 v2.5.2
-	github.com/thoas/go-funk v0.9.0
+	github.com/thoas/go-funk v0.9.1
 	github.com/ulule/limiter/v3 v3.8.0
 	go.uber.org/zap v1.18.1
 	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
