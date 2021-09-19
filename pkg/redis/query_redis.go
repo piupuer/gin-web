@@ -6,7 +6,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/thedevsaddam/gojsonq/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"

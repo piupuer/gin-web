@@ -20,9 +20,8 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/panjf2000/ants v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/piupuer/go-helper v0.0.0-20210918062810-8425bbdd6d2d
+	github.com/piupuer/go-helper v0.0.0-20210919040736-d5ed7fe23089
 	github.com/pkg/errors v0.9.1
-	github.com/robfig/cron/v3 v3.0.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0
 	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
