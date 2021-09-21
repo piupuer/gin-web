@@ -1,4 +1,5 @@
-FROM golang:1.14-alpine AS gin-web
+#FROM golang:1.14-alpine AS gin-web
+FROM registry.cn-shenzhen.aliyuncs.com/piupuer/golang:1.14-alpine AS gin-web
 
 RUN echo "----------------- 后端Gin Web构建(Production) -----------------"
 # 环境变量
@@ -43,7 +44,8 @@ RUN go build -o main-prod .
 
 # mysqldump需要一些依赖库这里直接使用alpine-glibc
 # alpine镜像瘦身
-FROM frolvlad/alpine-glibc:alpine-3.12
+#FROM frolvlad/alpine-glibc:alpine-3.12
+FROM registry.cn-shenzhen.aliyuncs.com/piupuer/frolvlad-alpine-glibc:alpine-3.12
 
 # 定义程序运行模式
 ENV GIN_WEB_MODE production
