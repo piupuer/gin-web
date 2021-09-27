@@ -55,7 +55,7 @@ mysql:
   # 数据库名
   database: gin_web
   # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
-  host: docker-mysql
+  host: 127.0.0.1
   # 端口
   port: 3306
   # 连接字符串查询参数
