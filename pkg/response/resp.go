@@ -1,9 +1,9 @@
 package response
 
 import (
-	"gin-web/models"
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
+	"github.com/golang-module/carbon"
 )
 
 // http请求响应封装
@@ -33,9 +33,9 @@ type PageData struct {
 
 // 基础数据封装(如Id/CreatedAt/UpdatedAt等较常用字段，基本上响应结构体都会用上)
 type BaseData struct {
-	Id        uint             `json:"id"`
-	CreatedAt models.LocalTime `json:"createdAt"`
-	UpdatedAt models.LocalTime `json:"updatedAt"`
+	Id        uint                `json:"id"`
+	CreatedAt carbon.ToDateTimeString `json:"createdAt"`
+	UpdatedAt carbon.ToDateTimeString `json:"updatedAt"`
 }
 
 // 计算limit/offset, 如果需要用到返回的PageSize, PageNum, 务必保证Total值有效

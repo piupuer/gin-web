@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gin-web/pkg/global"
-	"github.com/go-redis/redis"
+	"github.com/piupuer/go-helper/job"
 	"time"
 )
 
@@ -29,31 +29,16 @@ func Redis() {
 			}
 		}
 	}()
-	if !global.Conf.Redis.Sentinel.Enable {
-		client := redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%d", global.Conf.Redis.Host, global.Conf.Redis.Port),
-			DB:       global.Conf.Redis.Database,
-			Password: global.Conf.Redis.Password,
-		})
-		err := client.Ping().Err()
-		if err != nil {
-			panic(fmt.Sprintf("初始化redis异常: %v", err))
-		}
-		global.Redis = client
-	} else {
-		sf := &redis.FailoverOptions{
-			MasterName:    global.Conf.Redis.Sentinel.MasterName,
-			SentinelAddrs: global.Conf.Redis.Sentinel.AddressArr,
-			Password:      global.Conf.Redis.Password,
-			DB:            global.Conf.Redis.Database,
-		}
-		client := redis.NewFailoverClient(sf)
-		err := client.Ping().Err()
-		if err != nil {
-			panic(fmt.Sprintf("初始化redis哨兵异常: %v", err))
-		}
-		global.Redis = client
+	// parse redis URI
+	client, err := job.ParseRedisURI(global.Conf.Redis.Uri)
+	if err != nil {
+		panic(fmt.Sprintf("初始化redis异常: %v", err))
 	}
+	err = client.Ping().Err()
+	if err != nil {
+		panic(fmt.Sprintf("初始化redis异常: %v", err))
+	}
+	global.Redis = client
 
 	init = true
 	global.Log.Info(ctx, "初始化redis完成")

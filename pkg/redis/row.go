@@ -3,12 +3,12 @@ package redis
 import (
 	"context"
 	"fmt"
-	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/go-mysql-org/go-mysql/canal"
 	"github.com/go-mysql-org/go-mysql/mysql"
 	"github.com/go-mysql-org/go-mysql/schema"
+	"github.com/golang-module/carbon"
 )
 
 const (
@@ -48,7 +48,9 @@ func RowChange(ctx context.Context, e *canal.RowsEvent) {
 				// 转为本地时间
 				// grom v2时间类型全部是datetime(3)
 				if t, ok := eItem.(string); ok && columnType == "datetime(3)" {
-					eItem = new(models.LocalTime).SetString(t)
+					eItem = carbon.ToDateTimeString{
+						Carbon: carbon.Parse(t),
+					}
 				}
 				row[j] = eItem
 			}

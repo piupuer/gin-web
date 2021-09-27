@@ -10,7 +10,7 @@ import (
 )
 
 // 根据当前角色顺序获取角色编号集合(主要功能是针对不同角色用户登录系统隐藏特定菜单)
-func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
+func (s MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
 	err := s.tx.Model(&models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
@@ -24,7 +24,7 @@ func (s *MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (s *MysqlService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
+func (s MysqlService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
 	query := s.tx.
@@ -56,7 +56,7 @@ func (s *MysqlService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRol
 }
 
 // 更新角色的权限菜单
-func (s *MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (s MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	// 查询全部菜单
 	allMenu := s.getAllMenu(currentRole)
 	// 查询角色拥有菜单
@@ -96,7 +96,7 @@ func (s *MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, 
 }
 
 // 更新角色的权限接口
-func (s *MysqlService) UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (s MysqlService) UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
 	var oldRole models.SysRole
 	query := s.tx.Model(&oldRole).Where("id = ?", id).First(&oldRole)
 	if query.Error == gorm.ErrRecordNotFound {
@@ -145,7 +145,7 @@ func (s *MysqlService) UpdateRoleApisById(id uint, req request.UpdateIncremental
 }
 
 // 批量删除角色
-func (s *MysqlService) DeleteRoleByIds(ids []uint) (err error) {
+func (s MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	var roles []models.SysRole
 	// 查询符合条件的角色, 以及关联的用户
 	err = s.tx.Preload("Users").Where("id IN (?)", ids).Find(&roles).Error

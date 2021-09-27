@@ -1,4 +1,5 @@
-FROM golang:1.14-alpine AS gin-web
+#FROM golang:1.14-alpine AS gin-web
+FROM registry.cn-shenzhen.aliyuncs.com/piupuer/golang:1.14-alpine AS gin-web
 
 RUN echo "----------------- 后端Gin Web构建(Staging) -----------------"
 # 环境变量
@@ -40,14 +41,15 @@ RUN cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2 && go build &
 RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2/packr2 build
 
 # 安装支持远程调试组件
-RUN cd $GOPATH/pkg/mod/github.com/go-delve/delve@v1.7.0 && go install github.com/go-delve/delve/cmd/dlv && ls -lh
+RUN go get github.com/go-delve/delve@v1.7.0 && cd $GOPATH/pkg/mod/github.com/go-delve/delve@v1.7.0 && go install github.com/go-delve/delve/cmd/dlv && ls -lh
 
 # 构建应用
 RUN go build -gcflags "all=-N -l" -o main-stage .
 
 # mysqldump需要一些依赖库这里直接使用alpine-glibc
 # alpine镜像瘦身
-FROM frolvlad/alpine-glibc:alpine-3.12
+#FROM frolvlad/alpine-glibc:alpine-3.12
+FROM registry.cn-shenzhen.aliyuncs.com/piupuer/frolvlad-alpine-glibc:alpine-3.12
 
 # 定义程序运行模式
 ENV GIN_WEB_MODE staging

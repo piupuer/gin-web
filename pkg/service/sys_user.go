@@ -11,7 +11,7 @@ import (
 )
 
 // 登录校验
-func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
+func (s MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
 	var u models.SysUser
 	// 查询用户及其角色
 	err := s.tx.Preload("Role").Where("username = ?", user.Username).First(&u).Error
@@ -26,7 +26,7 @@ func (s *MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 }
 
 // 获取用户
-func (s *MysqlService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
+func (s MysqlService) GetUsers(req *request.UserRequestStruct) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
 	query := s.tx.
@@ -69,7 +69,7 @@ func (s *MysqlService) GetUsers(req *request.UserRequestStruct) ([]models.SysUse
 }
 
 // 获取单个用户
-func (s *MysqlService) GetUserById(id uint) (models.SysUser, error) {
+func (s MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	var user models.SysUser
 	var err error
 	err = s.tx.Preload("Role").
@@ -81,7 +81,7 @@ func (s *MysqlService) GetUserById(id uint) (models.SysUser, error) {
 }
 
 // 获取多个用户
-func (s *MysqlService) GetUsersByIds(ids []uint) ([]models.SysUser, error) {
+func (s MysqlService) GetUsersByIds(ids []uint) ([]models.SysUser, error) {
 	var users []models.SysUser
 	var err error
 	err = s.tx.Preload("Role").Where("id IN (?)", ids).Find(&users).Error

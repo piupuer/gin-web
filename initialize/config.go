@@ -123,13 +123,7 @@ func Config(c *gin.Context) {
 	} else {
 		global.Conf.System.RSAPrivateBytes = privateBytes
 	}
-
-	// 初始化Sentinel.Addresses
-	global.Conf.Redis.Sentinel.AddressArr = make([]string, 0)
-	if strings.TrimSpace(global.Conf.Redis.Sentinel.Addresses) != "" {
-		global.Conf.Redis.Sentinel.AddressArr = strings.Split(global.Conf.Redis.Sentinel.Addresses, ",")
-	}
-
+	
 	fmt.Println("初始化配置文件完成, 环境变量GIN_WEB_CONF: ", global.ConfBox.ConfEnv)
 }
 

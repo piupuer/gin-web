@@ -17,6 +17,7 @@ type Configuration struct {
 }
 
 type SystemConfiguration struct {
+	MachineId                   uint32   `mapstructure:"machine-id" json:"machineId"`
 	UrlPathPrefix               string   `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
 	ApiVersion                  string   `mapstructure:"api-version" json:"apiVersion"`
 	Port                        int      `mapstructure:"port" json:"port"`
@@ -59,12 +60,8 @@ type MysqlConfiguration struct {
 }
 
 type RedisConfiguration struct {
-	Host      string                     `mapstructure:"host" json:"host"`
-	Port      int                        `mapstructure:"port" json:"port"`
-	Sentinel  RedisSentinelConfiguration `mapstructure:"sentinel" json:"sentinel"`
-	Password  string                     `mapstructure:"password" json:"password"`
-	Database  int                        `mapstructure:"database" json:"database"`
-	BinlogPos string                     `mapstructure:"binlog-pos" json:"binlogPos"`
+	Uri       string `mapstructure:"uri" json:"uri"`
+	BinlogPos string `mapstructure:"binlog-pos" json:"binlogPos"`
 }
 
 type RedisSentinelConfiguration struct {

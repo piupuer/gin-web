@@ -6,12 +6,13 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/golang-module/carbon"
 	"strings"
 	"time"
 )
 
 // 查询指定用户未删除的消息
-func (s *MysqlService) GetUnDeleteMessages(req *request.MessageRequestStruct) ([]response.MessageListResponseStruct, error) {
+func (s MysqlService) GetUnDeleteMessages(req *request.MessageRequestStruct) ([]response.MessageListResponseStruct, error) {
 	sysMessageLogTableName := new(models.SysMessageLog).TableName()
 	sysMessageTableName := new(models.SysMessage).TableName()
 	sysUserTableName := new(models.SysUser).TableName()
@@ -65,7 +66,7 @@ func (s *MysqlService) GetUnDeleteMessages(req *request.MessageRequestStruct) ([
 }
 
 // 查询未读消息条数
-func (s *MysqlService) GetUnReadMessageCount(userId uint) (int64, error) {
+func (s MysqlService) GetUnReadMessageCount(userId uint) (int64, error) {
 	var total int64
 	err := s.tx.
 		Model(&models.SysMessageLog{}).
@@ -76,27 +77,27 @@ func (s *MysqlService) GetUnReadMessageCount(userId uint) (int64, error) {
 }
 
 // 更新为已读
-func (s *MysqlService) BatchUpdateMessageRead(messageLogIds []uint) error {
+func (s MysqlService) BatchUpdateMessageRead(messageLogIds []uint) error {
 	return s.BatchUpdateMessageStatus(messageLogIds, models.SysMessageLogStatusRead)
 }
 
 // 更新为已删除
-func (s *MysqlService) BatchUpdateMessageDeleted(messageLogIds []uint) error {
+func (s MysqlService) BatchUpdateMessageDeleted(messageLogIds []uint) error {
 	return s.BatchUpdateMessageStatus(messageLogIds, models.SysMessageLogStatusDeleted)
 }
 
 // 全标已读
-func (s *MysqlService) UpdateAllMessageRead(userId uint) error {
+func (s MysqlService) UpdateAllMessageRead(userId uint) error {
 	return s.UpdateAllMessageStatus(userId, models.SysMessageLogStatusRead)
 }
 
 // 全标删除
-func (s *MysqlService) UpdateAllMessageDeleted(userId uint) error {
+func (s MysqlService) UpdateAllMessageDeleted(userId uint) error {
 	return s.UpdateAllMessageStatus(userId, models.SysMessageLogStatusDeleted)
 }
 
 // 批量更新消息状态
-func (s *MysqlService) BatchUpdateMessageStatus(messageLogIds []uint, status uint) error {
+func (s MysqlService) BatchUpdateMessageStatus(messageLogIds []uint, status uint) error {
 	return s.tx.
 		Model(&models.SysMessageLog{}).
 		// 已删除的消息不再标记
@@ -106,7 +107,7 @@ func (s *MysqlService) BatchUpdateMessageStatus(messageLogIds []uint, status uin
 }
 
 // 更新某个用户的全部消息状态
-func (s *MysqlService) UpdateAllMessageStatus(userId uint, status uint) error {
+func (s MysqlService) UpdateAllMessageStatus(userId uint, status uint) error {
 	var log models.SysMessageLog
 	log.ToUserId = userId
 	return s.tx.
@@ -118,7 +119,7 @@ func (s *MysqlService) UpdateAllMessageStatus(userId uint, status uint) error {
 }
 
 // 同步消息(某个用户登录时, 将消息关联到log)
-func (s *MysqlService) SyncMessageByUserIds(userIds []uint) error {
+func (s MysqlService) SyncMessageByUserIds(userIds []uint) error {
 	// 查询用户
 	users := make([]models.SysUser, 0)
 	err := s.tx.Where("id IN (?)", userIds).Find(&users).Error
@@ -173,7 +174,7 @@ func (s *MysqlService) SyncMessageByUserIds(userIds []uint) error {
 }
 
 // 创建消息
-func (s *MysqlService) CreateMessage(req *request.PushMessageRequestStruct) error {
+func (s MysqlService) CreateMessage(req *request.PushMessageRequestStruct) error {
 	if req.Type != nil {
 		message := models.SysMessage{
 			FromUserId: req.FromUserId,
@@ -201,17 +202,14 @@ func (s *MysqlService) CreateMessage(req *request.PushMessageRequestStruct) erro
 }
 
 // 创建一对一的消息(这里支持多个接收者, 但消息类型为一对一, 适合于发送给少量人群的批量操作)
-func (s *MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toIds []uint) error {
+func (s MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toIds []uint) error {
 	// 强制修改类型为一对一
 	message.Type = models.SysMessageTypeOneToOne
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		now := time.Now()
-		d, _ := time.ParseDuration("720h")
-		expired := now.Add(d)
-		message.ExpiredAt = &models.LocalTime{
-			Time: expired,
+		message.ExpiredAt = &carbon.ToDateTimeString{
+			Carbon: carbon.Now().AddDays(30),
 		}
 	}
 
@@ -235,17 +233,14 @@ func (s *MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toI
 }
 
 // 创建一对多的消息(这里支持多个接收角色, 适合于发送给指定角色的批量操作)
-func (s *MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, toRoleIds []uint) error {
+func (s MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, toRoleIds []uint) error {
 	// 强制修改类型为一对多
 	message.Type = models.SysMessageTypeOneToMany
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		now := time.Now()
-		d, _ := time.ParseDuration("720h")
-		expired := now.Add(d)
-		message.ExpiredAt = &models.LocalTime{
-			Time: expired,
+		message.ExpiredAt = &carbon.ToDateTimeString{
+			Carbon: carbon.Now().AddDays(30),
 		}
 	}
 
@@ -266,17 +261,14 @@ func (s *MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, to
 }
 
 // 创建系统消息(适合于发送全部用户系统公告)
-func (s *MysqlService) CreateSystemMessage(message models.SysMessage) error {
+func (s MysqlService) CreateSystemMessage(message models.SysMessage) error {
 	// 强制修改类型为系统
 	message.Type = models.SysMessageTypeSystem
 
 	// 设置默认过期时间
 	if message.ExpiredAt == nil {
-		now := time.Now()
-		d, _ := time.ParseDuration("720h")
-		expired := now.Add(d)
-		message.ExpiredAt = &models.LocalTime{
-			Time: expired,
+		message.ExpiredAt = &carbon.ToDateTimeString{
+			Carbon: carbon.Now().AddDays(30),
 		}
 	}
 

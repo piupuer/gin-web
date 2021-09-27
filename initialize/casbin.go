@@ -22,7 +22,7 @@ func mysqlCasbin() (*casbin.Enforcer, error) {
 	// 初始化数据库适配器, 添加自定义表前缀, casbin不使用事务管理, 因为他内部使用到事务, 重复用会导致冲突
 	// casbin默认表名casbin_rule, 为了与项目统一改写一下规则
 	// 注意: gormadapter.CasbinTableName内部添加了下划线, 这里不再多此一举
-	a, err := gormadapter.NewAdapterByDBUseTableName(global.Mysql, global.Conf.Mysql.TablePrefix, "sys_casbin")
+	a, err := gormadapter.NewAdapterByDBUseTableName(global.Mysql.WithContext(ctx), global.Conf.Mysql.TablePrefix, "sys_casbin")
 	if err != nil {
 		return nil, err
 	}

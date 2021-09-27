@@ -5,8 +5,9 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/gin-gonic/gin"
 	ut "github.com/go-playground/universal-translator"
-	"github.com/go-redis/redis"
+	"github.com/go-redis/redis/v7"
 	"github.com/gobuffalo/packr/v2"
+	"github.com/piupuer/go-helper/logger"
 	uuid "github.com/satori/go.uuid"
 	"github.com/spf13/viper"
 	"gopkg.in/go-playground/validator.v9"
@@ -23,11 +24,11 @@ var (
 	// packr盒子用于打包配置文件到golang编译后的二进制程序中
 	ConfBox *CustomConfBox
 	// zap日志
-	Log *GormZapLogger
+	Log *logger.Logger
 	// mysql实例
 	Mysql *gorm.DB
 	// redis实例
-	Redis *redis.Client
+	Redis redis.UniversalClient
 	// cabin实例
 	CasbinEnforcer *casbin.Enforcer
 	// validation.v9校验器

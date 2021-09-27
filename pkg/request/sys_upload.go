@@ -2,10 +2,9 @@ package request
 
 import (
 	"fmt"
-	"gin-web/models"
 	"gin-web/pkg/global"
+	"github.com/golang-module/carbon"
 	"regexp"
-	"time"
 )
 
 const (
@@ -63,9 +62,7 @@ func (s *FilePartInfo) GetChunkFilename(chunkNumber uint) string {
 	return fmt.Sprintf(
 		"%s/%s/%s/uploader-%s/chunk%d",
 		global.Conf.Upload.SaveDir,
-		models.LocalTime{
-			Time: time.Now(),
-		}.DateString(),
+		carbon.Now().ToDateString(),
 		ChunkTmpPath,
 		identifier,
 		chunkNumber,
@@ -80,9 +77,7 @@ func (s *FilePartInfo) GetChunkFilenameWithoutChunkNumber() string {
 	return fmt.Sprintf(
 		"%s/%s/%s/uploader-%s/chunk",
 		global.Conf.Upload.SaveDir,
-		models.LocalTime{
-			Time: time.Now(),
-		}.DateString(),
+		carbon.Now().ToDateString(),
 		ChunkTmpPath,
 		identifier,
 	)
@@ -94,9 +89,7 @@ func (s *FilePartInfo) GetUploadRootPath() string {
 	return fmt.Sprintf(
 		"%s/%s",
 		global.Conf.Upload.SaveDir,
-		models.LocalTime{
-			Time: time.Now(),
-		}.DateString(),
+		carbon.Now().ToDateString(),
 	)
 }
 
@@ -108,9 +101,7 @@ func (s *FilePartInfo) GetChunkRootPath() string {
 	return fmt.Sprintf(
 		"%s/%s/%s/uploader-%s",
 		global.Conf.Upload.SaveDir,
-		models.LocalTime{
-			Time: time.Now(),
-		}.DateString(),
+		carbon.Now().ToDateString(),
 		ChunkTmpPath,
 		identifier,
 	)

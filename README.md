@@ -22,6 +22,7 @@
 - `Lumberjack` 日志切割工具, 高效分离大日志文件, 按日期保存文件
 - `Viper` 配置管理工具, 支持多种配置文件类型
 - `Packr` 文件打包工具, 轻松将静态文件打包到编译后的二进制应用中
+- `DCron` 分布式定时任务，同一task只在某台机器上执行一次(需要配置redis)
 - `GoFunk` 常用工具包, 某些方法无需重复造轮子
 - `Workflow` 工作流程管理(由于golang工作流相关轮子很少不太符合项目需要, 因此自己写了一个)
 - `Uploader` 大文件分块上传/多文件、文件夹上传Vue组件[vue-uploader](https://github.com/simple-uploader/vue-uploader/)
@@ -82,10 +83,7 @@ go run main.go
 > 启动成功之后, 可在浏览器中输入: [http://127.0.0.1:10000/api/ping](http://127.0.0.1:10000/api/ping), 若不能访问请检查Go环境变量或数据库配置是否正确
 
 
-## 文档(逐步完善中)
-
-### 一、[安装步骤](https://github.com/piupuer/gin-web/blob/dev/docs/install.md)
-### 二、nginx配置反向代理去除端口(筹备中)
+## [文档](https://github.com/piupuer/gin-web/blob/dev/DOCS.md)
 
 
 ## 项目结构概览
@@ -164,6 +162,8 @@ go run main.go
 [limiter](https://github.com/ulule/limiter): Dead simple rate limit middleware for Go.
 <br/>
 [validator](https://github.com/go-playground/validator): Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving.
+<br/>
+[dcron](https://github.com/libi/dcron): 分布式定时任务库.
 <br/>
 
 日志搜集:

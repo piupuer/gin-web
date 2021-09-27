@@ -8,7 +8,7 @@ import (
 )
 
 // 获取权限菜单树
-func (s *MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
+func (s MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	tree := make([]models.SysMenu, 0)
 	menus := make([]models.SysMenu, 0)
 	// 查询全部菜单
@@ -38,7 +38,7 @@ func (s *MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 }
 
 // 获取所有菜单
-func (s *MysqlService) GetMenus(currentRole models.SysRole) []models.SysMenu {
+func (s MysqlService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 	tree := make([]models.SysMenu, 0)
 	menus := s.getAllMenu(currentRole)
 	// 生成菜单树
@@ -49,7 +49,7 @@ func (s *MysqlService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 // 生成菜单树
 // parentId: 父菜单编号
 // roleMenus: 有权限的菜单列表
-func (s *MysqlService) GenMenuTree(parentId uint, roleMenus []models.SysMenu) []models.SysMenu {
+func (s MysqlService) GenMenuTree(parentId uint, roleMenus []models.SysMenu) []models.SysMenu {
 	roleMenuIds := make([]uint, 0)
 	// 查询全部菜单
 	allMenu := make([]models.SysMenu, 0)
@@ -88,7 +88,7 @@ func genMenuTree(parentId uint, roleMenuIds []uint, allMenu []models.SysMenu) []
 }
 
 // 根据权限编号获取全部菜单
-func (s *MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
+func (s MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
 	// 菜单树
 	tree := make([]models.SysMenu, 0)
 	// 有权限访问的id列表
@@ -109,7 +109,7 @@ func (s *MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uin
 }
 
 // 创建菜单
-func (s *MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuRequestStruct) (err error) {
+func (s MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuRequestStruct) (err error) {
 	var menu models.SysMenu
 	utils.Struct2StructByJson(req, &menu)
 	// 创建数据
@@ -123,7 +123,7 @@ func (s *MysqlService) CreateMenu(currentRole models.SysRole, req *request.Creat
 }
 
 // 获取权限菜单, 非菜单树
-func (s *MysqlService) getRoleMenus(roleId uint) []models.SysMenu {
+func (s MysqlService) getRoleMenus(roleId uint) []models.SysMenu {
 	var role models.SysRole
 	// 根据权限编号获取菜单
 	err := s.tx.
@@ -137,7 +137,7 @@ func (s *MysqlService) getRoleMenus(roleId uint) []models.SysMenu {
 }
 
 // 获取全部菜单, 非菜单树
-func (s *MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
+func (s MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	menus := make([]models.SysMenu, 0)
 	// 查询关系表
 	relations := make([]models.RelationMenuRole, 0)

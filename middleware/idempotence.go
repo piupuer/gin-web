@@ -22,7 +22,9 @@ var (
 )
 
 // redis lua脚本(先读取key, 直接删除, 获取删除标志)
-const lua string = `
+const (
+	idempotencePrefix string = "gin-web:idempotence_"
+	lua               string = `
 local current = redis.call('GET', KEYS[1])
 if current == false then
     return '-1';
@@ -34,6 +36,7 @@ else
      return '0';
 end
 `
+)
 
 // 全局异常处理中间件
 func Idempotence(c *gin.Context) {
@@ -63,7 +66,7 @@ func GenIdempotenceToken() string {
 	token := uuid.NewV4().String()
 	// 写入redis或map
 	if global.Conf.System.UseRedis {
-		global.Redis.Set(token, true, expire)
+		global.Redis.Set(idempotencePrefix+token, true, expire)
 	} else {
 		idempotenceLock.Lock()
 		defer idempotenceLock.Unlock()
@@ -76,7 +79,7 @@ func GenIdempotenceToken() string {
 func CheckIdempotenceToken(token string) bool {
 	if global.Conf.System.UseRedis {
 		// 执行lua脚本
-		res, err := global.Redis.Eval(lua, []string{token}).String()
+		res, err := global.Redis.Eval(lua, []string{idempotencePrefix + token}).Result()
 		if err != nil || res != "1" {
 			return false
 		}

@@ -3,10 +3,12 @@ package initialize
 import (
 	"fmt"
 	"gin-web/pkg/global"
+	"github.com/golang-module/carbon"
 	"github.com/natefinch/lumberjack"
+	"github.com/piupuer/go-helper/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
-	"gorm.io/gorm/logger"
+	glogger "gorm.io/gorm/logger"
 	"os"
 	"time"
 )
@@ -28,8 +30,9 @@ func Logger() {
 	enConfig := zap.NewProductionEncoderConfig() // 生成配置
 
 	// 时间格式
-	enConfig.EncodeTime = global.ZapLogLocalTimeEncoder
-
+	enConfig.EncodeTime = func(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
+		enc.AppendString(carbon.Time2Carbon(t).ToRfc3339String())
+	}
 	colorful := false
 	if global.Conf.Logs.Level <= zapcore.DebugLevel {
 		colorful = true
@@ -52,8 +55,14 @@ func Logger() {
 	)
 
 	l := zap.New(core)
-	global.Log = global.NewGormZapLogger(l, logger.Config{
-		Colorful: colorful,
-	})
+	global.Log = logger.New(
+		l,
+		logger.Config{
+			LineNumPrefix: global.RuntimeRoot,
+			Config: glogger.Config{
+				Colorful: colorful,
+			},
+		},
+	)
 	global.Log.Debug(ctx, "初始化日志完成")
 }

@@ -23,7 +23,7 @@ type MysqlService struct {
 
 // 初始化服务
 func New(c *gin.Context) MysqlService {
-	nc:= gin.Context{}
+	nc := gin.Context{}
 	if c != nil {
 		nc = *c
 	}
@@ -43,7 +43,7 @@ var (
 )
 
 // 获取携带request id的上下文
-func (s *MysqlService) RequestIdContext(requestId string) context.Context {
+func (s MysqlService) RequestIdContext(requestId string) context.Context {
 	if s.ctx != nil && requestId == "" {
 		requestId = s.ctx.GetString(global.RequestIdContextKey)
 	}
@@ -51,22 +51,22 @@ func (s *MysqlService) RequestIdContext(requestId string) context.Context {
 }
 
 // 查询指定id, model需使用指针, 否则可能无法绑定数据
-func (s *MysqlService) FindById(id uint, model interface{}, setCache bool) (err error) {
+func (s MysqlService) FindById(id uint, model interface{}, setCache bool) (err error) {
 	return s.FindByKeys("id", id, model, setCache)
 }
 
 // 查询指定id列表, model需使用指针, 否则可能无法绑定数据
-func (s *MysqlService) FindByIds(ids []uint, model interface{}, setCache bool) (err error) {
+func (s MysqlService) FindByIds(ids []uint, model interface{}, setCache bool) (err error) {
 	return s.FindByKeys("id", ids, model, setCache)
 }
 
 // 查询指定key列表, model需使用指针, 否则可能无法绑定数据(如不使用cache可设置为false)
-func (s *MysqlService) FindByKeys(key string, ids interface{}, model interface{}, setCache bool) (err error) {
+func (s MysqlService) FindByKeys(key string, ids interface{}, model interface{}, setCache bool) (err error) {
 	return s.FindByKeysWithPreload(key, nil, ids, model, setCache)
 }
 
 // 查询指定key列表, 并且preload其他表, model需使用指针, 否则可能无法绑定数据(如不使用cache可设置为false)
-func (s *MysqlService) FindByKeysWithPreload(key string, preloads []string, ids interface{}, model interface{}, setCache bool) (err error) {
+func (s MysqlService) FindByKeysWithPreload(key string, preloads []string, ids interface{}, model interface{}, setCache bool) (err error) {
 	var newIds interface{}
 	var firstId interface{}
 	// 判断ids是否数组
@@ -205,7 +205,7 @@ func (s *MysqlService) FindByKeysWithPreload(key string, preloads []string, ids 
 }
 
 // 查询, model需使用指针, 否则可能无法绑定数据
-func (s *MysqlService) Find(query *gorm.DB, page *response.PageInfo, model interface{}) (err error) {
+func (s MysqlService) Find(query *gorm.DB, page *response.PageInfo, model interface{}) (err error) {
 	// 获取model值
 	rv := reflect.ValueOf(model)
 	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Slice) {
@@ -284,7 +284,7 @@ func (s *MysqlService) Find(query *gorm.DB, page *response.PageInfo, model inter
 }
 
 // Scan查询, 适用于多表联合查询, model需使用指针, 否则可能无法绑定数据
-func (s *MysqlService) Scan(query *gorm.DB, page *response.PageInfo, model interface{}) (err error) {
+func (s MysqlService) Scan(query *gorm.DB, page *response.PageInfo, model interface{}) (err error) {
 	// 获取model值
 	rv := reflect.ValueOf(model)
 	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Slice) {
@@ -312,7 +312,7 @@ func (s *MysqlService) Scan(query *gorm.DB, page *response.PageInfo, model inter
 }
 
 // 创建, model需使用指针, 否则可能无法插入数据
-func (s *MysqlService) Create(req interface{}, model interface{}) (err error) {
+func (s MysqlService) Create(req interface{}, model interface{}) (err error) {
 	utils.Struct2StructByJson(req, model)
 	// 创建数据
 	err = s.tx.Create(model).Error
@@ -320,7 +320,7 @@ func (s *MysqlService) Create(req interface{}, model interface{}) (err error) {
 }
 
 // 根据编号更新
-func (s *MysqlService) UpdateById(id uint, req interface{}, model interface{}) error {
+func (s MysqlService) UpdateById(id uint, req interface{}, model interface{}) error {
 	// 获取model值
 	rv := reflect.ValueOf(model)
 	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Struct) {
@@ -340,6 +340,6 @@ func (s *MysqlService) UpdateById(id uint, req interface{}, model interface{}) e
 }
 
 // 批量删除, model需使用指针, 否则可能无法插入数据
-func (s *MysqlService) DeleteByIds(ids []uint, model interface{}) (err error) {
+func (s MysqlService) DeleteByIds(ids []uint, model interface{}) (err error) {
 	return s.tx.Where("id IN (?)", ids).Delete(model).Error
 }
