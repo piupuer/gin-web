@@ -3,9 +3,10 @@ module gin-web
 go 1.14
 
 require (
-	github.com/appleboy/gin-jwt/v2 v2.6.4
+	github.com/appleboy/gin-jwt/v2 v2.6.5-0.20210919105835-bd5b0bd72741
 	github.com/casbin/casbin/v2 v2.31.9
 	github.com/casbin/gorm-adapter/v3 v3.3.1
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/foobaz/lossypng v0.0.0-20200814224715-48fa8819852a
 	github.com/gin-gonic/gin v1.7.2
 	github.com/go-mysql-org/go-mysql v1.3.0
