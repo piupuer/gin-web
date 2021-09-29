@@ -50,7 +50,7 @@ func Config() {
 		v.SetDefault(index, setting)
 	}
 	// 读取当前go运行环境变量
-	env := strings.ToLower(os.Getenv("GIN_WEB_MODE"))
+	env := strings.ToLower(fmt.Sprintf("%s_MODE", global.ProEnvName))
 	configName := ""
 	if env == "staging" {
 		configName = stagingConfig
@@ -63,7 +63,7 @@ func Config() {
 	}
 	// 转换为结构体
 	if err := v.Unmarshal(&global.Conf); err != nil {
-		panic(fmt.Sprintf("[单元测试]初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
+		panic(fmt.Sprintf("[单元测试]初始化配置文件失败: %v, 环境变量%s_CONF: %s", err, global.ProEnvName, global.ConfBox.ConfEnv))
 	}
 
 	// 表前缀去掉后缀_
@@ -81,12 +81,12 @@ func Config() {
 
 func readConfig(v *viper.Viper, configFile string) {
 	v.SetConfigType(configType)
-	config, err := global.ConfBox.Find(configFile)
-	if err != nil {
-		panic(fmt.Sprintf("[单元测试]初始化配置文件失败: %v, 环境变量TEST_CONF: %s", err, global.ConfBox.ConfEnv))
+	config := global.ConfBox.Find(configFile)
+	if len(config) == 0 {
+		panic(fmt.Sprintf("[单元测试]初始化配置文件失败, 环境变量TEST_CONF: %s", global.ConfBox.ConfEnv))
 	}
 	// 加载配置
-	if err = v.ReadConfig(bytes.NewReader(config)); err != nil {
+	if err := v.ReadConfig(bytes.NewReader(config)); err != nil {
 		panic(fmt.Sprintf("[单元测试]初始化配置文件失败: %v, 环境变量TEST_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
 }

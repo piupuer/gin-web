@@ -28,7 +28,7 @@ func mysqlCasbin() (*casbin.Enforcer, error) {
 	}
 	// 加锁避免并发多次初始化cabinModel
 	// 读取配置文件
-	config, err := global.ConfBox.Find(global.Conf.Casbin.ModelPath)
+	config := global.ConfBox.Find(global.Conf.Casbin.ModelPath)
 	cabinModel := model.NewModel()
 	// 从字符串中加载casbin配置
 	err = cabinModel.LoadModelFromText(string(config))
