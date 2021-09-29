@@ -6,26 +6,24 @@ import (
 )
 
 // User login structure
-type RegisterAndLoginRequestStruct struct {
+type RegisterAndLoginReq struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
-func (s RegisterAndLoginRequestStruct) FieldTrans() map[string]string {
+func (s RegisterAndLoginReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Username"] = "用户名"
 	m["Password"] = "密码"
 	return m
 }
 
-// 修改密码结构体
-type ChangePwdRequestStruct struct {
+type ChangePwdReq struct {
 	OldPassword string `json:"oldPassword" form:"oldPassword"`
 	NewPassword string `json:"newPassword" form:"newPassword"`
 }
 
-// 获取用户列表结构体
-type UserRequestStruct struct {
+type UserReq struct {
 	CurrentRole       models.SysRole `json:"currentRole"`
 	Username          string         `json:"username" form:"username"`
 	Mobile            string         `json:"mobile" form:"mobile"`
@@ -41,8 +39,7 @@ type UserRequestStruct struct {
 	response.PageInfo                // 分页参数
 }
 
-// 创建用户结构体
-type CreateUserRequestStruct struct {
+type CreateUserReq struct {
 	Username     string   `json:"username" validate:"required"`
 	Password     string   `json:"password"`
 	InitPassword string   `json:"initPassword" validate:"required"` // 不使用SysUser的Password字段, 避免请求劫持绕过系统校验
@@ -56,8 +53,7 @@ type CreateUserRequestStruct struct {
 	Creator      string   `json:"creator"`
 }
 
-// 翻译需要校验的字段名称
-func (s CreateUserRequestStruct) FieldTrans() map[string]string {
+func (s CreateUserReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Username"] = "用户名"
 	m["InitPassword"] = "初始密码"
@@ -66,8 +62,7 @@ func (s CreateUserRequestStruct) FieldTrans() map[string]string {
 	return m
 }
 
-// 更新用户结构体
-type UpdateUserRequestStruct struct {
+type UpdateUserReq struct {
 	Username     *string  `json:"username"`
 	Password     *string  `json:"password"`
 	InitPassword *string  `json:"initPassword"`

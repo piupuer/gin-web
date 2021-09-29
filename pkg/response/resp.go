@@ -1,6 +1,7 @@
 package response
 
 import (
+	"fmt"
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 	"github.com/golang-module/carbon"
@@ -33,7 +34,7 @@ type PageData struct {
 
 // 基础数据封装(如Id/CreatedAt/UpdatedAt等较常用字段，基本上响应结构体都会用上)
 type BaseData struct {
-	Id        uint                `json:"id"`
+	Id        uint                    `json:"id"`
 	CreatedAt carbon.ToDateTimeString `json:"createdAt"`
 	UpdatedAt carbon.ToDateTimeString `json:"updatedAt"`
 }
@@ -93,62 +94,31 @@ func (s *PageInfo) GetLimit() (int, int) {
 	return int(limit), int(offset)
 }
 
-func Result(code int, msg string, data interface{}) {
-	// 结果以panic异常的形式抛出, 交由异常处理中间件处理
-	panic(Resp{
-		Code: code,
-		Data: data,
-		Msg:  msg,
-	})
-}
-
-func GetResult(code int, msg string, data interface{}) Resp {
+func GetResult(code int, data interface{}, format interface{}, a ...interface{}) Resp {
+	var f string
+	switch format.(type) {
+	case string:
+		f = format.(string)
+	case error:
+		f = fmt.Sprintf("%v", format.(error))
+	}
 	return Resp{
 		Code: code,
 		Data: data,
-		Msg:  msg,
+		Msg:  fmt.Sprintf(f, a...),
 	}
-}
-
-func Success() {
-	Result(Ok, CustomError[Ok], map[string]interface{}{})
 }
 
 func GetSuccess() Resp {
-	return GetResult(Ok, CustomError[Ok], map[string]interface{}{})
-}
-
-func SuccessWithData(data interface{}) {
-	Result(Ok, CustomError[Ok], data)
+	return GetResult(Ok, map[string]interface{}{}, CustomError[Ok])
 }
 
 func GetSuccessWithData(data interface{}) Resp {
-	return GetResult(Ok, CustomError[Ok], data)
+	return GetResult(Ok, data, CustomError[Ok])
 }
 
-func FailWithMsg(msg string) {
-	Result(NotOk, msg, map[string]interface{}{})
-}
-
-func GetFailWithMsg(msg string) Resp {
-	return GetResult(NotOk, msg, map[string]interface{}{})
-}
-
-func FailWithCode(code int) {
-	// 查找给定的错误码存在对应的错误信息, 默认使用NotOk
-	msg := CustomError[NotOk]
-	if val, ok := CustomError[code]; ok {
-		msg = val
-	}
-	Result(code, msg, map[string]interface{}{})
-}
-
-func FailWithCodeAndMsg(code int, msg string) {
-	// 查找给定的错误码存在对应的错误信息, 默认使用NotOk
-	if msg == "" {
-		msg = CustomError[NotOk]
-	}
-	Result(code, msg, map[string]interface{}{})
+func GetFailWithMsg(format interface{}, a ...interface{}) Resp {
+	return GetResult(NotOk, map[string]interface{}{}, format, a...)
 }
 
 func GetFailWithCode(code int) Resp {
@@ -157,7 +127,44 @@ func GetFailWithCode(code int) Resp {
 	if val, ok := CustomError[code]; ok {
 		msg = val
 	}
-	return GetResult(code, msg, map[string]interface{}{})
+	return GetResult(code, map[string]interface{}{}, msg)
+}
+
+func GetFailWithCodeAndMsg(code int, format interface{}, a ...interface{}) Resp {
+	return GetResult(code, map[string]interface{}{}, format, a...)
+}
+
+func Success() {
+	panic(GetResult(Ok, map[string]interface{}{}, CustomError[Ok]))
+}
+
+func SuccessWithData(data interface{}) {
+	panic(GetResult(Ok, data, CustomError[Ok]))
+}
+
+func FailWithMsg(format interface{}, a ...interface{}) {
+	panic(GetFailWithMsg(format, a...))
+}
+
+func FailWithCode(code int) {
+	panic(GetFailWithCode(code))
+}
+
+func FailWithCodeAndMsg(code int, format interface{}, a ...interface{}) {
+	panic(GetFailWithCodeAndMsg(code, format, a...))
+}
+
+func CheckErr(format interface{}, a ...interface{}) {
+	var f string
+	switch format.(type) {
+	case string:
+		f = format.(string)
+	case error:
+		f = fmt.Sprintf("%v", format.(error))
+	}
+	if f != "" {
+		FailWithMsg(f, a...)
+	}
 }
 
 // 写入json返回值

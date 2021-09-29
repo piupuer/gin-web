@@ -50,14 +50,18 @@ type CustomConfBox struct {
 }
 
 // 查找指定配置
-func (c *CustomConfBox) Find(filename string) ([]byte, error) {
-	if c.ConfEnv == "" {
-		// 从packr box中读取
-		return c.PackrBox.Find(filename)
-	} else {
-		// 从文件系统中读取
-		return ioutil.ReadFile(c.ConfEnv + "/" + filename)
+func (c *CustomConfBox) Find(filename string) []byte {
+	f := filename
+	if c.ConfEnv != "" {
+		f = c.ConfEnv + "/" + filename
 	}
+	// 从文件系统中读取
+	bs, _ := ioutil.ReadFile(f)
+	if len(bs) == 0 {
+		// 从packr box中读取
+		bs, _ = c.PackrBox.Find(f)
+	}
+	return bs
 }
 
 // 只返回一个错误即可

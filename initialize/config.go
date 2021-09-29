@@ -30,15 +30,15 @@ func Config(c *gin.Context) {
 	ctx = c
 	// 初始化配置盒子
 	var box global.CustomConfBox
-	ginWebConf := strings.ToLower(os.Getenv("GIN_WEB_CONF"))
+	confDir := strings.ToLower(os.Getenv(fmt.Sprintf("%s_CONF", global.ProEnvName)))
 	// 从环境变量中读取配置路径
-	if ginWebConf != "" {
-		if strings.HasPrefix(ginWebConf, "/") {
+	if confDir != "" {
+		if strings.HasPrefix(confDir, "/") {
 			// 指定的目录为绝对路径
-			box.ConfEnv = ginWebConf
+			box.ConfEnv = confDir
 		} else {
 			// 指定的目录为相对路径
-			box.ConfEnv = utils.GetWorkDir() + "/" + ginWebConf
+			box.ConfEnv = utils.GetWorkDir() + "/" + confDir
 		}
 	}
 	// 获取viper实例(可创建多实例读取多个配置文件, 这里不做演示)
@@ -59,7 +59,7 @@ func Config(c *gin.Context) {
 		v.SetDefault(index, setting)
 	}
 	// 读取当前go运行环境变量
-	env := strings.ToLower(os.Getenv("GIN_WEB_MODE"))
+	env := strings.ToLower(os.Getenv(fmt.Sprintf("%s_MODE", global.ProEnvName)))
 	configName := ""
 	if env == global.Stage {
 		configName = stagingConfig
@@ -75,7 +75,7 @@ func Config(c *gin.Context) {
 	}
 	// 转换为结构体
 	if err := v.Unmarshal(&global.Conf); err != nil {
-		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
+		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量%s_CONF: %s", err, global.ProEnvName, global.ConfBox.ConfEnv))
 	}
 
 	// 从环境变量中加载配置: 如config.yml中system.port, 对应的环境变量为CFG_SYSTEM_PORT
@@ -105,37 +105,31 @@ func Config(c *gin.Context) {
 	}
 
 	// 加载rsa公私钥(优先从configBox中读取)
-	publicBytes, err := global.ConfBox.Find(global.Conf.System.RSAPublicKey)
-	if err != nil || len(publicBytes) == 0 {
-		publicBytes = utils.RSAReadKeyFromFile(global.Conf.System.RSAPublicKey)
-	}
+	publicBytes := global.ConfBox.Find(global.Conf.System.RSAPublicKey)
 	if len(publicBytes) == 0 {
 		fmt.Println("RSA公钥未能加载, 请检查路径: ", global.Conf.System.RSAPublicKey)
 	} else {
 		global.Conf.System.RSAPublicBytes = publicBytes
 	}
-	privateBytes, err := global.ConfBox.Find(global.Conf.System.RSAPrivateKey)
-	if err != nil || len(privateBytes) == 0 {
-		privateBytes = utils.RSAReadKeyFromFile(global.Conf.System.RSAPrivateKey)
-	}
+	privateBytes := global.ConfBox.Find(global.Conf.System.RSAPrivateKey)
 	if len(privateBytes) == 0 {
 		fmt.Println("RSA私钥未能加载, 请检查路径: ", global.Conf.System.RSAPrivateKey)
 	} else {
 		global.Conf.System.RSAPrivateBytes = privateBytes
 	}
-	
-	fmt.Println("初始化配置文件完成, 环境变量GIN_WEB_CONF: ", global.ConfBox.ConfEnv)
+
+	fmt.Printf("初始化配置文件完成, 环境变量%s_CONF: %s\n", global.ProEnvName, global.ConfBox.ConfEnv)
 }
 
 func readConfig(v *viper.Viper, configFile string) {
 	v.SetConfigType(configType)
-	config, err := global.ConfBox.Find(configFile)
-	if err != nil {
-		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
+	config := global.ConfBox.Find(configFile)
+	if len(config) == 0 {
+		panic(fmt.Sprintf("初始化配置文件失败, 环境变量%s_CONF: %s", global.ProEnvName, global.ConfBox.ConfEnv))
 	}
 	// 加载配置
-	if err = v.ReadConfig(bytes.NewReader(config)); err != nil {
-		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量GIN_WEB_CONF: %s", err, global.ConfBox.ConfEnv))
+	if err := v.ReadConfig(bytes.NewReader(config)); err != nil {
+		panic(fmt.Sprintf("初始化配置文件失败: %v, 环境变量%s_CONF: %s", err, global.ProEnvName, global.ConfBox.ConfEnv))
 	}
 }
 

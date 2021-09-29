@@ -115,7 +115,6 @@ func RowChange(ctx context.Context, e *canal.RowsEvent) {
 
 		break
 	case canal.DeleteAction:
-		// 删除数据
 		// 找到需要删除的索引
 		indexes := make([]int, 0)
 		for _, changeRow := range changeRows {

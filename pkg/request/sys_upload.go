@@ -13,7 +13,7 @@ const (
 )
 
 // 文件分片信息结构体
-type FilePartInfo struct {
+type FilePartInfoReq struct {
 	// 当前文件大小(post传输时值非空)
 	CurrentSize *uint `json:"-"`
 	// 当前块编号(检查文件完整性会用到)
@@ -35,14 +35,14 @@ type FilePartInfo struct {
 }
 
 // 从文件唯一标识符中去除特殊字符, 只保留数字字母
-func (s *FilePartInfo) CleanIdentifier() string {
+func (s *FilePartInfoReq) CleanIdentifier() string {
 	// 从文件标识获取文件类型
 	re, _ := regexp.Compile("[^0-9A-Za-z_-]")
 	return re.ReplaceAllString(s.Identifier, "")
 }
 
 // 获取文件块总数
-func (s *FilePartInfo) GetTotalChunk() uint {
+func (s *FilePartInfoReq) GetTotalChunk() uint {
 	// 余数部分将与最后一块合并, 而不是+1块
 	// 105 / 25 => 4块
 	// 100 / 25 => 4块
@@ -55,7 +55,7 @@ func (s *FilePartInfo) GetTotalChunk() uint {
 }
 
 // 获取块文件名
-func (s *FilePartInfo) GetChunkFilename(chunkNumber uint) string {
+func (s *FilePartInfoReq) GetChunkFilename(chunkNumber uint) string {
 	// 清理特殊字符
 	identifier := s.CleanIdentifier()
 	// 定义块文件名
@@ -70,7 +70,7 @@ func (s *FilePartInfo) GetChunkFilename(chunkNumber uint) string {
 }
 
 // 获取块文件名(不带分片编号)
-func (s *FilePartInfo) GetChunkFilenameWithoutChunkNumber() string {
+func (s *FilePartInfoReq) GetChunkFilenameWithoutChunkNumber() string {
 	// 清理特殊字符
 	identifier := s.CleanIdentifier()
 	// 定义块文件名
@@ -84,7 +84,7 @@ func (s *FilePartInfo) GetChunkFilenameWithoutChunkNumber() string {
 }
 
 // 获取块文件名(不带临时目录)
-func (s *FilePartInfo) GetUploadRootPath() string {
+func (s *FilePartInfoReq) GetUploadRootPath() string {
 	// 定义块文件名
 	return fmt.Sprintf(
 		"%s/%s",
@@ -94,7 +94,7 @@ func (s *FilePartInfo) GetUploadRootPath() string {
 }
 
 // 获取块文件名(不带临时目录)
-func (s *FilePartInfo) GetChunkRootPath() string {
+func (s *FilePartInfoReq) GetChunkRootPath() string {
 	// 清理特殊字符
 	identifier := s.CleanIdentifier()
 	// 定义块文件名
@@ -108,7 +108,7 @@ func (s *FilePartInfo) GetChunkRootPath() string {
 }
 
 // 请求校验
-func (s *FilePartInfo) ValidateReq() error {
+func (s *FilePartInfoReq) ValidateReq() error {
 	filePart := s
 	if filePart == nil {
 		return fmt.Errorf("文件参数不合法")

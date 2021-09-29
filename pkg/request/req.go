@@ -4,7 +4,10 @@ import (
 	"database/sql/driver"
 	"fmt"
 	"gin-web/models"
+	"gin-web/pkg/global"
+	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/gin-gonic/gin"
 	"strings"
 )
 
@@ -106,4 +109,22 @@ func (r *ReqFloat64) Scan(v interface{}) error {
 		return nil
 	}
 	return fmt.Errorf("can not convert %v to ReqFloat64", v)
+}
+
+// 参数绑定
+func ShouldBind(c *gin.Context, req interface{}) {
+	err := c.ShouldBind(req)
+	if err != nil {
+		global.Log.Error(c, "参数绑定失败: %v", err)
+		response.FailWithMsg("参数绑定失败, 请检查数据类型")
+	}
+}
+
+// 参数校验
+func Validate(c *gin.Context, req interface{}, trans map[string]string) {
+	err := global.NewValidatorError(global.Validate.Struct(req), trans)
+	if err != nil {
+		global.Log.Error(c, "参数校验失败: %v", err)
+		response.FailWithMsg(err)
+	}
 }

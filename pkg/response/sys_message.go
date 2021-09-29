@@ -1,7 +1,6 @@
 package response
 
-// 获取消息列表结构体
-type MessageListResponseStruct struct {
+type MessageResp struct {
 	BaseData
 	Status       uint   `json:"status"`
 	ToUserId     uint   `json:"toUserId"`
@@ -13,10 +12,7 @@ type MessageListResponseStruct struct {
 	FromUsername string `json:"fromUsername"`
 }
 
-// websocket消息响应
-type MessageWsResponseStruct struct {
-	// 消息类型, 见const
-	Type string `json:"type"`
-	// 消息详情
-	Detail Resp `json:"detail"`
+type MessageWsResp struct {
+	Type   string `json:"type"`   // 消息类型
+	Detail Resp   `json:"detail"` // 消息详情
 }

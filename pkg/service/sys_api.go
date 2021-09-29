@@ -12,14 +12,14 @@ import (
 )
 
 // 注意golang坑, 返回值有数组时, 不要为了return方便使用命名返回值
-// 如func GetApis(req *request.ApiRequestStruct) (apis []models.SysApi, err error) {
+// 如func GetApis(req *request.ApiReq) (apis []models.SysApi, err error) {
 // 这会导致apis被初始化无穷大的集合, 代码无法断点调试: collecting data..., 几秒后程序异常退出:
 // error layer=rpc writing response:write tcp xxx write: broken pipe
 // error layer=rpc rpc:read tcp xxx read: connection reset by peer
 // exit code 0
 // 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
 // 获取所有接口
-func (s MysqlService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, error) {
+func (s MysqlService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
 	query := s.tx.
@@ -47,9 +47,9 @@ func (s MysqlService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, e
 }
 
 // 根据权限编号获取以api分类分组的权限接口
-func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
+func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
 	// 接口树
-	tree := make([]response.ApiGroupByCategoryResponseStruct, 0)
+	tree := make([]response.ApiGroupByCategoryResp, 0)
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
@@ -104,7 +104,7 @@ func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 		}
 		// 生成接口树
 		existIndex := -1
-		children := make([]response.ApiListResponseStruct, 0)
+		children := make([]response.ApiResp, 0)
 		for index, leaf := range tree {
 			if leaf.Category == category {
 				children = leaf.Children
@@ -113,7 +113,7 @@ func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 			}
 		}
 		// api结构转换
-		var item response.ApiListResponseStruct
+		var item response.ApiResp
 		utils.Struct2StructByJson(api, &item)
 		item.Title = fmt.Sprintf("%s %s[%s]", item.Desc, item.Path, item.Method)
 		children = append(children, item)
@@ -122,7 +122,7 @@ func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 			tree[existIndex].Children = children
 		} else {
 			// 新增元素
-			tree = append(tree, response.ApiGroupByCategoryResponseStruct{
+			tree = append(tree, response.ApiGroupByCategoryResp{
 				Title:    category + "分组",
 				Category: category,
 				Children: children,
@@ -133,7 +133,7 @@ func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 }
 
 // 创建接口
-func (s MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error) {
+func (s MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
 	api := new(models.SysApi)
 	err = s.Create(req, &api)
 	if err != nil {
@@ -163,7 +163,7 @@ func (s MysqlService) CreateApi(req *request.CreateApiRequestStruct) (err error)
 }
 
 // 更新接口
-func (s MysqlService) UpdateApiById(id uint, req request.UpdateApiRequestStruct) (err error) {
+func (s MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err error) {
 	var api models.SysApi
 	query := s.tx.Model(&api).Where("id = ?", id).First(&api)
 	if query.Error == gorm.ErrRecordNotFound {

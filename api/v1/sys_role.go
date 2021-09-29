@@ -1,9 +1,7 @@
 package v1
 
 import (
-	"fmt"
 	"gin-web/models"
-	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
@@ -13,33 +11,21 @@ import (
 
 // 获取角色列表
 func GetRoles(c *gin.Context) {
-	// 绑定参数
-	var req request.RoleRequestStruct
-	err := c.ShouldBind(&req)
-	if err != nil {
-		response.FailWithMsg("参数绑定失败, 请检查数据类型")
-		return
-	}
-
+	var req request.RoleReq
+	request.ShouldBind(c, &req)
 	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
 	req.CurrentRoleSort = *user.Role.Sort
 
-	// 创建服务
 	s := service.New(c)
 	roles, err := s.GetRoles(&req)
-	if err != nil {
-		response.FailWithMsg(err.Error())
-		return
-	}
-	// 转为ResponseStruct, 隐藏部分字段
-	var respStruct []response.RoleListResponseStruct
+	response.CheckErr(err)
+	// 隐藏部分字段
+	var respStruct []response.RoleResp
 	utils.Struct2StructByJson(roles, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
-	// 设置分页参数
 	resp.PageInfo = req.PageInfo
-	// 设置数据列表
 	resp.List = respStruct
 	response.SuccessWithData(resp)
 }
@@ -47,117 +33,74 @@ func GetRoles(c *gin.Context) {
 // 创建角色
 func CreateRole(c *gin.Context) {
 	user := GetCurrentUser(c)
-	// 绑定参数
-	var req request.CreateRoleRequestStruct
-	err := c.ShouldBind(&req)
-	if err != nil {
-		response.FailWithMsg("参数绑定失败, 请检查数据类型")
-		return
-	}
-
-	// 参数校验
-	err = global.NewValidatorError(global.Validate.Struct(req), req.FieldTrans())
-	if err != nil {
-		response.FailWithMsg(err.Error())
-		return
-	}
+	var req request.CreateRoleReq
+	request.ShouldBind(c, &req)
+	request.Validate(c, req, req.FieldTrans())
 
 	if req.Sort != nil && *user.Role.Sort > uint(*req.Sort) {
-		response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
-		return
+		response.CheckErr("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort)
 	}
 
 	// 记录当前创建人信息
 	req.Creator = user.Nickname + user.Username
-	// 创建服务
 	s := service.New(c)
-	err = s.Create(req, new(models.SysRole))
-	if err != nil {
-		response.FailWithMsg(err.Error())
-		return
-	}
+	err := s.Create(req, new(models.SysRole))
+	response.CheckErr(err)
 	response.Success()
 }
 
 // 更新角色
 func UpdateRoleById(c *gin.Context) {
-	// 绑定参数
-	var req request.UpdateRoleRequestStruct
-	err := c.ShouldBind(&req)
-	if err != nil {
-		response.FailWithMsg("参数绑定失败, 请检查数据类型")
-		return
-	}
-
+	var req request.UpdateRoleReq
+	request.ShouldBind(c, &req)
 	if req.Sort != nil {
 		// 绑定当前用户角色排序(隐藏特定用户)
 		user := GetCurrentUser(c)
 		if req.Sort != nil && *user.Role.Sort > uint(*req.Sort) {
-			response.FailWithMsg(fmt.Sprintf("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort))
-			return
+			response.CheckErr("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort)
 		}
 	}
 
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
 	if roleId == 0 {
-		response.FailWithMsg("角色编号不正确")
-		return
+		response.CheckErr("角色编号不正确")
 	}
 
 	user := GetCurrentUser(c)
 	if req.Status != nil && uint(*req.Status) == models.SysRoleStatusDisabled && roleId == user.RoleId {
-		response.FailWithMsg("不能禁用自己所在的角色")
-		return
+		response.CheckErr("不能禁用自己所在的角色")
 	}
 
-	// 创建服务
 	s := service.New(c)
-	// 更新数据
-	err = s.UpdateById(roleId, req, new(models.SysRole))
-	if err != nil {
-		response.FailWithMsg(err.Error())
-		return
-	}
+	err := s.UpdateById(roleId, req, new(models.SysRole))
+	response.CheckErr(err)
 	response.Success()
 }
 
 // 更新角色的权限菜单
 func UpdateRoleMenusById(c *gin.Context) {
-	// 绑定参数
 	var req request.UpdateIncrementalIdsRequestStruct
-	err := c.ShouldBind(&req)
-	if err != nil {
-		response.FailWithMsg(fmt.Sprintf("参数绑定失败, %v", err))
-		return
-	}
+	request.ShouldBind(c, &req)
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
 	if roleId == 0 {
-		response.FailWithMsg("角色编号不正确")
-		return
+		response.CheckErr("角色编号不正确")
 	}
 	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
 
 	if user.RoleId == roleId {
 		if *user.Role.Sort == models.SysRoleSuperAdminSort && len(req.Delete) > 0 {
-			response.FailWithMsg("无法移除超级管理员的权限, 如有疑问请联系网站开发者")
-			return
+			response.CheckErr("无法移除超级管理员的权限, 如有疑问请联系网站开发者")
 		} else if *user.Role.Sort != models.SysRoleSuperAdminSort {
-			response.FailWithMsg("无法更改自己的权限, 如需更改请联系上级领导")
-			return
+			response.CheckErr("无法更改自己的权限, 如需更改请联系上级领导")
 		}
 	}
 
-	// 创建服务
 	s := service.New(c)
-	// 更新数据
-	err = s.UpdateRoleMenusById(user.Role, roleId, req)
-	if err != nil {
-		response.FailWithMsg(err.Error())
-		return
-	}
+	err := s.UpdateRoleMenusById(user.Role, roleId, req)
+	response.CheckErr(err)
 	// 清理菜单树缓存
 	menuTreeCache.Flush()
 	response.Success()
@@ -165,18 +108,12 @@ func UpdateRoleMenusById(c *gin.Context) {
 
 // 更新角色的权限接口
 func UpdateRoleApisById(c *gin.Context) {
-	// 绑定参数
 	var req request.UpdateIncrementalIdsRequestStruct
-	err := c.ShouldBind(&req)
-	if err != nil {
-		response.FailWithMsg(fmt.Sprintf("参数绑定失败, %v", err))
-		return
-	}
+	request.ShouldBind(c, &req)
 	// 获取path中的roleId
 	roleId := utils.Str2Uint(c.Param("roleId"))
 	if roleId == 0 {
-		response.FailWithMsg("角色编号不正确")
-		return
+		response.CheckErr("角色编号不正确")
 	}
 
 	// 绑定当前用户角色排序(隐藏特定用户)
@@ -184,22 +121,15 @@ func UpdateRoleApisById(c *gin.Context) {
 
 	if user.RoleId == roleId {
 		if *user.Role.Sort == models.SysRoleSuperAdminSort && len(req.Delete) > 0 {
-			response.FailWithMsg("无法移除超级管理员的权限, 如有疑问请联系网站开发者")
-			return
+			response.CheckErr("无法移除超级管理员的权限, 如有疑问请联系网站开发者")
 		} else if *user.Role.Sort != models.SysRoleSuperAdminSort {
-			response.FailWithMsg("无法更改自己的权限, 如需更改请联系上级领导")
-			return
+			response.CheckErr("无法更改自己的权限, 如需更改请联系上级领导")
 		}
 	}
 
-	// 创建服务
 	s := service.New(c)
-	// 更新数据
-	err = s.UpdateRoleApisById(roleId, req)
-	if err != nil {
-		response.FailWithMsg(err.Error())
-		return
-	}
+	err := s.UpdateRoleApisById(roleId, req)
+	response.CheckErr(err)
 	// 清理菜单树缓存
 	menuTreeCache.Flush()
 	response.Success()
@@ -208,25 +138,14 @@ func UpdateRoleApisById(c *gin.Context) {
 // 批量删除角色
 func BatchDeleteRoleByIds(c *gin.Context) {
 	var req request.Req
-	err := c.ShouldBind(&req)
-	if err != nil {
-		response.FailWithMsg("参数绑定失败, 请检查数据类型")
-		return
-	}
-
+	request.ShouldBind(c, &req)
 	user := GetCurrentUser(c)
 	if utils.ContainsUint(req.GetUintIds(), user.RoleId) {
-		response.FailWithMsg("不能删除自己所在的角色")
-		return
+		response.CheckErr("不能删除自己所在的角色")
 	}
 
-	// 创建服务
 	s := service.New(c)
-	// 删除数据
-	err = s.DeleteRoleByIds(req.GetUintIds())
-	if err != nil {
-		response.FailWithMsg(err.Error())
-		return
-	}
+	err := s.DeleteRoleByIds(req.GetUintIds())
+	response.CheckErr(err)
 	response.Success()
 }

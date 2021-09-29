@@ -47,11 +47,11 @@ func Idempotence(c *gin.Context) {
 	}
 	token = strings.TrimSpace(token)
 	if token == "" {
-		response.FailWithMsg(response.IdempotenceTokenEmptyMsg)
+		response.CheckErr(response.IdempotenceTokenEmptyMsg)
 	}
 	// token校验
 	if !CheckIdempotenceToken(token) {
-		response.FailWithMsg(response.IdempotenceTokenInvalidMsg)
+		response.CheckErr(response.IdempotenceTokenInvalidMsg)
 	}
 	c.Next()
 }

@@ -187,7 +187,7 @@ func getApiDesc(c *gin.Context, method, path string) string {
 	} else {
 		// 获取当前接口
 		s := service.New(c)
-		apis, err := s.GetApis(&request.ApiRequestStruct{
+		apis, err := s.GetApis(&request.ApiReq{
 			PageInfo: response.PageInfo{
 				NoPagination: true,
 			},

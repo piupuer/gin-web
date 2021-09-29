@@ -24,7 +24,7 @@ func (s MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (s MysqlService) GetRoles(req *request.RoleRequestStruct) ([]models.SysRole, error) {
+func (s MysqlService) GetRoles(req *request.RoleReq) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
 	query := s.tx.

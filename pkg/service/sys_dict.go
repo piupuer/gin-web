@@ -82,7 +82,7 @@ func (s MysqlService) GetDictDatasByDictName(name string) ([]models.SysDictData,
 }
 
 // 获取所有字典
-func (s MysqlService) GetDicts(req *request.DictRequestStruct) ([]models.SysDict, error) {
+func (s MysqlService) GetDicts(req *request.DictReq) ([]models.SysDict, error) {
 	var err error
 	list := make([]models.SysDict, 0)
 	query := s.tx.
@@ -106,7 +106,7 @@ func (s MysqlService) GetDicts(req *request.DictRequestStruct) ([]models.SysDict
 }
 
 // 获取所有字典数据
-func (s MysqlService) GetDictDatas(req *request.DictDataRequestStruct) ([]models.SysDictData, error) {
+func (s MysqlService) GetDictDatas(req *request.DictDataReq) ([]models.SysDictData, error) {
 	var err error
 	list := make([]models.SysDictData, 0)
 	query := s.tx.
@@ -137,7 +137,7 @@ func (s MysqlService) GetDictDatas(req *request.DictDataRequestStruct) ([]models
 }
 
 // 创建字典
-func (s MysqlService) CreateDict(req *request.CreateDictRequestStruct) (err error) {
+func (s MysqlService) CreateDict(req *request.CreateDictReq) (err error) {
 	err = s.Create(req, new(models.SysDict))
 	dictNameCache.Flush()
 	dictNameAndKeyCache.Flush()
@@ -145,7 +145,7 @@ func (s MysqlService) CreateDict(req *request.CreateDictRequestStruct) (err erro
 }
 
 // 更新字典
-func (s MysqlService) UpdateDictById(id uint, req request.UpdateDictRequestStruct) (err error) {
+func (s MysqlService) UpdateDictById(id uint, req request.UpdateDictReq) (err error) {
 	err = s.UpdateById(id, req, new(models.SysDict))
 	dictNameCache.Flush()
 	dictNameAndKeyCache.Flush()
@@ -161,7 +161,7 @@ func (s MysqlService) DeleteDictByIds(ids []uint) (err error) {
 }
 
 // 创建字典数据
-func (s MysqlService) CreateDictData(req *request.CreateDictDataRequestStruct) (err error) {
+func (s MysqlService) CreateDictData(req *request.CreateDictDataReq) (err error) {
 	err = s.Create(req, new(models.SysDictData))
 	dictNameCache.Flush()
 	dictNameAndKeyCache.Flush()
@@ -169,7 +169,7 @@ func (s MysqlService) CreateDictData(req *request.CreateDictDataRequestStruct) (
 }
 
 // 更新字典数据
-func (s MysqlService) UpdateDictDataById(id uint, req request.UpdateDictDataRequestStruct) (err error) {
+func (s MysqlService) UpdateDictDataById(id uint, req request.UpdateDictDataReq) (err error) {
 	err = s.UpdateById(id, req, new(models.SysDictData))
 	dictNameCache.Flush()
 	dictNameAndKeyCache.Flush()

@@ -1,14 +1,12 @@
 package response
 
-// User login response structure
-type LoginResponseStruct struct {
+type LoginResp struct {
 	Username  string `json:"username"`  // 登录用户名
 	Token     string `json:"token"`     // jwt令牌
 	ExpiresAt int64  `json:"expiresAt"` // 过期时间, 秒
 }
 
-// 用户信息响应
-type UserInfoResponseStruct struct {
+type UserInfoResp struct {
 	Id           uint     `json:"id"`
 	Username     string   `json:"username"`
 	Mobile       string   `json:"mobile"`
@@ -20,8 +18,7 @@ type UserInfoResponseStruct struct {
 	Keyword      string   `json:"keyword"`
 }
 
-// 用户信息响应, 字段含义见models.SysUser
-type UserListResponseStruct struct {
+type UserResp struct {
 	BaseData
 	Username     string `json:"username"`
 	Mobile       string `json:"mobile"`

@@ -1,7 +1,6 @@
 package response
 
-// 角色信息响应, 字段含义见models
-type RoleListResponseStruct struct {
+type RoleResp struct {
 	BaseData
 	Name    string `json:"name"`
 	Keyword string `json:"keyword"`
