@@ -2,8 +2,7 @@ package request
 
 import "gin-web/pkg/response"
 
-// 获取机器列表结构体
-type MachineRequestStruct struct {
+type MachineReq struct {
 	Id                uint   `json:"id" form:"id"`
 	Host              string `json:"host" form:"host"`
 	SshPort           int    `json:"sshPort" form:"sshPort"`
@@ -21,8 +20,7 @@ type MachineRequestStruct struct {
 	response.PageInfo        // 分页参数
 }
 
-// 创建机器结构体
-type CreateMachineRequestStruct struct {
+type CreateMachineReq struct {
 	Host      string  `json:"host" validate:"required"`
 	SshPort   ReqUint `json:"sshPort" validate:"required"`
 	Version   string  `json:"version"`
@@ -38,8 +36,7 @@ type CreateMachineRequestStruct struct {
 	Creator   string  `json:"creator"`
 }
 
-// 机器shell ws请求结构体
-type MachineShellWsRequestStruct struct {
+type MachineShellWsReq struct {
 	Host      string  `json:"host" form:"host"`
 	SshPort   ReqUint `json:"sshPort" form:"sshPort"`
 	LoginName string  `json:"loginName" form:"loginName"`
@@ -49,8 +46,7 @@ type MachineShellWsRequestStruct struct {
 	Rows      ReqUint `json:"rows" form:"rows"`
 }
 
-// 翻译需要校验的字段名称
-func (s CreateMachineRequestStruct) FieldTrans() map[string]string {
+func (s CreateMachineReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Host"] = "主机地址"
 	m["SshPort"] = "ssh端口"
@@ -59,8 +55,7 @@ func (s CreateMachineRequestStruct) FieldTrans() map[string]string {
 	return m
 }
 
-// 更新机器结构体
-type UpdateMachineRequestStruct struct {
+type UpdateMachineReq struct {
 	Host      *string  `json:"host"`
 	SshPort   *ReqUint `json:"sshPort"`
 	Version   *string  `json:"version"`

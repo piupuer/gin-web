@@ -10,14 +10,14 @@ import (
 
 // 获取数据字典列表
 func GetDicts(c *gin.Context) {
-	var req request.DictRequestStruct
+	var req request.DictReq
 	request.ShouldBind(c, &req)
 
 	s := service.New(c)
 	dicts, err := s.GetDicts(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.DictResponseStruct
+	var respStruct []response.DictResp
 	utils.Struct2StructByJson(dicts, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
@@ -28,7 +28,7 @@ func GetDicts(c *gin.Context) {
 
 // 创建数据字典
 func CreateDict(c *gin.Context) {
-	var req request.CreateDictRequestStruct
+	var req request.CreateDictReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	s := service.New(c)
@@ -39,7 +39,7 @@ func CreateDict(c *gin.Context) {
 
 // 更新数据字典
 func UpdateDictById(c *gin.Context) {
-	var req request.UpdateDictRequestStruct
+	var req request.UpdateDictReq
 	request.ShouldBind(c, &req)
 
 	// 获取path中的dictId
@@ -66,14 +66,14 @@ func BatchDeleteDictByIds(c *gin.Context) {
 
 // 获取数据字典数据列表
 func GetDictDatas(c *gin.Context) {
-	var req request.DictDataRequestStruct
+	var req request.DictDataReq
 	request.ShouldBind(c, &req)
 
 	s := service.New(c)
 	dictDatas, err := s.GetDictDatas(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.DictDataResponseStruct
+	var respStruct []response.DictDataResp
 	utils.Struct2StructByJson(dictDatas, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
@@ -84,7 +84,7 @@ func GetDictDatas(c *gin.Context) {
 
 // 创建数据字典数据
 func CreateDictData(c *gin.Context) {
-	var req request.CreateDictDataRequestStruct
+	var req request.CreateDictDataReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	s := service.New(c)
@@ -95,7 +95,7 @@ func CreateDictData(c *gin.Context) {
 
 // 更新数据字典数据
 func UpdateDictDataById(c *gin.Context) {
-	var req request.UpdateDictDataRequestStruct
+	var req request.UpdateDictDataReq
 	request.ShouldBind(c, &req)
 
 	// 获取path中的dictDataId

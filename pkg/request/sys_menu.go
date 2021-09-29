@@ -2,8 +2,7 @@ package request
 
 import "gin-web/pkg/response"
 
-// 获取菜单列表结构体
-type MenuRequestStruct struct {
+type MenuReq struct {
 	Name              string `json:"name" form:"name"`
 	Title             string `json:"title" form:"title"`
 	Path              string `json:"path" form:"path"`
@@ -16,8 +15,7 @@ type MenuRequestStruct struct {
 	response.PageInfo        // 分页参数
 }
 
-// 创建菜单结构体
-type CreateMenuRequestStruct struct {
+type CreateMenuReq struct {
 	Name       string  `json:"name" validate:"required"`
 	Title      string  `json:"title"`
 	Icon       string  `json:"icon"`
@@ -33,15 +31,13 @@ type CreateMenuRequestStruct struct {
 	Creator    string  `json:"creator"`
 }
 
-// 翻译需要校验的字段名称
-func (s CreateMenuRequestStruct) FieldTrans() map[string]string {
+func (s CreateMenuReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Name"] = "菜单名称"
 	return m
 }
 
-// 更新菜单结构体
-type UpdateMenuRequestStruct struct {
+type UpdateMenuReq struct {
 	Name       *string  `json:"name"`
 	Title      *string  `json:"title"`
 	Icon       *string  `json:"icon"`

@@ -4,8 +4,7 @@ import (
 	"time"
 )
 
-// 接口信息响应, 字段含义见models
-type OperationLogListResponseStruct struct {
+type OperationLogResp struct {
 	BaseData
 	ApiDesc    string        `json:"apiDesc"`
 	Path       string        `json:"path"`

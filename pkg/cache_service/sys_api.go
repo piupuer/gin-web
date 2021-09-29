@@ -11,7 +11,7 @@ import (
 )
 
 // 获取所有接口
-func (s RedisService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, error) {
+func (s RedisService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetApis(req)
@@ -43,13 +43,13 @@ func (s RedisService) GetApis(req *request.ApiRequestStruct) ([]models.SysApi, e
 }
 
 // 根据权限编号获取以api分类分组的权限接口
-func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResponseStruct, []uint, error) {
+func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetAllApiGroupByCategoryByRoleId(currentRole, roleId)
 	}
 	// 接口树
-	tree := make([]response.ApiGroupByCategoryResponseStruct, 0)
+	tree := make([]response.ApiGroupByCategoryResp, 0)
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
@@ -104,7 +104,7 @@ func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 		}
 		// 生成接口树
 		existIndex := -1
-		children := make([]response.ApiListResponseStruct, 0)
+		children := make([]response.ApiResp, 0)
 		for index, leaf := range tree {
 			if leaf.Category == category {
 				children = leaf.Children
@@ -113,7 +113,7 @@ func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 			}
 		}
 		// api结构转换
-		var item response.ApiListResponseStruct
+		var item response.ApiResp
 		utils.Struct2StructByJson(api, &item)
 		item.Title = fmt.Sprintf("%s %s[%s]", item.Desc, item.Path, item.Method)
 		children = append(children, item)
@@ -122,7 +122,7 @@ func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 			tree[existIndex].Children = children
 		} else {
 			// 新增元素
-			tree = append(tree, response.ApiGroupByCategoryResponseStruct{
+			tree = append(tree, response.ApiGroupByCategoryResp{
 				Title:    category + "分组",
 				Category: category,
 				Children: children,

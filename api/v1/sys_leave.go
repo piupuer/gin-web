@@ -12,7 +12,7 @@ import (
 
 // 获取请假列表
 func GetLeaves(c *gin.Context) {
-	var req request.LeaveRequestStruct
+	var req request.LeaveReq
 	request.ShouldBind(c, &req)
 	// 获取当前登录用户
 	user := GetCurrentUser(c)
@@ -21,7 +21,7 @@ func GetLeaves(c *gin.Context) {
 	leaves, err := s.GetLeaves(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.LeaveListResponseStruct
+	var respStruct []response.LeaveResp
 	utils.Struct2StructByJson(leaves, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
@@ -32,7 +32,7 @@ func GetLeaves(c *gin.Context) {
 
 // 获取请假列表
 func GetLeaveApprovalLogs(c *gin.Context) {
-	var req request.LeaveRequestStruct
+	var req request.LeaveReq
 	request.ShouldBind(c, &req)
 	s := cache_service.New(c)
 	// 获取path中的leaveId
@@ -41,11 +41,11 @@ func GetLeaveApprovalLogs(c *gin.Context) {
 	response.CheckErr(err)
 
 	// 将日志包装下
-	respStruct := make([]response.LeaveLogListResponseStruct, 0)
+	respStruct := make([]response.LeaveLogResp, 0)
 	for _, log := range leaves {
-		respStruct = append(respStruct, response.LeaveLogListResponseStruct{
+		respStruct = append(respStruct, response.LeaveLogResp{
 			LeaveId: leaveId,
-			Log: response.WorkflowLogsListResponseStruct{
+			Log: response.WorkflowLogResp{
 				BaseData: response.BaseData{
 					CreatedAt: log.CreatedAt,
 					UpdatedAt: log.UpdatedAt,
@@ -74,7 +74,7 @@ func GetLeaveApprovalLogs(c *gin.Context) {
 // 创建请假
 func CreateLeave(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var req request.CreateLeaveRequestStruct
+	var req request.CreateLeaveReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	// 记录当前用户
@@ -87,7 +87,7 @@ func CreateLeave(c *gin.Context) {
 
 // 更新请假
 func UpdateLeaveById(c *gin.Context) {
-	var req request.UpdateLeaveRequestStruct
+	var req request.UpdateLeaveReq
 	request.ShouldBind(c, &req)
 	// 获取path中的leaveId
 	leaveId := utils.Str2Uint(c.Param("leaveId"))

@@ -13,7 +13,7 @@ import (
 
 // 获取全部审批日志(目前有1: 请假)
 func GetWorkflowApprovings(c *gin.Context) {
-	var req request.WorkflowApprovingRequestStruct
+	var req request.WorkflowApprovingReq
 	request.ShouldBind(c, &req)
 	user := GetCurrentUser(c)
 	s := cache_service.New(c)
@@ -22,9 +22,9 @@ func GetWorkflowApprovings(c *gin.Context) {
 	approvings, err := s.GetWorkflowApprovings(&req)
 	response.CheckErr(err)
 	// 将日志包装下
-	respStruct := make([]response.WorkflowLogsListResponseStruct, 0)
+	respStruct := make([]response.WorkflowLogResp, 0)
 	for _, log := range approvings {
-		respStruct = append(respStruct, response.WorkflowLogsListResponseStruct{
+		respStruct = append(respStruct, response.WorkflowLogResp{
 			BaseData: response.BaseData{
 				Id:        log.Id,
 				CreatedAt: log.CreatedAt,
@@ -58,13 +58,13 @@ func GetWorkflowApprovings(c *gin.Context) {
 
 // 获取工作流列表
 func GetWorkflows(c *gin.Context) {
-	var req request.WorkflowRequestStruct
+	var req request.WorkflowReq
 	request.ShouldBind(c, &req)
 	s := cache_service.New(c)
 	workflows, err := s.GetWorkflows(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.WorkflowListResponseStruct
+	var respStruct []response.WorkflowResp
 	utils.Struct2StructByJson(workflows, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
@@ -75,13 +75,13 @@ func GetWorkflows(c *gin.Context) {
 
 // 获取工作流列表
 func GetWorkflowLines(c *gin.Context) {
-	var req request.WorkflowLineRequestStruct
+	var req request.WorkflowLineReq
 	request.ShouldBind(c, &req)
 	s := cache_service.New(c)
 	workflowLines, err := s.GetWorkflowLines(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.WorkflowLineListResponseStruct
+	var respStruct []response.WorkflowLineResp
 	utils.Struct2StructByJson(workflowLines, &respStruct)
 	// 绑定流水线userIds
 	for i, line := range workflowLines {
@@ -103,7 +103,7 @@ func GetWorkflowLines(c *gin.Context) {
 // 创建工作流
 func CreateWorkflow(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var req request.CreateWorkflowRequestStruct
+	var req request.CreateWorkflowReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	// 记录当前创建人信息
@@ -117,7 +117,7 @@ func CreateWorkflow(c *gin.Context) {
 
 // 更新工作流流水线
 func UpdateWorkflowLineIncremental(c *gin.Context) {
-	var req request.UpdateWorkflowLineIncrementalRequestStruct
+	var req request.UpdateWorkflowLineIncrementalReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	s := service.New(c)
@@ -129,7 +129,7 @@ func UpdateWorkflowLineIncremental(c *gin.Context) {
 
 // 更新工作流
 func UpdateWorkflowById(c *gin.Context) {
-	var req request.UpdateWorkflowRequestStruct
+	var req request.UpdateWorkflowReq
 	request.ShouldBind(c, &req)
 	workflowId := utils.Str2Uint(c.Param("workflowId"))
 	if workflowId == 0 {
@@ -143,7 +143,7 @@ func UpdateWorkflowById(c *gin.Context) {
 
 // 更新工作流日志: 审批通过
 func UpdateWorkflowLogApproval(c *gin.Context) {
-	var req request.WorkflowTransitionRequestStruct
+	var req request.WorkflowTransitionReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	user := GetCurrentUser(c)

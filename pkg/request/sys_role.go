@@ -4,8 +4,7 @@ import (
 	"gin-web/pkg/response"
 )
 
-// 获取角色列表结构体
-type RoleRequestStruct struct {
+type RoleReq struct {
 	Name              string `json:"name" form:"name"`
 	Keyword           string `json:"keyword" form:"keyword"`
 	CurrentRoleSort   uint   `json:"currentRoleSort"`
@@ -14,8 +13,7 @@ type RoleRequestStruct struct {
 	response.PageInfo        // 分页参数
 }
 
-// 创建角色结构体
-type CreateRoleRequestStruct struct {
+type CreateRoleReq struct {
 	CurrentRoleSort uint     `json:"currentRoleSort"`
 	Name            string   `json:"name" validate:"required"`
 	Keyword         string   `json:"keyword" validate:"required"`
@@ -25,8 +23,7 @@ type CreateRoleRequestStruct struct {
 	Creator         string   `json:"creator"`
 }
 
-// 翻译需要校验的字段名称
-func (s CreateRoleRequestStruct) FieldTrans() map[string]string {
+func (s CreateRoleReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Name"] = "角色名称"
 	m["Keyword"] = "角色关键字"
@@ -34,8 +31,7 @@ func (s CreateRoleRequestStruct) FieldTrans() map[string]string {
 	return m
 }
 
-// 更新角色结构体
-type UpdateRoleRequestStruct struct {
+type UpdateRoleReq struct {
 	Name    *string  `json:"name"`
 	Keyword *string  `json:"keyword"`
 	Sort    *ReqUint `json:"sort"`

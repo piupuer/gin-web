@@ -54,7 +54,7 @@ func identityHandler(c *gin.Context) interface{} {
 }
 
 func login(c *gin.Context) (interface{}, error) {
-	var req request.RegisterAndLoginRequestStruct
+	var req request.RegisterAndLoginReq
 	// 请求json绑定
 	_ = c.ShouldBindJSON(&req)
 

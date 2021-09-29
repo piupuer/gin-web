@@ -26,13 +26,13 @@ func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
 	oldCache, ok := userInfoCache.Get(fmt.Sprintf("%d", user.Id))
 	if ok {
-		resp, _ := oldCache.(response.UserInfoResponseStruct)
+		resp, _ := oldCache.(response.UserInfoResp)
 		response.SuccessWithData(resp)
 		return
 	}
 
 	// 转为UserInfoResponseStruct, 隐藏部分字段
-	var resp response.UserInfoResponseStruct
+	var resp response.UserInfoResp
 	utils.Struct2StructByJson(user, &resp)
 	resp.Roles = []string{
 		"admin",
@@ -46,7 +46,7 @@ func GetUserInfo(c *gin.Context) {
 
 // 获取用户列表
 func GetUsers(c *gin.Context) {
-	var req request.UserRequestStruct
+	var req request.UserReq
 	request.ShouldBind(c, &req)
 	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
@@ -55,7 +55,7 @@ func GetUsers(c *gin.Context) {
 	users, err := s.GetUsers(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.UserListResponseStruct
+	var respStruct []response.UserResp
 	utils.Struct2StructByJson(users, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
@@ -67,7 +67,7 @@ func GetUsers(c *gin.Context) {
 // 修改密码
 func ChangePwd(c *gin.Context) {
 	// 请求json绑定
-	var req request.ChangePwdRequestStruct
+	var req request.ChangePwdReq
 	request.ShouldBind(c, &req)
 	// 获取当前用户
 	user := GetCurrentUser(c)
@@ -108,7 +108,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 // 创建用户
 func CreateUser(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var req request.CreateUserRequestStruct
+	var req request.CreateUserReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	// 记录当前创建人信息
@@ -123,7 +123,7 @@ func CreateUser(c *gin.Context) {
 
 // 更新用户
 func UpdateUserById(c *gin.Context) {
-	var req request.UpdateUserRequestStruct
+	var req request.UpdateUserReq
 	request.ShouldBind(c, &req)
 
 	// 获取path中的userId

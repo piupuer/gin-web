@@ -4,8 +4,7 @@ import (
 	"gin-web/pkg/response"
 )
 
-// 获取流程列表结构体
-type WorkflowRequestStruct struct {
+type WorkflowReq struct {
 	Uuid              string `json:"uuid" form:"uuid"`
 	Category          *uint  `json:"category" form:"category"`
 	SubmitUserConfirm *uint  `json:"submitUserConfirm" form:"submitUserConfirm"`
@@ -17,20 +16,17 @@ type WorkflowRequestStruct struct {
 	response.PageInfo        // 分页参数
 }
 
-// 获取流水线结构体
-type WorkflowLineRequestStruct struct {
+type WorkflowLineReq struct {
 	FlowId            uint `json:"flowId" form:"flowId"`
 	response.PageInfo      // 分页参数
 }
 
-// 获取待审批列表结构体
-type WorkflowApprovingRequestStruct struct {
+type WorkflowApprovingReq struct {
 	ApprovalUserId    uint `json:"approvalUserId"`
 	response.PageInfo      // 分页参数
 }
 
-// 创建流程结构体
-type CreateWorkflowRequestStruct struct {
+type CreateWorkflowReq struct {
 	Uuid              string  `json:"uuid"`
 	Category          ReqUint `json:"category"`
 	SubmitUserConfirm ReqUint `json:"submitUserConfirm"`
@@ -41,15 +37,13 @@ type CreateWorkflowRequestStruct struct {
 	Creator           string  `json:"creator"`
 }
 
-// 翻译需要校验的字段名称
-func (s CreateWorkflowRequestStruct) FieldTrans() map[string]string {
+func (s CreateWorkflowReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Name"] = "流程名称"
 	return m
 }
 
-// 更新流程结构体
-type UpdateWorkflowRequestStruct struct {
+type UpdateWorkflowReq struct {
 	Category          *ReqUint `json:"category"`
 	SubmitUserConfirm *ReqUint `json:"submitUserConfirm"`
 	TargetCategory    *ReqUint `json:"targetCategory"`
@@ -58,8 +52,7 @@ type UpdateWorkflowRequestStruct struct {
 	Desc              *string  `json:"desc"`
 }
 
-// 更新流程流水线结构体
-type UpdateWorkflowLineRequestStruct struct {
+type UpdateWorkflowLineReq struct {
 	Id      uint    `json:"id"`
 	FlowId  ReqUint `json:"flowId" validate:"required"`
 	RoleId  ReqUint `json:"roleId"`
@@ -68,8 +61,7 @@ type UpdateWorkflowLineRequestStruct struct {
 	Edit    ReqUint `json:"edit"`
 }
 
-// 翻译需要校验的字段名称
-func (s UpdateWorkflowLineRequestStruct) FieldTrans() map[string]string {
+func (s UpdateWorkflowLineReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Id"] = "流水线"
 	m["FlowId"] = "流程"
@@ -80,23 +72,20 @@ func (s UpdateWorkflowLineRequestStruct) FieldTrans() map[string]string {
 	return m
 }
 
-// 更新流水线结构体(增量)
-type UpdateWorkflowLineIncrementalRequestStruct struct {
-	FlowId uint                              `json:"flowId" validate:"required"`
-	Create []UpdateWorkflowLineRequestStruct `json:"create"` // 需要新增的流水线编号集合
-	Update []UpdateWorkflowLineRequestStruct `json:"update"` // 需要新增的流水线编号集合
-	Delete []UpdateWorkflowLineRequestStruct `json:"delete"` // 需要删除的流水线编号集合
+type UpdateWorkflowLineIncrementalReq struct {
+	FlowId uint                    `json:"flowId" validate:"required"`
+	Create []UpdateWorkflowLineReq `json:"create"` // 需要新增的流水线编号集合
+	Update []UpdateWorkflowLineReq `json:"update"` // 需要新增的流水线编号集合
+	Delete []UpdateWorkflowLineReq `json:"delete"` // 需要删除的流水线编号集合
 }
 
-// 翻译需要校验的字段名称
-func (s UpdateWorkflowLineIncrementalRequestStruct) FieldTrans() map[string]string {
+func (s UpdateWorkflowLineIncrementalReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["FlowId"] = "流程号"
 	return m
 }
 
-// 工作流转移结构体
-type WorkflowTransitionRequestStruct struct {
+type WorkflowTransitionReq struct {
 	FlowId          uint   `json:"flowId" validate:"required"`
 	TargetCategory  uint   `json:"targetCategory" validate:"required"`
 	TargetId        uint   `json:"targetId" validate:"required"`
@@ -107,8 +96,7 @@ type WorkflowTransitionRequestStruct struct {
 	ApprovalStatus  *uint  `json:"approvalStatus" validate:"required,min=1,max=4"`
 }
 
-// 翻译需要校验的字段名称
-func (s WorkflowTransitionRequestStruct) FieldTrans() map[string]string {
+func (s WorkflowTransitionReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["FlowId"] = "流程"
 	m["TargetCategory"] = "目标类别"

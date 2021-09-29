@@ -109,7 +109,7 @@ func (s MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint
 }
 
 // 创建菜单
-func (s MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuRequestStruct) (err error) {
+func (s MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuReq) (err error) {
 	var menu models.SysMenu
 	utils.Struct2StructByJson(req, &menu)
 	// 创建数据

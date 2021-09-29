@@ -20,7 +20,7 @@ func (s MysqlService) GetWorkflowByTargetCategory(targetCategory uint) (models.S
 }
 
 // 获取所有工作流
-func (s MysqlService) GetWorkflows(req *request.WorkflowRequestStruct) ([]models.SysWorkflow, error) {
+func (s MysqlService) GetWorkflows(req *request.WorkflowReq) ([]models.SysWorkflow, error) {
 	var err error
 	list := make([]models.SysWorkflow, 0)
 	query := s.tx.
@@ -53,7 +53,7 @@ func (s MysqlService) GetWorkflows(req *request.WorkflowRequestStruct) ([]models
 }
 
 // 获取所有流水线
-func (s MysqlService) GetWorkflowLines(req *request.WorkflowLineRequestStruct) ([]models.SysWorkflowLine, error) {
+func (s MysqlService) GetWorkflowLines(req *request.WorkflowLineReq) ([]models.SysWorkflowLine, error) {
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
 	query := s.tx.Model(&models.SysWorkflowLine{}).Preload("Users")
@@ -67,7 +67,7 @@ func (s MysqlService) GetWorkflowLines(req *request.WorkflowLineRequestStruct) (
 }
 
 // 查询待审批目标列表(指定用户)
-func (s MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingRequestStruct) ([]models.SysWorkflowLog, error) {
+func (s MysqlService) GetWorkflowApprovings(req *request.WorkflowApprovingReq) ([]models.SysWorkflowLog, error) {
 	// 查询需要审核的日志
 	logs := make([]models.SysWorkflowLog, 0)
 	list := make([]models.SysWorkflowLog, 0)
@@ -176,7 +176,7 @@ func (s MysqlService) GetWorkflowLineBySort(flowId uint, sort uint) (models.SysW
 }
 
 // 更新流程流水线
-func (s MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkflowLineIncrementalRequestStruct) (err error) {
+func (s MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkflowLineIncrementalReq) (err error) {
 	// 查询流程以及流水线
 	var oldFlow models.SysWorkflow
 	oldLines := make([]models.SysWorkflowLine, 0)
@@ -298,7 +298,7 @@ func (s MysqlService) UpdateWorkflowLineByIncremental(req *request.UpdateWorkflo
 }
 
 // 工作流流转(从一个状态转移到另一个状态)
-func (s MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequestStruct) error {
+func (s MysqlService) WorkflowTransition(req *request.WorkflowTransitionReq) error {
 	if req.FlowId == 0 {
 		return fmt.Errorf("流程号不存在, flowId=%d", req.FlowId)
 	}
@@ -353,7 +353,7 @@ func (s MysqlService) WorkflowTransition(req *request.WorkflowTransitionRequestS
 }
 
 // 初次提交流程工单
-func (s MysqlService) first(req *request.WorkflowTransitionRequestStruct) error {
+func (s MysqlService) first(req *request.WorkflowTransitionReq) error {
 	if req.SubmitUserId == 0 {
 		return fmt.Errorf("提交人不存在, submitUserId=%d", req.SubmitUserId)
 	}
@@ -392,7 +392,7 @@ func (s MysqlService) first(req *request.WorkflowTransitionRequestStruct) error 
 }
 
 // 第二次提交流程工单
-func (s MysqlService) next(req *request.WorkflowTransitionRequestStruct, lastLog models.SysWorkflowLog) error {
+func (s MysqlService) next(req *request.WorkflowTransitionReq, lastLog models.SysWorkflowLog) error {
 	if *lastLog.Status == models.SysWorkflowLogStateEnd {
 		return fmt.Errorf("流程已结束")
 	}
@@ -414,7 +414,7 @@ func (s MysqlService) next(req *request.WorkflowTransitionRequestStruct, lastLog
 }
 
 // 开始自我审批
-func (s MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, approval models.SysUser, lastLog models.SysWorkflowLog) error {
+func (s MysqlService) selfStart(req *request.WorkflowTransitionReq, approval models.SysUser, lastLog models.SysWorkflowLog) error {
 	var err error
 	if *req.ApprovalStatus == models.SysWorkflowLogStateCancel {
 		if *lastLog.Status == models.SysWorkflowLogStateCancel {
@@ -485,7 +485,7 @@ func (s MysqlService) selfStart(req *request.WorkflowTransitionRequestStruct, ap
 }
 
 // 开始正常审批
-func (s MysqlService) start(req *request.WorkflowTransitionRequestStruct, approval models.SysUser, lastLog models.SysWorkflowLog) error {
+func (s MysqlService) start(req *request.WorkflowTransitionReq, approval models.SysUser, lastLog models.SysWorkflowLog) error {
 	// 当前状态已提交 且 必须有权限审批
 	if *lastLog.Status == models.SysWorkflowLogStateSubmit && s.checkPermission(approval.Id, lastLog) {
 		if *req.ApprovalStatus == models.SysWorkflowLogStateApproval {
@@ -500,7 +500,7 @@ func (s MysqlService) start(req *request.WorkflowTransitionRequestStruct, approv
 }
 
 // 通过审批, 流转到下一流水线
-func (s MysqlService) approval(req *request.WorkflowTransitionRequestStruct, approval models.SysUser, lastLog models.SysWorkflowLog) error {
+func (s MysqlService) approval(req *request.WorkflowTransitionReq, approval models.SysUser, lastLog models.SysWorkflowLog) error {
 	// 默认流水线不变
 	lineId := lastLog.CurrentLineId
 	if s.checkNextLineSort(approval.Id, lastLog) {
@@ -538,7 +538,7 @@ func (s MysqlService) approval(req *request.WorkflowTransitionRequestStruct, app
 }
 
 // 拒绝审批, 回退到上一流水线
-func (s MysqlService) deny(req *request.WorkflowTransitionRequestStruct, approval models.SysUser, lastLog models.SysWorkflowLog) error {
+func (s MysqlService) deny(req *request.WorkflowTransitionReq, approval models.SysUser, lastLog models.SysWorkflowLog) error {
 	// 流转到上一流水线
 	// 获取上一流水线
 	if lastLog.CurrentLine.Sort <= 1 {

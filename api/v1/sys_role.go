@@ -12,7 +12,7 @@ import (
 
 // 获取角色列表
 func GetRoles(c *gin.Context) {
-	var req request.RoleRequestStruct
+	var req request.RoleReq
 	request.ShouldBind(c, &req)
 	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
@@ -22,7 +22,7 @@ func GetRoles(c *gin.Context) {
 	roles, err := s.GetRoles(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.RoleListResponseStruct
+	var respStruct []response.RoleResp
 	utils.Struct2StructByJson(roles, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
@@ -34,7 +34,7 @@ func GetRoles(c *gin.Context) {
 // 创建角色
 func CreateRole(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var req request.CreateRoleRequestStruct
+	var req request.CreateRoleReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 
@@ -52,7 +52,7 @@ func CreateRole(c *gin.Context) {
 
 // 更新角色
 func UpdateRoleById(c *gin.Context) {
-	var req request.UpdateRoleRequestStruct
+	var req request.UpdateRoleReq
 	request.ShouldBind(c, &req)
 	if req.Sort != nil {
 		// 绑定当前用户角色排序(隐藏特定用户)

@@ -10,7 +10,7 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (s RedisService) GetUnDeleteMessages(req *request.MessageRequestStruct) ([]response.MessageListResponseStruct, error) {
+func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.MessageResp, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetUnDeleteMessages(req)
@@ -55,10 +55,10 @@ func (s RedisService) GetUnDeleteMessages(req *request.MessageRequestStruct) ([]
 		return nil, err
 	}
 	// 将数据转为响应格式
-	list := make([]response.MessageListResponseStruct, 0)
+	list := make([]response.MessageResp, 0)
 
 	for _, log := range messageLogs {
-		res := response.MessageListResponseStruct{
+		res := response.MessageResp{
 			BaseData: response.BaseData{
 				Id:        log.Id,
 				CreatedAt: log.CreatedAt,

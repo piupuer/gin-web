@@ -18,7 +18,7 @@ func (s RedisService) GetWorkflowByTargetCategory(targetCategory uint) (models.S
 }
 
 // 获取所有工作流
-func (s RedisService) GetWorkflows(req *request.WorkflowRequestStruct) ([]models.SysWorkflow, error) {
+func (s RedisService) GetWorkflows(req *request.WorkflowReq) ([]models.SysWorkflow, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetWorkflows(req)
@@ -53,7 +53,7 @@ func (s RedisService) GetWorkflows(req *request.WorkflowRequestStruct) ([]models
 }
 
 // 获取所有流水线
-func (s RedisService) GetWorkflowLines(req *request.WorkflowLineRequestStruct) ([]models.SysWorkflowLine, error) {
+func (s RedisService) GetWorkflowLines(req *request.WorkflowLineReq) ([]models.SysWorkflowLine, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetWorkflowLines(req)
@@ -89,7 +89,7 @@ func (s RedisService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.SysW
 }
 
 // 查询待审批目标列表(指定用户)
-func (s RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingRequestStruct) ([]models.SysWorkflowLog, error) {
+func (s RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingReq) ([]models.SysWorkflowLog, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
 		// 不使用redis
 		return s.mysql.GetWorkflowApprovings(req)

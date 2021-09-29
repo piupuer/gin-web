@@ -1,7 +1,6 @@
 package response
 
-// 工作流日志信息响应, 字段含义见models.WorkflowLog
-type WorkflowLogsListResponseStruct struct {
+type WorkflowLogResp struct {
 	BaseData
 	FlowName              string `json:"name"`
 	FlowId                uint   `json:"flowId"`
@@ -22,8 +21,7 @@ type WorkflowLogsListResponseStruct struct {
 	ApprovingUserIds      []uint `json:"approvingUserIds"`
 }
 
-// 工作流信息响应, 字段含义见models.Workflow
-type WorkflowListResponseStruct struct {
+type WorkflowResp struct {
 	BaseData
 	Uuid              string `json:"uuid"`
 	Category          uint   `json:"category"`
@@ -35,8 +33,7 @@ type WorkflowListResponseStruct struct {
 	Creator           string `json:"creator"`
 }
 
-// 流水线信息响应, 字段含义见models.WorkflowLine
-type WorkflowLineListResponseStruct struct {
+type WorkflowLineResp struct {
 	BaseData
 	FlowId  uint   `json:"flowId"`
 	Sort    uint   `json:"sort"`

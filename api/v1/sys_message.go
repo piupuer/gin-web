@@ -10,7 +10,7 @@ import (
 
 // 获取全部消息
 func GetAllMessages(c *gin.Context) {
-	var req request.MessageRequestStruct
+	var req request.MessageReq
 	request.ShouldBind(c, &req)
 	user := GetCurrentUser(c)
 	req.ToUserId = user.Id
@@ -37,7 +37,7 @@ func GetUnReadMessageCount(c *gin.Context) {
 
 // 推送消息
 func PushMessage(c *gin.Context) {
-	var req request.PushMessageRequestStruct
+	var req request.PushMessageReq
 	request.ShouldBind(c, &req)
 	user := GetCurrentUser(c)
 	s := service.New(c)

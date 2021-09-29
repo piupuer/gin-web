@@ -11,14 +11,14 @@ import (
 
 // 获取接口列表
 func GetApis(c *gin.Context) {
-	var req request.ApiRequestStruct
+	var req request.ApiReq
 	request.ShouldBind(c, &req)
 
 	s := cache_service.New(c)
 	apis, err := s.GetApis(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.ApiListResponseStruct
+	var respStruct []response.ApiResp
 	utils.Struct2StructByJson(apis, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
@@ -33,7 +33,7 @@ func GetAllApiGroupByCategoryByRoleId(c *gin.Context) {
 	s := cache_service.New(c)
 	apis, ids, err := s.GetAllApiGroupByCategoryByRoleId(user.Role, utils.Str2Uint(c.Param("roleId")))
 	response.CheckErr(err)
-	var resp response.ApiTreeWithAccessResponseStruct
+	var resp response.ApiTreeWithAccessResp
 	resp.AccessIds = ids
 	utils.Struct2StructByJson(apis, &resp.List)
 	response.SuccessWithData(resp)
@@ -42,7 +42,7 @@ func GetAllApiGroupByCategoryByRoleId(c *gin.Context) {
 // 创建接口
 func CreateApi(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var req request.CreateApiRequestStruct
+	var req request.CreateApiReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 
@@ -56,7 +56,7 @@ func CreateApi(c *gin.Context) {
 
 // 更新接口
 func UpdateApiById(c *gin.Context) {
-	var req request.UpdateApiRequestStruct
+	var req request.UpdateApiReq
 	request.ShouldBind(c, &req)
 	// 获取path中的apiId
 	apiId := utils.Str2Uint(c.Param("apiId"))

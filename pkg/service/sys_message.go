@@ -12,11 +12,11 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (s MysqlService) GetUnDeleteMessages(req *request.MessageRequestStruct) ([]response.MessageListResponseStruct, error) {
+func (s MysqlService) GetUnDeleteMessages(req *request.MessageReq) ([]response.MessageResp, error) {
 	sysMessageLogTableName := new(models.SysMessageLog).TableName()
 	sysMessageTableName := new(models.SysMessage).TableName()
 	sysUserTableName := new(models.SysUser).TableName()
-	list := make([]response.MessageListResponseStruct, 0)
+	list := make([]response.MessageResp, 0)
 	// 自定义查询字段
 	fields := []string{
 		fmt.Sprintf("%s.id AS id", sysMessageLogTableName),
@@ -174,7 +174,7 @@ func (s MysqlService) SyncMessageByUserIds(userIds []uint) error {
 }
 
 // 创建消息
-func (s MysqlService) CreateMessage(req *request.PushMessageRequestStruct) error {
+func (s MysqlService) CreateMessage(req *request.PushMessageReq) error {
 	if req.Type != nil {
 		message := models.SysMessage{
 			FromUserId: req.FromUserId,

@@ -18,7 +18,7 @@ import (
 
 // 解压上传的zip文件
 func UploadUnZip(c *gin.Context) {
-	var req request.FilePartInfo
+	var req request.FilePartInfoReq
 	request.ShouldBind(c, &req)
 	if strings.TrimSpace(req.Filename) == "" {
 		response.CheckErr("文件名不存在")
@@ -38,14 +38,14 @@ func UploadUnZip(c *gin.Context) {
 	for _, file := range unzipFiles {
 		files = append(files, strings.TrimPrefix(file, pwd))
 	}
-	var resp response.UploadUnZipResponseStruct
+	var resp response.UploadUnZipResp
 	resp.Files = files
 	response.SuccessWithData(files)
 }
 
 // 判断文件块是否存在
 func UploadFileChunkExists(c *gin.Context) {
-	var req request.FilePartInfo
+	var req request.FilePartInfoReq
 	request.ShouldBind(c, &req)
 	// 校验请求
 	err := req.ValidateReq()
@@ -56,7 +56,7 @@ func UploadFileChunkExists(c *gin.Context) {
 
 // 合并分片文件
 func UploadMerge(c *gin.Context) {
-	var req request.FilePartInfo
+	var req request.FilePartInfoReq
 	request.ShouldBind(c, &req)
 	// 获取
 	rootDir := req.GetUploadRootPath()
@@ -133,7 +133,7 @@ func UploadMerge(c *gin.Context) {
 	os.RemoveAll(req.GetChunkRootPath())
 
 	// 回写文件信息
-	var res response.UploadMergeResponseStruct
+	var res response.UploadMergeResp
 	res.Filename = mergeFileName
 	res.PreviewUrl = previewUrl
 	response.SuccessWithData(res)
@@ -153,7 +153,7 @@ func UploadFile(c *gin.Context) {
 	}
 
 	// 读取文件分片参数
-	var filePart request.FilePartInfo
+	var filePart request.FilePartInfoReq
 	// 当前大小
 	currentSize := uint(header.Size)
 	filePart.CurrentSize = &currentSize
@@ -196,7 +196,7 @@ func UploadFile(c *gin.Context) {
 }
 
 // 检查文件块, 主要用于判断文件完整性
-func checkChunkComplete(filePart request.FilePartInfo) bool {
+func checkChunkComplete(filePart request.FilePartInfoReq) bool {
 	currentChunkName := filePart.GetChunkFilename(filePart.CurrentCheckChunkNumber)
 	exists := ioutil2.FileExists(currentChunkName)
 	if exists {
@@ -213,7 +213,7 @@ func checkChunkComplete(filePart request.FilePartInfo) bool {
 }
 
 // 获取已上传完成的块number集合
-func getUploadedChunkNumbers(filePart request.FilePartInfo) (bool, []uint) {
+func getUploadedChunkNumbers(filePart request.FilePartInfoReq) (bool, []uint) {
 	totalChunk := filePart.GetTotalChunk()
 	var currentChunkNumber uint = 1
 	uploadedChunkNumbers := make([]uint, 0)

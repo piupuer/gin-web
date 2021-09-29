@@ -5,8 +5,7 @@ import (
 	"gin-web/pkg/response"
 )
 
-// 获取请假列表结构体
-type LeaveRequestStruct struct {
+type LeaveReq struct {
 	UserId            uint   `json:"-"`
 	Status            *uint  `json:"status" form:"status"`
 	ApprovalOpinion   string `json:"approvalOpinion" form:"approvalOpinion"`
@@ -14,20 +13,17 @@ type LeaveRequestStruct struct {
 	response.PageInfo        // 分页参数
 }
 
-// 创建请假结构体
-type CreateLeaveRequestStruct struct {
+type CreateLeaveReq struct {
 	User models.SysUser `json:"user"`
 	Desc string         `json:"desc" validate:"required"`
 }
 
-// 翻译需要校验的字段名称
-func (s CreateLeaveRequestStruct) FieldTrans() map[string]string {
+func (s CreateLeaveReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Desc"] = "说明"
 	return m
 }
 
-// 更新请假结构体
-type UpdateLeaveRequestStruct struct {
+type UpdateLeaveReq struct {
 	Desc *string `json:"desc"`
 }

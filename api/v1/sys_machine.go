@@ -12,13 +12,13 @@ import (
 
 // 获取机器列表
 func GetMachines(c *gin.Context) {
-	var req request.MachineRequestStruct
+	var req request.MachineReq
 	request.ShouldBind(c, &req)
 	s := cache_service.New(c)
 	machines, err := s.GetMachines(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.MachineListResponseStruct
+	var respStruct []response.MachineResp
 	utils.Struct2StructByJson(machines, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
@@ -30,7 +30,7 @@ func GetMachines(c *gin.Context) {
 // 创建机器
 func CreateMachine(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var req request.CreateMachineRequestStruct
+	var req request.CreateMachineReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	// 记录当前创建人信息
@@ -43,7 +43,7 @@ func CreateMachine(c *gin.Context) {
 
 // 更新机器
 func UpdateMachineById(c *gin.Context) {
-	var req request.UpdateMachineRequestStruct
+	var req request.UpdateMachineReq
 	request.ShouldBind(c, &req)
 	machineId := utils.Str2Uint(c.Param("machineId"))
 	if machineId == 0 {

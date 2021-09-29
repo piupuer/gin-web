@@ -10,9 +10,9 @@ import (
 func TestRedisService_GetApis(t *testing.T) {
 	tests.InitTestEnv()
 	s := New(nil)
-	req1 := &request.ApiRequestStruct{}
+	req1 := &request.ApiReq{}
 	fmt.Println(s.GetApis(req1))
-	req2 := &request.ApiRequestStruct{
+	req2 := &request.ApiReq{
 		Method: "GET",
 	}
 	fmt.Println(s.GetApis(req2))

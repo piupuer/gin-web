@@ -1,7 +1,6 @@
 package response
 
-// 机器信息响应, 字段含义见models.SysMachine
-type MachineListResponseStruct struct {
+type MachineResp struct {
 	BaseData
 	Host      string `json:"host"`
 	SshPort   int    `json:"sshPort"`

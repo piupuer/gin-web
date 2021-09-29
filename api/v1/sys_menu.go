@@ -23,7 +23,7 @@ func GetMenuTree(c *gin.Context) {
 	user := GetCurrentUser(c)
 	oldCache, ok := menuTreeCache.Get(fmt.Sprintf("%d", user.Id))
 	if ok {
-		resp, _ := oldCache.([]response.MenuTreeResponseStruct)
+		resp, _ := oldCache.([]response.MenuTreeResp)
 		response.SuccessWithData(resp)
 		return
 	}
@@ -31,7 +31,7 @@ func GetMenuTree(c *gin.Context) {
 	s := service.New(c)
 	menus, err := s.GetMenuTree(user.RoleId)
 	response.CheckErr(err)
-	var resp []response.MenuTreeResponseStruct
+	var resp []response.MenuTreeResp
 	utils.Struct2StructByJson(menus, &resp)
 	// 写入缓存
 	menuTreeCache.Set(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
@@ -45,7 +45,7 @@ func GetAllMenuByRoleId(c *gin.Context) {
 	s := cache_service.New(c)
 	menus, ids, err := s.GetAllMenuByRoleId(user.Role, utils.Str2Uint(c.Param("roleId")))
 	response.CheckErr(err)
-	var resp response.MenuTreeWithAccessResponseStruct
+	var resp response.MenuTreeWithAccessResp
 	resp.AccessIds = ids
 	utils.Struct2StructByJson(menus, &resp.List)
 	response.SuccessWithData(resp)
@@ -57,7 +57,7 @@ func GetMenus(c *gin.Context) {
 	user := GetCurrentUser(c)
 	s := cache_service.New(c)
 	menus := s.GetMenus(user.Role)
-	var resp []response.MenuTreeResponseStruct
+	var resp []response.MenuTreeResp
 	utils.Struct2StructByJson(menus, &resp)
 	response.SuccessWithData(resp)
 }
@@ -65,7 +65,7 @@ func GetMenus(c *gin.Context) {
 // 创建菜单
 func CreateMenu(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var req request.CreateMenuRequestStruct
+	var req request.CreateMenuReq
 	request.ShouldBind(c, &req)
 	request.Validate(c, req, req.FieldTrans())
 	// 记录当前创建人信息
@@ -78,7 +78,7 @@ func CreateMenu(c *gin.Context) {
 
 // 更新菜单
 func UpdateMenuById(c *gin.Context) {
-	var req request.UpdateMenuRequestStruct
+	var req request.UpdateMenuReq
 	request.ShouldBind(c, &req)
 	menuId := utils.Str2Uint(c.Param("menuId"))
 	if menuId == 0 {

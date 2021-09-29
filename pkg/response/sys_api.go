@@ -1,7 +1,6 @@
 package response
 
-// 接口信息响应, 字段含义见models
-type ApiListResponseStruct struct {
+type ApiResp struct {
 	BaseData
 	Method   string `json:"method"`
 	Path     string `json:"path"`
@@ -11,15 +10,13 @@ type ApiListResponseStruct struct {
 	Title    string `json:"title"`
 }
 
-// 权限接口信息响应, 字段含义见models
-type ApiGroupByCategoryResponseStruct struct {
-	Title    string                  `json:"title"`    // 标题
-	Category string                  `json:"category"` // 分组名称
-	Children []ApiListResponseStruct `json:"children"` // 前端以树形图结构展示, 这里用children表示
+type ApiGroupByCategoryResp struct {
+	Title    string    `json:"title"`    // 标题
+	Category string    `json:"category"` // 分组名称
+	Children []ApiResp `json:"children"` // 前端以树形图结构展示, 这里用children表示
 }
 
-// 接口树信息响应, 包含有权限访问的id列表
-type ApiTreeWithAccessResponseStruct struct {
-	List      []ApiGroupByCategoryResponseStruct `json:"list"`
-	AccessIds []uint                             `json:"accessIds"`
+type ApiTreeWithAccessResp struct {
+	List      []ApiGroupByCategoryResp `json:"list"`
+	AccessIds []uint                   `json:"accessIds"`
 }

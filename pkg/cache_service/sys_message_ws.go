@@ -109,7 +109,7 @@ type MessageClient struct {
 
 // 消息广播
 type MessageBroadcast struct {
-	response.MessageWsResponseStruct
+	response.MessageWsResp
 	UserIds []uint `json:"-"`
 }
 
@@ -170,7 +170,7 @@ func (h MessageHub) run() {
 						// 获取未读消息条数
 						total, _ := hub.Service.mysql.GetUnReadMessageCount(id)
 						// 将当前消息条数发送给用户
-						msg := response.MessageWsResponseStruct{
+						msg := response.MessageWsResp{
 							Type: MessageRespUnRead,
 							Detail: response.GetSuccessWithData(map[string]int64{
 								"unReadCount": total,
@@ -234,19 +234,19 @@ func (c *MessageClient) receive() {
 		data := string(msg)
 		global.Log.Debug(c.ctx, "[消息中心][接收端][%s]接收数据成功: %d, %s", c.Key, c.User.Id, data)
 		// 数据转为json
-		var req request.MessageWsRequestStruct
+		var req request.MessageWsReq
 		utils.Json2Struct(data, &req)
 		switch req.Type {
 		case MessageReqHeartBeat:
 			if _, ok := req.Data.(float64); ok {
 				// 发送心跳
-				c.Send.SafeSend(response.MessageWsResponseStruct{
+				c.Send.SafeSend(response.MessageWsResp{
 					Type:   MessageRespHeartBeat,
 					Detail: response.GetSuccess(),
 				})
 			}
 		case MessageReqPush:
-			var data request.PushMessageRequestStruct
+			var data request.PushMessageReq
 			utils.Struct2StructByJson(req.Data, &data)
 			// 参数校验
 			err = global.NewValidatorError(global.Validate.Struct(data), data.FieldTrans())
@@ -266,7 +266,7 @@ func (c *MessageClient) receive() {
 				hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			}
 			// 发送响应
-			c.Send.SafeSend(response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResp{
 				Type:   MessageRespNormal,
 				Detail: detail,
 			})
@@ -281,7 +281,7 @@ func (c *MessageClient) receive() {
 			// 刷新条数
 			hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			// 发送响应
-			c.Send.SafeSend(response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResp{
 				Type:   MessageRespNormal,
 				Detail: detail,
 			})
@@ -296,7 +296,7 @@ func (c *MessageClient) receive() {
 			// 刷新条数
 			hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			// 发送响应
-			c.Send.SafeSend(response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResp{
 				Type:   MessageRespNormal,
 				Detail: detail,
 			})
@@ -309,7 +309,7 @@ func (c *MessageClient) receive() {
 			// 刷新条数
 			hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			// 发送响应
-			c.Send.SafeSend(response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResp{
 				Type:   MessageRespNormal,
 				Detail: detail,
 			})
@@ -322,7 +322,7 @@ func (c *MessageClient) receive() {
 			// 刷新条数
 			hub.RefreshUserMessage.SafeSend(hub.UserIds)
 			// 发送响应
-			c.Send.SafeSend(response.MessageWsResponseStruct{
+			c.Send.SafeSend(response.MessageWsResp{
 				Type:   MessageRespNormal,
 				Detail: detail,
 			})
@@ -398,7 +398,7 @@ func (c *MessageClient) heartBeat() {
 			}
 			if last > heartBeatPeriod {
 				// 发送心跳
-				c.Send.SafeSend(response.MessageWsResponseStruct{
+				c.Send.SafeSend(response.MessageWsResp{
 					Type:   MessageRespHeartBeat,
 					Detail: response.GetSuccessWithData(c.RetryCount),
 				})
@@ -427,7 +427,7 @@ func (c *MessageClient) register() {
 		}()
 
 		// 广播当前用户上线
-		msg := response.MessageWsResponseStruct{
+		msg := response.MessageWsResp{
 			Type: MessageRespOnline,
 			Detail: response.GetSuccessWithData(map[string]interface{}{
 				"user": c.User,
@@ -436,8 +436,8 @@ func (c *MessageClient) register() {
 
 		// 通知除自己之外的人
 		go hub.Broadcast.SafeSend(MessageBroadcast{
-			MessageWsResponseStruct: msg,
-			UserIds:                 utils.ContainsUintThenRemove(hub.UserIds, c.User.Id),
+			MessageWsResp: msg,
+			UserIds:       utils.ContainsUintThenRemove(hub.UserIds, c.User.Id),
 		})
 
 		// 记录最后活跃时间戳

@@ -13,13 +13,13 @@ import (
 
 // 获取操作日志列表
 func GetOperationLogs(c *gin.Context) {
-	var req request.OperationLogRequestStruct
+	var req request.OperationLogReq
 	request.ShouldBind(c, &req)
 	s := cache_service.New(c)
 	operationLogs, err := s.GetOperationLogs(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
-	var respStruct []response.OperationLogListResponseStruct
+	var respStruct []response.OperationLogResp
 	utils.Struct2StructByJson(operationLogs, &respStruct)
 	// 返回分页数据
 	var resp response.PageData
