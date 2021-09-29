@@ -75,7 +75,6 @@ func login(c *gin.Context) (interface{}, error) {
 		Password: string(decodeData),
 	}
 
-	// 创建服务
 	s := cache_service.New(c)
 	// 密码校验
 	user, err := s.LoginCheck(u)
@@ -103,8 +102,7 @@ func authorizator(data interface{}, c *gin.Context) bool {
 func unauthorized(c *gin.Context, code int, message string) {
 	global.Log.Debug(c, "JWT认证失败, 错误码%d, 错误信息%s", code, message)
 	if message == response.LoginCheckErrorMsg || message == response.ForbiddenMsg || message == response.UserDisabledMsg {
-		response.FailWithMsg(message)
-		return
+		response.CheckErr(message)
 	}
 	response.FailWithCodeAndMsg(response.Unauthorized, message)
 }
