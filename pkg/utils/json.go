@@ -94,7 +94,7 @@ func CompareDifferenceStructByJson(oldStruct interface{}, newStruct interface{},
 					case decimal.Decimal:
 						d, _ := decimal.NewFromString(rv.String())
 						m3[k1] = d
-					case carbon.Carbon:
+					case carbon.ToDateTimeString:
 						t := carbon.Parse(rv.String())
 						// 时间过滤空值
 						if !t.IsZero() {
