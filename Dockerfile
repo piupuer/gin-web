@@ -35,7 +35,7 @@ RUN chmod +x version.sh && ./version.sh
 
 # 通过packr2将配置文件写入二进制文件
 # 构建packr2
-RUN cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2 && go build && chmod +x packr2
+RUN go get github.com/gobuffalo/packr/v2@v2.7.1 && cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2 && go build && chmod +x packr2
 # 回到app目录运行packr2命令
 RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2/packr2 build
 
