@@ -1,10 +1,5 @@
 package models
 
-import (
-	"fmt"
-	"gin-web/pkg/global"
-)
-
 // Casbin权限访问控制表, 参见github.com/casbin/gorm-adapter/v2/adapter.go CasbinRule
 // 可以根据项目实际需要动态设定, 这里用到了3个字段 角色关键字/资源名称/请求类型
 type SysCasbin struct {
@@ -16,11 +11,6 @@ type SysCasbin struct {
 	V3    string `gorm:"size:100;index:idx_casbin_unique"`
 	V4    string `gorm:"size:100;index:idx_casbin_unique"`
 	V5    string `gorm:"size:100;index:idx_casbin_unique"`
-}
-
-func (m SysCasbin) TableName() string {
-	// service.sys_casbin中NewAdapterByDBUseTableName添加自定义表前缀, 这里同样需要
-	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "sys_casbin")
 }
 
 // 角色权限规则

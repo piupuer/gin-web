@@ -16,7 +16,7 @@ func (s RedisService) GetLeaves(req *request.LeaveReq) ([]models.SysLeave, error
 	var err error
 	list := make([]models.SysLeave, 0)
 	query := s.redis.
-		Table(new(models.SysLeave).TableName()).
+		Table("sys_leave").
 		Where("user_id", "=", req.UserId).
 		Order("created_at DESC")
 	if req.Status != nil {

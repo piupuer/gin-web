@@ -17,7 +17,7 @@ func (s RedisService) GetOperationLogs(req *request.OperationLogReq) ([]models.S
 	var err error
 	list := make([]models.SysOperationLog, 0)
 	query := s.redis.
-		Table(new(models.SysOperationLog).TableName()).
+		Table("sys_operation_log").
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {

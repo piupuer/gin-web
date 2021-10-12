@@ -21,7 +21,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/panjf2000/ants v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/piupuer/go-helper v0.0.0-20210922082320-3f9424cf7d1c
+	github.com/piupuer/go-helper v0.0.0-20211012042057-5c92172c857a
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0
@@ -36,6 +36,6 @@ require (
 	golang.org/x/text v0.3.6
 	gopkg.in/go-playground/assert.v1 v1.2.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0
-	gorm.io/driver/mysql v1.1.1
-	gorm.io/gorm v1.21.11
+	gorm.io/driver/mysql v1.1.2
+	gorm.io/gorm v1.21.12
 )

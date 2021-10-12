@@ -1,8 +1,10 @@
 package models
 
+import "github.com/piupuer/go-helper/models"
+
 // 系统菜单表
 type SysMenu struct {
-	Model
+	models.Model
 	Name       string    `gorm:"comment:'菜单名称(英文名, 可用于国际化)'" json:"name"`
 	Title      string    `gorm:"comment:'菜单标题(无法国际化时使用)'" json:"title"`
 	Icon       string    `gorm:"comment:'菜单图标'" json:"icon"`
@@ -18,10 +20,6 @@ type SysMenu struct {
 	Creator    string    `gorm:"comment:'创建人'" json:"creator"`
 	Children   []SysMenu `gorm:"-" json:"children"`                              // 子菜单集合
 	Roles      []SysRole `gorm:"many2many:sys_menu_role_relation;" json:"roles"` // 角色菜单多对多关系
-}
-
-func (m SysMenu) TableName() string {
-	return m.Model.TableName("sys_menu")
 }
 
 // 获取选中列表

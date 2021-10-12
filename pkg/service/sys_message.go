@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 	"gin-web/models"
+	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
@@ -13,9 +14,9 @@ import (
 
 // 查询指定用户未删除的消息
 func (s MysqlService) GetUnDeleteMessages(req *request.MessageReq) ([]response.MessageResp, error) {
-	sysMessageLogTableName := new(models.SysMessageLog).TableName()
-	sysMessageTableName := new(models.SysMessage).TableName()
-	sysUserTableName := new(models.SysUser).TableName()
+	sysMessageLogTableName := global.Mysql.NamingStrategy.TableName("sys_message_log")
+	sysMessageTableName := global.Mysql.NamingStrategy.TableName("sys_message")
+	sysUserTableName := global.Mysql.NamingStrategy.TableName("sys_user")
 	list := make([]response.MessageResp, 0)
 	// 自定义查询字段
 	fields := []string{

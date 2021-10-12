@@ -27,12 +27,11 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	l := len(tableModels)
 	tableNames := make([]string, l)
 	for i := 0; i < l; i++ {
-		if v := reflect.ValueOf(tableModels[i]).MethodByName("TableName"); v.String() != "<invalid Value>" {
-			res := v.Call(nil)
-			if len(res) > 0 {
-				tableNames[i] = res[0].String()
-			}
+		t := reflect.ValueOf(tableModels[i]).Type()
+		if t.Kind() == reflect.Ptr {
+			t = t.Elem()
 		}
+		tableNames[i] = global.Mysql.NamingStrategy.TableName(reflect.New(t).Elem().Type().Name())
 	}
 	// 监听器配置
 	cfg := canal.NewDefaultConfig()

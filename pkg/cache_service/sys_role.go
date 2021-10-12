@@ -15,7 +15,7 @@ func (s RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 	}
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
-	err := s.redis.Table(new(models.SysRole).TableName()).Where("sort", ">=", currentRoleSort).Find(&roles).Error
+	err := s.redis.Table("sys_role").Where("sort", ">=", currentRoleSort).Find(&roles).Error
 	if err != nil {
 		return roleIds, err
 	}
@@ -34,7 +34,7 @@ func (s RedisService) GetRoles(req *request.RoleReq) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
 	query := s.redis.
-		Table(new(models.SysRole).TableName()).
+		Table("sys_role").
 		Order("created_at DESC").
 		Where("sort", ">=", req.CurrentRoleSort)
 	name := strings.TrimSpace(req.Name)

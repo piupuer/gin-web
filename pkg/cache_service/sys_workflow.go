@@ -13,7 +13,7 @@ import (
 // 获取工作流(指定审批单类型)
 func (s RedisService) GetWorkflowByTargetCategory(targetCategory uint) (models.SysWorkflow, error) {
 	var flow models.SysWorkflow
-	err := s.redis.Table(flow.TableName()).Where("target_category", "=", targetCategory).First(&flow).Error
+	err := s.redis.Table("sys_workflow").Where("target_category", "=", targetCategory).First(&flow).Error
 	return flow, err
 }
 
@@ -25,7 +25,7 @@ func (s RedisService) GetWorkflows(req *request.WorkflowReq) ([]models.SysWorkfl
 	}
 	var err error
 	list := make([]models.SysWorkflow, 0)
-	query := s.redis.Table(new(models.SysWorkflow).TableName())
+	query := s.redis.Table("sys_workflow")
 	name := strings.TrimSpace(req.Name)
 	if name != "" {
 		query = query.Where("name", "contains", name)
@@ -60,7 +60,7 @@ func (s RedisService) GetWorkflowLines(req *request.WorkflowLineReq) ([]models.S
 	}
 	var err error
 	list := make([]models.SysWorkflowLine, 0)
-	query := s.redis.Table(new(models.SysWorkflowLine).TableName()).Preload("Users")
+	query := s.redis.Table("sys_workflow_line").Preload("Users")
 	if req.FlowId > 0 {
 		query = query.Where("flow_id", "=", req.FlowId)
 	}
@@ -78,7 +78,7 @@ func (s RedisService) GetWorkflowLogs(flowId uint, targetId uint) ([]models.SysW
 	}
 	// 查询已审核的日志
 	logs := make([]models.SysWorkflowLog, 0)
-	err := s.redis.Table(new(models.SysWorkflowLog).TableName()).
+	err := s.redis.Table("sys_workflow_log").
 		Preload("ApprovalUser").
 		Preload("SubmitUser").
 		Preload("Flow").
@@ -106,7 +106,7 @@ func (s RedisService) GetWorkflowApprovings(req *request.WorkflowApprovingReq) (
 		return list, err
 	}
 	// 由于还需判断是否包含当前审批人, 因此无法直接分页
-	err = s.redis.Table(new(models.SysWorkflowLog).TableName()).
+	err = s.redis.Table("sys_workflow_log").
 		Preload("Flow").
 		Preload("CurrentLine").
 		Preload("CurrentLine.Users").

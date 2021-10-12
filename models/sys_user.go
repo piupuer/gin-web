@@ -1,5 +1,7 @@
 package models
 
+import "github.com/piupuer/go-helper/models"
+
 const (
 	// 用户状态
 	SysUserStatusDisabled    uint   = 0    // 禁用
@@ -16,7 +18,7 @@ var SysUserStatusConst = map[uint]string{
 
 // User
 type SysUser struct {
-	Model
+	models.Model
 	Username     string  `gorm:"idx_username,unique;comment:'用户名'" json:"username"`
 	Password     string  `gorm:"comment:'密码'" json:"password"`
 	Mobile       string  `gorm:"comment:'手机'" json:"mobile"`
@@ -27,8 +29,4 @@ type SysUser struct {
 	Creator      string  `gorm:"comment:'创建人'" json:"creator"`
 	RoleId       uint    `gorm:"comment:'角色Id外键'" json:"roleId"`
 	Role         SysRole `gorm:"foreignKey:RoleId" json:"role"` // 将SysUser.RoleId指定为外键
-}
-
-func (m SysUser) TableName() string {
-	return m.Model.TableName("sys_user")
 }

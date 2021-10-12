@@ -1,8 +1,7 @@
 package models
 
 import (
-	"fmt"
-	"gin-web/pkg/global"
+	"github.com/piupuer/go-helper/models"
 )
 
 // 流程相关的常量
@@ -53,7 +52,7 @@ var SysWorkflowLogStateConst = map[uint]string{
 
 // 流程
 type SysWorkflow struct {
-	Model
+	models.Model
 	Uuid              string `gorm:"index:idx_uuid,unique;comment:'唯一标识'" json:"uuid"`
 	Category          uint   `gorm:"default:1;comment:'类别(1:每个流水线有一个人通过 2:每个流水线必须所有人审批通过(指定了Users) 其他自行扩展)'" json:"category"`
 	SubmitUserConfirm *uint  `gorm:"type:tinyint(1);default:0;comment:'是否需要提交人确认'" json:"submitUserConfirm"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
@@ -64,41 +63,29 @@ type SysWorkflow struct {
 	Creator           string `gorm:"comment:'创建人'" json:"creator"`
 }
 
-func (m SysWorkflow) TableName() string {
-	return m.Model.TableName("sys_workflow")
-}
-
 // 流程流水线
 type SysWorkflowLine struct {
-	Model
+	models.Model
 	FlowId uint        `gorm:"comment:'流程编号'" json:"flowId"`
 	Flow   SysWorkflow `gorm:"foreignKey:FlowId" json:"flow"`
 	Sort   uint        `gorm:"comment:'排序'" json:"sort"`
 	End    *uint       `gorm:"default:0;comment:'是否到达末尾'" json:"end"`
 	RoleId uint        `gorm:"comment:'审批人角色编号(拥有该角色才能审批)'" json:"roleId"`
 	Role   SysRole     `gorm:"foreignKey:RoleId" json:"role"`
-	Users  []SysUser   `gorm:"many2many:sys_user_workflow_line_relation;comment:'审批人列表(指定了具体审批人, 则不再使用角色判断)'" json:"users"`
+	Users  []SysUser   `gorm:"many2many:sys_workflow_line_user_relation;comment:'审批人列表(指定了具体审批人, 则不再使用角色判断)'" json:"users"`
 	Edit   *uint       `gorm:"type:tinyint(1);default:1;comment:'是否有编辑权限'" json:"edit"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
 	Name   string      `gorm:"comment:'名称'" json:"name"`
 }
 
-func (m SysWorkflowLine) TableName() string {
-	return m.Model.TableName("sys_workflow_line")
-}
-
 // 用户与流水线关联关系
-type RelationUserWorkflowLine struct {
+type SysWorkflowLineUserRelation struct {
 	SysUserId         uint `json:"sysUserId"`
 	SysWorkflowLineId uint `json:"sysWorkflowLineId"`
 }
 
-func (m RelationUserWorkflowLine) TableName() string {
-	return fmt.Sprintf("%s_%s", global.Conf.Mysql.TablePrefix, "sys_user_workflow_line_relation")
-}
-
 // 流程日志: 任何一种工作流程都会关联到某一张表, 需要targetId
 type SysWorkflowLog struct {
-	Model
+	models.Model
 	FlowId           uint            `gorm:"comment:'流程编号'" json:"flowId"`
 	Flow             SysWorkflow     `gorm:"foreignKey:FlowId" json:"flow"`
 	TargetId         uint            `gorm:"comment:'目标表编号'" json:"targetId"`
@@ -113,8 +100,4 @@ type SysWorkflowLog struct {
 	ApprovalUser     SysUser         `gorm:"foreignKey:ApprovalUserId" json:"approvalUser"`
 	ApprovalOpinion  string          `gorm:"comment:'审批意见'" json:"approvalOpinion"`
 	ApprovingUserIds []uint          `gorm:"-" json:"approvingUserIds"` // status为0提交时有效, 表示审批人列表, 无需保存到数据库
-}
-
-func (m SysWorkflowLog) TableName() string {
-	return m.Model.TableName("sys_workflow_log")
 }

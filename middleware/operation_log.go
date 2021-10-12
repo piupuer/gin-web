@@ -97,10 +97,6 @@ func OperationLog(c *gin.Context) {
 			header[k] = strings.Join(v, " | ")
 		}
 		log := models.SysOperationLog{
-			Model: models.Model{
-				// 记录最后时间
-				CreatedAt: endTime,
-			},
 			// Ip地址
 			Ip: c.ClientIP(),
 			// 请求方式
@@ -116,6 +112,8 @@ func OperationLog(c *gin.Context) {
 			// 浏览器标识
 			UserAgent: c.Request.UserAgent(),
 		}
+		// 记录最后时间
+		log.CreatedAt = endTime
 
 		// 清理事务
 		c.Set("tx", "")

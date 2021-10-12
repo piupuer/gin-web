@@ -64,7 +64,8 @@ func Mysql() {
 		DisableForeignKeyConstraintWhenMigrating: true,
 		// 指定表前缀
 		NamingStrategy: schema.NamingStrategy{
-			TablePrefix: global.Conf.Mysql.TablePrefix + "_",
+			TablePrefix:   global.Conf.Mysql.TablePrefix + "_",
+			SingularTable: true,
 		},
 		// 查询全部字段, 某些情况下*不走索引
 		QueryFields: true,
@@ -93,7 +94,7 @@ func autoMigrate() {
 		new(models.SysWorkflow),
 		new(models.SysWorkflowLine),
 		new(models.SysWorkflowLog),
-		new(models.RelationUserWorkflowLine),
+		new(models.SysWorkflowLineUserRelation),
 		new(models.SysLeave),
 		new(models.SysOperationLog),
 		new(models.SysMessage),
@@ -108,18 +109,18 @@ func binlog() {
 	MysqlBinlog(
 		[]string{
 			// 下列表会随着使用时间数据量越来越大, 不适合将整个表json存入redis
-			new(models.SysOperationLog).TableName(),
+			"sys_operation_log",
 		},
 		new(models.SysUser),
 		new(models.SysRole),
 		new(models.SysMenu),
-		new(models.RelationMenuRole),
+		new(models.SysRoleMenuRelation),
 		new(models.SysApi),
 		new(models.SysCasbin),
 		new(models.SysWorkflow),
 		new(models.SysWorkflowLine),
 		new(models.SysWorkflowLog),
-		new(models.RelationUserWorkflowLine),
+		new(models.SysWorkflowLineUserRelation),
 		new(models.SysLeave),
 		new(models.SysMessage),
 		new(models.SysMessageLog),

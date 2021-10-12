@@ -1,6 +1,9 @@
 package models
 
-import "github.com/golang-module/carbon"
+import (
+	"github.com/golang-module/carbon"
+	"github.com/piupuer/go-helper/models"
+)
 
 const (
 	// 消息类型
@@ -36,7 +39,7 @@ var (
 
 // 系统消息表, 主要记录消息内容
 type SysMessage struct {
-	Model
+	models.Model
 	FromUserId uint                     `gorm:"comment:'消息发送者'" json:"fromUserId"`
 	FromUser   SysUser                  `gorm:"foreignKey:FromUserId" json:"fromUser"`
 	Title      string                   `gorm:"comment:'消息标题'" json:"title"`
@@ -47,20 +50,12 @@ type SysMessage struct {
 	ExpiredAt  *carbon.ToDateTimeString `gorm:"comment:'过期时间'" json:"expiredAt"`
 }
 
-func (m SysMessage) TableName() string {
-	return m.Model.TableName("sys_message")
-}
-
 // 系统消息日志, 主要记录消息接收人以及消息状态
 type SysMessageLog struct {
-	Model
+	models.Model
 	ToUserId  uint       `gorm:"comment:'消息接收者'" json:"toUserId"`
 	ToUser    SysUser    `gorm:"foreignKey:ToUserId" json:"toUser"`
 	MessageId uint       `gorm:"comment:'消息编号'" json:"messageId"`
 	Message   SysMessage `gorm:"foreignKey:MessageId" json:"message"`
 	Status    uint       `gorm:"type:tinyint;default:0;comment:'消息状态(0: 未读, 1: 已读, 2: 删除)'" json:"status"`
-}
-
-func (m SysMessageLog) TableName() string {
-	return m.Model.TableName("sys_message_log")
 }

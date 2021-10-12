@@ -1,6 +1,7 @@
 package redis
 
 import (
+	"gin-web/pkg/global"
 	"regexp"
 	"strings"
 )
@@ -21,12 +22,12 @@ func (s QueryRedis) Table(name string, args ...interface{}) (ins *QueryRedis) {
 	// 降低复杂度, 只支持单表
 	if strings.Contains(name, " ") || strings.Contains(name, "`") || len(args) > 0 {
 		if results := tableRegexp.FindStringSubmatch(name); len(results) == 2 {
-			ins.Statement.Table = results[1]
+			ins.Statement.Table = global.Mysql.NamingStrategy.TableName(results[1])
 			return
 		}
 	}
 
-	ins.Statement.Table = name
+	ins.Statement.Table = global.Mysql.NamingStrategy.TableName(name)
 	return
 }
 

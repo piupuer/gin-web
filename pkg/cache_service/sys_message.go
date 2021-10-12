@@ -18,7 +18,7 @@ func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 	// 取出当前用户的所有消息
 	currentUserAllLogs := make([]models.SysMessageLog, 0)
 	err := s.redis.
-		Table(new(models.SysMessageLog).TableName()).
+		Table("sys_message_log").
 		Preload("Message").
 		Preload("Message.FromUser").
 		Preload("ToUser").
@@ -87,7 +87,7 @@ func (s RedisService) GetUnReadMessageCount(userId uint) (int64, error) {
 	}
 	var total int64
 	err := s.redis.
-		Table(new(models.SysMessageLog).TableName()).
+		Table("sys_message_log").
 		Where("to_user_id", "=", userId).
 		Where("status", "=", models.SysMessageLogStatusUnRead).
 		Count(&total).Error

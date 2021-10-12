@@ -19,7 +19,7 @@ func (s RedisService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
 	query := s.redis.
-		Table(new(models.SysApi).TableName()).
+		Table("sys_api").
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
@@ -54,7 +54,7 @@ func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
 	// 查询全部api
-	err := s.redis.Table(new(models.SysApi).TableName()).Find(&allApi).Error
+	err := s.redis.Table("sys_api").Find(&allApi).Error
 	if err != nil {
 		return tree, accessIds, err
 	}

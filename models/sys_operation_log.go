@@ -1,12 +1,13 @@
 package models
 
 import (
+	"github.com/piupuer/go-helper/models"
 	"time"
 )
 
 // 系统操作日志
 type SysOperationLog struct {
-	Model
+	models.Model
 	ApiDesc    string        `json:"apiDesc" gorm:"comment:'接口说明'"`
 	Path       string        `json:"path" gorm:"comment:'访问路径'"`
 	Method     string        `json:"method" gorm:"comment:'请求方式'"`
@@ -20,8 +21,4 @@ type SysOperationLog struct {
 	IpLocation string        `json:"ipLocation" gorm:"comment:'Ip所在地'"`
 	Latency    time.Duration `json:"latency" gorm:"comment:'请求耗时(ms)'"`
 	UserAgent  string        `json:"userAgent" gorm:"comment:'浏览器标识'"`
-}
-
-func (m SysOperationLog) TableName() string {
-	return m.Model.TableName("sys_operation_log")
 }

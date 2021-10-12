@@ -1,5 +1,7 @@
 package models
 
+import "github.com/piupuer/go-helper/models"
+
 const (
 	// 机器状态
 	SysMachineStatusUnConnected    uint   = 0      // 无法连接
@@ -16,7 +18,7 @@ var SysMachineStatusConst = map[uint]string{
 
 // 机器配置
 type SysMachine struct {
-	Model
+	models.Model
 	Host      string `gorm:"comment:'主机地址(可以是IP或域名)'" json:"host"`
 	SshPort   int    `gorm:"comment:'ssh端口号'" json:"sshPort"`
 	Version   string `gorm:"comment:'操作系统版本'" json:"version"`
@@ -30,8 +32,4 @@ type SysMachine struct {
 	Status    *uint  `gorm:"default:0;comment:'状态(0:无法连接 1:正常)'" json:"status"`
 	Remark    string `gorm:"comment:'备注'" json:"remark"`
 	Creator   string `gorm:"comment:'创建人'" json:"creator"`
-}
-
-func (m *SysMachine) TableName() string {
-	return m.Model.TableName("sys_machine")
 }

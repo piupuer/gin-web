@@ -18,7 +18,7 @@ func (s RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) 
 	}
 	var u models.SysUser
 	// 查询用户及其角色
-	err := s.redis.Table(new(models.SysUser).TableName()).Preload("Role").Where("username", "=", user.Username).First(&u).Error
+	err := s.redis.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
 	if err != nil {
 		return nil, errors.New(response.LoginCheckErrorMsg)
 	}
@@ -37,7 +37,7 @@ func (s RedisService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
 	query := s.redis.
-		Table(new(models.SysUser).TableName()).
+		Table("sys_user").
 		Order("created_at DESC")
 	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
@@ -80,7 +80,7 @@ func (s RedisService) GetUserById(id uint) (models.SysUser, error) {
 	var user models.SysUser
 	var err error
 	err = s.redis.
-		Table(new(models.SysUser).TableName()).
+		Table("sys_user").
 		Preload("Role").
 		Where("id", "=", id).
 		// 状态为正常

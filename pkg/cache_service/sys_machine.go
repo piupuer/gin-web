@@ -15,7 +15,7 @@ func (s RedisService) GetMachines(req *request.MachineReq) ([]models.SysMachine,
 	var err error
 	list := make([]models.SysMachine, 0)
 	query := s.redis.
-		Table(new(models.SysMachine).TableName()).
+		Table("sys_machine").
 		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
 	if host != "" {
