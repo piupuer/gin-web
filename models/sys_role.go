@@ -1,8 +1,6 @@
 package models
 
-import (
-	"github.com/piupuer/go-helper/models"
-)
+import ms "github.com/piupuer/go-helper/models"
 
 const (
 	// 用户状态
@@ -22,7 +20,7 @@ var SysRoleStatusConst = map[uint]string{
 
 // 系统角色表
 type SysRole struct {
-	models.Model
+	ms.Model
 	Name    string    `gorm:"comment:'角色名称'" json:"name"`
 	Keyword string    `gorm:"index:idx_keyword,unique;comment:'角色关键词'" json:"keyword"`
 	Desc    string    `gorm:"comment:'角色说明'" json:"desc"`

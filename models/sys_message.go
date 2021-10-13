@@ -2,7 +2,7 @@ package models
 
 import (
 	"github.com/golang-module/carbon"
-	"github.com/piupuer/go-helper/models"
+	ms "github.com/piupuer/go-helper/models"
 )
 
 const (
@@ -39,7 +39,7 @@ var (
 
 // 系统消息表, 主要记录消息内容
 type SysMessage struct {
-	models.Model
+	ms.Model
 	FromUserId uint                     `gorm:"comment:'消息发送者'" json:"fromUserId"`
 	FromUser   SysUser                  `gorm:"foreignKey:FromUserId" json:"fromUser"`
 	Title      string                   `gorm:"comment:'消息标题'" json:"title"`
@@ -52,7 +52,7 @@ type SysMessage struct {
 
 // 系统消息日志, 主要记录消息接收人以及消息状态
 type SysMessageLog struct {
-	models.Model
+	ms.Model
 	ToUserId  uint       `gorm:"comment:'消息接收者'" json:"toUserId"`
 	ToUser    SysUser    `gorm:"foreignKey:ToUserId" json:"toUser"`
 	MessageId uint       `gorm:"comment:'消息编号'" json:"messageId"`

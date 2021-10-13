@@ -1,6 +1,6 @@
 package models
 
-import "github.com/piupuer/go-helper/models"
+import ms "github.com/piupuer/go-helper/models"
 
 const (
 	// 机器状态
@@ -18,7 +18,7 @@ var SysMachineStatusConst = map[uint]string{
 
 // 机器配置
 type SysMachine struct {
-	models.Model
+	ms.Model
 	Host      string `gorm:"comment:'主机地址(可以是IP或域名)'" json:"host"`
 	SshPort   int    `gorm:"comment:'ssh端口号'" json:"sshPort"`
 	Version   string `gorm:"comment:'操作系统版本'" json:"version"`
