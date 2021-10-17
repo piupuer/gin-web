@@ -1,6 +1,9 @@
 package request
 
-import "gin-web/pkg/response"
+import (
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
+)
 
 type MenuReq struct {
 	Name              string `json:"name" form:"name"`
@@ -12,7 +15,7 @@ type MenuReq struct {
 	Visible           *uint  `json:"visible" form:"visible"`
 	Breadcrumb        *uint  `json:"breadcrumb" form:"breadcrumb"`
 	Creator           string `json:"creator" form:"creator"`
-	response.PageInfo        // 分页参数
+	resp.Page
 }
 
 type CreateMenuReq struct {
@@ -23,11 +26,11 @@ type CreateMenuReq struct {
 	Redirect   string  `json:"redirect"`
 	Component  string  `json:"component"`
 	Permission string  `json:"permission"`
-	Sort       ReqUint `json:"sort"`
-	Status     ReqUint `json:"status"`
-	Visible    ReqUint `json:"visible"`
-	Breadcrumb ReqUint `json:"breadcrumb"`
-	ParentId   ReqUint `json:"parentId"`
+	Sort       req.NullUint `json:"sort"`
+	Status     req.NullUint `json:"status"`
+	Visible    req.NullUint `json:"visible"`
+	Breadcrumb req.NullUint `json:"breadcrumb"`
+	ParentId   req.NullUint `json:"parentId"`
 	Creator    string  `json:"creator"`
 }
 
@@ -45,9 +48,9 @@ type UpdateMenuReq struct {
 	Redirect   *string  `json:"redirect"`
 	Component  *string  `json:"component"`
 	Permission *string  `json:"permission"`
-	Sort       *ReqUint `json:"sort"`
-	Status     *ReqUint `json:"status"`
-	Visible    *ReqUint `json:"visible"`
-	Breadcrumb *ReqUint `json:"breadcrumb"`
-	ParentId   *ReqUint `json:"parentId"`
+	Sort       *req.NullUint `json:"sort"`
+	Status     *req.NullUint `json:"status"`
+	Visible    *req.NullUint `json:"visible"`
+	Breadcrumb *req.NullUint `json:"breadcrumb"`
+	ParentId   *req.NullUint `json:"parentId"`
 }

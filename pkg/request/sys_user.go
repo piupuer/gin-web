@@ -2,7 +2,8 @@ package request
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/response"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 // User login structure
@@ -24,33 +25,33 @@ type ChangePwdReq struct {
 }
 
 type UserReq struct {
-	CurrentRole       models.SysRole `json:"currentRole"`
-	Username          string         `json:"username" form:"username"`
-	Mobile            string         `json:"mobile" form:"mobile"`
-	Avatar            string         `json:"avatar" form:"avatar"`
-	Nickname          string         `json:"nickname" form:"nickname"`
-	UsernameOr        string         `json:"usernameOr" form:"usernameOr"`
-	MobileOr          string         `json:"mobileOr" form:"mobileOr"`
-	NicknameOr        string         `json:"nicknameOr" form:"nicknameOr"`
-	Introduction      string         `json:"introduction" form:"introduction"`
-	Status            *uint          `json:"status" form:"status"`
-	RoleId            uint           `json:"roleId" form:"roleId"`
-	Creator           string         `json:"creator" form:"creator"`
-	response.PageInfo                // 分页参数
+	CurrentRole  models.SysRole `json:"currentRole"`
+	Username     string         `json:"username" form:"username"`
+	Mobile       string         `json:"mobile" form:"mobile"`
+	Avatar       string         `json:"avatar" form:"avatar"`
+	Nickname     string         `json:"nickname" form:"nickname"`
+	UsernameOr   string         `json:"usernameOr" form:"usernameOr"`
+	MobileOr     string         `json:"mobileOr" form:"mobileOr"`
+	NicknameOr   string         `json:"nicknameOr" form:"nicknameOr"`
+	Introduction string         `json:"introduction" form:"introduction"`
+	Status       *uint          `json:"status" form:"status"`
+	RoleId       uint           `json:"roleId" form:"roleId"`
+	Creator      string         `json:"creator" form:"creator"`
+	resp.Page
 }
 
 type CreateUserReq struct {
-	Username     string   `json:"username" validate:"required"`
-	Password     string   `json:"password"`
-	InitPassword string   `json:"initPassword" validate:"required"` // 不使用SysUser的Password字段, 避免请求劫持绕过系统校验
-	NewPassword  string   `json:"newPassword"`
-	Mobile       string   `json:"mobile" validate:"required"`
-	Avatar       string   `json:"avatar"`
-	Nickname     string   `json:"nickname"`
-	Introduction string   `json:"introduction"`
-	Status       *ReqUint `json:"status"`
-	RoleId       uint     `json:"roleId" validate:"required"`
-	Creator      string   `json:"creator"`
+	Username     string        `json:"username" validate:"required"`
+	Password     string        `json:"password"`
+	InitPassword string        `json:"initPassword" validate:"required"` // 不使用SysUser的Password字段, 避免请求劫持绕过系统校验
+	NewPassword  string        `json:"newPassword"`
+	Mobile       string        `json:"mobile" validate:"required"`
+	Avatar       string        `json:"avatar"`
+	Nickname     string        `json:"nickname"`
+	Introduction string        `json:"introduction"`
+	Status       *req.NullUint `json:"status"`
+	RoleId       uint          `json:"roleId" validate:"required"`
+	Creator      string        `json:"creator"`
 }
 
 func (s CreateUserReq) FieldTrans() map[string]string {
@@ -63,14 +64,14 @@ func (s CreateUserReq) FieldTrans() map[string]string {
 }
 
 type UpdateUserReq struct {
-	Username     *string  `json:"username"`
-	Password     *string  `json:"password"`
-	InitPassword *string  `json:"initPassword"`
-	NewPassword  *string  `json:"newPassword"`
-	Mobile       *string  `json:"mobile"`
-	Avatar       *string  `json:"avatar"`
-	Nickname     *string  `json:"nickname"`
-	Introduction *string  `json:"introduction"`
-	Status       *ReqUint `json:"status"`
-	RoleId       *uint    `json:"roleId"`
+	Username     *string       `json:"username"`
+	Password     *string       `json:"password"`
+	InitPassword *string       `json:"initPassword"`
+	NewPassword  *string       `json:"newPassword"`
+	Mobile       *string       `json:"mobile"`
+	Avatar       *string       `json:"avatar"`
+	Nickname     *string       `json:"nickname"`
+	Introduction *string       `json:"introduction"`
+	Status       *req.NullUint `json:"status"`
+	RoleId       *uint         `json:"roleId"`
 }

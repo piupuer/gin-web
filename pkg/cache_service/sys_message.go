@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/pkg/resp"
 	"strings"
 )
 
@@ -50,7 +51,7 @@ func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 		query = query.Where("status", "=", *req.Status)
 	}
 	// 查询列表
-	err = s.Find(query, &req.PageInfo, &messageLogs)
+	err = s.Find(query, &req.Page, &messageLogs)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +60,7 @@ func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 
 	for _, log := range messageLogs {
 		res := response.MessageResp{
-			BaseData: response.BaseData{
+			Base: resp.Base{
 				Id:        log.Id,
 				CreatedAt: log.CreatedAt,
 				UpdatedAt: log.UpdatedAt,

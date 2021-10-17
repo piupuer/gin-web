@@ -5,6 +5,7 @@ import (
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/piupuer/go-helper/pkg/middleware"
 	"net/http"
 )
 
@@ -19,9 +20,9 @@ var upgrade = websocket.Upgrader{
 }
 
 // 创建消息中心仓库
-func StartMessageHub(checkIdempotenceTokenFunc func(token string) bool) cache_service.MessageHub {
+func StartMessageHub(idempotenceOps *middleware.IdempotenceOptions) cache_service.MessageHub {
 	s := cache_service.New(nil)
-	return s.StartMessageHub(checkIdempotenceTokenFunc)
+	return s.StartMessageHub(idempotenceOps)
 }
 
 // 启动消息连接

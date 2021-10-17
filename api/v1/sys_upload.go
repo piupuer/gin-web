@@ -7,6 +7,8 @@ import (
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/siddontang/go/ioutil2"
 	"io"
 	"io/ioutil"
@@ -18,56 +20,56 @@ import (
 
 // 解压上传的zip文件
 func UploadUnZip(c *gin.Context) {
-	var req request.FilePartInfoReq
-	request.ShouldBind(c, &req)
-	if strings.TrimSpace(req.Filename) == "" {
-		response.CheckErr("文件名不存在")
+	var r request.FilePartInfoReq
+	req.ShouldBind(c, &r)
+	if strings.TrimSpace(r.Filename) == "" {
+		resp.CheckErr("文件名不存在")
 	}
 	// 获取工作目录
 	pwd := utils.GetWorkDir()
-	fileDir, filename := filepath.Split(req.Filename)
+	fileDir, filename := filepath.Split(r.Filename)
 	baseDir := fmt.Sprintf("%s/%s", pwd, fileDir)
 	fullName := fmt.Sprintf("%s%s", baseDir, filename)
 	// 解压文件到当前目录
 	unzipFiles, err := utils.UnZip(fullName, baseDir)
 	if err != nil {
-		response.CheckErr(err)
+		resp.CheckErr(err)
 	}
 	// 前端隐藏工作目录
 	files := make([]string, 0)
 	for _, file := range unzipFiles {
 		files = append(files, strings.TrimPrefix(file, pwd))
 	}
-	var resp response.UploadUnZipResp
-	resp.Files = files
-	response.SuccessWithData(files)
+	var rp response.UploadUnZipResp
+	rp.Files = files
+	resp.SuccessWithData(files)
 }
 
 // 判断文件块是否存在
 func UploadFileChunkExists(c *gin.Context) {
-	var req request.FilePartInfoReq
-	request.ShouldBind(c, &req)
+	var r request.FilePartInfoReq
+	req.ShouldBind(c, &r)
 	// 校验请求
-	err := req.ValidateReq()
-	response.CheckErr(err)
-	req.Complete, req.Uploaded = getUploadedChunkNumbers(req)
-	response.SuccessWithData(req)
+	err := r.ValidateReq()
+	resp.CheckErr(err)
+	r.Complete, r.Uploaded = getUploadedChunkNumbers(r)
+	resp.SuccessWithData(r)
 }
 
 // 合并分片文件
 func UploadMerge(c *gin.Context) {
-	var req request.FilePartInfoReq
-	request.ShouldBind(c, &req)
+	var r request.FilePartInfoReq
+	req.ShouldBind(c, &r)
 	// 获取
-	rootDir := req.GetUploadRootPath()
-	mergeFileName := fmt.Sprintf("%s/%s", rootDir, req.Filename)
+	rootDir := r.GetUploadRootPath()
+	mergeFileName := fmt.Sprintf("%s/%s", rootDir, r.Filename)
 	// 创建merge file
 	mergeFile, err := os.OpenFile(mergeFileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
-	response.CheckErr(err)
+	resp.CheckErr(err)
 	defer mergeFile.Close()
 
-	totalChunk := int(req.GetTotalChunk())
-	chunkSize := int(req.ChunkSize)
+	totalChunk := int(r.GetTotalChunk())
+	chunkSize := int(r.ChunkSize)
 	var chunkNumbers []int
 	for i := 0; i < totalChunk; i++ {
 		chunkNumbers = append(chunkNumbers, i+1)
@@ -98,18 +100,18 @@ func UploadMerge(c *gin.Context) {
 			defer wg.Done()
 			for _, item := range arr {
 				func() {
-					currentChunkName := req.GetChunkFilename(uint(item))
+					currentChunkName := r.GetChunkFilename(uint(item))
 					exists := ioutil2.FileExists(currentChunkName)
 					if exists {
 						// 读取文件分片
 						f, err := os.OpenFile(currentChunkName, os.O_RDONLY, os.ModePerm)
-						response.CheckErr(err)
+						resp.CheckErr(err)
 						defer func() {
 							// 关闭文件
 							f.Close()
 						}()
 						b, err := ioutil.ReadAll(f)
-						response.CheckErr(err)
+						resp.CheckErr(err)
 						// 从指定位置开始写
 						mergeFile.WriteAt(b, int64((item-1)*chunkSize))
 					}
@@ -125,18 +127,18 @@ func UploadMerge(c *gin.Context) {
 		// 写入minio对象存储
 		err = global.Minio.PutLocalObject(c, global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
 		if err != nil {
-			response.CheckErr("写入minio对象存储失败, %v", err)
+			resp.CheckErr("写入minio对象存储失败, %v", err)
 		}
 		previewUrl = global.Minio.GetObjectPreviewUrl(c, global.Conf.Upload.Minio.Bucket, mergeFileName)
 	}
 	// 删除分片文件所在路径
-	os.RemoveAll(req.GetChunkRootPath())
+	os.RemoveAll(r.GetChunkRootPath())
 
 	// 回写文件信息
 	var res response.UploadMergeResp
 	res.Filename = mergeFileName
 	res.PreviewUrl = previewUrl
-	response.SuccessWithData(res)
+	resp.SuccessWithData(res)
 }
 
 // 上传文件(小文件直接是单个文件, 若是超大文件可能是单个分片)
@@ -144,12 +146,12 @@ func UploadFile(c *gin.Context) {
 	// 限制文件最大内存(二进制移位xxxMB)
 	err := c.Request.ParseMultipartForm(int64(global.Conf.Upload.SingleMaxSize) << 20)
 	if err != nil {
-		response.CheckErr("文件大小超出最大值%dMB", global.Conf.Upload.SingleMaxSize)
+		resp.CheckErr("文件大小超出最大值%dMB", global.Conf.Upload.SingleMaxSize)
 	}
 	// 读取文件分片
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
-		response.CheckErr(err)
+		resp.CheckErr(err)
 	}
 
 	// 读取文件分片参数
@@ -170,29 +172,29 @@ func UploadFile(c *gin.Context) {
 
 	// 校验请求
 	err = filePart.ValidateReq()
-	response.CheckErr(err)
+	resp.CheckErr(err)
 
 	// 获取块文件名
 	chunkName := filePart.GetChunkFilename(filePart.ChunkNumber)
 	// 创建不存在的文件夹
 	chunkDir, _ := filepath.Split(chunkName)
 	err = os.MkdirAll(chunkDir, os.ModePerm)
-	response.CheckErr(err)
+	resp.CheckErr(err)
 
 	// 保存块文件
 	out, err := os.Create(chunkName)
-	response.CheckErr(err)
+	resp.CheckErr(err)
 	defer out.Close()
 
 	// 将file的内容拷贝到out
 	_, err = io.Copy(out, file)
-	response.CheckErr(err)
+	resp.CheckErr(err)
 
 	// 检查文件块完整性
 	filePart.CurrentCheckChunkNumber = 1
 	filePart.Complete = checkChunkComplete(filePart)
 	// 回写响应数据
-	response.SuccessWithData(filePart)
+	resp.SuccessWithData(filePart)
 }
 
 // 检查文件块, 主要用于判断文件完整性

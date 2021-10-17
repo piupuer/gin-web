@@ -1,7 +1,9 @@
 package response
 
+import "github.com/piupuer/go-helper/pkg/resp"
+
 type ApiResp struct {
-	BaseData
+	resp.Base
 	Method   string `json:"method"`
 	Path     string `json:"path"`
 	Category string `json:"category"`

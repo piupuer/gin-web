@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 	"gin-web/pkg/global"
-	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
+	"github.com/piupuer/go-helper/pkg/resp"
 	"gorm.io/gorm"
 	"reflect"
 	"strings"
@@ -205,7 +205,7 @@ func (s MysqlService) FindByKeysWithPreload(key string, preloads []string, ids i
 }
 
 // 查询, model需使用指针, 否则可能无法绑定数据
-func (s MysqlService) Find(query *gorm.DB, page *response.PageInfo, model interface{}) (err error) {
+func (s MysqlService) Find(query *gorm.DB, page *resp.Page, model interface{}) (err error) {
 	// 获取model值
 	rv := reflect.ValueOf(model)
 	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Slice) {
@@ -284,7 +284,7 @@ func (s MysqlService) Find(query *gorm.DB, page *response.PageInfo, model interf
 }
 
 // Scan查询, 适用于多表联合查询, model需使用指针, 否则可能无法绑定数据
-func (s MysqlService) Scan(query *gorm.DB, page *response.PageInfo, model interface{}) (err error) {
+func (s MysqlService) Scan(query *gorm.DB, page *resp.Page, model interface{}) (err error) {
 	// 获取model值
 	rv := reflect.ValueOf(model)
 	if rv.Kind() != reflect.Ptr || (rv.IsNil() || rv.Elem().Kind() != reflect.Slice) {

@@ -13,6 +13,9 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-module/carbon"
 	"github.com/gorilla/websocket"
+	"github.com/piupuer/go-helper/pkg/middleware"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 	"strings"
 	"sync"
 	"time"
@@ -85,7 +88,7 @@ type MessageHub struct {
 	// 刷新用户消息通道
 	RefreshUserMessage *ch.Ch
 	// 幂等性token校验方法
-	CheckIdempotenceTokenFunc func(token string) bool
+	IdempotenceOps *middleware.IdempotenceOptions
 }
 
 // 消息客户端
@@ -114,14 +117,14 @@ type MessageBroadcast struct {
 }
 
 // 启动消息中心仓库
-func (s RedisService) StartMessageHub(checkIdempotenceTokenFunc func(token string) bool) MessageHub {
+func (s RedisService) StartMessageHub(idempotenceOps *middleware.IdempotenceOptions) MessageHub {
 	// 初始化参数
 	hub.Service = s
 	hub.Clients = make(map[string]*MessageClient)
 	hub.UserLastActive = make(map[uint]int64)
 	hub.Broadcast = ch.NewCh()
 	hub.RefreshUserMessage = ch.NewCh()
-	hub.CheckIdempotenceTokenFunc = checkIdempotenceTokenFunc
+	hub.IdempotenceOps = idempotenceOps
 	go hub.run()
 	go hub.count()
 	return hub
@@ -172,7 +175,7 @@ func (h MessageHub) run() {
 						// 将当前消息条数发送给用户
 						msg := response.MessageWsResp{
 							Type: MessageRespUnRead,
-							Detail: response.GetSuccessWithData(map[string]int64{
+							Detail: resp.GetSuccessWithData(map[string]int64{
 								"unReadCount": total,
 							}),
 						}
@@ -234,33 +237,33 @@ func (c *MessageClient) receive() {
 		data := string(msg)
 		global.Log.Debug(c.ctx, "[消息中心][接收端][%s]接收数据成功: %d, %s", c.Key, c.User.Id, data)
 		// 数据转为json
-		var req request.MessageWsReq
-		utils.Json2Struct(data, &req)
-		switch req.Type {
+		var r request.MessageWsReq
+		utils.Json2Struct(data, &r)
+		switch r.Type {
 		case MessageReqHeartBeat:
-			if _, ok := req.Data.(float64); ok {
+			if _, ok := r.Data.(float64); ok {
 				// 发送心跳
 				c.Send.SafeSend(response.MessageWsResp{
 					Type:   MessageRespHeartBeat,
-					Detail: response.GetSuccess(),
+					Detail: resp.GetSuccess(),
 				})
 			}
 		case MessageReqPush:
 			var data request.PushMessageReq
-			utils.Struct2StructByJson(req.Data, &data)
+			utils.Struct2StructByJson(r.Data, &data)
 			// 参数校验
-			err = global.NewValidatorError(global.Validate.Struct(data), data.FieldTrans())
-			detail := response.GetSuccess()
+			err = req.ValidateReturnErr(c.ctx, data, data.FieldTrans())
+			detail := resp.GetSuccess()
 			if err == nil {
-				if !hub.CheckIdempotenceTokenFunc(data.IdempotenceToken) {
-					err = errors.New(response.IdempotenceTokenInvalidMsg)
+				if !middleware.CheckIdempotenceToken(c.ctx, data.IdempotenceToken, *hub.IdempotenceOps) {
+					err = errors.New(resp.IdempotenceTokenInvalidMsg)
 				} else {
 					data.FromUserId = c.User.Id
 					err = hub.Service.mysql.CreateMessage(&data)
 				}
 			}
 			if err != nil {
-				detail = response.GetFailWithMsg(err.Error())
+				detail = resp.GetFailWithMsg(err.Error())
 			} else {
 				// 刷新条数
 				hub.RefreshUserMessage.SafeSend(hub.UserIds)
@@ -272,11 +275,11 @@ func (c *MessageClient) receive() {
 			})
 		case MessageReqBatchRead:
 			var data request.Req
-			utils.Struct2StructByJson(req.Data, &data)
+			utils.Struct2StructByJson(r.Data, &data)
 			err = hub.Service.mysql.BatchUpdateMessageRead(data.GetUintIds())
-			detail := response.GetSuccess()
+			detail := resp.GetSuccess()
 			if err != nil {
-				detail = response.GetFailWithMsg(err.Error())
+				detail = resp.GetFailWithMsg(err.Error())
 			}
 			// 刷新条数
 			hub.RefreshUserMessage.SafeSend(hub.UserIds)
@@ -287,11 +290,11 @@ func (c *MessageClient) receive() {
 			})
 		case MessageReqBatchDeleted:
 			var data request.Req
-			utils.Struct2StructByJson(req.Data, &data)
+			utils.Struct2StructByJson(r.Data, &data)
 			err = hub.Service.mysql.BatchUpdateMessageDeleted(data.GetUintIds())
-			detail := response.GetSuccess()
+			detail := resp.GetSuccess()
 			if err != nil {
-				detail = response.GetFailWithMsg(err.Error())
+				detail = resp.GetFailWithMsg(err.Error())
 			}
 			// 刷新条数
 			hub.RefreshUserMessage.SafeSend(hub.UserIds)
@@ -302,9 +305,9 @@ func (c *MessageClient) receive() {
 			})
 		case MessageReqAllRead:
 			err = hub.Service.mysql.UpdateAllMessageRead(c.User.Id)
-			detail := response.GetSuccess()
+			detail := resp.GetSuccess()
 			if err != nil {
-				detail = response.GetFailWithMsg(err.Error())
+				detail = resp.GetFailWithMsg(err.Error())
 			}
 			// 刷新条数
 			hub.RefreshUserMessage.SafeSend(hub.UserIds)
@@ -315,9 +318,9 @@ func (c *MessageClient) receive() {
 			})
 		case MessageReqAllDeleted:
 			err = hub.Service.mysql.UpdateAllMessageDeleted(c.User.Id)
-			detail := response.GetSuccess()
+			detail := resp.GetSuccess()
 			if err != nil {
-				detail = response.GetFailWithMsg(err.Error())
+				detail = resp.GetFailWithMsg(err.Error())
 			}
 			// 刷新条数
 			hub.RefreshUserMessage.SafeSend(hub.UserIds)
@@ -400,7 +403,7 @@ func (c *MessageClient) heartBeat() {
 				// 发送心跳
 				c.Send.SafeSend(response.MessageWsResp{
 					Type:   MessageRespHeartBeat,
-					Detail: response.GetSuccessWithData(c.RetryCount),
+					Detail: resp.GetSuccessWithData(c.RetryCount),
 				})
 				c.RetryCount++
 			}
@@ -429,7 +432,7 @@ func (c *MessageClient) register() {
 		// 广播当前用户上线
 		msg := response.MessageWsResp{
 			Type: MessageRespOnline,
-			Detail: response.GetSuccessWithData(map[string]interface{}{
+			Detail: resp.GetSuccessWithData(map[string]interface{}{
 				"user": c.User,
 			}),
 		}

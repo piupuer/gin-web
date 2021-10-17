@@ -1,7 +1,9 @@
 package response
 
+import "github.com/piupuer/go-helper/pkg/resp"
+
 type MachineResp struct {
-	BaseData
+	resp.Base
 	Host      string `json:"host"`
 	SshPort   int    `json:"sshPort"`
 	Version   string `json:"version"`

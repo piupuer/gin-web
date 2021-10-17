@@ -1,6 +1,9 @@
 package request
 
-import "gin-web/pkg/response"
+import (
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
+)
 
 type MachineReq struct {
 	Id                uint   `json:"id" form:"id"`
@@ -17,12 +20,12 @@ type MachineReq struct {
 	Status            *uint  `json:"status" form:"status"`
 	Remark            string `json:"remark" form:"remark"`
 	Creator           string `json:"creator" form:"creator"`
-	response.PageInfo        // 分页参数
+	resp.Page
 }
 
 type CreateMachineReq struct {
 	Host      string  `json:"host" validate:"required"`
-	SshPort   ReqUint `json:"sshPort" validate:"required"`
+	SshPort   req.NullUint `json:"sshPort" validate:"required"`
 	Version   string  `json:"version"`
 	Name      string  `json:"name"`
 	Arch      string  `json:"arch"`
@@ -31,19 +34,19 @@ type CreateMachineReq struct {
 	Disk      string  `json:"disk"`
 	LoginName string  `json:"loginName" validate:"required"`
 	LoginPwd  string  `json:"loginPwd" validate:"required"`
-	Status    ReqUint `json:"status"`
+	Status    req.NullUint `json:"status"`
 	Remark    string  `json:"remark"`
 	Creator   string  `json:"creator"`
 }
 
 type MachineShellWsReq struct {
 	Host      string  `json:"host" form:"host"`
-	SshPort   ReqUint `json:"sshPort" form:"sshPort"`
+	SshPort   req.NullUint `json:"sshPort" form:"sshPort"`
 	LoginName string  `json:"loginName" form:"loginName"`
 	LoginPwd  string  `json:"loginPwd" form:"loginPwd"`
 	InitCmd   string  `json:"initCmd" form:"initCmd"`
-	Cols      ReqUint `json:"cols" form:"cols"`
-	Rows      ReqUint `json:"rows" form:"rows"`
+	Cols      req.NullUint `json:"cols" form:"cols"`
+	Rows      req.NullUint `json:"rows" form:"rows"`
 }
 
 func (s CreateMachineReq) FieldTrans() map[string]string {
@@ -57,7 +60,7 @@ func (s CreateMachineReq) FieldTrans() map[string]string {
 
 type UpdateMachineReq struct {
 	Host      *string  `json:"host"`
-	SshPort   *ReqUint `json:"sshPort"`
+	SshPort   *req.NullUint `json:"sshPort"`
 	Version   *string  `json:"version"`
 	Name      *string  `json:"name"`
 	Arch      *string  `json:"arch"`
@@ -66,7 +69,7 @@ type UpdateMachineReq struct {
 	Disk      *string  `json:"disk"`
 	LoginName *string  `json:"loginName"`
 	LoginPwd  *string  `json:"loginPwd"`
-	Status    *ReqUint `json:"status"`
+	Status    *req.NullUint `json:"status"`
 	Remark    *string  `json:"remark"`
 	Creator   *string  `json:"creator"`
 }

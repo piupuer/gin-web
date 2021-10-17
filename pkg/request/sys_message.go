@@ -1,7 +1,8 @@
 package request
 
 import (
-	"gin-web/pkg/response"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 type MessageReq struct {
@@ -10,12 +11,12 @@ type MessageReq struct {
 	Content           string `json:"content" form:"content"`
 	Type              *uint  `json:"type" form:"type"`
 	Status            *uint  `json:"status" form:"status"`
-	response.PageInfo        // 分页参数
+	resp.Page
 }
 
 type PushMessageReq struct {
 	FromUserId       uint
-	Type             *ReqUint `json:"type" form:"type" validate:"required"`
+	Type             *req.NullUint `json:"type" form:"type" validate:"required"`
 	ToUserIds        []uint   `json:"toUserIds" form:"toUserIds"`
 	ToRoleIds        []uint   `json:"toRoleIds" form:"toRoleIds"`
 	Title            string   `json:"title" form:"title" validate:"required"`

@@ -41,6 +41,6 @@ func (s RedisService) GetOperationLogs(req *request.OperationLogReq) ([]models.S
 		query = query.Where("status", "contains", s)
 	}
 	// 查询列表
-	err = s.Find(query, &req.PageInfo, &list)
+	err = s.Find(query, &req.Page, &list)
 	return list, err
 }

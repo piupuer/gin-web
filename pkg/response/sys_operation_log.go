@@ -1,11 +1,12 @@
 package response
 
 import (
+	"github.com/piupuer/go-helper/pkg/resp"
 	"time"
 )
 
 type OperationLogResp struct {
-	BaseData
+	resp.Base
 	ApiDesc    string        `json:"apiDesc"`
 	Path       string        `json:"path"`
 	Method     string        `json:"method"`

@@ -42,7 +42,7 @@ func (s MysqlService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	// 查询列表
-	err = s.Find(query, &req.PageInfo, &list)
+	err = s.Find(query, &req.Page, &list)
 	return list, err
 }
 

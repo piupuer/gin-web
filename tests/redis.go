@@ -3,7 +3,7 @@ package tests
 import (
 	"fmt"
 	"gin-web/pkg/global"
-	"github.com/piupuer/go-helper/job"
+	"github.com/piupuer/go-helper/pkg/job"
 )
 
 // 初始化redis数据库
@@ -13,7 +13,7 @@ func Redis() {
 	if err != nil {
 		panic(fmt.Sprintf("[单元测试]初始化redis异常: %v", err))
 	}
-	err = client.Ping().Err()
+	err = client.Ping(ctx).Err()
 	if err != nil {
 		panic(fmt.Sprintf("[单元测试]初始化redis异常: %v", err))
 	}

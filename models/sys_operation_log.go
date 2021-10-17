@@ -1,13 +1,13 @@
 package models
 
 import (
-	ms "github.com/piupuer/go-helper/models"
+	"github.com/piupuer/go-helper/models"
 	"time"
 )
 
 // 系统操作日志
 type SysOperationLog struct {
-	ms.Model
+	models.M
 	ApiDesc    string        `json:"apiDesc" gorm:"comment:'接口说明'"`
 	Path       string        `json:"path" gorm:"comment:'访问路径'"`
 	Method     string        `json:"method" gorm:"comment:'请求方式'"`

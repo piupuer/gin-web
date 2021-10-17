@@ -1,7 +1,9 @@
 package response
 
+import "github.com/piupuer/go-helper/pkg/resp"
+
 type MenuTreeResp struct {
-	BaseData
+	resp.Base
 	ParentId   uint           `json:"parentId"`
 	Name       string         `json:"name"`
 	Title      string         `json:"title"`

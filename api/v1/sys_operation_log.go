@@ -7,36 +7,30 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
-	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 // 获取操作日志列表
 func GetOperationLogs(c *gin.Context) {
-	var req request.OperationLogReq
-	request.ShouldBind(c, &req)
+	var r request.OperationLogReq
+	req.ShouldBind(c, &r)
 	s := cache_service.New(c)
-	operationLogs, err := s.GetOperationLogs(&req)
-	response.CheckErr(err)
-	// 隐藏部分字段
-	var respStruct []response.OperationLogResp
-	utils.Struct2StructByJson(operationLogs, &respStruct)
-	// 返回分页数据
-	var resp response.PageData
-	resp.PageInfo = req.PageInfo
-	resp.List = respStruct
-	response.SuccessWithData(resp)
+	list, err := s.GetOperationLogs(&r)
+	resp.CheckErr(err)
+	resp.SuccessWithPageData(list, []response.OperationLogResp{}, r.Page)
 }
 
 // 批量删除操作日志
 func BatchDeleteOperationLogByIds(c *gin.Context) {
 	if !global.Conf.System.OperationLogAllowedToDelete {
-		response.CheckErr("日志删除功能已被管理员关闭")
+		resp.CheckErr("日志删除功能已被管理员关闭")
 	}
-	var req request.Req
-	request.ShouldBind(c, &req)
+	var r request.Req
+	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.DeleteByIds(req.GetUintIds(), new(models.SysOperationLog))
-	response.CheckErr(err)
-	response.Success()
+	err := s.DeleteByIds(r.GetUintIds(), new(models.SysOperationLog))
+	resp.CheckErr(err)
+	resp.Success()
 }

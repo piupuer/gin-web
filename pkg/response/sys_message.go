@@ -1,7 +1,9 @@
 package response
 
+import "github.com/piupuer/go-helper/pkg/resp"
+
 type MessageResp struct {
-	BaseData
+	resp.Base
 	Status       uint   `json:"status"`
 	ToUserId     uint   `json:"toUserId"`
 	ToUsername   string `json:"toUsername"`
@@ -13,6 +15,6 @@ type MessageResp struct {
 }
 
 type MessageWsResp struct {
-	Type   string `json:"type"`   // 消息类型
-	Detail Resp   `json:"detail"` // 消息详情
+	Type   string    `json:"type"`   // 消息类型
+	Detail resp.Resp `json:"detail"` // 消息详情
 }

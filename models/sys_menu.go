@@ -1,10 +1,10 @@
 package models
 
-import ms "github.com/piupuer/go-helper/models"
+import "github.com/piupuer/go-helper/models"
 
 // 系统菜单表
 type SysMenu struct {
-	ms.Model
+	models.M
 	Name       string    `gorm:"comment:'菜单名称(英文名, 可用于国际化)'" json:"name"`
 	Title      string    `gorm:"comment:'菜单标题(无法国际化时使用)'" json:"title"`
 	Icon       string    `gorm:"comment:'菜单图标'" json:"icon"`

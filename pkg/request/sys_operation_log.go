@@ -1,7 +1,8 @@
 package request
 
 import (
-	"gin-web/pkg/response"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 	"time"
 )
 
@@ -11,7 +12,7 @@ type OperationLogReq struct {
 	Username          string `json:"username" form:"username"`
 	Ip                string `json:"ip" form:"ip"`
 	Status            string `json:"status" form:"status"`
-	response.PageInfo        // 分页参数
+	resp.Page
 }
 
 func (s OperationLogReq) FieldTrans() map[string]string {
@@ -27,7 +28,7 @@ type CreateOperationLogReq struct {
 	Params     string        `json:"params"`
 	Body       string        `json:"body"`
 	Data       string        `json:"data"`
-	Status     ReqUint       `json:"status"`
+	Status     req.NullUint       `json:"status"`
 	Username   string        `json:"username"`
 	RoleName   string        `json:"roleName"`
 	Ip         string        `json:"ip"`

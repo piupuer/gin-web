@@ -32,6 +32,6 @@ func (s MysqlService) GetOperationLogs(req *request.OperationLogReq) ([]models.S
 		query = query.Where("status LIKE ?", fmt.Sprintf("%%%s%%", status))
 	}
 	// 查询列表
-	err = s.Find(query, &req.PageInfo, &list)
+	err = s.Find(query, &req.Page, &list)
 	return list, err
 }

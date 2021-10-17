@@ -5,8 +5,8 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
-	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/pkg/resp"
 	"strings"
 )
 
@@ -20,11 +20,11 @@ func (s RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) 
 	// 查询用户及其角色
 	err := s.redis.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
 	if err != nil {
-		return nil, errors.New(response.LoginCheckErrorMsg)
+		return nil, errors.New(resp.LoginCheckErrorMsg)
 	}
 	// 校验密码
 	if ok := utils.ComparePwd(user.Password, u.Password); !ok {
-		return nil, errors.New(response.LoginCheckErrorMsg)
+		return nil, errors.New(resp.LoginCheckErrorMsg)
 	}
 	return &u, err
 }
@@ -67,7 +67,7 @@ func (s RedisService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
 		query = query.Where("status", "=", *req.Status)
 	}
 	// 查询列表
-	err = s.Find(query, &req.PageInfo, &list)
+	err = s.Find(query, &req.Page, &list)
 	return list, err
 }
 

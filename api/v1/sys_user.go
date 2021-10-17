@@ -11,6 +11,8 @@ import (
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
 	"github.com/patrickmn/go-cache"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 	"strings"
 	"time"
 )
@@ -26,63 +28,56 @@ func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
 	oldCache, ok := userInfoCache.Get(fmt.Sprintf("%d", user.Id))
 	if ok {
-		resp, _ := oldCache.(response.UserInfoResp)
-		response.SuccessWithData(resp)
+		rp, _ := oldCache.(response.UserInfoResp)
+		resp.SuccessWithData(rp)
 		return
 	}
 
 	// 转为UserInfoResponseStruct, 隐藏部分字段
-	var resp response.UserInfoResp
-	utils.Struct2StructByJson(user, &resp)
-	resp.Roles = []string{
+	var rp response.UserInfoResp
+	utils.Struct2StructByJson(user, &rp)
+	rp.Roles = []string{
 		"admin",
 	}
-	resp.Keyword = user.Role.Keyword
-	resp.RoleSort = *user.Role.Sort
+	rp.Keyword = user.Role.Keyword
+	rp.RoleSort = *user.Role.Sort
 	// 写入缓存
-	userInfoCache.Set(fmt.Sprintf("%d", user.Id), resp, cache.DefaultExpiration)
-	response.SuccessWithData(resp)
+	userInfoCache.Set(fmt.Sprintf("%d", user.Id), rp, cache.DefaultExpiration)
+	resp.SuccessWithData(rp)
 }
 
 // 获取用户列表
 func GetUsers(c *gin.Context) {
-	var req request.UserReq
-	request.ShouldBind(c, &req)
+	var r request.UserReq
+	req.ShouldBind(c, &r)
 	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
-	req.CurrentRole = user.Role
+	r.CurrentRole = user.Role
 	s := cache_service.New(c)
-	users, err := s.GetUsers(&req)
-	response.CheckErr(err)
-	// 隐藏部分字段
-	var respStruct []response.UserResp
-	utils.Struct2StructByJson(users, &respStruct)
-	// 返回分页数据
-	var resp response.PageData
-	resp.PageInfo = req.PageInfo
-	resp.List = respStruct
-	response.SuccessWithData(resp)
+	list, err := s.GetUsers(&r)
+	resp.CheckErr(err)
+	resp.SuccessWithPageData(list, []response.UserResp{}, r.Page)
 }
 
 // 修改密码
 func ChangePwd(c *gin.Context) {
 	// 请求json绑定
-	var req request.ChangePwdReq
-	request.ShouldBind(c, &req)
+	var r request.ChangePwdReq
+	req.ShouldBind(c, &r)
 	// 获取当前用户
 	user := GetCurrentUser(c)
 	query := global.Mysql.Where("username = ?", user.Username).First(&user)
 	// 查询用户
 	err := query.Error
-	response.CheckErr(err)
+	resp.CheckErr(err)
 	// 校验密码
-	if ok := utils.ComparePwd(req.OldPassword, user.Password); !ok {
-		response.CheckErr("原密码错误")
+	if ok := utils.ComparePwd(r.OldPassword, user.Password); !ok {
+		resp.CheckErr("原密码错误")
 	}
 	// 更新密码
-	err = query.Update("password", utils.GenPwd(req.NewPassword)).Error
-	response.CheckErr(err)
-	response.Success()
+	err = query.Update("password", utils.GenPwd(r.NewPassword)).Error
+	resp.CheckErr(err)
+	resp.Success()
 }
 
 // 获取当前请求用户信息
@@ -92,7 +87,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	if !exists {
 		return newUser
 	}
-	uid, _ := userId.(uint)
+	uid := utils.Str2Uint(fmt.Sprintf("%d", userId))
 	oldCache, ok := userByIdCache.Get(fmt.Sprintf("%d", uid))
 	if ok {
 		u, _ := oldCache.(models.SysUser)
@@ -108,71 +103,71 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 // 创建用户
 func CreateUser(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var req request.CreateUserReq
-	request.ShouldBind(c, &req)
-	request.Validate(c, req, req.FieldTrans())
+	var r request.CreateUserReq
+	req.ShouldBind(c, &r)
+	req.Validate(c, r, r.FieldTrans())
 	// 记录当前创建人信息
-	req.Creator = user.Nickname + user.Username
+	r.Creator = user.Nickname + user.Username
 	s := service.New(c)
 	// 将初始密码转为密文
-	req.Password = utils.GenPwd(req.InitPassword)
-	err := s.Create(req, new(models.SysUser))
-	response.CheckErr(err)
-	response.Success()
+	r.Password = utils.GenPwd(r.InitPassword)
+	err := s.Create(r, new(models.SysUser))
+	resp.CheckErr(err)
+	resp.Success()
 }
 
 // 更新用户
 func UpdateUserById(c *gin.Context) {
-	var req request.UpdateUserReq
-	request.ShouldBind(c, &req)
+	var r request.UpdateUserReq
+	req.ShouldBind(c, &r)
 
 	// 获取path中的userId
 	userId := utils.Str2Uint(c.Param("userId"))
 	if userId == 0 {
-		response.CheckErr("用户编号不正确")
+		resp.CheckErr("用户编号不正确")
 	}
 
 	// 填写了新密码
-	if req.NewPassword != nil && strings.TrimSpace(*req.NewPassword) != "" {
-		password := utils.GenPwd(*req.NewPassword)
-		req.Password = &password
+	if r.NewPassword != nil && strings.TrimSpace(*r.NewPassword) != "" {
+		password := utils.GenPwd(*r.NewPassword)
+		r.Password = &password
 	}
 
 	user := GetCurrentUser(c)
 	if userId == user.Id {
-		if req.Status != nil && uint(*req.Status) == models.SysUserStatusDisabled {
-			response.CheckErr("不能禁用自己")
+		if r.Status != nil && uint(*r.Status) == models.SysUserStatusDisabled {
+			resp.CheckErr("不能禁用自己")
 		}
-		if req.RoleId != nil && user.RoleId != *req.RoleId {
+		if r.RoleId != nil && user.RoleId != *r.RoleId {
 			if *user.Role.Sort != models.SysRoleSuperAdminSort {
-				response.CheckErr("无法更改自己的角色, 如需更改请联系上级领导")
+				resp.CheckErr("无法更改自己的角色, 如需更改请联系上级领导")
 			} else {
-				response.CheckErr("无法更改超级管理员的角色")
+				resp.CheckErr("无法更改超级管理员的角色")
 			}
 		}
 	}
 
 	s := service.New(c)
-	err := s.UpdateById(userId, req, new(models.SysUser))
-	response.CheckErr(err)
+	err := s.UpdateById(userId, r, new(models.SysUser))
+	resp.CheckErr(err)
 	userInfoCache.Delete(fmt.Sprintf("%d", user.Id))
 	userByIdCache.Delete(fmt.Sprintf("%d", user.Id))
-	response.Success()
+	resp.Success()
 }
 
 // 批量删除用户
 func BatchDeleteUserByIds(c *gin.Context) {
-	var req request.Req
-	request.ShouldBind(c, &req)
+	var r request.Req
+	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
-	if utils.ContainsUint(req.GetUintIds(), user.Id) {
-		response.CheckErr("不能删除自己")
+	if utils.ContainsUint(r.GetUintIds(), user.Id) {
+		resp.CheckErr("不能删除自己")
 	}
 
 	s := service.New(c)
-	err := s.DeleteByIds(req.GetUintIds(), new(models.SysUser))
-	response.CheckErr(err)
+	err := s.DeleteByIds(r.GetUintIds(), new(models.SysUser))
+	resp.CheckErr(err)
 	userInfoCache.Delete(fmt.Sprintf("%d", user.Id))
 	userByIdCache.Delete(fmt.Sprintf("%d", user.Id))
-	response.Success()
+	resp.Success()
 }

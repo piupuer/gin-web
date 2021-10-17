@@ -1,7 +1,8 @@
 package request
 
 import (
-	"gin-web/pkg/response"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 type RoleReq struct {
@@ -10,16 +11,16 @@ type RoleReq struct {
 	CurrentRoleSort   uint   `json:"currentRoleSort"`
 	Status            *uint  `json:"status" form:"status"`
 	Creator           string `json:"creator" form:"creator"`
-	response.PageInfo        // 分页参数
+	resp.Page
 }
 
 type CreateRoleReq struct {
 	CurrentRoleSort uint     `json:"currentRoleSort"`
 	Name            string   `json:"name" validate:"required"`
 	Keyword         string   `json:"keyword" validate:"required"`
-	Sort            *ReqUint `json:"sort" validate:"required"`
+	Sort            *req.NullUint `json:"sort" validate:"required"`
 	Desc            string   `json:"desc"`
-	Status          *ReqUint `json:"status"`
+	Status          *req.NullUint `json:"status"`
 	Creator         string   `json:"creator"`
 }
 
@@ -34,8 +35,8 @@ func (s CreateRoleReq) FieldTrans() map[string]string {
 type UpdateRoleReq struct {
 	Name    *string  `json:"name"`
 	Keyword *string  `json:"keyword"`
-	Sort    *ReqUint `json:"sort"`
+	Sort    *req.NullUint `json:"sort"`
 	Desc    *string  `json:"desc"`
-	Status  *ReqUint `json:"status"`
+	Status  *req.NullUint `json:"status"`
 	Creator *string  `json:"creator"`
 }

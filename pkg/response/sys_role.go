@@ -1,7 +1,9 @@
 package response
 
+import "github.com/piupuer/go-helper/pkg/resp"
+
 type RoleResp struct {
-	BaseData
+	resp.Base
 	Name    string `json:"name"`
 	Keyword string `json:"keyword"`
 	Sort    uint   `json:"sort"`

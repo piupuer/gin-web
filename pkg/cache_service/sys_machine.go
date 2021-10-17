@@ -33,6 +33,6 @@ func (s RedisService) GetMachines(req *request.MachineReq) ([]models.SysMachine,
 		query = query.Where("status", "=", *req.Status)
 	}
 	// 查询列表
-	err = s.Find(query, &req.PageInfo, &list)
+	err = s.Find(query, &req.Page, &list)
 	return list, err
 }

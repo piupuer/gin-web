@@ -1,7 +1,9 @@
 package response
 
+import "github.com/piupuer/go-helper/pkg/resp"
+
 type DictResp struct {
-	BaseData
+	resp.Base
 	Name      string         `json:"name"`
 	Desc      string         `json:"desc"`
 	Status    uint           `json:"status"`
@@ -10,7 +12,7 @@ type DictResp struct {
 }
 
 type DictDataResp struct {
-	BaseData
+	resp.Base
 	Key      string   `json:"key"`
 	Val      string   `json:"val"`
 	Attr     string   `json:"attr"`

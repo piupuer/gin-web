@@ -1,7 +1,7 @@
 package request
 
 import (
-	"gin-web/pkg/response"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 type ApiReq struct {
@@ -9,7 +9,7 @@ type ApiReq struct {
 	Path              string `json:"path" form:"path"`
 	Category          string `json:"category" form:"category"`
 	Creator           string `json:"creator" form:"creator"`
-	response.PageInfo        // 分页参数
+	resp.Page
 }
 
 type CreateApiReq struct {

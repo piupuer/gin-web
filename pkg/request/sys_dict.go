@@ -1,21 +1,22 @@
 package request
 
 import (
-	"gin-web/pkg/response"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 type DictReq struct {
-	Name              string   `json:"name" form:"name"`
-	Desc              string   `json:"desc" form:"desc"`
-	Status            *ReqUint `json:"status" form:"status"`
-	response.PageInfo          // 分页参数
+	Name   string        `json:"name" form:"name"`
+	Desc   string        `json:"desc" form:"desc"`
+	Status *req.NullUint `json:"status" form:"status"`
+	resp.Page
 }
 
 type CreateDictReq struct {
-	Name   string   `json:"name" validate:"required"`
-	Desc   string   `json:"desc" validate:"required"`
-	Status *ReqUint `json:"status"`
-	Remark string   `json:"remark"`
+	Name   string        `json:"name" validate:"required"`
+	Desc   string        `json:"desc" validate:"required"`
+	Status *req.NullUint `json:"status"`
+	Remark string        `json:"remark"`
 }
 
 func (s CreateDictReq) FieldTrans() map[string]string {
@@ -26,19 +27,19 @@ func (s CreateDictReq) FieldTrans() map[string]string {
 }
 
 type UpdateDictReq struct {
-	Name   *string  `json:"name"`
-	Desc   *string  `json:"desc"`
-	Status *ReqUint `json:"status"`
-	Remark *string  `json:"remark"`
+	Name   *string       `json:"name"`
+	Desc   *string       `json:"desc"`
+	Status *req.NullUint `json:"status"`
+	Remark *string       `json:"remark"`
 }
 
 type DictDataReq struct {
-	DictId            *ReqUint `json:"dictId" form:"dictId"`
-	Key               string   `json:"key" form:"key"`
-	Attr              string   `json:"attr" form:"attr"`
-	Val               string   `json:"val" form:"val"`
-	Status            *ReqUint `json:"status" form:"sort"`
-	response.PageInfo          // 分页参数
+	DictId *req.NullUint `json:"dictId" form:"dictId"`
+	Key    string        `json:"key" form:"key"`
+	Attr   string        `json:"attr" form:"attr"`
+	Val    string        `json:"val" form:"val"`
+	Status *req.NullUint `json:"status" form:"sort"`
+	resp.Page
 }
 
 type CreateDictDataReq struct {
@@ -61,12 +62,12 @@ func (s CreateDictDataReq) FieldTrans() map[string]string {
 }
 
 type UpdateDictDataReq struct {
-	Key      *string  `json:"key"`
-	Val      *string  `json:"val"`
-	Attr     *string  `json:"attr"`
-	Addition *string  `json:"addition"`
-	Sort     *ReqUint `json:"sort"`
-	Status   *ReqUint `json:"status"`
-	Remark   *string  `json:"remark"`
-	DictId   *ReqUint `json:"dictId"`
+	Key      *string       `json:"key"`
+	Val      *string       `json:"val"`
+	Attr     *string       `json:"attr"`
+	Addition *string       `json:"addition"`
+	Sort     *req.NullUint `json:"sort"`
+	Status   *req.NullUint `json:"status"`
+	Remark   *string       `json:"remark"`
+	DictId   *req.NullUint `json:"dictId"`
 }
