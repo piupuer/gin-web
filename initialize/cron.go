@@ -4,7 +4,7 @@ import (
 	"context"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
-	"github.com/piupuer/go-helper/job"
+	"github.com/piupuer/go-helper/pkg/job"
 	"io/ioutil"
 	"os"
 	"path/filepath"

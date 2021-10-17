@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gin-web/pkg/global"
-	"github.com/piupuer/go-helper/job"
+	"github.com/piupuer/go-helper/pkg/job"
 	"time"
 )
 
@@ -34,7 +34,7 @@ func Redis() {
 	if err != nil {
 		panic(fmt.Sprintf("初始化redis异常: %v", err))
 	}
-	err = client.Ping().Err()
+	err = client.Ping(ctx).Err()
 	if err != nil {
 		panic(fmt.Sprintf("初始化redis异常: %v", err))
 	}

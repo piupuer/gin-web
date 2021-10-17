@@ -2,12 +2,12 @@ package v1
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 // 获取请假列表
@@ -17,58 +17,29 @@ func GetLeaves(c *gin.Context) {
 	// 获取当前登录用户
 	user := GetCurrentUser(c)
 	req.UserId = user.Id
-	s := cache_service.New(c)
+	s := service.New(c)
 	leaves, err := s.GetLeaves(&req)
 	response.CheckErr(err)
 	// 隐藏部分字段
 	var respStruct []response.LeaveResp
 	utils.Struct2StructByJson(leaves, &respStruct)
 	// 返回分页数据
-	var resp response.PageData
-	resp.PageInfo = req.PageInfo
-	resp.List = respStruct
-	response.SuccessWithData(resp)
+	var rp resp.PageData
+	rp.Page = req.Page
+	rp.List = respStruct
+	response.SuccessWithData(rp)
 }
 
 // 获取请假列表
-func GetLeaveApprovalLogs(c *gin.Context) {
+func FindLeaveFsmTrack(c *gin.Context) {
 	var req request.LeaveReq
 	request.ShouldBind(c, &req)
-	s := cache_service.New(c)
+	s := service.New(c)
 	// 获取path中的leaveId
 	leaveId := utils.Str2Uint(c.Param("leaveId"))
-	leaves, err := s.GetLeaveApprovalLogs(leaveId)
+	logs, err := s.FindLeaveFsmTrack(leaveId)
 	response.CheckErr(err)
-
-	// 将日志包装下
-	respStruct := make([]response.LeaveLogResp, 0)
-	for _, log := range leaves {
-		respStruct = append(respStruct, response.LeaveLogResp{
-			LeaveId: leaveId,
-			Log: response.WorkflowLogResp{
-				BaseData: response.BaseData{
-					CreatedAt: log.CreatedAt,
-					UpdatedAt: log.UpdatedAt,
-				},
-				FlowName:              log.Flow.Name,
-				FlowUuid:              log.Flow.Uuid,
-				FlowCategoryStr:       models.SysWorkflowCategoryConst[log.Flow.Category],
-				FlowTargetCategoryStr: models.SysWorkflowTargetCategoryConst[log.Flow.TargetCategory],
-				Status:                log.Status,
-				StatusStr:             models.SysWorkflowLogStateConst[*log.Status],
-				SubmitUsername:        log.SubmitUser.Username,
-				SubmitUserNickname:    log.SubmitUser.Nickname,
-				ApprovalUsername:      log.ApprovalUser.Username,
-				ApprovalUserNickname:  log.ApprovalUser.Nickname,
-				ApprovalOpinion:       log.ApprovalOpinion,
-			},
-		})
-	}
-	// 返回分页数据
-	var resp response.PageData
-	resp.PageInfo = req.PageInfo
-	resp.List = respStruct
-	response.SuccessWithData(resp)
+	response.SuccessWithData(logs)
 }
 
 // 创建请假

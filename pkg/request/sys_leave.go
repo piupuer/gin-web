@@ -2,15 +2,16 @@ package request
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/response"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 type LeaveReq struct {
-	UserId            uint   `json:"-"`
-	Status            *uint  `json:"status" form:"status"`
-	ApprovalOpinion   string `json:"approvalOpinion" form:"approvalOpinion"`
-	Desc              string `json:"desc" form:"desc"`
-	response.PageInfo        // 分页参数
+	UserId            uint          `json:"-"`
+	Status            *req.NullUint `json:"status" form:"status"`
+	ApprovalOpinion   string        `json:"approvalOpinion" form:"approvalOpinion"`
+	Desc              string        `json:"desc" form:"desc"`
+	resp.Page
 }
 
 type CreateLeaveReq struct {

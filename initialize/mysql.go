@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
+	"github.com/piupuer/go-helper/pkg/fsm"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
+	glogger "gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 	"time"
 )
@@ -53,11 +54,11 @@ func Mysql() {
 		}
 	}()
 	// 不显示sql语句
-	var l logger.Interface
+	var l glogger.Interface
 	if global.Conf.Logs.NoSql {
-		l = global.Log.LogMode(logger.Silent)
+		l = global.Log.LogMode(glogger.Silent)
 	} else {
-		l = global.Log.LogMode(logger.Info)
+		l = global.Log.LogMode(glogger.Info)
 	}
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
@@ -91,10 +92,6 @@ func autoMigrate() {
 		new(models.SysMenu),
 		new(models.SysApi),
 		new(models.SysCasbin),
-		new(models.SysWorkflow),
-		new(models.SysWorkflowLine),
-		new(models.SysWorkflowLog),
-		new(models.SysWorkflowLineUserRelation),
 		new(models.SysLeave),
 		new(models.SysOperationLog),
 		new(models.SysMessage),
@@ -103,6 +100,8 @@ func autoMigrate() {
 		new(models.SysDict),
 		new(models.SysDictData),
 	)
+	// auto migrate fsm
+	fsm.Migrate(global.Mysql)
 }
 
 func binlog() {
@@ -117,10 +116,6 @@ func binlog() {
 		new(models.SysRoleMenuRelation),
 		new(models.SysApi),
 		new(models.SysCasbin),
-		new(models.SysWorkflow),
-		new(models.SysWorkflowLine),
-		new(models.SysWorkflowLog),
-		new(models.SysWorkflowLineUserRelation),
 		new(models.SysLeave),
 		new(models.SysMessage),
 		new(models.SysMessageLog),

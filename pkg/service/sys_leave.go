@@ -3,68 +3,91 @@ package service
 import (
 	"fmt"
 	"gin-web/models"
+	"gin-web/pkg/global"
 	"gin-web/pkg/request"
+	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/piupuer/go-helper/pkg/req"
+	"github.com/piupuer/go-helper/pkg/resp"
+	uuid "github.com/satori/go.uuid"
 	"strings"
 )
 
 // 获取所有请假(当前用户)
-func (s MysqlService) GetLeaves(req *request.LeaveReq) ([]models.SysLeave, error) {
+func (s MysqlService) GetLeaves(r *request.LeaveReq) ([]models.SysLeave, error) {
 	var err error
 	list := make([]models.SysLeave, 0)
 	query := s.tx.
 		Model(&models.SysLeave{}).
 		Order("created_at DESC").
-		Where("user_id = ?", req.UserId)
-	if req.Status != nil {
-		query = query.Where("status = ?", *req.Status)
+		Where("user_id = ?", r.UserId)
+	if r.Status != nil {
+		query = query.Where("status = ?", *r.Status)
 	}
-	desc := strings.TrimSpace(req.Desc)
+	desc := strings.TrimSpace(r.Desc)
 	if desc != "" {
 		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
 	// 查询列表
-	err = s.Find(query, &req.PageInfo, &list)
+	err = s.Find(query, &r.Page, &list)
 	return list, err
 }
 
-// 获取请假审批日志(指定请假编号)
-func (s MysqlService) GetLeaveApprovalLogs(leaveId uint) ([]models.SysWorkflowLog, error) {
-	list := make([]models.SysWorkflowLog, 0)
-
-	// 获取请假对应的工作流
-	flow, err := s.GetWorkflowByTargetCategory(models.SysWorkflowTargetCategoryLeave)
-	if err != nil {
-		return list, err
-	}
-	// 获取工作流日志
-	list, err = s.GetWorkflowLogs(flow.Id, leaveId)
-	return list, err
-}
-
-// 创建请假
-func (s MysqlService) CreateLeave(req *request.CreateLeaveReq) (err error) {
-	leave := new(models.SysLeave)
-	err = s.Create(req, &leave)
-	if err != nil {
-		return
-	}
-	// 获取请假对应的工作流
-	flow, err := s.GetWorkflowByTargetCategory(models.SysWorkflowTargetCategoryLeave)
-	if err != nil {
-		return
-	}
-	// 创建请假工作流日志
-	err = s.WorkflowTransition(&request.WorkflowTransitionReq{
-		FlowId:         flow.Id,
-		TargetCategory: models.SysWorkflowTargetCategoryLeave, // 请假
-		TargetId:       leave.Id,                              // 请假编号
-		SubmitUserId:   req.User.Id,                           // 提交人编号
-		SubmitDetail: fmt.Sprintf(
-			"请假条[申请人: %s(%s), 申请说明: %s]",
-			req.User.Nickname,
-			req.User.Username,
-			leave.Desc,
-		), // 提交明细
+// query leave fsm track
+func (s MysqlService) FindLeaveApprovalLog(leaveId uint) ([]fsm.Log, error) {
+	fsmUuid := s.GetLeaveFsmUuid(leaveId)
+	f := fsm.New(s.tx)
+	return f.FindLog(req.FsmLog{
+		Category: req.NullUint(global.FsmCategoryLeave),
+		Uuid:     fsmUuid,
 	})
-	return
+}
+
+// query leave fsm track
+func (s MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, error) {
+	fsmUuid := s.GetLeaveFsmUuid(leaveId)
+	f := fsm.New(s.tx)
+	logs, err := f.FindLog(req.FsmLog{
+		Category: req.NullUint(global.FsmCategoryLeave),
+		Uuid:     fsmUuid,
+	})
+	if err != nil {
+		return nil, err
+	}
+	return f.FindLogTrack(logs)
+}
+
+// create leave
+func (s MysqlService) CreateLeave(r *request.CreateLeaveReq) error {
+	f := fsm.New(s.tx)
+	fsmUuid := uuid.NewV4().String()
+	// submit fsm log
+	_, err := f.SubmitLog(req.FsmCreateLog{
+		Category:        req.NullUint(global.FsmCategoryLeave),
+		Uuid:            fsmUuid,
+		MachineId:       1,
+		SubmitterUserId: r.User.Id,
+		SubmitterRoleId: r.User.RoleId,
+	})
+	if err != nil {
+		return err
+	}
+
+	// create leave to db
+	var leave models.SysLeave
+	// save fsm uuid
+	leave.FsmUuid = fsmUuid
+	leave.Desc = r.Desc
+	err = s.tx.Create(&leave).Error
+	return err
+}
+
+// query leave fsm uuid by id
+func (s MysqlService) GetLeaveFsmUuid(leaveId uint) string {
+	// create leave to db
+	var leave models.SysLeave
+	s.tx.
+		Model(&models.SysLeave{}).
+		Where("id = ?", leaveId).
+		First(&leave)
+	return leave.FsmUuid
 }

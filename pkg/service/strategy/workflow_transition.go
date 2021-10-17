@@ -3,6 +3,8 @@ package strategy
 import (
 	"fmt"
 	"gin-web/models"
+	"gin-web/pkg/global"
+	"github.com/piupuer/go-helper/pkg/fsm"
 	"gorm.io/gorm"
 )
 
@@ -15,7 +17,7 @@ type AfterTransitionStrategy interface {
 type LeaveApproval struct {
 	tx       *gorm.DB
 	targetId uint
-	lastLog  models.SysWorkflowLog
+	lastLog  fsm.Log
 }
 
 func (s LeaveApproval) UpdateTarget() error {
@@ -35,10 +37,10 @@ type AfterTransitionContext struct {
 }
 
 // 策略类构造函数
-func NewAfterTransitionContext(tx *gorm.DB, targetCategory uint, targetId uint, lastLog models.SysWorkflowLog) (*AfterTransitionContext, error) {
+func NewAfterTransitionContext(tx *gorm.DB, targetCategory uint, targetId uint, lastLog fsm.Log) (*AfterTransitionContext, error) {
 	ctx := new(AfterTransitionContext)
 	switch targetCategory {
-	case models.SysWorkflowTargetCategoryLeave:
+	case global.FsmCategoryLeave:
 		ctx.Strategy = &LeaveApproval{
 			tx:       tx,
 			targetId: targetId,

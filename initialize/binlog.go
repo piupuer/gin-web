@@ -105,7 +105,7 @@ func refresh(tableNames []string, tableModels []interface{}) {
 			panic(fmt.Sprintf("刷新redis数据失败, %v", err))
 		}
 		// 将数据转为json字符串写入redis, expiration=0永不过期
-		err = global.Redis.Set(cacheKey, *compress, 0).Err()
+		err = global.Redis.Set(ctx, cacheKey, *compress, 0).Err()
 		if err != nil {
 			panic(fmt.Sprintf("刷新redis数据失败, %v", err))
 		}
@@ -211,7 +211,7 @@ func (s *BinlogEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replicati
 			table := strings.Trim(m[0][1], "`")
 			cacheKey := fmt.Sprintf("%s_%s", database, table)
 			// 将数据转为json字符串写入redis, expiration=0永不过期
-			err := global.Redis.Del(cacheKey).Err()
+			err := global.Redis.Del(ctx, cacheKey).Err()
 			if err != nil {
 				global.Log.Error(s.ctx, "删除表%s, 同步binlog增量数据到redis失败: %v", table, err)
 			}
@@ -229,7 +229,7 @@ func (s *BinlogEventHandler) OnDDL(nextPos mysql.Position, queryEvent *replicati
 		if table != "" {
 			cacheKey := fmt.Sprintf("%s_%s", database, table)
 			// 将数据转为json字符串写入redis, expiration=0永不过期
-			err := global.Redis.Del(cacheKey).Err()
+			err := global.Redis.Del(ctx, cacheKey).Err()
 			if err != nil {
 				global.Log.Error(s.ctx, "清空表%s, 同步binlog增量数据到redis失败: %v", table, err)
 			}
