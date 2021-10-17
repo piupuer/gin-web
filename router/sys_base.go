@@ -1,34 +1,56 @@
 package router
 
 import (
-	"gin-web/middleware"
-	jwt "github.com/appleboy/gin-jwt/v2"
+	v1 "gin-web/api/v1"
+	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/middleware"
 )
 
-// 基础路由
-func InitBaseRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
+func InitBaseRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)) (R gin.IRoutes) {
 	router := r.Group("/base")
 	{
-		// 登录登出/刷新token无需鉴权
-		router.POST("/login", authMiddleware.LoginHandler)
-		router.POST("/logout", authMiddleware.LogoutHandler)
-		router.POST("/refreshToken", authMiddleware.RefreshHandler)
-		// 幂等性token需要鉴权
+		router.POST("/login", middleware.JwtLogin(jwtOptions...))
+		router.POST("/logout", middleware.JwtLogout(jwtOptions...))
+		router.POST("/refreshToken", middleware.JwtRefresh(jwtOptions...))
+		// need login
 		router.
-			Use(authMiddleware.MiddlewareFunc()).
-			Use(middleware.CasbinMiddleware).
-			GET("/idempotenceToken", middleware.GetIdempotenceToken)
+			Use(middleware.Jwt(jwtOptions...)).
+			Use(GetCasbinMiddleware()).
+			GET("/idempotenceToken", middleware.GetIdempotenceToken(
+				middleware.WithIdempotenceRedis(global.Redis),
+			))
 	}
 	return r
 }
 
-// 获取带casbin中间件的路由
-func GetCasbinRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware, path string) gin.IRoutes {
-	return r.Group(path).Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
+// get casbin middleware router
+func GetCasbinRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions), path string) gin.IRoutes {
+	return r.Group(path).
+		Use(middleware.Jwt(jwtOptions...)).
+		Use(GetCasbinMiddleware())
 }
 
-// 获取带casbin和幂等性中间件的路由
-func GetCasbinAndIdempotenceRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware, path string) gin.IRoutes {
-	return GetCasbinRouter(r, authMiddleware, path).Use(middleware.Idempotence)
+// get casbin and idempotence middleware router
+func GetCasbinAndIdempotenceRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions), path string) gin.IRoutes {
+	return GetCasbinRouter(r, jwtOptions, path).
+		Use(
+			middleware.Idempotence(GetIdempotenceMiddlewareOps()...),
+		)
+}
+
+func GetCasbinMiddleware() gin.HandlerFunc {
+	return middleware.Casbin(
+		middleware.WithCasbinEnforcer(global.CasbinEnforcer),
+		middleware.WithCasbinRoleKey(func(c *gin.Context) string {
+			user := v1.GetCurrentUser(c)
+			return user.Role.Keyword
+		}),
+	)
+}
+
+func GetIdempotenceMiddlewareOps() []func(*middleware.IdempotenceOptions) {
+	return []func(*middleware.IdempotenceOptions){
+		middleware.WithIdempotenceRedis(global.Redis),
+	}
 }

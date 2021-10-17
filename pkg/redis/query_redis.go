@@ -6,7 +6,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v7"
+	"github.com/go-redis/redis/v8"
 	"github.com/thedevsaddam/gojsonq/v2"
 	"gorm.io/gorm"
 	"gorm.io/gorm/schema"
@@ -127,7 +127,7 @@ func (s *QueryRedis) get(tableName string) *gojsonq.JSONQ {
 		// 缓存键由数据库名与表名组成
 		cacheKey := fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, tableName)
 		var err error
-		str, err := s.redis.Get(cacheKey).Result()
+		str, err := s.redis.Get(s.ctx, cacheKey).Result()
 		global.Log.Debug(s.ctx, "[QueryRedis.get]读取redis缓存: %s", tableName)
 		if err != nil {
 			global.Log.Debug(s.ctx, "[QueryRedis.get]读取redis缓存异常: %v", err)

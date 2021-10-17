@@ -2,14 +2,13 @@ package router
 
 import (
 	v1 "gin-web/api/v1"
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/middleware"
 )
 
-// 消息机器路由
-func InitMachineRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	router1 := GetCasbinRouter(r, authMiddleware, "/machine")
-	router2 := GetCasbinAndIdempotenceRouter(r, authMiddleware, "/machine")
+func InitMachineRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)) (R gin.IRoutes) {
+	router1 := GetCasbinRouter(r, jwtOptions, "/machine")
+	router2 := GetCasbinAndIdempotenceRouter(r, jwtOptions, "/machine")
 	{
 		router1.GET("/shell/ws", v1.MachineShellWs)
 		router1.GET("/list", v1.GetMachines)

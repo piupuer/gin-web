@@ -3,16 +3,15 @@ module gin-web
 go 1.14
 
 require (
-	github.com/appleboy/gin-jwt/v2 v2.6.5-0.20210919105835-bd5b0bd72741
-	github.com/casbin/casbin/v2 v2.31.9
+	github.com/appleboy/gin-jwt/v2 v2.7.0
+	github.com/casbin/casbin/v2 v2.37.4
 	github.com/casbin/gorm-adapter/v3 v3.3.1
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/foobaz/lossypng v0.0.0-20200814224715-48fa8819852a
-	github.com/gin-gonic/gin v1.7.2
+	github.com/gin-gonic/gin v1.7.4
 	github.com/go-mysql-org/go-mysql v1.3.0
 	github.com/go-playground/locales v0.13.0
 	github.com/go-playground/universal-translator v0.17.0
-	github.com/go-redis/redis/v7 v7.4.0
+	github.com/go-redis/redis/v8 v8.11.2
 	github.com/gobuffalo/packr/v2 v2.7.1
 	github.com/golang-module/carbon v1.5.4
 	github.com/gorilla/websocket v1.4.2
@@ -21,7 +20,7 @@ require (
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/panjf2000/ants v1.3.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/piupuer/go-helper v0.0.0-20211012042057-5c92172c857a
+	github.com/piupuer/go-helper v0.0.0-20211017133119-0000651a6b25
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0

@@ -2,17 +2,18 @@ package router
 
 import (
 	v1 "gin-web/api/v1"
-	"gin-web/middleware"
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/middleware"
 )
 
-// 消息中心路由
-func InitMessageRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	// 初始化消息中心仓库
-	v1.StartMessageHub(middleware.CheckIdempotenceToken)
-	router1 := GetCasbinRouter(r, authMiddleware, "/message")
-	router2 := GetCasbinAndIdempotenceRouter(r, authMiddleware, "/message")
+func InitMessageRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)) (R gin.IRoutes) {
+	var ops *middleware.IdempotenceOptions
+	for _, f := range GetIdempotenceMiddlewareOps() {
+		f(ops)
+	}
+	v1.StartMessageHub(ops)
+	router1 := GetCasbinRouter(r, jwtOptions, "/message")
+	router2 := GetCasbinAndIdempotenceRouter(r, jwtOptions, "/message")
 	{
 		router1.GET("/ws", v1.MessageWs)
 		router1.GET("/all", v1.GetAllMessages)

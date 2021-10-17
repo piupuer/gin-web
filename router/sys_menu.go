@@ -2,14 +2,13 @@ package router
 
 import (
 	v1 "gin-web/api/v1"
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/middleware"
 )
 
-// 菜单路由
-func InitMenuRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	router1 := GetCasbinRouter(r, authMiddleware, "/menu")
-	router2 := GetCasbinAndIdempotenceRouter(r, authMiddleware, "/menu")
+func InitMenuRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)) (R gin.IRoutes) {
+	router1 := GetCasbinRouter(r, jwtOptions, "/menu")
+	router2 := GetCasbinAndIdempotenceRouter(r, jwtOptions, "/menu")
 	{
 		router1.GET("/tree", v1.GetMenuTree)
 		router1.GET("/all/:roleId", v1.GetAllMenuByRoleId)

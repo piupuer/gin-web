@@ -61,7 +61,7 @@ func RowChange(ctx context.Context, e *canal.RowsEvent) {
 	// 缓存键由数据库名与表名组成
 	cacheKey := fmt.Sprintf("%s_%s", database, table)
 	// 读取redis历史数据
-	oldRowsStr, err := global.Redis.Get(cacheKey).Result()
+	oldRowsStr, err := global.Redis.Get(ctx, cacheKey).Result()
 	newRows := make([]map[string]interface{}, 0)
 	changeRows := make([][]interface{}, 0)
 	if err == nil {
@@ -145,7 +145,7 @@ func RowChange(ctx context.Context, e *canal.RowsEvent) {
 		return
 	}
 	// 将数据转为json字符串写入redis, expiration=0永不过期
-	err = global.Redis.Set(cacheKey, *compress, 0).Err()
+	err = global.Redis.Set(ctx, cacheKey, *compress, 0).Err()
 	if err != nil {
 		global.Log.Error(ctx, "同步binlog增量数据到redis失败: %v, %v", err, e)
 	}
@@ -196,7 +196,7 @@ func getRow(ctx context.Context, data []interface{}, table *schema.Table) map[st
 
 // mysql日志位置发生变化
 func PosChange(ctx context.Context, pos mysql.Position) {
-	err := global.Redis.Set(global.Conf.Redis.BinlogPos, utils.Struct2Json(pos), 0).Err()
+	err := global.Redis.Set(ctx, global.Conf.Redis.BinlogPos, utils.Struct2Json(pos), 0).Err()
 	if err != nil {
 		global.Log.Error(ctx, "同步binlog当前位置到redis失败: %v, %v", err, pos)
 	}

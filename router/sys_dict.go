@@ -2,23 +2,22 @@ package router
 
 import (
 	v1 "gin-web/api/v1"
-	"gin-web/middleware"
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/middleware"
 )
 
-// 字典路由
-func InitDictRouter(r *gin.RouterGroup, authMiddleware *jwt.GinJWTMiddleware) (R gin.IRoutes) {
-	router := r.Group("/dict").Use(authMiddleware.MiddlewareFunc()).Use(middleware.CasbinMiddleware)
+func InitDictRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)) (R gin.IRoutes) {
+	router1 := GetCasbinRouter(r, jwtOptions, "/dict")
+	router2 := GetCasbinAndIdempotenceRouter(r, jwtOptions, "/dict")
 	{
-		router.GET("/list", v1.GetDicts)
-		router.POST("/create", v1.CreateDict)
-		router.PATCH("/update/:dictId", v1.UpdateDictById)
-		router.DELETE("/delete/batch", v1.BatchDeleteDictByIds)
-		router.GET("/data/list", v1.GetDictDatas)
-		router.POST("/data/create", v1.CreateDictData)
-		router.PATCH("/data/update/:dictDataId", v1.UpdateDictDataById)
-		router.DELETE("/data/delete/batch", v1.BatchDeleteDictDataByIds)
+		router1.GET("/list", v1.GetDicts)
+		router2.POST("/create", v1.CreateDict)
+		router1.PATCH("/update/:dictId", v1.UpdateDictById)
+		router1.DELETE("/delete/batch", v1.BatchDeleteDictByIds)
+		router1.GET("/data/list", v1.GetDictDatas)
+		router2.POST("/data/create", v1.CreateDictData)
+		router1.PATCH("/data/update/:dictDataId", v1.UpdateDictDataById)
+		router1.DELETE("/data/delete/batch", v1.BatchDeleteDictDataByIds)
 	}
-	return router
+	return r
 }
