@@ -13,7 +13,7 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (s MysqlService) GetUnDeleteMessages(req *request.MessageReq) ([]response.MessageResp, error) {
+func (my MysqlService) GetUnDeleteMessages(req *request.MessageReq) ([]response.MessageResp, error) {
 	sysMessageLogTableName := global.Mysql.NamingStrategy.TableName("sys_message_log")
 	sysMessageTableName := global.Mysql.NamingStrategy.TableName("sys_message")
 	sysUserTableName := global.Mysql.NamingStrategy.TableName("sys_user")
@@ -31,7 +31,7 @@ func (s MysqlService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 		fmt.Sprintf("%s.from_user_id AS from_user_id", sysMessageTableName),
 		fmt.Sprintf("fromUser.username AS from_username"),
 	}
-	query := s.tx.
+	query := my.Q.Tx.
 		Model(&models.SysMessageLog{}).
 		Select(fields).
 		Joins(fmt.Sprintf("LEFT JOIN %s ON %s.message_id = %s.id", sysMessageTableName, sysMessageLogTableName, sysMessageTableName)).
@@ -62,14 +62,14 @@ func (s MysqlService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 
 	// 多表联合查询不用Find用Scan
 	// 查询列表
-	err := s.Scan(query, &req.Page, &list)
+	err := my.Q.Scan(query, &req.Page, &list)
 	return list, err
 }
 
 // 查询未读消息条数
-func (s MysqlService) GetUnReadMessageCount(userId uint) (int64, error) {
+func (my MysqlService) GetUnReadMessageCount(userId uint) (int64, error) {
 	var total int64
-	err := s.tx.
+	err := my.Q.Tx.
 		Model(&models.SysMessageLog{}).
 		Where("to_user_id = ?", userId).
 		Where("status = ?", models.SysMessageLogStatusUnRead).
@@ -78,28 +78,28 @@ func (s MysqlService) GetUnReadMessageCount(userId uint) (int64, error) {
 }
 
 // 更新为已读
-func (s MysqlService) BatchUpdateMessageRead(messageLogIds []uint) error {
-	return s.BatchUpdateMessageStatus(messageLogIds, models.SysMessageLogStatusRead)
+func (my MysqlService) BatchUpdateMessageRead(messageLogIds []uint) error {
+	return my.BatchUpdateMessageStatus(messageLogIds, models.SysMessageLogStatusRead)
 }
 
 // 更新为已删除
-func (s MysqlService) BatchUpdateMessageDeleted(messageLogIds []uint) error {
-	return s.BatchUpdateMessageStatus(messageLogIds, models.SysMessageLogStatusDeleted)
+func (my MysqlService) BatchUpdateMessageDeleted(messageLogIds []uint) error {
+	return my.BatchUpdateMessageStatus(messageLogIds, models.SysMessageLogStatusDeleted)
 }
 
 // 全标已读
-func (s MysqlService) UpdateAllMessageRead(userId uint) error {
-	return s.UpdateAllMessageStatus(userId, models.SysMessageLogStatusRead)
+func (my MysqlService) UpdateAllMessageRead(userId uint) error {
+	return my.UpdateAllMessageStatus(userId, models.SysMessageLogStatusRead)
 }
 
 // 全标删除
-func (s MysqlService) UpdateAllMessageDeleted(userId uint) error {
-	return s.UpdateAllMessageStatus(userId, models.SysMessageLogStatusDeleted)
+func (my MysqlService) UpdateAllMessageDeleted(userId uint) error {
+	return my.UpdateAllMessageStatus(userId, models.SysMessageLogStatusDeleted)
 }
 
 // 批量更新消息状态
-func (s MysqlService) BatchUpdateMessageStatus(messageLogIds []uint, status uint) error {
-	return s.tx.
+func (my MysqlService) BatchUpdateMessageStatus(messageLogIds []uint, status uint) error {
+	return my.Q.Tx.
 		Model(&models.SysMessageLog{}).
 		// 已删除的消息不再标记
 		Where("status != ?", models.SysMessageLogStatusDeleted).
@@ -108,10 +108,10 @@ func (s MysqlService) BatchUpdateMessageStatus(messageLogIds []uint, status uint
 }
 
 // 更新某个用户的全部消息状态
-func (s MysqlService) UpdateAllMessageStatus(userId uint, status uint) error {
+func (my MysqlService) UpdateAllMessageStatus(userId uint, status uint) error {
 	var log models.SysMessageLog
 	log.ToUserId = userId
-	return s.tx.
+	return my.Q.Tx.
 		Model(&log).
 		// 已删除的消息不再标记
 		Where("status != ?", models.SysMessageLogStatusDeleted).
@@ -120,16 +120,16 @@ func (s MysqlService) UpdateAllMessageStatus(userId uint, status uint) error {
 }
 
 // 同步消息(某个用户登录时, 将消息关联到log)
-func (s MysqlService) SyncMessageByUserIds(userIds []uint) error {
+func (my MysqlService) SyncMessageByUserIds(userIds []uint) error {
 	// 查询用户
 	users := make([]models.SysUser, 0)
-	err := s.tx.Where("id IN (?)", userIds).Find(&users).Error
+	err := my.Q.Tx.Where("id IN (?)", userIds).Find(&users).Error
 	if err != nil {
 		return err
 	}
 	for _, user := range users {
 		messages := make([]models.SysMessage, 0)
-		err = s.tx.
+		err = my.Q.Tx.
 			// 用户注册时间早于消息创建时间
 			Where("created_at > ?", user.CreatedAt).
 			// 消息有效期晚于当前时间
@@ -146,7 +146,7 @@ func (s MysqlService) SyncMessageByUserIds(userIds []uint) error {
 		}
 		// 判断消息是否已经关联
 		logs := make([]models.SysMessageLog, 0)
-		err := s.tx.
+		err := my.Q.Tx.
 			Where("to_user_id = ?", user.Id).
 			Where("message_id IN (?)", messageIds).
 			Find(&logs).Error
@@ -164,7 +164,7 @@ func (s MysqlService) SyncMessageByUserIds(userIds []uint) error {
 			// 当前消息id不在旧的列表中
 			if !utils.ContainsUint(oldMessageIds, messageId) {
 				// 新增消息log
-				s.tx.Create(&models.SysMessageLog{
+				my.Q.Tx.Create(&models.SysMessageLog{
 					ToUserId:  user.Id,
 					MessageId: messageId,
 				})
@@ -175,7 +175,7 @@ func (s MysqlService) SyncMessageByUserIds(userIds []uint) error {
 }
 
 // 创建消息
-func (s MysqlService) CreateMessage(req *request.PushMessageReq) error {
+func (my MysqlService) CreateMessage(req *request.PushMessageReq) error {
 	if req.Type != nil {
 		message := models.SysMessage{
 			FromUserId: req.FromUserId,
@@ -189,21 +189,21 @@ func (s MysqlService) CreateMessage(req *request.PushMessageReq) error {
 			if len(req.ToUserIds) == 0 {
 				return fmt.Errorf("接收人不得为空")
 			}
-			return s.BatchCreateOneToOneMessage(message, req.ToUserIds)
+			return my.BatchCreateOneToOneMessage(message, req.ToUserIds)
 		case models.SysMessageTypeOneToMany:
 			if len(req.ToRoleIds) == 0 {
 				return fmt.Errorf("接收角色不得为空")
 			}
-			return s.BatchCreateOneToManyMessage(message, req.ToRoleIds)
+			return my.BatchCreateOneToManyMessage(message, req.ToRoleIds)
 		case models.SysMessageTypeSystem:
-			return s.CreateSystemMessage(message)
+			return my.CreateSystemMessage(message)
 		}
 	}
 	return fmt.Errorf("消息类型不合法")
 }
 
 // 创建一对一的消息(这里支持多个接收者, 但消息类型为一对一, 适合于发送给少量人群的批量操作)
-func (s MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toIds []uint) error {
+func (my MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toIds []uint) error {
 	// 强制修改类型为一对一
 	message.Type = models.SysMessageTypeOneToOne
 
@@ -215,7 +215,7 @@ func (s MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toId
 	}
 
 	// 创建消息内容
-	err := s.tx.Create(&message).Error
+	err := my.Q.Tx.Create(&message).Error
 	if err != nil {
 		return err
 	}
@@ -224,7 +224,7 @@ func (s MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toId
 		var log models.SysMessageLog
 		log.MessageId = message.Id
 		log.ToUserId = id
-		err = s.tx.Create(&log).Error
+		err = my.Q.Tx.Create(&log).Error
 		if err != nil {
 			return err
 		}
@@ -234,7 +234,7 @@ func (s MysqlService) BatchCreateOneToOneMessage(message models.SysMessage, toId
 }
 
 // 创建一对多的消息(这里支持多个接收角色, 适合于发送给指定角色的批量操作)
-func (s MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, toRoleIds []uint) error {
+func (my MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, toRoleIds []uint) error {
 	// 强制修改类型为一对多
 	message.Type = models.SysMessageTypeOneToMany
 
@@ -252,7 +252,7 @@ func (s MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, toR
 		// 记录角色编号
 		message.RoleId = id
 		// 创建消息内容
-		err := s.tx.Create(&message).Error
+		err := my.Q.Tx.Create(&message).Error
 		if err != nil {
 			return err
 		}
@@ -262,7 +262,7 @@ func (s MysqlService) BatchCreateOneToManyMessage(message models.SysMessage, toR
 }
 
 // 创建系统消息(适合于发送全部用户系统公告)
-func (s MysqlService) CreateSystemMessage(message models.SysMessage) error {
+func (my MysqlService) CreateSystemMessage(message models.SysMessage) error {
 	// 强制修改类型为系统
 	message.Type = models.SysMessageTypeSystem
 
@@ -274,5 +274,5 @@ func (s MysqlService) CreateSystemMessage(message models.SysMessage) error {
 	}
 
 	// 创建消息内容
-	return s.tx.Create(&message).Error
+	return my.Q.Tx.Create(&message).Error
 }

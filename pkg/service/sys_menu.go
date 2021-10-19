@@ -8,12 +8,12 @@ import (
 )
 
 // 获取权限菜单树
-func (s MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
+func (my MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	tree := make([]models.SysMenu, 0)
 	menus := make([]models.SysMenu, 0)
 	// 查询全部菜单
 	allMenu := make([]models.SysMenu, 0)
-	err := s.tx.
+	err := my.Q.Tx.
 		Model(&models.SysMenu{}).
 		Find(&allMenu).Error
 	if err != nil {
@@ -21,7 +21,7 @@ func (s MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	}
 	// 查询当前权限
 	var role models.SysRole
-	err = s.tx.
+	err = my.Q.Tx.
 		Model(&models.SysRole{}).
 		Preload("Menus").
 		Where("id = ?", roleId).
@@ -33,27 +33,27 @@ func (s MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 	_, newMenus := addParentMenu(role.Menus, allMenu)
 
 	// 生成菜单树
-	tree = s.GenMenuTree(0, newMenus)
+	tree = my.GenMenuTree(0, newMenus)
 	return tree, nil
 }
 
 // 获取所有菜单
-func (s MysqlService) GetMenus(currentRole models.SysRole) []models.SysMenu {
+func (my MysqlService) GetMenus(currentRole models.SysRole) []models.SysMenu {
 	tree := make([]models.SysMenu, 0)
-	menus := s.getAllMenu(currentRole)
+	menus := my.getAllMenu(currentRole)
 	// 生成菜单树
-	tree = s.GenMenuTree(0, menus)
+	tree = my.GenMenuTree(0, menus)
 	return tree
 }
 
 // 生成菜单树
 // parentId: 父菜单编号
 // roleMenus: 有权限的菜单列表
-func (s MysqlService) GenMenuTree(parentId uint, roleMenus []models.SysMenu) []models.SysMenu {
+func (my MysqlService) GenMenuTree(parentId uint, roleMenus []models.SysMenu) []models.SysMenu {
 	roleMenuIds := make([]uint, 0)
 	// 查询全部菜单
 	allMenu := make([]models.SysMenu, 0)
-	err := s.tx.
+	err := my.Q.Tx.
 		Model(&models.SysMenu{}).
 		Find(&allMenu).Error
 	if err != nil {
@@ -88,17 +88,17 @@ func genMenuTree(parentId uint, roleMenuIds []uint, allMenu []models.SysMenu) []
 }
 
 // 根据权限编号获取全部菜单
-func (s MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
+func (my MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
 	// 菜单树
 	tree := make([]models.SysMenu, 0)
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
 	// 查询全部菜单
-	allMenu := s.getAllMenu(currentRole)
+	allMenu := my.getAllMenu(currentRole)
 	// 查询角色拥有菜单
-	roleMenus := s.getRoleMenus(roleId)
+	roleMenus := my.getRoleMenus(roleId)
 	// 生成菜单树
-	tree = s.GenMenuTree(0, allMenu)
+	tree = my.GenMenuTree(0, allMenu)
 	// 获取id列表
 	for _, menu := range roleMenus {
 		accessIds = append(accessIds, menu.Id)
@@ -109,40 +109,40 @@ func (s MysqlService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint
 }
 
 // 创建菜单
-func (s MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuReq) (err error) {
+func (my MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuReq) (err error) {
 	var menu models.SysMenu
 	utils.Struct2StructByJson(req, &menu)
 	// 创建数据
-	err = s.tx.Create(&menu).Error
+	err = my.Q.Tx.Create(&menu).Error
 	// 自己创建的菜单需绑定权限
 	menuReq := request.UpdateIncrementalIdsRequestStruct{
 		Create: []uint{menu.Id},
 	}
-	err = s.UpdateRoleMenusById(currentRole, currentRole.Id, menuReq)
+	err = my.UpdateRoleMenusById(currentRole, currentRole.Id, menuReq)
 	return
 }
 
 // 获取权限菜单, 非菜单树
-func (s MysqlService) getRoleMenus(roleId uint) []models.SysMenu {
+func (my MysqlService) getRoleMenus(roleId uint) []models.SysMenu {
 	var role models.SysRole
 	// 根据权限编号获取菜单
-	err := s.tx.
+	err := my.Q.Tx.
 		Preload("Menus").
 		Where("id = ?", roleId).
 		First(&role).Error
 	if err != nil {
-		global.Log.Warn(s.ctx, "[getRoleMenu]", err)
+		global.Log.Warn(my.Q.Ctx, "[getRoleMenu]", err)
 	}
 	return role.Menus
 }
 
 // 获取全部菜单, 非菜单树
-func (s MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
+func (my MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	menus := make([]models.SysMenu, 0)
 	// 查询关系表
 	relations := make([]models.SysRoleMenuRelation, 0)
 	menuIds := make([]uint, 0)
-	query := s.tx.Model(&models.SysRoleMenuRelation{})
+	query := my.Q.Tx.Model(&models.SysRoleMenuRelation{})
 	var err error
 	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
@@ -155,17 +155,17 @@ func (s MysqlService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 			menuIds = append(menuIds, relation.SysMenuId)
 		}
 		// 查询所有菜单
-		err = s.tx.
+		err = my.Q.Tx.
 			Where("id IN (?)", menuIds).
 			Order("sort").
 			Find(&menus).Error
 	} else {
-		err = s.tx.
+		err = my.Q.Tx.
 			Order("sort").
 			Find(&menus).Error
 	}
 	if err != nil {
-		global.Log.Warn(s.ctx, "[getAllMenu]", err)
+		global.Log.Warn(my.Q.Ctx, "[getAllMenu]", err)
 	}
 	return menus
 }

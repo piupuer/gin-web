@@ -9,7 +9,7 @@ import (
 )
 
 // 获取操作日志
-func (s MysqlService) GetOperationLogs(req *request.OperationLogReq) ([]models.SysOperationLog, error) {
+func (my MysqlService) GetOperationLogs(req *request.OperationLogReq) ([]models.SysOperationLog, error) {
 	var err error
 	list := make([]models.SysOperationLog, 0)
 	query := global.Mysql.
@@ -32,6 +32,6 @@ func (s MysqlService) GetOperationLogs(req *request.OperationLogReq) ([]models.S
 		query = query.Where("status LIKE ?", fmt.Sprintf("%%%s%%", status))
 	}
 	// 查询列表
-	err = s.Find(query, &req.Page, &list)
+	err = my.Q.Find(query, &req.Page, &list)
 	return list, err
 }

@@ -87,7 +87,7 @@ func UpdateMenuById(c *gin.Context) {
 		resp.CheckErr("菜单编号不正确")
 	}
 	s := service.New(c)
-	err := s.UpdateById(menuId, r, new(models.SysMenu))
+	err := s.Q.UpdateById(menuId, r, new(models.SysMenu))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -97,7 +97,7 @@ func BatchDeleteMenuByIds(c *gin.Context) {
 	var r request.Req
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.DeleteByIds(r.GetUintIds(), new(models.SysMenu))
+	err := s.Q.DeleteByIds(r.GetUintIds(), new(models.SysMenu))
 	resp.CheckErr(err)
 	resp.Success()
 }

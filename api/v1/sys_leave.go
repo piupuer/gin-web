@@ -60,7 +60,7 @@ func UpdateLeaveById(c *gin.Context) {
 		resp.CheckErr("请假编号不正确")
 	}
 	s := service.New(c)
-	err := s.UpdateById(leaveId, r, new(models.SysLeave))
+	err := s.Q.UpdateById(leaveId, r, new(models.SysLeave))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -70,7 +70,7 @@ func BatchDeleteLeaveByIds(c *gin.Context) {
 	var r request.Req
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.DeleteByIds(r.GetUintIds(), new(models.SysLeave))
+	err := s.Q.DeleteByIds(r.GetUintIds(), new(models.SysLeave))
 	resp.CheckErr(err)
 	resp.Success()
 }

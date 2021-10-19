@@ -40,7 +40,7 @@ func CreateRole(c *gin.Context) {
 	// 记录当前创建人信息
 	r.Creator = user.Nickname + user.Username
 	s := service.New(c)
-	err := s.Create(r, new(models.SysRole))
+	err := s.Q.Create(r, new(models.SysRole))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -69,7 +69,7 @@ func UpdateRoleById(c *gin.Context) {
 	}
 
 	s := service.New(c)
-	err := s.UpdateById(roleId, r, new(models.SysRole))
+	err := s.Q.UpdateById(roleId, r, new(models.SysRole))
 	resp.CheckErr(err)
 	resp.Success()
 }

@@ -11,10 +11,10 @@ import (
 )
 
 // 登录校验
-func (s MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
+func (my MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
 	var u models.SysUser
 	// 查询用户及其角色
-	err := s.tx.Preload("Role").Where("username = ?", user.Username).First(&u).Error
+	err := my.Q.Tx.Preload("Role").Where("username = ?", user.Username).First(&u).Error
 	if err != nil {
 		return nil, errors.New(resp.LoginCheckErrorMsg)
 	}
@@ -26,15 +26,15 @@ func (s MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error) 
 }
 
 // 获取用户
-func (s MysqlService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
+func (my MysqlService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
-	query := s.tx.
+	query := my.Q.Tx.
 		Model(&models.SysUser{}).
 		Order("created_at DESC")
 	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
-		roleIds, err := s.GetRoleIdsBySort(*req.CurrentRole.Sort)
+		roleIds, err := my.GetRoleIdsBySort(*req.CurrentRole.Sort)
 		if err != nil {
 			return list, err
 		}
@@ -64,15 +64,15 @@ func (s MysqlService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
 		}
 	}
 	// 查询列表
-	err = s.Find(query, &req.Page, &list)
+	err = my.Q.Find(query, &req.Page, &list)
 	return list, err
 }
 
 // 获取单个用户
-func (s MysqlService) GetUserById(id uint) (models.SysUser, error) {
+func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	var user models.SysUser
 	var err error
-	err = s.tx.Preload("Role").
+	err = my.Q.Tx.Preload("Role").
 		Where("id = ?", id).
 		// 状态为正常
 		Where("status = ?", models.SysUserStatusNormal).
@@ -81,9 +81,9 @@ func (s MysqlService) GetUserById(id uint) (models.SysUser, error) {
 }
 
 // 获取多个用户
-func (s MysqlService) GetUsersByIds(ids []uint) ([]models.SysUser, error) {
+func (my MysqlService) GetUsersByIds(ids []uint) ([]models.SysUser, error) {
 	var users []models.SysUser
 	var err error
-	err = s.tx.Preload("Role").Where("id IN (?)", ids).Find(&users).Error
+	err = my.Q.Tx.Preload("Role").Where("id IN (?)", ids).Find(&users).Error
 	return users, err
 }

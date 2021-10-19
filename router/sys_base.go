@@ -4,6 +4,7 @@ import (
 	v1 "gin-web/api/v1"
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
 )
 
@@ -52,5 +53,6 @@ func GetCasbinMiddleware() gin.HandlerFunc {
 func GetIdempotenceMiddlewareOps() []func(*middleware.IdempotenceOptions) {
 	return []func(*middleware.IdempotenceOptions){
 		middleware.WithIdempotenceRedis(global.Redis),
+		middleware.WithIdempotencePrefix(constant.MiddlewareIdempotencePrefix),
 	}
 }

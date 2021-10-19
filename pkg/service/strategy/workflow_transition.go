@@ -26,7 +26,7 @@ func (s LeaveApproval) UpdateTarget() error {
 		var leave models.SysLeave
 		leave.Status = s.lastLog.Status
 		// 更新请假审批状态
-		err = s.tx.Model(&leave).Where("id = ?", s.targetId).Updates(&leave).Error
+		err = my.Q.Tx.Model(&leave).Where("id = ?", s.targetId).Updates(&leave).Error
 	}
 	return err
 }

@@ -7,7 +7,7 @@ import (
 )
 
 func InitMessageRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)) (R gin.IRoutes) {
-	var ops *middleware.IdempotenceOptions
+	ops := &middleware.IdempotenceOptions{}
 	for _, f := range GetIdempotenceMiddlewareOps() {
 		f(ops)
 	}

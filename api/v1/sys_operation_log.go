@@ -30,7 +30,7 @@ func BatchDeleteOperationLogByIds(c *gin.Context) {
 	var r request.Req
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.DeleteByIds(r.GetUintIds(), new(models.SysOperationLog))
+	err := s.Q.DeleteByIds(r.GetUintIds(), new(models.SysOperationLog))
 	resp.CheckErr(err)
 	resp.Success()
 }

@@ -31,7 +31,7 @@ func CreateMachine(c *gin.Context) {
 	// 记录当前创建人信息
 	r.Creator = user.Nickname + user.Username
 	s := service.New(c)
-	err := s.Create(r, new(models.SysMachine))
+	err := s.Q.Create(r, new(models.SysMachine))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -46,7 +46,7 @@ func UpdateMachineById(c *gin.Context) {
 	}
 
 	s := service.New(c)
-	err := s.UpdateById(machineId, r, new(models.SysMachine))
+	err := s.Q.UpdateById(machineId, r, new(models.SysMachine))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -71,7 +71,7 @@ func BatchDeleteMachineByIds(c *gin.Context) {
 	var r request.Req
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.DeleteByIds(r.GetUintIds(), new(models.SysMachine))
+	err := s.Q.DeleteByIds(r.GetUintIds(), new(models.SysMachine))
 	resp.CheckErr(err)
 	resp.Success()
 }

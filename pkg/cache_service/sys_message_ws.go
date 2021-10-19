@@ -16,6 +16,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"runtime/debug"
 	"strings"
 	"sync"
 	"time"
@@ -219,7 +220,7 @@ func (c *MessageClient) receive() {
 	defer func() {
 		c.close()
 		if err := recover(); err != nil {
-			global.Log.Error(c.ctx, "[消息中心][接收端][%s]连接可能已断开: %v", c.Key, err)
+			global.Log.Error(c.ctx, "[消息中心][接收端][%s]连接可能已断开: %v", c.Key, err, string(debug.Stack()))
 		}
 	}()
 	for {

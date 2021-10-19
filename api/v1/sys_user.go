@@ -111,7 +111,7 @@ func CreateUser(c *gin.Context) {
 	s := service.New(c)
 	// 将初始密码转为密文
 	r.Password = utils.GenPwd(r.InitPassword)
-	err := s.Create(r, new(models.SysUser))
+	err := s.Q.Create(r, new(models.SysUser))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -148,7 +148,7 @@ func UpdateUserById(c *gin.Context) {
 	}
 
 	s := service.New(c)
-	err := s.UpdateById(userId, r, new(models.SysUser))
+	err := s.Q.UpdateById(userId, r, new(models.SysUser))
 	resp.CheckErr(err)
 	userInfoCache.Delete(fmt.Sprintf("%d", user.Id))
 	userByIdCache.Delete(fmt.Sprintf("%d", user.Id))
@@ -165,7 +165,7 @@ func BatchDeleteUserByIds(c *gin.Context) {
 	}
 
 	s := service.New(c)
-	err := s.DeleteByIds(r.GetUintIds(), new(models.SysUser))
+	err := s.Q.DeleteByIds(r.GetUintIds(), new(models.SysUser))
 	resp.CheckErr(err)
 	userInfoCache.Delete(fmt.Sprintf("%d", user.Id))
 	userByIdCache.Delete(fmt.Sprintf("%d", user.Id))

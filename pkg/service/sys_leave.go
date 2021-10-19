@@ -13,10 +13,10 @@ import (
 )
 
 // 获取所有请假(当前用户)
-func (s MysqlService) GetLeaves(r *request.LeaveReq) ([]models.SysLeave, error) {
+func (my MysqlService) GetLeaves(r *request.LeaveReq) ([]models.SysLeave, error) {
 	var err error
 	list := make([]models.SysLeave, 0)
-	query := s.tx.
+	query := my.Q.Tx.
 		Model(&models.SysLeave{}).
 		Order("created_at DESC").
 		Where("user_id = ?", r.UserId)
@@ -28,14 +28,14 @@ func (s MysqlService) GetLeaves(r *request.LeaveReq) ([]models.SysLeave, error) 
 		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
 	// 查询列表
-	err = s.Find(query, &r.Page, &list)
+	err = my.Q.Find(query, &r.Page, &list)
 	return list, err
 }
 
 // query leave fsm track
-func (s MysqlService) FindLeaveApprovalLog(leaveId uint) ([]fsm.Log, error) {
-	fsmUuid := s.GetLeaveFsmUuid(leaveId)
-	f := fsm.New(s.tx)
+func (my MysqlService) FindLeaveApprovalLog(leaveId uint) ([]fsm.Log, error) {
+	fsmUuid := my.GetLeaveFsmUuid(leaveId)
+	f := fsm.New(my.Q.Tx)
 	return f.FindLog(req.FsmLog{
 		Category: req.NullUint(global.FsmCategoryLeave),
 		Uuid:     fsmUuid,
@@ -43,9 +43,9 @@ func (s MysqlService) FindLeaveApprovalLog(leaveId uint) ([]fsm.Log, error) {
 }
 
 // query leave fsm track
-func (s MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, error) {
-	fsmUuid := s.GetLeaveFsmUuid(leaveId)
-	f := fsm.New(s.tx)
+func (my MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, error) {
+	fsmUuid := my.GetLeaveFsmUuid(leaveId)
+	f := fsm.New(my.Q.Tx)
 	logs, err := f.FindLog(req.FsmLog{
 		Category: req.NullUint(global.FsmCategoryLeave),
 		Uuid:     fsmUuid,
@@ -57,8 +57,8 @@ func (s MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, error
 }
 
 // create leave
-func (s MysqlService) CreateLeave(r *request.CreateLeaveReq) error {
-	f := fsm.New(s.tx)
+func (my MysqlService) CreateLeave(r *request.CreateLeaveReq) error {
+	f := fsm.New(my.Q.Tx)
 	fsmUuid := uuid.NewV4().String()
 	// submit fsm log
 	_, err := f.SubmitLog(req.FsmCreateLog{
@@ -77,15 +77,15 @@ func (s MysqlService) CreateLeave(r *request.CreateLeaveReq) error {
 	// save fsm uuid
 	leave.FsmUuid = fsmUuid
 	leave.Desc = r.Desc
-	err = s.tx.Create(&leave).Error
+	err = my.Q.Tx.Create(&leave).Error
 	return err
 }
 
 // query leave fsm uuid by id
-func (s MysqlService) GetLeaveFsmUuid(leaveId uint) string {
+func (my MysqlService) GetLeaveFsmUuid(leaveId uint) string {
 	// create leave to db
 	var leave models.SysLeave
-	s.tx.
+	my.Q.Tx.
 		Model(&models.SysLeave{}).
 		Where("id = ?", leaveId).
 		First(&leave)

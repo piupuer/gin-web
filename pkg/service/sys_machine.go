@@ -11,10 +11,10 @@ import (
 )
 
 // 获取机器
-func (s MysqlService) GetMachines(req *request.MachineReq) ([]models.SysMachine, error) {
+func (my MysqlService) GetMachines(req *request.MachineReq) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
-	query := s.tx.
+	query := my.Q.Tx.
 		Model(&models.SysMachine{}).
 		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
@@ -37,14 +37,14 @@ func (s MysqlService) GetMachines(req *request.MachineReq) ([]models.SysMachine,
 		}
 	}
 	// 查询列表
-	err = s.Find(query, &req.Page, &list)
+	err = my.Q.Find(query, &req.Page, &list)
 	return list, err
 }
 
 // 验证机器状态
-func (s MysqlService) ConnectMachine(id uint) error {
+func (my MysqlService) ConnectMachine(id uint) error {
 	var oldMachine models.SysMachine
-	query := s.tx.Model(&oldMachine).Where("id = ?", id).First(&oldMachine)
+	query := my.Q.Tx.Model(&oldMachine).Where("id = ?", id).First(&oldMachine)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}

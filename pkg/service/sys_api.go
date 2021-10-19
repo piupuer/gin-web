@@ -19,10 +19,10 @@ import (
 // exit code 0
 // 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
 // 获取所有接口
-func (s MysqlService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
+func (my MysqlService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
-	query := s.tx.
+	query := my.Q.Tx.
 		Model(&models.SysApi{}).
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
@@ -42,19 +42,19 @@ func (s MysqlService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	// 查询列表
-	err = s.Find(query, &req.Page, &list)
+	err = my.Q.Find(query, &req.Page, &list)
 	return list, err
 }
 
 // 根据权限编号获取以api分类分组的权限接口
-func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
+func (my MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
 	// 接口树
 	tree := make([]response.ApiGroupByCategoryResp, 0)
 	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
 	// 查询全部api
-	err := s.tx.Find(&allApi).Error
+	err := my.Q.Tx.Find(&allApi).Error
 	if err != nil {
 		return tree, accessIds, err
 	}
@@ -64,9 +64,9 @@ func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 		currentRoleId = currentRole.Id
 	}
 	// 查询当前角色拥有api访问权限的casbin规则
-	currentCasbins, err := s.GetCasbinListByRoleId(currentRoleId)
+	currentCasbins, err := my.GetCasbinListByRoleId(currentRoleId)
 	// 查询指定角色拥有api访问权限的casbin规则(当前角色只能在自己权限范围内操作, 不得越权)
-	casbins, err := s.GetCasbinListByRoleId(roleId)
+	casbins, err := my.GetCasbinListByRoleId(roleId)
 	if err != nil {
 		return tree, accessIds, err
 	}
@@ -133,9 +133,9 @@ func (s MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 }
 
 // 创建接口
-func (s MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
+func (my MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
 	api := new(models.SysApi)
-	err = s.Create(req, &api)
+	err = my.Q.Create(req, new(models.SysApi))
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (s MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
 	if len(req.RoleIds) > 0 {
 		// 查询角色关键字
 		var roles []models.SysRole
-		err = s.tx.Where("id IN (?)", req.RoleIds).Find(&roles).Error
+		err = my.Q.Tx.Where("id IN (?)", req.RoleIds).Find(&roles).Error
 		if err != nil {
 			return
 		}
@@ -157,15 +157,15 @@ func (s MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
 			})
 		}
 		// 批量创建
-		_, err = s.BatchCreateRoleCasbins(cs)
+		_, err = my.BatchCreateRoleCasbins(cs)
 	}
 	return
 }
 
 // 更新接口
-func (s MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err error) {
+func (my MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err error) {
 	var api models.SysApi
-	query := s.tx.Model(&api).Where("id = ?", id).First(&api)
+	query := my.Q.Tx.Model(&api).Where("id = ?", id).First(&api)
 	if query.Error == gorm.ErrRecordNotFound {
 		return errors.New("记录不存在")
 	}
@@ -188,7 +188,7 @@ func (s MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err erro
 	if (ok1 && path != "") || (ok2 && method != "") {
 		// path或method变化, 需要更新casbin规则
 		// 查找当前接口都有哪些角色在使用
-		oldCasbins := s.GetRoleCasbins(models.SysRoleCasbin{
+		oldCasbins := my.GetRoleCasbins(models.SysRoleCasbin{
 			Path:   oldApi.Path,
 			Method: oldApi.Method,
 		})
@@ -198,7 +198,7 @@ func (s MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err erro
 				keywords = append(keywords, oldCasbin.Keyword)
 			}
 			// 删除旧规则, 添加新规则
-			s.BatchDeleteRoleCasbins(oldCasbins)
+			my.BatchDeleteRoleCasbins(oldCasbins)
 			// 构建新casbin规则
 			newCasbins := make([]models.SysRoleCasbin, 0)
 			for _, keyword := range keywords {
@@ -209,28 +209,28 @@ func (s MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err erro
 				})
 			}
 			// 批量创建
-			_, err = s.BatchCreateRoleCasbins(newCasbins)
+			_, err = my.BatchCreateRoleCasbins(newCasbins)
 		}
 	}
 	return
 }
 
 // 批量删除接口
-func (s MysqlService) DeleteApiByIds(ids []uint) (err error) {
+func (my MysqlService) DeleteApiByIds(ids []uint) (err error) {
 	var list []models.SysApi
-	query := s.tx.Where("id IN (?)", ids).Find(&list)
+	query := my.Q.Tx.Where("id IN (?)", ids).Find(&list)
 	if query.Error != nil {
 		return
 	}
 	// 查找当前接口都有哪些角色在使用
 	casbins := make([]models.SysRoleCasbin, 0)
 	for _, api := range list {
-		casbins = append(casbins, s.GetRoleCasbins(models.SysRoleCasbin{
+		casbins = append(casbins, my.GetRoleCasbins(models.SysRoleCasbin{
 			Path:   api.Path,
 			Method: api.Method,
 		})...)
 	}
 	// 删除所有规则
-	s.BatchDeleteRoleCasbins(casbins)
+	my.BatchDeleteRoleCasbins(casbins)
 	return query.Delete(&models.SysApi{}).Error
 }

@@ -7,20 +7,20 @@ import (
 )
 
 // find finite state machine
-func (s MysqlService) FindFsm(r req.FsmMachine) ([]resp.FsmMachine, error) {
-	f := fsm.New(s.tx)
+func (my MysqlService) FindFsm(r req.FsmMachine) ([]resp.FsmMachine, error) {
+	f := fsm.New(my.Q.Tx)
 	return f.FindMachine(r)
 }
 
 // create finite state machine
-func (s MysqlService) CreateFsm(r req.FsmCreateMachine) error {
-	f := fsm.New(s.tx)
+func (my MysqlService) CreateFsm(r req.FsmCreateMachine) error {
+	f := fsm.New(my.Q.Tx)
 	_, err := f.CreateMachine(r)
 	return err
 }
 
 // find waiting approve log
-func (s MysqlService) FindFsmApprovingLog(r req.FsmPendingLog) ([]fsm.Log, error) {
-	f := fsm.New(s.tx)
+func (my MysqlService) FindFsmApprovingLog(r req.FsmPendingLog) ([]fsm.Log, error) {
+	f := fsm.New(my.Q.Tx)
 	return f.FindPendingLogByApprover(r)
 }
