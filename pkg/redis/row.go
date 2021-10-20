@@ -195,8 +195,8 @@ func getRow(ctx context.Context, data []interface{}, table *schema.Table) map[st
 }
 
 // mysql日志位置发生变化
-func PosChange(ctx context.Context, pos mysql.Position) {
-	err := global.Redis.Set(ctx, global.Conf.Redis.BinlogPos, utils.Struct2Json(pos), 0).Err()
+func PosChange(ctx context.Context, binlogPos string, pos mysql.Position) {
+	err := global.Redis.Set(ctx, binlogPos, utils.Struct2Json(pos), 0).Err()
 	if err != nil {
 		global.Log.Error(ctx, "同步binlog当前位置到redis失败: %v, %v", err, pos)
 	}

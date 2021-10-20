@@ -1,6 +1,9 @@
 package global
 
-import "go.uber.org/zap/zapcore"
+import (
+	"github.com/go-sql-driver/mysql"
+	"go.uber.org/zap/zapcore"
+)
 
 // 系统配置, 配置字段可参见yml注释
 // viper内置了mapstructure, yml文件用"-"区分单词, 转为驼峰方便
@@ -49,15 +52,9 @@ type LogsConfiguration struct {
 }
 
 type MysqlConfiguration struct {
-	Username    string `mapstructure:"username" json:"username"`
-	Password    string `mapstructure:"password" json:"password"`
-	Database    string `mapstructure:"database" json:"database"`
-	Host        string `mapstructure:"host" json:"host"`
-	Port        int    `mapstructure:"port" json:"port"`
-	Query       string `mapstructure:"query" json:"query"`
-	TablePrefix string `mapstructure:"table-prefix" json:"tablePrefix"`
-	Charset     string `mapstructure:"charset" json:"charset"`
-	Collation   string `mapstructure:"collation" json:"collation"`
+	Uri         string       `mapstructure:"uri" json:"uri"`
+	TablePrefix string       `mapstructure:"table-prefix" json:"tablePrefix"`
+	DSN         mysql.Config `json:"-"`
 }
 
 type RedisConfiguration struct {

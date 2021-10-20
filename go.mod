@@ -9,6 +9,7 @@ require (
 	github.com/gin-gonic/gin v1.7.4
 	github.com/go-mysql-org/go-mysql v1.3.0
 	github.com/go-redis/redis/v8 v8.11.2
+	github.com/go-sql-driver/mysql v1.6.0 // indirect
 	github.com/gobuffalo/packr/v2 v2.7.1
 	github.com/golang-module/carbon v1.5.4
 	github.com/gorilla/websocket v1.4.2

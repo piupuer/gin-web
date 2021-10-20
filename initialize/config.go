@@ -92,9 +92,7 @@ func Config(c *gin.Context) {
 	if strings.TrimSpace(global.Conf.System.ApiVersion) == "" {
 		global.Conf.System.ApiVersion = "v1"
 	}
-
-	global.Conf.Redis.BinlogPos = fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, global.Conf.Redis.BinlogPos)
-
+	
 	// 表前缀去掉后缀_
 	if strings.TrimSpace(global.Conf.Mysql.TablePrefix) != "" && strings.HasSuffix(global.Conf.Mysql.TablePrefix, "_") {
 		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")

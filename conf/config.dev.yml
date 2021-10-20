@@ -50,19 +50,9 @@ logs:
   compress: false
 
 mysql:
-  # 用户名
-  username: root
-  # 密码
-  password: root
-  # 数据库名
-  database: gin_web
-  # 主机地址(地址改为docker内网地址, 参见gin-web-docker项目docker-compose.yml配置)
-  host: docker-mysql
-  # 端口
-  port: 3306
-  # 连接字符串查询参数
-  query: parseTime=True&loc=Local&timeout=10000ms
-  # 数据库表前缀(无需再末尾添加下划线, 程序内部自动处理)
+  # mysql uri
+  uri: 'root:root@tcp(docker-mysql:3306)/gin_web?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local&timeout=10000ms'
+  # db table prefix
   table-prefix: tb
   # 编码方式
   charset: utf8mb4

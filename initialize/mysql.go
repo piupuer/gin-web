@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
+	m "github.com/go-sql-driver/mysql"
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -15,29 +16,13 @@ import (
 
 // 初始化mysql数据库
 func Mysql() {
-	dsn := fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?charset=%s&collation=%s&%s",
-		global.Conf.Mysql.Username,
-		global.Conf.Mysql.Password,
-		global.Conf.Mysql.Host,
-		global.Conf.Mysql.Port,
-		global.Conf.Mysql.Database,
-		global.Conf.Mysql.Charset,
-		global.Conf.Mysql.Collation,
-		global.Conf.Mysql.Query,
-	)
-	// 隐藏密码
-	showDsn := fmt.Sprintf(
-		"%s:******@tcp(%s:%d)/%s?charset=%s&collation=%s&%s",
-		global.Conf.Mysql.Username,
-		global.Conf.Mysql.Host,
-		global.Conf.Mysql.Port,
-		global.Conf.Mysql.Database,
-		global.Conf.Mysql.Charset,
-		global.Conf.Mysql.Collation,
-		global.Conf.Mysql.Query,
-	)
-	global.Log.Info(ctx, "数据库连接DSN: %s", showDsn)
+	cfg, err := m.ParseDSN(global.Conf.Mysql.Uri)
+	if err != nil {
+		panic(fmt.Sprintf("初始化mysql异常: %v", err))
+	}
+	global.Conf.Mysql.DSN = *cfg
+	
+	global.Log.Info(ctx, "数据库连接DSN: %s", global.Conf.Mysql.Uri)
 	init := false
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
@@ -60,7 +45,7 @@ func Mysql() {
 	} else {
 		l = global.Log.LogMode(glogger.Info)
 	}
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
+	db, err := gorm.Open(mysql.Open(cfg.FormatDSN()), &gorm.Config{
 		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
 		// 指定表前缀

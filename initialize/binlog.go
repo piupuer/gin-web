@@ -35,10 +35,10 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	}
 	// 监听器配置
 	cfg := canal.NewDefaultConfig()
-	
-	cfg.Addr = fmt.Sprintf("%s:%d", global.Conf.Mysql.Host, global.Conf.Mysql.Port)
-	cfg.User = global.Conf.Mysql.Username
-	cfg.Password = global.Conf.Mysql.Password
+
+	cfg.Addr = global.Conf.Mysql.DSN.Addr
+	cfg.User = global.Conf.Mysql.DSN.User
+	cfg.Password = global.Conf.Mysql.DSN.Passwd
 	// 数据库类型mysql/mariadb
 	cfg.Flavor = "mysql"
 	// 集群中的唯一编号, 单机随意设定
@@ -46,7 +46,7 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	// dump程序名
 	cfg.Dump.ExecutionPath = "mysqldump"
 	// 目标数据库
-	cfg.Dump.TableDB = global.Conf.Mysql.Database
+	cfg.Dump.TableDB = global.Conf.Mysql.DSN.DBName
 	// 目标表名
 	cfg.Dump.Tables = tableNames
 	// server编号(从1开始)
@@ -62,6 +62,7 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 	// 设置事件处理器
 	c.SetEventHandler(&BinlogEventHandler{
 		ctx:          global.RequestIdContext(""),
+		binlogPos:    fmt.Sprintf("%s_%s", global.Conf.Redis.BinlogPos, global.Conf.Mysql.DSN.DBName),
 		IgnoreTables: ignoreTables,
 	})
 	// 刷新数据
@@ -74,14 +75,15 @@ func MysqlBinlog(ignoreTables []string, tableModels ...interface{}) {
 
 // 自定义事件处理器
 type BinlogEventHandler struct {
-	ctx context.Context
+	ctx       context.Context
+	binlogPos string
 	canal.DummyEventHandler
 	IgnoreTables []string
 }
 
 // 同步器启动时, 刷新redis数据
 func refresh(tableNames []string, tableModels []interface{}) {
-	database := global.Conf.Mysql.Database
+	database := global.Conf.Mysql.DSN.DBName
 	for i, table := range tableNames {
 		// 缓存键由数据库名与表名组成
 		cacheKey := fmt.Sprintf("%s_%s", database, table)
@@ -249,7 +251,7 @@ func (s *BinlogEventHandler) OnPosSynced(pos mysql.Position, set mysql.GTIDSet, 
 		}
 	}()
 	global.Log.Debug(s.ctx, "日志位置变化: %s %v %t", pos, set, force)
-	redis.PosChange(s.ctx, pos)
+	redis.PosChange(s.ctx, s.binlogPos, pos)
 	return nil
 }
 

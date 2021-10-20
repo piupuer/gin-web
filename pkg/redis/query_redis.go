@@ -125,7 +125,7 @@ func (s *QueryRedis) get(tableName string) *gojsonq.JSONQ {
 	jsonStr := ""
 	if !s.Statement.json {
 		// 缓存键由数据库名与表名组成
-		cacheKey := fmt.Sprintf("%s_%s", global.Conf.Mysql.Database, tableName)
+		cacheKey := fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, tableName)
 		var err error
 		str, err := s.redis.Get(s.ctx, cacheKey).Result()
 		global.Log.Debug(s.ctx, "[QueryRedis.get]读取redis缓存: %s", tableName)
