@@ -6,6 +6,7 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	m "github.com/go-sql-driver/mysql"
+	"github.com/piupuer/go-helper/pkg/binlog"
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -14,15 +15,14 @@ import (
 	"time"
 )
 
-// 初始化mysql数据库
 func Mysql() {
 	cfg, err := m.ParseDSN(global.Conf.Mysql.Uri)
 	if err != nil {
-		panic(fmt.Sprintf("初始化mysql异常: %v", err))
+		panic(fmt.Sprintf("initialize mysql failed: %v", err))
 	}
 	global.Conf.Mysql.DSN = *cfg
-	
-	global.Log.Info(ctx, "数据库连接DSN: %s", global.Conf.Mysql.Uri)
+
+	global.Log.Info(ctx, "mysql dsn: %s", cfg.FormatDSN())
 	init := false
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
@@ -31,45 +31,40 @@ func Mysql() {
 			select {
 			case <-ctx.Done():
 				if !init {
-					panic(fmt.Sprintf("初始化mysql异常: 连接超时(%ds)", global.Conf.System.ConnectTimeout))
+					panic(fmt.Sprintf("initialize mysql failed: connect timeout(%ds)", global.Conf.System.ConnectTimeout))
 				}
-				// 此处需return避免协程空跑
+				// avoid goroutine dead lock
 				return
 			}
 		}
 	}()
-	// 不显示sql语句
 	var l glogger.Interface
 	if global.Conf.Logs.NoSql {
+		// not show sql log
 		l = global.Log.LogMode(glogger.Silent)
 	} else {
 		l = global.Log.LogMode(glogger.Info)
 	}
 	db, err := gorm.Open(mysql.Open(cfg.FormatDSN()), &gorm.Config{
-		// 禁用外键(指定外键时不会在mysql创建真实的外键约束)
 		DisableForeignKeyConstraintWhenMigrating: true,
-		// 指定表前缀
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   global.Conf.Mysql.TablePrefix + "_",
 			SingularTable: true,
 		},
-		// 查询全部字段, 某些情况下*不走索引
+		// select * from xxx => select a,b,c from xxx
 		QueryFields: true,
 		Logger:      l,
 	})
 	if err != nil {
-		panic(fmt.Sprintf("初始化mysql异常: %v", err))
+		panic(fmt.Sprintf("initialize mysql failed: %v", err))
 	}
 	init = true
 	global.Mysql = db
-	// 表结构
 	autoMigrate()
-	global.Log.Info(ctx, "初始化mysql完成")
-	// 初始化数据库日志监听器
-	binlog()
+	binlogListen()
+	global.Log.Info(ctx, "initialize mysql success")
 }
 
-// 自动迁移表结构
 func autoMigrate() {
 	global.Mysql.WithContext(ctx).AutoMigrate(
 		new(models.SysUser),
@@ -89,23 +84,40 @@ func autoMigrate() {
 	fsm.Migrate(global.Mysql)
 }
 
-func binlog() {
-	MysqlBinlog(
-		[]string{
-			// 下列表会随着使用时间数据量越来越大, 不适合将整个表json存入redis
+func binlogListen() {
+	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
+		global.Log.Info(ctx, "if redis is not used or binlog is not enabled, there is no need to initialize the MySQL binlog listener")
+		return
+	}
+	err := binlog.NewMysqlBinlog(
+		binlog.WithLogger(global.Log),
+		binlog.WithContext(ctx),
+		binlog.WithRedis(global.Redis),
+		binlog.WithDb(global.Mysql),
+		binlog.WithDsn(&global.Conf.Mysql.DSN),
+		binlog.WithBinlogPos(global.Conf.Redis.BinlogPos),
+		binlog.WithIgnore(
+			// The following tables will have more and more data over time
+			// It is not suitable to store the entire table JSON in redis
 			"sys_operation_log",
-		},
-		new(models.SysUser),
-		new(models.SysRole),
-		new(models.SysMenu),
-		new(models.SysRoleMenuRelation),
-		new(models.SysApi),
-		new(models.SysCasbin),
-		new(models.SysLeave),
-		new(models.SysMessage),
-		new(models.SysMessageLog),
-		new(models.SysMachine),
-		new(models.SysDict),
-		new(models.SysDictData),
+		),
+		binlog.WithModels(
+			// The following tables will be sync to redis
+			new(models.SysUser),
+			new(models.SysRole),
+			new(models.SysMenu),
+			new(models.SysRoleMenuRelation),
+			new(models.SysApi),
+			new(models.SysCasbin),
+			new(models.SysLeave),
+			new(models.SysMessage),
+			new(models.SysMessageLog),
+			new(models.SysMachine),
+			new(models.SysDict),
+			new(models.SysDictData),
+		),
 	)
+	if err != nil {
+		panic(err)
+	}
 }
