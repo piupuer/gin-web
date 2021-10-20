@@ -220,7 +220,7 @@ func (c *MessageClient) receive() {
 	defer func() {
 		c.close()
 		if err := recover(); err != nil {
-			global.Log.Error(c.ctx, "[消息中心][接收端][%s]连接可能已断开: %v", c.Key, err, string(debug.Stack()))
+			global.Log.Error(c.ctx, "[消息中心][接收端][%s]连接可能已断开: %v, %s", c.Key, err, string(debug.Stack()))
 		}
 	}()
 	for {
@@ -342,7 +342,7 @@ func (c *MessageClient) send() {
 		ticker.Stop()
 		c.close()
 		if err := recover(); err != nil {
-			global.Log.Error(c.ctx, "[消息中心][发送端][%s]连接可能已断开: %v", c.Key, err)
+			global.Log.Error(c.ctx, "[消息中心][发送端][%s]连接可能已断开: %v, %s", c.Key, err, string(debug.Stack()))
 		}
 	}()
 	for {
@@ -389,7 +389,7 @@ func (c *MessageClient) heartBeat() {
 		ticker.Stop()
 		c.close()
 		if err := recover(); err != nil {
-			global.Log.Error(c.ctx, "[消息中心][接收端][%s]连接可能已断开: %v", c.Key, err)
+			global.Log.Error(c.ctx, "[消息中心][接收端][%s]连接可能已断开: %v, %s", c.Key, err, string(debug.Stack()))
 		}
 	}()
 	for {

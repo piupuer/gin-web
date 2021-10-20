@@ -54,10 +54,6 @@ mysql:
   uri: 'root:root@tcp(docker-mysql:3306)/gin_web?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local&timeout=10000ms'
   # db table prefix
   table-prefix: tb
-  # 编码方式
-  charset: utf8mb4
-  # 字符集(utf8mb4_general_ci速度比utf8mb4_unicode_ci快些)
-  collation: utf8mb4_general_ci
 
 redis:
   # uri地址, 目前支持3种地址类型, 暂时不支持cluster地址
