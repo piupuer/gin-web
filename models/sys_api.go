@@ -2,12 +2,10 @@ package models
 
 import "github.com/piupuer/go-helper/models"
 
-// 系统接口表
 type SysApi struct {
 	models.M
-	Method   string `gorm:"comment:'请求方式'" json:"method"`
-	Path     string `gorm:"comment:'访问路径'" json:"path"`
-	Category string `gorm:"comment:'所属类别'" json:"category"`
-	Desc     string `gorm:"comment:'说明'" json:"desc"`
-	Creator  string `gorm:"comment:'创建人'" json:"creator"`
+	Method   string `gorm:"comment:'request method'" json:"method"`
+	Path     string `gorm:"comment:'api path'" json:"path"`
+	Category string `gorm:"comment:'api group category'" json:"category"`
+	Desc     string `gorm:"comment:'api description'" json:"desc"`
 }

@@ -40,7 +40,7 @@ func (s RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint
 		accessIds = append(accessIds, menu.Id)
 	}
 	// 只保留选中项目
-	accessIds = models.GetCheckedMenuIds(accessIds, allMenu)
+	accessIds = models.FindCheckedMenuId(accessIds, allMenu)
 	return tree, accessIds, nil
 }
 

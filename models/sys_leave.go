@@ -2,13 +2,12 @@ package models
 
 import "github.com/piupuer/go-helper/models"
 
-// 请假记录表
 type SysLeave struct {
 	models.M
-	UserId          uint    `gorm:"comment:'用户编号'" json:"userId"`
+	UserId          uint    `gorm:"comment:'user id(SysUser.Id)'" json:"userId"`
 	User            SysUser `gorm:"foreignKey:UserId" json:"user"`
-	FsmUuid         string  `gorm:"size:100;comment:'状态机uuid'" json:"fsmUuid"`
-	Status          uint    `gorm:"default:0;comment:'状态(0:提交 1:批准 2:拒绝 3:取消 4:结束)'" json:"status"`
-	ApprovalOpinion string  `gorm:"comment:'审批意见'" json:"approvalOpinion"`
-	Desc            string  `gorm:"comment:'说明'" json:"desc"`
+	FsmUuid         string  `gorm:"size:100;comment:'finite state machine uuid'" json:"fsmUuid"`
+	Status          uint    `gorm:"default:0;comment:'status(0:submitted 1:approved 2:refused 3:cancel 4:end)'" json:"status"`
+	ApprovalOpinion string  `gorm:"comment:'approval opinion or remark'" json:"approvalOpinion"`
+	Desc            string  `gorm:"comment:'submitter description'" json:"desc"`
 }

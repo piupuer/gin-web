@@ -75,7 +75,7 @@ func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	err = my.Q.Tx.Preload("Role").
 		Where("id = ?", id).
 		// 状态为正常
-		Where("status = ?", models.SysUserStatusNormal).
+		Where("status = ?", models.SysUserStatusEnable).
 		First(&user).Error
 	return user, err
 }

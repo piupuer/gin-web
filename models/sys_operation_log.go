@@ -5,20 +5,19 @@ import (
 	"time"
 )
 
-// 系统操作日志
 type SysOperationLog struct {
 	models.M
-	ApiDesc    string        `json:"apiDesc" gorm:"comment:'接口说明'"`
-	Path       string        `json:"path" gorm:"comment:'访问路径'"`
-	Method     string        `json:"method" gorm:"comment:'请求方式'"`
-	Header     string        `json:"header" gorm:"type:blob;comment:'请求header(通过二进制存储节省空间)'"`
-	Body       string        `json:"body" gorm:"type:blob;comment:'请求主体(通过二进制存储节省空间)'"`
-	Data       string        `json:"data" gorm:"type:blob;comment:'响应数据(通过二进制存储节省空间)'"`
-	Status     int           `json:"status" gorm:"comment:'响应状态码'"`
-	Username   string        `json:"username" gorm:"comment:'用户登录名'"`
-	RoleName   string        `json:"roleName" gorm:"comment:'用户角色名'"`
-	Ip         string        `json:"ip" gorm:"comment:'Ip地址'"`
-	IpLocation string        `json:"ipLocation" gorm:"comment:'Ip所在地'"`
-	Latency    time.Duration `json:"latency" gorm:"comment:'请求耗时(ms)'"`
-	UserAgent  string        `json:"userAgent" gorm:"comment:'浏览器标识'"`
+	ApiDesc    string        `json:"apiDesc" gorm:"comment:'api description'"`
+	Path       string        `json:"path" gorm:"comment:'url path'"`
+	Method     string        `json:"method" gorm:"comment:'api method'"`
+	Header     string        `json:"header" gorm:"type:blob;comment:'request header'"`
+	Body       string        `json:"body" gorm:"type:blob;comment:'request body'"`
+	Data       string        `json:"data" gorm:"type:blob;comment:'response data'"`
+	Status     int           `json:"status" gorm:"comment:'response status'"`
+	Username   string        `json:"username" gorm:"comment:'login username'"`
+	RoleName   string        `json:"roleName" gorm:"comment:'login role name'"`
+	Ip         string        `json:"ip" gorm:"comment:'IP'"`
+	IpLocation string        `json:"ipLocation" gorm:"comment:'real location of the IP'"`
+	Latency    time.Duration `json:"latency" gorm:"comment:'request time(ms)'"`
+	UserAgent  string        `json:"userAgent" gorm:"comment:'browser user agent'"`
 }

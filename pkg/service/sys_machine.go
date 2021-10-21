@@ -52,8 +52,8 @@ func (my MysqlService) ConnectMachine(id uint) error {
 	// 初始化机器
 	err := initRemoteMachine(&oldMachine)
 	var newMachine models.SysMachine
-	unConnectedStatus := models.SysMachineStatusUnConnected
-	normalStatus := models.SysMachineStatusNormal
+	unConnectedStatus := models.SysMachineStatusUnhealthy
+	normalStatus := models.SysMachineStatusHealthy
 	if err != nil {
 		newMachine.Status = &unConnectedStatus
 		query.Updates(newMachine)
@@ -107,7 +107,7 @@ func initRemoteMachine(machine *models.SysMachine) error {
 		return fmt.Errorf("读取机器信息有误")
 	}
 
-	normalStatus := models.SysMachineStatusNormal
+	normalStatus := models.SysMachineStatusHealthy
 
 	machine.Status = &normalStatus
 	machine.Version = info[0]
