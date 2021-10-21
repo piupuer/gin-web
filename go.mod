@@ -17,7 +17,7 @@ require (
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
 	github.com/patrickmn/go-cache v2.1.0+incompatible
-	github.com/piupuer/go-helper v0.0.0-20211020100823-62b69f9b9798
+	github.com/piupuer/go-helper v0.0.0-20211021023145-7a36b315d4aa
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0
