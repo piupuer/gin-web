@@ -11,7 +11,7 @@ import (
 )
 
 func (s RedisService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
-	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
+	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		return s.mysql.GetApis(req)
 	}
 	var err error
@@ -41,7 +41,7 @@ func (s RedisService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 
 // 根据权限编号获取以api分类分组的权限接口
 func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
-	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
+	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		return s.mysql.GetAllApiGroupByCategoryByRoleId(currentRole, roleId)
 	}
 	// 接口树

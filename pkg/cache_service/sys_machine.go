@@ -8,7 +8,7 @@ import (
 )
 
 func (s RedisService) GetMachines(req *request.MachineReq) ([]models.SysMachine, error) {
-	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
+	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		// 不使用redis
 		return s.mysql.GetMachines(req)
 	}

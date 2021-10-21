@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"gin-web/initialize"
 	"gin-web/pkg/global"
+	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/query"
 	"net/http"
 	"runtime"
 	"strings"
 
-	// 加入pprof性能分析
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
@@ -18,7 +19,7 @@ import (
 	"time"
 )
 
-var ctx = global.RequestIdContext("") // start main request id
+var ctx = query.NewRequestId(nil, constant.MiddlewareRequestIdCtxKey)
 
 func main() {
 	defer func() {
@@ -55,7 +56,7 @@ func main() {
 
 	go func() {
 		// listen pprof port
-		global.Log.Info(ctx, "Debug pprof is running at %s:%d", host, global.Conf.System.PprofPort)
+		global.Log.Info(ctx, "[gin-web]debug pprof is running at %s:%d", host, global.Conf.System.PprofPort)
 		if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, global.Conf.System.PprofPort), nil); err != nil {
 			global.Log.Error(ctx, "listen pprof error: %v", err)
 		}
@@ -69,7 +70,7 @@ func main() {
 		}
 	}()
 
-	global.Log.Info(ctx, "Server is running at %s:%d/%s", host, port, global.Conf.System.UrlPathPrefix)
+	global.Log.Info(ctx, "[%s]server is running at %s:%d/%s", global.ProName, host, port, global.Conf.System.UrlPrefix)
 
 	// https://github.com/gin-gonic/examples/blob/master/graceful-shutdown/graceful-shutdown/server.go
 	// Wait for interrupt signal to gracefully shutdown the server with

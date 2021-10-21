@@ -5,6 +5,7 @@ import (
 	"gin-web/pkg/global"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"net/http"
 )
@@ -28,7 +29,7 @@ func StartMessageHub(idempotenceOps *middleware.IdempotenceOptions) cache_servic
 // 启动消息连接
 func MessageWs(c *gin.Context) {
 	h := make(http.Header)
-	h.Add(global.RequestIdHeader, c.GetString(global.RequestIdContextKey))
+	h.Add(constant.MiddlewareRequestIdHeaderName, c.GetString(constant.MiddlewareRequestIdCtxKey))
 	conn, err := upgrade.Upgrade(c.Writer, c.Request, h)
 	if err != nil {
 		global.Log.Error(c, "创建消息连接失败", err)

@@ -1,139 +1,109 @@
 # development
 system:
-  # 机器编号(多实例部署时会用到)
-  machine-id: 0
-  # url前缀
-  url-path-prefix: api
-  # 接口版本, 紧跟url-path-prefix后
+  # multi machine deployment will use
+  machine-id: 1
+  # http url prefix
+  url-prefix: api
+  # api version after url-prefix
   api-version: v1
-  # 程序监听端口
+  # http listen port
   port: 10000
-  # 性能调试端口
+  # performance debugging port
   pprof-port: 10005
-  # 连接超时时间(秒, 初始化连接mysql/redis等默认超时时间设置, 小于1无效)
+  # connect timeout seconds(connect mysql/redis...)
   connect-timeout: 10
-  # 是否开启redis
-  use-redis: true
-  # 是否使用redis service(pkg.cache_service包, 表数据量大时redis存全量json销量并没有mysql高)
-  use-redis-service: true
-  # 开启全局事务管理器
-  transaction: true
-  # 是否初始化数据(没有初始数据时使用, 已发布正式版谨慎使用)
-  init-data: true
-  # 操作日志key
-  operation-log-key: operation_log_response
-  # 不写操作日志的路径列表
-  operation-log-disabled-paths: /operation/log/delete/batch,/upload/file
-  # 允许用户删除操作日志
-  operation-log-allowed-to-delete: false
-  # rsa公钥文件路径(conf相对路径, 也可以填绝对路径)
-  rsa-public-key: gin-web-rsa.pub
-  # rsa私钥文件路径(conf相对路径, 也可以填绝对路径)
-  rsa-private-key: gin-web-rsa
-  # 幂等性token名称
+  # idempotence middleware token header name
   idempotence-token-name: api-idempotence-token
+  # casbin model file path
+  casbin-model-path: 'rbac_model.conf'
+  # max request per second
+  rate-limit-max: 200
+  # amap key for request real ip
+  amap-key: ''
 
 logs:
-  # 日志等级(-1:Debug, 0:Info, -1<=level<=5, 参照zap.level源码)
+  # logger level(-1:Debug, 0:Info, -1<=level<=5, refer to zap.level)
   level: -1
-  # 隐藏sql相关的日志(=true时, 即便是level=-1仍然不会显示sql)
-  no-sql: false
-  # 日志路径
   path: logs
-  # 文件最大大小, M
   max-size: 50
-  # 备份数
   max-backups: 100
-  # 存放时间, 天
   max-age: 30
-  # 是否压缩
   compress: false
+  # operation log context key
+  operation-key: operation_log_response
+  # not record operation log when url prefix equal operation-disabled-paths
+  operation-disabled-paths: /operation/log/delete/batch,/upload/file
+  # allow users to delete operation logs
+  operation-allowed-to-delete: false
 
 mysql:
   # mysql uri
   uri: 'root:root@tcp(docker-mysql:3306)/gin_web?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local&timeout=10000ms'
   # db table prefix
   table-prefix: tb
+  # not print sql
+  no-sql: false
+  # Whether to initialize data (use it when there is no initial data, and use it cautiously when the production version has been released)
+  init-data: true
+  # enable transaction middleware
+  transaction: true
 
 redis:
-  # uri地址, 目前支持3种地址类型, 暂时不支持cluster地址
+  # redis uri like this:
   # redis://[:password@]host[:port][/dbnumber]
   # redis-socket://[:password@]path[?db=dbnumber]
   # redis-sentinel://[:password@]host1[:port][,host2:[:port]][,hostN:[:port]][?master=masterName]
   uri: 'redis://127.0.0.1:6379/0'
-  # binlog位置缓存键
+  # binlog cache key
   binlog-pos: mysql_binlog_pos
+  # enable redis
+  enable: true
+  # enable redis service((pkg.cache_service)
+  enable-binlog: true
 
-# casbin配置
-casbin:
-  # 模型配置文件, 默认以conf目录为根目录
-  model-path: 'rbac_model.conf'
-
-# jwt配置
 jwt:
-  # jwt标识
   realm: test jwt
-  # 服务端密钥
   key: secret key
-  # token过期时间, 小时
+  # token expires(hours)
   timeout: 24
-  # 刷新token最大过期时间, 小时
+  # refresh token expires(hours)
   max-refresh: 168
+  # rsa file path
+  rsa-public-key: gin-web-rsa.pub
+  rsa-private-key: gin-web-rsa
 
-# 速率限制配置
-rate-limit:
-  # 访问最大限制, 次/秒
-  max: 200
-
-# 上传配置
 upload:
-  # 对象存储配置
   # minio
   oss-minio:
-    # 是否开启对象存储
     enable: false
-    # 初始化存储桶名称
     bucket: gin-web
-    # 节点地址
     endpoint: 127.0.0.1:9005
-    # 密钥对
     access-id: minio
     secret: minio123
-    # 是否使用https
     use-https: false
-  # 上传文件保存路径
+  # file save dir
   save-dir: upload
-  # 单个文件或分片文件最大限制, 单位MB(上传文件先读取到内存, 如果这个值设置过大会导致内存崩溃)
+  # MB
   single-max-size: 32
-  # 合并文件并发数(并发合并文件会提升性能, 但如果设置过大性能降低, 结合实际机器性能配置)
+  # concurrent number of merged files
   merge-concurrent-count: 10
-  # 定时压缩上传目录图片文件(支持corn表达式, 默认关闭, cron文档: https://en.wikipedia.org/wiki/Cron)
+  # refer to cron: https://en.wikipedia.org/wiki/Cron
   compress-image-cron-task: ''
-  # 压缩根目录(默认save-dir)
+  # default save-dir
   compress-image-root-dir:
-  # 源文件保存目录, 建议开启可避免二次压缩损失质量(默认保存到同目录的.before下)
+  # the source file is saved in the directory. It is recommended to open it to avoid secondary compression loss of quality
   compress-image-original-save-dir: .before
 
-# 微信配置
 we-chat:
-  # 微信公众号配置
   official:
-    # 公众号id
     app-id: xxx
-    # 公众号密钥
     app-secret: xxx
-    # 加密key(不为空时, 传输数据会使用aes加密, 建议填写)
+    # When the encoding is not empty, the transmitted data will be encrypted by AES
     encoding: gin-web
-    # 模板消息定时任务
     tpl-message-cron-task:
-      # 表达式
       expr: ''
-      # 接收人微信列表
       users: xxx
-      # 模板id
       template-id: xxx
-      # 小程序app-id
       mini-program-app-id: xxx
-      # 小程序页面路径
       mini-program-page-path: pages/index/index
 

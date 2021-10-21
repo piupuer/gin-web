@@ -39,7 +39,7 @@ func Mysql() {
 		}
 	}()
 	var l glogger.Interface
-	if global.Conf.Logs.NoSql {
+	if global.Conf.Mysql.NoSql {
 		// not show sql log
 		l = global.Log.LogMode(glogger.Silent)
 	} else {
@@ -81,11 +81,11 @@ func autoMigrate() {
 		new(models.SysDictData),
 	)
 	// auto migrate fsm
-	fsm.Migrate(global.Mysql)
+	fsm.Migrate(global.Mysql, fsm.WithContext(ctx))
 }
 
 func binlogListen() {
-	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
+	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		global.Log.Info(ctx, "if redis is not used or binlog is not enabled, there is no need to initialize the MySQL binlog listener")
 		return
 	}
@@ -96,6 +96,7 @@ func binlogListen() {
 		binlog.WithDb(global.Mysql),
 		binlog.WithDsn(&global.Conf.Mysql.DSN),
 		binlog.WithBinlogPos(global.Conf.Redis.BinlogPos),
+		binlog.WithServerId(global.Conf.System.MachineId),
 		binlog.WithIgnore(
 			// The following tables will have more and more data over time
 			// It is not suitable to store the entire table JSON in redis

@@ -5,83 +5,68 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// 系统配置, 配置字段可参见yml注释
-// viper内置了mapstructure, yml文件用"-"区分单词, 转为驼峰方便
+// config from conf/config.dev.yml
 type Configuration struct {
-	System    SystemConfiguration    `mapstructure:"system" json:"system"`
-	Logs      LogsConfiguration      `mapstructure:"logs" json:"logs"`
-	Mysql     MysqlConfiguration     `mapstructure:"mysql" json:"mysql"`
-	Redis     RedisConfiguration     `mapstructure:"redis" json:"redis"`
-	Casbin    CasbinConfiguration    `mapstructure:"casbin" json:"casbin"`
-	Jwt       JwtConfiguration       `mapstructure:"jwt" json:"jwt"`
-	RateLimit RateLimitConfiguration `mapstructure:"rate-limit" json:"rateLimit"`
-	Upload    UploadConfiguration    `mapstructure:"upload" json:"upload"`
-	WeChat    WeChatConfiguration    `mapstructure:"we-chat" json:"weChat"`
+	System SystemConfiguration `mapstructure:"system" json:"system"`
+	Logs   LogsConfiguration   `mapstructure:"logs" json:"logs"`
+	Mysql  MysqlConfiguration  `mapstructure:"mysql" json:"mysql"`
+	Redis  RedisConfiguration  `mapstructure:"redis" json:"redis"`
+	Jwt    JwtConfiguration    `mapstructure:"jwt" json:"jwt"`
+	Upload UploadConfiguration `mapstructure:"upload" json:"upload"`
+	WeChat WeChatConfiguration `mapstructure:"we-chat" json:"weChat"`
 }
 
 type SystemConfiguration struct {
-	MachineId                   uint32   `mapstructure:"machine-id" json:"machineId"`
-	UrlPathPrefix               string   `mapstructure:"url-path-prefix" json:"urlPathPrefix"`
-	ApiVersion                  string   `mapstructure:"api-version" json:"apiVersion"`
-	Port                        int      `mapstructure:"port" json:"port"`
-	PprofPort                   int      `mapstructure:"pprof-port" json:"pprofPort"`
-	ConnectTimeout              int      `mapstructure:"connect-timeout" json:"connectTimeout"`
-	UseRedis                    bool     `mapstructure:"use-redis" json:"useRedis"`
-	UseRedisService             bool     `mapstructure:"use-redis-service" json:"useRedisService"`
-	Transaction                 bool     `mapstructure:"transaction" json:"transaction"`
-	InitData                    bool     `mapstructure:"init-data" json:"initData"`
-	OperationLogKey             string   `mapstructure:"operation-log-key" json:"operationLogKey"`
-	OperationLogDisabledPaths   string   `mapstructure:"operation-log-disabled-paths" json:"operationLogDisabledPaths"`
-	OperationLogDisabledPathArr []string `mapstructure:"-" json:"-"`
-	OperationLogAllowedToDelete bool     `mapstructure:"operation-log-allowed-to-delete" json:"operationLogAllowedToDelete"`
-	RSAPublicKey                string   `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
-	RSAPrivateKey               string   `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
-	RSAPublicBytes              []byte   `mapstructure:"-" json:"-"`
-	RSAPrivateBytes             []byte   `mapstructure:"-" json:"-"`
-	IdempotenceTokenName        string   `mapstructure:"idempotence-token-name" json:"idempotenceTokenName"`
+	MachineId            uint32 `mapstructure:"machine-id" json:"machineId"`
+	UrlPrefix            string `mapstructure:"url-prefix" json:"urlPrefix"`
+	ApiVersion           string `mapstructure:"api-version" json:"apiVersion"`
+	Port                 int    `mapstructure:"port" json:"port"`
+	PprofPort            int    `mapstructure:"pprof-port" json:"pprofPort"`
+	ConnectTimeout       int    `mapstructure:"connect-timeout" json:"connectTimeout"`
+	IdempotenceTokenName string `mapstructure:"idempotence-token-name" json:"idempotenceTokenName"`
+	CasbinModelPath      string `mapstructure:"casbin-model-path" json:"casbinModelPath"`
+	RateLimitMax         int64  `mapstructure:"rate-limit-max" json:"rateLimitMax"`
+	AmapKey              string `mapstructure:"amap-key" json:"amapKey"`
 }
 
 type LogsConfiguration struct {
-	Level      zapcore.Level `mapstructure:"level" json:"level"`
-	NoSql      bool          `mapstructure:"no-sql" json:"noSql"`
-	Path       string        `mapstructure:"path" json:"path"`
-	MaxSize    int           `mapstructure:"max-size" json:"maxSize"`
-	MaxBackups int           `mapstructure:"max-backups" json:"maxBackups"`
-	MaxAge     int           `mapstructure:"max-age" json:"maxAge"`
-	Compress   bool          `mapstructure:"compress" json:"compress"`
+	Level                    zapcore.Level `mapstructure:"level" json:"level"`
+	Path                     string        `mapstructure:"path" json:"path"`
+	MaxSize                  int           `mapstructure:"max-size" json:"maxSize"`
+	MaxBackups               int           `mapstructure:"max-backups" json:"maxBackups"`
+	MaxAge                   int           `mapstructure:"max-age" json:"maxAge"`
+	Compress                 bool          `mapstructure:"compress" json:"compress"`
+	OperationKey             string        `mapstructure:"operation-key" json:"operationKey"`
+	OperationDisabledPaths   string        `mapstructure:"operation-disabled-paths" json:"operationDisabledPaths"`
+	OperationDisabledPathArr []string      `mapstructure:"-" json:"-"`
+	OperationAllowedToDelete bool          `mapstructure:"operation-allowed-to-delete" json:"operationAllowedToDelete"`
 }
 
 type MysqlConfiguration struct {
 	Uri         string       `mapstructure:"uri" json:"uri"`
 	TablePrefix string       `mapstructure:"table-prefix" json:"tablePrefix"`
+	NoSql       bool         `mapstructure:"no-sql" json:"noSql"`
+	Transaction bool         `mapstructure:"transaction" json:"transaction"`
+	InitData    bool         `mapstructure:"init-data" json:"initData"`
 	DSN         mysql.Config `json:"-"`
 }
 
 type RedisConfiguration struct {
-	Uri       string `mapstructure:"uri" json:"uri"`
-	BinlogPos string `mapstructure:"binlog-pos" json:"binlogPos"`
-}
-
-type RedisSentinelConfiguration struct {
-	Enable     bool     `mapstructure:"enable" json:"enable"`
-	MasterName string   `mapstructure:"master-name" json:"masterName"`
-	Addresses  string   `mapstructure:"addresses" json:"addresses"`
-	AddressArr []string `mapstructure:"-" json:"-"`
-}
-
-type CasbinConfiguration struct {
-	ModelPath string `mapstructure:"model-path" json:"modelPath"`
+	Uri           string `mapstructure:"uri" json:"uri"`
+	BinlogPos     string `mapstructure:"binlog-pos" json:"binlogPos"`
+	Enable        bool   `mapstructure:"enable" json:"enable"`
+	EnableService bool   `mapstructure:"enable-service" json:"enableService"`
 }
 
 type JwtConfiguration struct {
-	Realm      string `mapstructure:"realm" json:"realm"`
-	Key        string `mapstructure:"key" json:"key"`
-	Timeout    int    `mapstructure:"timeout" json:"timeout"`
-	MaxRefresh int    `mapstructure:"max-refresh" json:"maxRefresh"`
-}
-
-type RateLimitConfiguration struct {
-	Max int64 `mapstructure:"max" json:"max"`
+	Realm           string `mapstructure:"realm" json:"realm"`
+	Key             string `mapstructure:"key" json:"key"`
+	Timeout         int    `mapstructure:"timeout" json:"timeout"`
+	MaxRefresh      int    `mapstructure:"max-refresh" json:"maxRefresh"`
+	RSAPublicKey    string `mapstructure:"rsa-public-key" json:"rsaPublicKey"`
+	RSAPrivateKey   string `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
+	RSAPublicBytes  []byte `mapstructure:"-" json:"-"`
+	RSAPrivateBytes []byte `mapstructure:"-" json:"-"`
 }
 
 type UploadConfiguration struct {

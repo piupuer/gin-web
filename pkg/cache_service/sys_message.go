@@ -12,7 +12,7 @@ import (
 
 // 查询指定用户未删除的消息
 func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.MessageResp, error) {
-	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
+	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		// 不使用redis
 		return s.mysql.GetUnDeleteMessages(req)
 	}
@@ -82,7 +82,7 @@ func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 
 // 查询未读消息条数
 func (s RedisService) GetUnReadMessageCount(userId uint) (int64, error) {
-	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
+	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		// 不使用redis
 		return s.mysql.GetUnReadMessageCount(userId)
 	}

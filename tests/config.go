@@ -4,7 +4,9 @@ import (
 	"bytes"
 	"fmt"
 	"gin-web/pkg/global"
-	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/spf13/viper"
 	"os"
 	"strings"
@@ -17,76 +19,65 @@ const (
 	productionConfig  = "config.prod.yml"
 )
 
-var ctx = global.RequestIdContext("") // 生成启动时request id
+var ctx = query.NewRequestId(nil, constant.MiddlewareRequestIdCtxKey)
 
-// 初始化配置文件
 func Config() {
 	if os.Getenv("TEST_CONF") == "" {
-		panic("[单元测试]请检查环境变量TEST_CONF")
+		panic("[unit test]check environment TEST_CONF")
 	}
-	// 初始化配置盒子
 	var box global.CustomConfBox
-	ginWebConf := strings.ToLower(os.Getenv("TEST_CONF"))
-	// 从环境变量中读取配置路径
-	if ginWebConf != "" {
-		if strings.HasPrefix(ginWebConf, "/") {
-			// 指定的目录为绝对路径
-			box.ConfEnv = ginWebConf
+	confDir := strings.ToLower(os.Getenv("TEST_CONF"))
+	if confDir != "" {
+		if strings.HasPrefix(confDir, "/") {
+			box.ConfEnv = confDir
 		} else {
-			// 指定的目录为相对路径
-			box.ConfEnv = utils.GetWorkDir() + "/" + ginWebConf
+			box.ConfEnv = utils.GetWorkDir() + "/" + confDir
 		}
 	}
-	// 获取viper实例(可创建多实例读取多个配置文件, 这里不做演示)
 	box.ViperIns = viper.New()
 	global.ConfBox = &box
 	v := box.ViperIns
 
-	// 读取开发环境配置作为默认配置项
 	readConfig(v, developmentConfig)
-	// 将default中的配置全部以默认配置写入
 	settings := v.AllSettings()
 	for index, setting := range settings {
 		v.SetDefault(index, setting)
 	}
-	// 读取当前go运行环境变量
-	env := strings.ToLower(fmt.Sprintf("%s_MODE", global.ProEnvName))
+	env := strings.ToLower(os.Getenv(fmt.Sprintf("%s_MODE", global.ProEnvName)))
 	configName := ""
-	if env == "staging" {
+	if env == global.Stage {
 		configName = stagingConfig
-	} else if env == "production" {
+	} else if env == global.Prod {
 		configName = productionConfig
+	} else {
+		env = global.Dev
 	}
+	global.Mode = env
 	if configName != "" {
-		// 读取不同环境中的差异部分
 		readConfig(v, configName)
 	}
-	// 转换为结构体
 	if err := v.Unmarshal(&global.Conf); err != nil {
-		panic(fmt.Sprintf("[单元测试]初始化配置文件失败: %v, 环境变量%s_CONF: %s", err, global.ProEnvName, global.ConfBox.ConfEnv))
+		panic(fmt.Sprintf("[unit test]initialize config failed: %v, config env: TEST_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
 
-	// 表前缀去掉后缀_
+	// read env to global.Conf: config.yml system.port => CFG_SYSTEM_PORT
+	utils.EnvToInterface(&global.Conf, "CFG")
+
+	// remove suffix "_"
 	if strings.TrimSpace(global.Conf.Mysql.TablePrefix) != "" && strings.HasSuffix(global.Conf.Mysql.TablePrefix, "_") {
 		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")
 	}
 
-	// 初始化OperationLogDisabledPaths
-	global.Conf.System.OperationLogDisabledPathArr = make([]string, 0)
-	if strings.TrimSpace(global.Conf.System.OperationLogDisabledPaths) != "" {
-		global.Conf.System.OperationLogDisabledPathArr = strings.Split(global.Conf.System.OperationLogDisabledPaths, ",")
-	}
-	fmt.Println("[单元测试]初始化配置文件完成")
+	fmt.Printf("[unit test]initialize config success, config env: TEST_CONF: %s\n", global.ConfBox.ConfEnv)
 }
 
 func readConfig(v *viper.Viper, configFile string) {
 	v.SetConfigType(configType)
 	config := global.ConfBox.Find(configFile)
 	if len(config) == 0 {
-		panic(fmt.Sprintf("[单元测试]初始化配置文件失败, 环境变量TEST_CONF: %s", global.ConfBox.ConfEnv))
+		panic(fmt.Sprintf("[unit test]initialize config failed, config env: TEST_CONF: %s", global.ConfBox.ConfEnv))
 	}
-	// 加载配置
 	if err := v.ReadConfig(bytes.NewReader(config)); err != nil {
-		panic(fmt.Sprintf("[单元测试]初始化配置文件失败: %v, 环境变量TEST_CONF: %s", err, global.ConfBox.ConfEnv))
+		panic(fmt.Sprintf("[unit test]initialize config failed: %v, config env: TEST_CONF: %s", err, global.ConfBox.ConfEnv))
 	}
 }

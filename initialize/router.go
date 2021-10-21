@@ -7,6 +7,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
 )
 
@@ -21,21 +22,21 @@ func Routers() *gin.Engine {
 	}
 	r.Use(
 		middleware.Rate(
-			middleware.WithRateMaxLimit(global.Conf.RateLimit.Max),
+			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
 		),
 		middleware.Cors,
 		middleware.RequestId(),
 		middleware.Exception(),
 		middleware.AccessLog(
 			middleware.WithAccessLogLogger(global.Log),
-			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPathPrefix),
+			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPrefix),
 		),
 		middleware.OperationLog(
 			middleware.WithOperationLogLogger(global.Log),
 			middleware.WithOperationLogRedis(global.Redis),
-			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPathPrefix),
-			middleware.WithOperationLogRealIpKey("your_amap_key"),
-			middleware.WithOperationLogSkipPaths(global.Conf.System.OperationLogDisabledPathArr...),
+			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPrefix),
+			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
+			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
 			middleware.WithOperationLogSave(func(c *gin.Context, list []middleware.OperationRecord) {
 			}),
 			middleware.WithOperationLogFindApi(func(c *gin.Context) []middleware.OperationApi {
@@ -44,11 +45,11 @@ func Routers() *gin.Engine {
 		),
 		middleware.Transaction(
 			middleware.WithTransactionDbNoTx(global.Mysql),
-			middleware.WithTransactionTxCtxKey(global.TxCtxKey),
+			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),
 		),
 	)
 
-	apiGroup := r.Group(global.Conf.System.UrlPathPrefix)
+	apiGroup := r.Group(global.Conf.System.UrlPrefix)
 	// ping
 	apiGroup.GET("/ping", api.Ping)
 
@@ -58,7 +59,7 @@ func Routers() *gin.Engine {
 		middleware.WithJwtKey(global.Conf.Jwt.Key),
 		middleware.WithJwtTimeout(global.Conf.Jwt.Timeout),
 		middleware.WithJwtMaxRefresh(global.Conf.Jwt.MaxRefresh),
-		middleware.WithJwtPrivateBytes(global.Conf.System.RSAPrivateBytes),
+		middleware.WithJwtPrivateBytes(global.Conf.Jwt.RSAPrivateBytes),
 		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, username, password string) (userId int64, pass bool) {
 			s := cache_service.New(c)
 			user, err := s.LoginCheck(&models.SysUser{

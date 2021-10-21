@@ -4,7 +4,9 @@ import (
 	"context"
 	"gin-web/pkg/global"
 	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/job"
+	"github.com/piupuer/go-helper/pkg/query"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -37,8 +39,7 @@ func Cron() {
 var dirs []string
 
 func compress(c context.Context) error {
-	requestId, _ := c.Value(global.RequestIdContextKey).(string)
-	ctx := global.RequestIdContext(requestId)
+	ctx := query.NewRequestId(c, constant.MiddlewareRequestIdCtxKey)
 	global.Log.Info(ctx, "[定时任务][图片压缩]准备开始...")
 	// 获取工作目录
 	pwd := utils.GetWorkDir()

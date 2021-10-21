@@ -1,12 +1,5 @@
 package global
 
-// request id
-const (
-	RequestIdHeader     = "X-Request-Id"
-	RequestIdContextKey = "RequestId"
-	TxCtxKey = "tx"
-)
-
 // mode
 const (
 	Dev   = "development"

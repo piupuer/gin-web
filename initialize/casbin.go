@@ -8,29 +8,28 @@ import (
 	gormadapter "github.com/casbin/gorm-adapter/v3"
 )
 
-// 初始化casbin
 func CasbinEnforcer() {
 	e, err := mysqlCasbin()
 	if err != nil {
-		panic(fmt.Sprintf("初始化casbin策略管理器: %v", err))
+		panic(fmt.Sprintf("initialize casbin enforcer failed: %v", err))
 	}
 	global.CasbinEnforcer = e
-	global.Log.Info(ctx, "初始化casbin策略管理器完成")
+	global.Log.Info(ctx, "initialize casbin enforcer success")
 }
 
 func mysqlCasbin() (*casbin.Enforcer, error) {
-	// 初始化数据库适配器, 添加自定义表前缀, casbin不使用事务管理, 因为他内部使用到事务, 重复用会导致冲突
-	// casbin默认表名casbin_rule, 为了与项目统一改写一下规则
-	// 注意: gormadapter.CasbinTableName内部添加了下划线, 这里不再多此一举
-	a, err := gormadapter.NewAdapterByDBUseTableName(global.Mysql.WithContext(ctx), global.Conf.Mysql.TablePrefix, "sys_casbin")
+	a, err := gormadapter.NewAdapterByDBUseTableName(
+		global.Mysql.WithContext(ctx),
+		// add mysql table prefix config
+		global.Conf.Mysql.TablePrefix,
+		"sys_casbin",
+	)
 	if err != nil {
 		return nil, err
 	}
-	// 加锁避免并发多次初始化cabinModel
-	// 读取配置文件
-	config := global.ConfBox.Find(global.Conf.Casbin.ModelPath)
+	// read model path
+	config := global.ConfBox.Find(global.Conf.System.CasbinModelPath)
 	cabinModel := model.NewModel()
-	// 从字符串中加载casbin配置
 	err = cabinModel.LoadModelFromText(string(config))
 	if err != nil {
 		return nil, err
@@ -39,7 +38,6 @@ func mysqlCasbin() (*casbin.Enforcer, error) {
 	if err != nil {
 		return nil, err
 	}
-	// 加载策略
 	err = e.LoadPolicy()
 	if err != nil {
 		return nil, err

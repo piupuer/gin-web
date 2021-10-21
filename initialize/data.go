@@ -19,7 +19,7 @@ var (
 
 // 初始化数据
 func Data() {
-	if !global.Conf.System.InitData {
+	if !global.Conf.Mysql.InitData {
 		return
 	}
 	db := global.Mysql.WithContext(ctx)

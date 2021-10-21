@@ -9,7 +9,7 @@ import (
 )
 
 func Redis() {
-	if !global.Conf.System.UseRedis {
+	if !global.Conf.Redis.Enable {
 		global.Log.Info(ctx, "if redis is not used, there is no need to initialize redis")
 		return
 	}
