@@ -2,7 +2,6 @@ package v1
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -12,20 +11,18 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-// 获取操作日志列表
 func GetOperationLogs(c *gin.Context) {
 	var r request.OperationLogReq
 	req.ShouldBind(c, &r)
-	s := cache_service.New(c)
+	s := service.New(c)
 	list, err := s.GetOperationLogs(&r)
 	resp.CheckErr(err)
 	resp.SuccessWithPageData(list, []response.OperationLogResp{}, r.Page)
 }
 
-// 批量删除操作日志
 func BatchDeleteOperationLogByIds(c *gin.Context) {
-	if !global.Conf.System.OperationLogAllowedToDelete {
-		resp.CheckErr("日志删除功能已被管理员关闭")
+	if !global.Conf.Logs.OperationAllowedToDelete {
+		resp.CheckErr("this feature has been turned off by the administrator")
 	}
 	var r request.Req
 	req.ShouldBind(c, &r)
