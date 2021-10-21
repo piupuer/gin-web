@@ -12,7 +12,6 @@ type MenuTreeResp struct {
 	Redirect   string         `json:"redirect"`
 	Component  string         `json:"component"`
 	Permission string         `json:"permission"`
-	Creator    string         `json:"creator"`
 	Sort       int            `json:"sort"`
 	Status     uint           `json:"status"`
 	Visible    uint           `json:"visible"`

@@ -19,7 +19,6 @@ type MachineReq struct {
 	LoginPwd          string `json:"loginPwd" form:"loginPwd"`
 	Status            *uint  `json:"status" form:"status"`
 	Remark            string `json:"remark" form:"remark"`
-	Creator           string `json:"creator" form:"creator"`
 	resp.Page
 }
 
@@ -36,7 +35,6 @@ type CreateMachineReq struct {
 	LoginPwd  string  `json:"loginPwd" validate:"required"`
 	Status    req.NullUint `json:"status"`
 	Remark    string  `json:"remark"`
-	Creator   string  `json:"creator"`
 }
 
 type MachineShellWsReq struct {
@@ -71,5 +69,4 @@ type UpdateMachineReq struct {
 	LoginPwd  *string  `json:"loginPwd"`
 	Status    *req.NullUint `json:"status"`
 	Remark    *string  `json:"remark"`
-	Creator   *string  `json:"creator"`
 }

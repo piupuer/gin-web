@@ -48,7 +48,7 @@ func Routers() *gin.Engine {
 			}),
 			middleware.WithOperationLogFindApi(func(c *gin.Context) []middleware.OperationApi {
 				s := cache_service.New(c)
-				list, err := s.GetApis(&request.ApiReq{
+				list, err := s.FindApi(&request.ApiReq{
 					Page: resp.Page{
 						NoPagination: true,
 					},

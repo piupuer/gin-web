@@ -7,7 +7,6 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-// find finite state machine
 func FindFsm(c *gin.Context) {
 	var r req.FsmMachine
 	req.ShouldBind(c, &r)
@@ -17,7 +16,6 @@ func FindFsm(c *gin.Context) {
 	resp.SuccessWithData(list)
 }
 
-// create finite state machine
 func CreateFsm(c *gin.Context) {
 	var r req.FsmCreateMachine
 	req.ShouldBind(c, &r)
@@ -27,7 +25,6 @@ func CreateFsm(c *gin.Context) {
 	resp.Success()
 }
 
-// find waiting approve log
 func FindFsmApprovingLog(c *gin.Context) {
 	var r req.FsmPendingLog
 	req.ShouldBind(c, &r)

@@ -6,10 +6,10 @@ import (
 )
 
 // 获取所有菜单
-func (s RedisService) GetMenus(currentRole models.SysRole) []models.SysMenu {
+func (s RedisService) FindMenu(currentRole models.SysRole) []models.SysMenu {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		// 不使用redis
-		return s.mysql.GetMenus(currentRole)
+		return s.mysql.FindMenu(currentRole)
 	}
 	tree := make([]models.SysMenu, 0)
 	// 获取全部菜单

@@ -12,21 +12,19 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-// 获取角色列表
-func GetRoles(c *gin.Context) {
+func FindRole(c *gin.Context) {
 	var r request.RoleReq
 	req.ShouldBind(c, &r)
-	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
+	// bind current user role sort(low level cannot view high level)
 	r.CurrentRoleSort = *user.Role.Sort
 
 	s := cache_service.New(c)
-	list, err := s.GetRoles(&r)
+	list, err := s.FindRole(&r)
 	resp.CheckErr(err)
 	resp.SuccessWithPageData(list, []response.RoleResp{}, r.Page)
 }
 
-// 创建角色
 func CreateRole(c *gin.Context) {
 	user := GetCurrentUser(c)
 	var r request.CreateRoleReq
@@ -34,114 +32,89 @@ func CreateRole(c *gin.Context) {
 	req.Validate(c, r, r.FieldTrans())
 
 	if r.Sort != nil && *user.Role.Sort > uint(*r.Sort) {
-		resp.CheckErr("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort)
+		resp.CheckErr("sort must >= %d", *user.Role.Sort)
 	}
 
-	// 记录当前创建人信息
-	r.Creator = user.Nickname + user.Username
 	s := service.New(c)
 	err := s.Q.Create(r, new(models.SysRole))
 	resp.CheckErr(err)
 	resp.Success()
 }
 
-// 更新角色
 func UpdateRoleById(c *gin.Context) {
 	var r request.UpdateRoleReq
 	req.ShouldBind(c, &r)
+	id := req.UintId(c)
 	if r.Sort != nil {
-		// 绑定当前用户角色排序(隐藏特定用户)
 		user := GetCurrentUser(c)
 		if r.Sort != nil && *user.Role.Sort > uint(*r.Sort) {
-			resp.CheckErr("角色排序不允许比当前登录账号序号(%d)小", *user.Role.Sort)
+			resp.CheckErr("sort must >= %d", *user.Role.Sort)
 		}
 	}
 
-	// 获取path中的roleId
-	roleId := utils.Str2Uint(c.Param("roleId"))
-	if roleId == 0 {
-		resp.CheckErr("角色编号不正确")
-	}
-
 	user := GetCurrentUser(c)
-	if r.Status != nil && uint(*r.Status) == models.SysRoleStatusDisabled && roleId == user.RoleId {
-		resp.CheckErr("不能禁用自己所在的角色")
+	if r.Status != nil && uint(*r.Status) == models.SysRoleStatusDisabled && id == user.RoleId {
+		resp.CheckErr("cannot disable your role")
 	}
 
 	s := service.New(c)
-	err := s.Q.UpdateById(roleId, r, new(models.SysRole))
+	err := s.Q.UpdateById(id, r, new(models.SysRole))
 	resp.CheckErr(err)
 	resp.Success()
 }
 
-// 更新角色的权限菜单
 func UpdateRoleMenusById(c *gin.Context) {
 	var r request.UpdateIncrementalIdsRequestStruct
 	req.ShouldBind(c, &r)
-	// 获取path中的roleId
-	roleId := utils.Str2Uint(c.Param("roleId"))
-	if roleId == 0 {
-		resp.CheckErr("角色编号不正确")
-	}
-	// 绑定当前用户角色排序(隐藏特定用户)
+	id := req.UintId(c)
 	user := GetCurrentUser(c)
-
-	if user.RoleId == roleId {
+	if user.RoleId == id {
 		if *user.Role.Sort == models.SysRoleSuperAdminSort && len(r.Delete) > 0 {
-			resp.CheckErr("无法移除超级管理员的权限, 如有疑问请联系网站开发者")
+			resp.CheckErr("cannot remove super admin privileges")
 		} else if *user.Role.Sort != models.SysRoleSuperAdminSort {
-			resp.CheckErr("无法更改自己的权限, 如需更改请联系上级领导")
+			resp.CheckErr("cannot change your permissions")
 		}
 	}
 
 	s := service.New(c)
-	err := s.UpdateRoleMenusById(user.Role, roleId, r)
+	err := s.UpdateRoleMenusById(user.Role, id, r)
 	resp.CheckErr(err)
-	// 清理菜单树缓存
-	menuTreeCache.Flush()
+	CacheFlushMenuTree(c)
 	resp.Success()
 }
 
-// 更新角色的权限接口
 func UpdateRoleApisById(c *gin.Context) {
 	var r request.UpdateIncrementalIdsRequestStruct
 	req.ShouldBind(c, &r)
-	// 获取path中的roleId
-	roleId := utils.Str2Uint(c.Param("roleId"))
-	if roleId == 0 {
-		resp.CheckErr("角色编号不正确")
-	}
+	id := req.UintId(c)
 
-	// 绑定当前用户角色排序(隐藏特定用户)
 	user := GetCurrentUser(c)
 
-	if user.RoleId == roleId {
+	if user.RoleId == id {
 		if *user.Role.Sort == models.SysRoleSuperAdminSort && len(r.Delete) > 0 {
-			resp.CheckErr("无法移除超级管理员的权限, 如有疑问请联系网站开发者")
+			resp.CheckErr("cannot remove super admin privileges")
 		} else if *user.Role.Sort != models.SysRoleSuperAdminSort {
-			resp.CheckErr("无法更改自己的权限, 如需更改请联系上级领导")
+			resp.CheckErr("cannot change your permissions")
 		}
 	}
 
 	s := service.New(c)
-	err := s.UpdateRoleApisById(roleId, r)
+	err := s.UpdateRoleApisById(id, r)
 	resp.CheckErr(err)
-	// 清理菜单树缓存
-	menuTreeCache.Flush()
+	CacheFlushMenuTree(c)
 	resp.Success()
 }
 
-// 批量删除角色
 func BatchDeleteRoleByIds(c *gin.Context) {
-	var r request.Req
+	var r req.Ids
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
-	if utils.ContainsUint(r.GetUintIds(), user.RoleId) {
-		resp.CheckErr("不能删除自己所在的角色")
+	if utils.ContainsUint(r.Uints(), user.RoleId) {
+		resp.CheckErr("cannot delete your role")
 	}
 
 	s := service.New(c)
-	err := s.DeleteRoleByIds(r.GetUintIds())
+	err := s.DeleteRoleByIds(r.Uints())
 	resp.CheckErr(err)
 	resp.Success()
 }

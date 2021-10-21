@@ -10,10 +10,10 @@ func InitApiRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)
 	router1 := GetCasbinRouter(r, jwtOptions, "/api")
 	router2 := GetCasbinAndIdempotenceRouter(r, jwtOptions, "/api")
 	{
-		router1.GET("/list", v1.GetApis)
-		router1.GET("/all/category/:roleId", v1.GetAllApiGroupByCategoryByRoleId)
+		router1.GET("/list", v1.FindApi)
+		router1.GET("/all/category/:roleId", v1.FindAllApiGroupByCategoryByRoleId)
 		router2.POST("/create", v1.CreateApi)
-		router1.PATCH("/update/:apiId", v1.UpdateApiById)
+		router1.PATCH("/update/:id", v1.UpdateApiById)
 		router1.DELETE("/delete/batch", v1.BatchDeleteApiByIds)
 	}
 	return r

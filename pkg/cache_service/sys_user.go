@@ -29,10 +29,10 @@ func (s RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) 
 	return &u, err
 }
 
-func (s RedisService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
+func (s RedisService) FindUser(req *request.UserReq) ([]models.SysUser, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		// 不使用redis
-		return s.mysql.GetUsers(req)
+		return s.mysql.FindUser(req)
 	}
 	var err error
 	list := make([]models.SysUser, 0)
@@ -58,10 +58,6 @@ func (s RedisService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
 	nickname := strings.TrimSpace(req.Nickname)
 	if nickname != "" {
 		query = query.Where("nickname", "contains", nickname)
-	}
-	creator := strings.TrimSpace(req.Creator)
-	if creator != "" {
-		query = query.Where("creator", "contains", creator)
 	}
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)

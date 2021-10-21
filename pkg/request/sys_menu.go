@@ -14,7 +14,6 @@ type MenuReq struct {
 	Status            *uint  `json:"status" form:"status"`
 	Visible           *uint  `json:"visible" form:"visible"`
 	Breadcrumb        *uint  `json:"breadcrumb" form:"breadcrumb"`
-	Creator           string `json:"creator" form:"creator"`
 	resp.Page
 }
 
@@ -31,7 +30,6 @@ type CreateMenuReq struct {
 	Visible    req.NullUint `json:"visible"`
 	Breadcrumb req.NullUint `json:"breadcrumb"`
 	ParentId   req.NullUint `json:"parentId"`
-	Creator    string  `json:"creator"`
 }
 
 func (s CreateMenuReq) FieldTrans() map[string]string {

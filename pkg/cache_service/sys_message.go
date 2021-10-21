@@ -11,10 +11,10 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.MessageResp, error) {
+func (s RedisService) FindUnDeleteMessage(req *request.MessageReq) ([]response.MessageResp, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		// 不使用redis
-		return s.mysql.GetUnDeleteMessages(req)
+		return s.mysql.FindUnDeleteMessage(req)
 	}
 	// 取出当前用户的所有消息
 	currentUserAllLogs := make([]models.SysMessageLog, 0)

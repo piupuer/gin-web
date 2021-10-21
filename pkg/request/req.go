@@ -5,16 +5,6 @@ import (
 	"gin-web/pkg/utils"
 )
 
-// 适用于大多数场景的请求参数绑定
-type Req struct {
-	Ids string `json:"ids" form:"ids"` // 传多个id
-}
-
-// 获取
-func (s Req) GetUintIds() []uint {
-	return utils.Str2UintArr(s.Ids)
-}
-
 // 增量更新id集合结构体
 type UpdateIncrementalIdsRequestStruct struct {
 	Create []uint `json:"create"` // 需要新增的编号集合
@@ -22,7 +12,7 @@ type UpdateIncrementalIdsRequestStruct struct {
 }
 
 // 获取增量, 可直接更新的结果
-func (s UpdateIncrementalIdsRequestStruct) GetIncremental(oldMenuIds []uint, allMenu []models.SysMenu) []uint {
+func (s UpdateIncrementalIdsRequestStruct) FindIncremental(oldMenuIds []uint, allMenu []models.SysMenu) []uint {
 	// 保留选中流水线
 	s.Create = models.FindCheckedMenuId(s.Create, allMenu)
 	s.Delete = models.FindCheckedMenuId(s.Delete, allMenu)

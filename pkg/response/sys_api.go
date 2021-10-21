@@ -7,7 +7,6 @@ type ApiResp struct {
 	Method   string `json:"method"`
 	Path     string `json:"path"`
 	Category string `json:"category"`
-	Creator  string `json:"creator"`
 	Desc     string `json:"desc"`
 	Title    string `json:"title"`
 }

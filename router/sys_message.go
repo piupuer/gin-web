@@ -16,7 +16,7 @@ func InitMessageRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOpti
 	router2 := GetCasbinAndIdempotenceRouter(r, jwtOptions, "/message")
 	{
 		router1.GET("/ws", v1.MessageWs)
-		router1.GET("/all", v1.GetAllMessages)
+		router1.GET("/all", v1.FindMessage)
 		router1.GET("/unRead/count", v1.GetUnReadMessageCount)
 		router2.POST("/push", v1.PushMessage)
 		router1.PATCH("/read/batch", v1.BatchUpdateMessageRead)

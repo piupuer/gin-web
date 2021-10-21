@@ -26,10 +26,10 @@ func (s RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (s RedisService) GetRoles(req *request.RoleReq) ([]models.SysRole, error) {
+func (s RedisService) FindRole(req *request.RoleReq) ([]models.SysRole, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		// 不使用redis
-		return s.mysql.GetRoles(req)
+		return s.mysql.FindRole(req)
 	}
 	var err error
 	list := make([]models.SysRole, 0)
@@ -44,10 +44,6 @@ func (s RedisService) GetRoles(req *request.RoleReq) ([]models.SysRole, error) {
 	keyword := strings.TrimSpace(req.Keyword)
 	if keyword != "" {
 		query = query.Where("keyword", "contains", keyword)
-	}
-	creator := strings.TrimSpace(req.Creator)
-	if creator != "" {
-		query = query.Where("creator", "contains", creator)
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {

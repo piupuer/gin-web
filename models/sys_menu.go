@@ -16,7 +16,6 @@ type SysMenu struct {
 	Visible    *uint     `gorm:"type:tinyint(1);default:1;comment:'visible(0: hidden 1: visible)'" json:"visible"`
 	Breadcrumb *uint     `gorm:"type:tinyint(1);default:1;comment:'breadcrumb(0: disabled 1: enabled)'" json:"breadcrumb"`
 	ParentId   uint      `gorm:"default:0;comment:'parent menu id'" json:"parentId"`
-	Creator    string    `gorm:"comment:'creator'" json:"creator"`
 	Children   []SysMenu `gorm:"-" json:"children"`
 	Roles      []SysRole `gorm:"many2many:sys_role_menu_relation;" json:"roles"`
 }

@@ -36,7 +36,6 @@ type UserReq struct {
 	Introduction string         `json:"introduction" form:"introduction"`
 	Status       *uint          `json:"status" form:"status"`
 	RoleId       uint           `json:"roleId" form:"roleId"`
-	Creator      string         `json:"creator" form:"creator"`
 	resp.Page
 }
 
@@ -51,7 +50,6 @@ type CreateUserReq struct {
 	Introduction string        `json:"introduction"`
 	Status       *req.NullUint `json:"status"`
 	RoleId       uint          `json:"roleId" validate:"required"`
-	Creator      string        `json:"creator"`
 }
 
 func (s CreateUserReq) FieldTrans() map[string]string {

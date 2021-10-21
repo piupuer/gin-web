@@ -18,24 +18,21 @@ import (
 	"sync"
 )
 
-// 解压上传的zip文件
 func UploadUnZip(c *gin.Context) {
 	var r request.FilePartInfoReq
 	req.ShouldBind(c, &r)
 	if strings.TrimSpace(r.Filename) == "" {
-		resp.CheckErr("文件名不存在")
+		resp.CheckErr("filename is empty")
 	}
-	// 获取工作目录
 	pwd := utils.GetWorkDir()
 	fileDir, filename := filepath.Split(r.Filename)
 	baseDir := fmt.Sprintf("%s/%s", pwd, fileDir)
 	fullName := fmt.Sprintf("%s%s", baseDir, filename)
-	// 解压文件到当前目录
 	unzipFiles, err := utils.UnZip(fullName, baseDir)
 	if err != nil {
 		resp.CheckErr(err)
 	}
-	// 前端隐藏工作目录
+	// hide absolute path for front end
 	files := make([]string, 0)
 	for _, file := range unzipFiles {
 		files = append(files, strings.TrimPrefix(file, pwd))
@@ -45,25 +42,21 @@ func UploadUnZip(c *gin.Context) {
 	resp.SuccessWithData(files)
 }
 
-// 判断文件块是否存在
 func UploadFileChunkExists(c *gin.Context) {
 	var r request.FilePartInfoReq
 	req.ShouldBind(c, &r)
-	// 校验请求
 	err := r.ValidateReq()
 	resp.CheckErr(err)
-	r.Complete, r.Uploaded = getUploadedChunkNumbers(r)
+	r.Complete, r.Uploaded = findUploadedChunkNumber(r)
 	resp.SuccessWithData(r)
 }
 
-// 合并分片文件
 func UploadMerge(c *gin.Context) {
 	var r request.FilePartInfoReq
 	req.ShouldBind(c, &r)
-	// 获取
+	// get upload root path
 	rootDir := r.GetUploadRootPath()
 	mergeFileName := fmt.Sprintf("%s/%s", rootDir, r.Filename)
-	// 创建merge file
 	mergeFile, err := os.OpenFile(mergeFileName, os.O_CREATE|os.O_WRONLY, os.ModePerm)
 	resp.CheckErr(err)
 	defer mergeFile.Close()
@@ -75,16 +68,14 @@ func UploadMerge(c *gin.Context) {
 		chunkNumbers = append(chunkNumbers, i+1)
 	}
 
-	// 开启协程并发合并文件
-	// 如果文件块总数过大, 性能反而降低, 因此需要配置一个合适的协程数
+	// start goroutine concurrency merge file
 	var count = int(global.Conf.Upload.MergeConcurrentCount)
 	chunkCount := len(chunkNumbers) / count
-	// 最后一组默认认为恰好被整除
+	// last chunk = remainder
 	lastChunkCount := chunkCount
 	if len(chunkNumbers)%count > 0 || count == 1 {
 		lastChunkCount = len(chunkNumbers)%count + chunkCount
 	}
-	// 转为二维数组, 每一组数据分配给一个协程使用
 	chunks := make([][]int, count)
 	for i := 0; i < count; i++ {
 		if i < count-1 {
@@ -103,119 +94,97 @@ func UploadMerge(c *gin.Context) {
 					currentChunkName := r.GetChunkFilename(uint(item))
 					exists := ioutil2.FileExists(currentChunkName)
 					if exists {
-						// 读取文件分片
 						f, err := os.OpenFile(currentChunkName, os.O_RDONLY, os.ModePerm)
 						resp.CheckErr(err)
 						defer func() {
-							// 关闭文件
 							f.Close()
 						}()
 						b, err := ioutil.ReadAll(f)
 						resp.CheckErr(err)
-						// 从指定位置开始写
 						mergeFile.WriteAt(b, int64((item-1)*chunkSize))
 					}
 				}()
 			}
 		}(chunks[i])
 	}
-	// 等待协程全部处理结束
+	// wait goroutine until all processing is completed
 	wg.Wait()
 
-	previewUrl := "未开启对象存储, 无预览地址"
+	previewUrl := "no preview"
 	if global.Conf.Upload.Minio.Enable {
-		// 写入minio对象存储
+		// send to minio
 		err = global.Minio.PutLocalObject(c, global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
 		if err != nil {
-			resp.CheckErr("写入minio对象存储失败, %v", err)
+			resp.CheckErr("put object to minio failed, %v", err)
 		}
 		previewUrl = global.Minio.GetObjectPreviewUrl(c, global.Conf.Upload.Minio.Bucket, mergeFileName)
 	}
-	// 删除分片文件所在路径
+	// remove all chunk files
 	os.RemoveAll(r.GetChunkRootPath())
 
-	// 回写文件信息
 	var res response.UploadMergeResp
 	res.Filename = mergeFileName
 	res.PreviewUrl = previewUrl
 	resp.SuccessWithData(res)
 }
 
-// 上传文件(小文件直接是单个文件, 若是超大文件可能是单个分片)
 func UploadFile(c *gin.Context) {
-	// 限制文件最大内存(二进制移位xxxMB)
+	// limit file maximum memory( << 20 = 1MB)
 	err := c.Request.ParseMultipartForm(int64(global.Conf.Upload.SingleMaxSize) << 20)
 	if err != nil {
-		resp.CheckErr("文件大小超出最大值%dMB", global.Conf.Upload.SingleMaxSize)
+		resp.CheckErr("the file size exceeds the maximum: %dMB", global.Conf.Upload.SingleMaxSize)
 	}
-	// 读取文件分片
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {
 		resp.CheckErr(err)
 	}
 
-	// 读取文件分片参数
+	// read file part
 	var filePart request.FilePartInfoReq
-	// 当前大小
 	currentSize := uint(header.Size)
 	filePart.CurrentSize = &currentSize
-	// 块编号
 	filePart.ChunkNumber = utils.Str2Uint(strings.TrimSpace(c.Request.FormValue("chunkNumber")))
-	// 块大小
 	filePart.ChunkSize = utils.Str2Uint(strings.TrimSpace(c.Request.FormValue("chunkSize")))
-	// 总大小
 	filePart.TotalSize = utils.Str2Uint(strings.TrimSpace(c.Request.FormValue("totalSize")))
-	// 唯一标识
 	filePart.Identifier = strings.TrimSpace(c.Request.FormValue("identifier"))
-	// 文件名
 	filePart.Filename = strings.TrimSpace(c.Request.FormValue("filename"))
 
-	// 校验请求
 	err = filePart.ValidateReq()
 	resp.CheckErr(err)
 
-	// 获取块文件名
 	chunkName := filePart.GetChunkFilename(filePart.ChunkNumber)
-	// 创建不存在的文件夹
 	chunkDir, _ := filepath.Split(chunkName)
 	err = os.MkdirAll(chunkDir, os.ModePerm)
 	resp.CheckErr(err)
 
-	// 保存块文件
 	out, err := os.Create(chunkName)
 	resp.CheckErr(err)
 	defer out.Close()
 
-	// 将file的内容拷贝到out
 	_, err = io.Copy(out, file)
 	resp.CheckErr(err)
 
-	// 检查文件块完整性
 	filePart.CurrentCheckChunkNumber = 1
 	filePart.Complete = checkChunkComplete(filePart)
-	// 回写响应数据
 	resp.SuccessWithData(filePart)
 }
 
-// 检查文件块, 主要用于判断文件完整性
+// check file is complete
 func checkChunkComplete(filePart request.FilePartInfoReq) bool {
 	currentChunkName := filePart.GetChunkFilename(filePart.CurrentCheckChunkNumber)
 	exists := ioutil2.FileExists(currentChunkName)
 	if exists {
 		filePart.CurrentCheckChunkNumber++
 		if filePart.CurrentCheckChunkNumber > filePart.GetTotalChunk() {
-			// 完成全部传输
 			return true
 		}
-		// 继续
 		return checkChunkComplete(filePart)
 	}
-	// 完成当前块
 	return false
 }
 
-// 获取已上传完成的块number集合
-func getUploadedChunkNumbers(filePart request.FilePartInfoReq) (bool, []uint) {
+// find uploaded chunk files number array
+func findUploadedChunkNumber(filePart request.FilePartInfoReq) (bool, []uint) {
 	totalChunk := filePart.GetTotalChunk()
 	var currentChunkNumber uint = 1
 	uploadedChunkNumbers := make([]uint, 0)

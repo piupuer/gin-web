@@ -38,7 +38,7 @@ func (my MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
 }
 
 // 获取所有菜单
-func (my MysqlService) GetMenus(currentRole models.SysRole) []models.SysMenu {
+func (my MysqlService) FindMenu(currentRole models.SysRole) []models.SysMenu {
 	tree := make([]models.SysMenu, 0)
 	menus := my.getAllMenu(currentRole)
 	// 生成菜单树

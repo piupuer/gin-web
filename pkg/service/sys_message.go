@@ -13,7 +13,7 @@ import (
 )
 
 // 查询指定用户未删除的消息
-func (my MysqlService) GetUnDeleteMessages(req *request.MessageReq) ([]response.MessageResp, error) {
+func (my MysqlService) FindUnDeleteMessage(req *request.MessageReq) ([]response.MessageResp, error) {
 	sysMessageLogTableName := global.Mysql.NamingStrategy.TableName("sys_message_log")
 	sysMessageTableName := global.Mysql.NamingStrategy.TableName("sys_message")
 	sysUserTableName := global.Mysql.NamingStrategy.TableName("sys_user")

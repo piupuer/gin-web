@@ -22,22 +22,21 @@ type ptyRequestMsg struct {
 	Modelist string
 }
 
-// 启动shell连接
+// start shell websocket
 func MachineShellWs(c *gin.Context) {
 	var req request.MachineShellWsReq
 	err := c.ShouldBind(&req)
 
 	conn, err := upgrade.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		global.Log.Error(c, "升级websocket连接失败: %v", err)
+		global.Log.Error(c, "upgrade websocket failed: %v", err)
 		return
 	}
-	// 结束后自动关闭
 	defer conn.Close()
 
 	active := time.Now()
 
-	// 建立连接
+	// get ssh client
 	client, err := utils.GetSshClient(utils.SshConfig{
 		Host:      req.Host,
 		Port:      int(req.SshPort),
@@ -45,25 +44,25 @@ func MachineShellWs(c *gin.Context) {
 		LoginPwd:  req.LoginPwd,
 	})
 	if err != nil {
-		global.Log.Error(c, "建立ssh连接失败: %v", err)
+		global.Log.Error(c, "connect ssh failed: %v", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("\n"+err.Error()))
 		return
 	}
 
-	// 开启ssh通道
+	// open ssh channel
 	channel, incomingRequests, err := client.Conn.OpenChannel("session", nil)
 	if err != nil {
-		global.Log.Error(c, "建立ssh通道失败: %v", err)
+		global.Log.Error(c, "connect ssh failed: %v", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("\n"+err.Error()))
 		return
 	}
 	defer channel.Close()
 	defer client.Close()
 
-	// 处理需要回复的请求
 	go func() {
 		for req := range incomingRequests {
 			if req.WantReply {
+				// reply 
 				req.Reply(false, nil)
 			}
 		}
@@ -85,7 +84,6 @@ func MachineShellWs(c *gin.Context) {
 
 	modeList = append(modeList, 0)
 
-	// 发送pty
 	rows := uint32(req.Rows)
 	cols := uint32(req.Cols)
 	ptyReq := ptyRequestMsg{
@@ -98,20 +96,18 @@ func MachineShellWs(c *gin.Context) {
 	}
 	ok, err := channel.SendRequest("pty-req", true, ssh.Marshal(&ptyReq))
 	if !ok || err != nil {
-		global.Log.Error(c, "发送pty失败: %v", err)
+		global.Log.Error(c, "send pseudo terminal request failed: %v", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("\n"+err.Error()))
 		return
 	}
 
-	// 发送shell
 	ok, err = channel.SendRequest("shell", true, nil)
 	if !ok || err != nil {
-		global.Log.Error(c, "发送shell失败: %v", err)
+		global.Log.Error(c, "send shell failed: %v", err)
 		conn.WriteMessage(websocket.TextMessage, []byte("\n"+err.Error()))
 		return
 	}
 
-	// 处理数据读写
 	go func() {
 		br := bufio.NewReader(channel)
 		var buf []byte
@@ -124,7 +120,7 @@ func MachineShellWs(c *gin.Context) {
 			for {
 				x, size, err := br.ReadRune()
 				if err != nil {
-					global.Log.Warn(c, "读取shell警告: %v", err)
+					global.Log.Warn(c, "read shell failed: %v", err)
 					break
 				}
 				if size > 0 {
@@ -140,7 +136,7 @@ func MachineShellWs(c *gin.Context) {
 					err = conn.WriteMessage(websocket.TextMessage, buf)
 					buf = []byte{}
 					if err != nil {
-						global.Log.Error(c, "数据写出到%s失败%v", conn.RemoteAddr(), err)
+						global.Log.Error(c, "write msg to %s failed: %v", conn.RemoteAddr(), err)
 						return
 					}
 				}
@@ -158,21 +154,21 @@ func MachineShellWs(c *gin.Context) {
 
 	}()
 
-	// 超时处理
+	// timeout handler
 	go func() {
 		for {
 			time.Sleep(time.Minute * 5)
 			cost := time.Since(active)
 			if cost.Minutes() >= 30 {
-				// 超过30分钟未活动，自动关闭连接
-				conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("\r\n已超过【%s】未活动，自动断开连接", cost.String())))
+				// if it is inactive for more than 30 minutes, the connection will be closed automatically
+				conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("\r\nif it is inactive for more than [ %s ] minutes, the connection will be closed automatically", cost.String())))
 				conn.Close()
 				break
 			}
 		}
 	}()
-	conn.WriteMessage(websocket.TextMessage, []byte("\r\n["+req.Host+"]终端服务连接成功"))
-	conn.WriteMessage(websocket.TextMessage, []byte("\r\n提示：超过30分钟未活动，将自动断开连接\r\n\r\n"))
+	conn.WriteMessage(websocket.TextMessage, []byte("\r\n["+req.Host+"]connect success"))
+	conn.WriteMessage(websocket.TextMessage, []byte("\r\nif it is inactive for more than 30 minutes, the connection will be closed automatically\r\n\r\n"))
 
 	if req.InitCmd != "" {
 		go func() {
@@ -181,12 +177,12 @@ func MachineShellWs(c *gin.Context) {
 		}()
 	}
 
-	// 持续读取用户输入的命令
+	// read user input
 	for {
 		m, p, err := conn.ReadMessage()
 		active = time.Now()
 		if err != nil {
-			global.Log.Warn(c, "连接%s已断开", conn.RemoteAddr())
+			global.Log.Warn(c, "connect %s lost", conn.RemoteAddr())
 			break
 		}
 
@@ -195,7 +191,7 @@ func MachineShellWs(c *gin.Context) {
 			if err := utils.IsSafetyCmd(cmd); err != nil {
 				err = conn.WriteMessage(websocket.TextMessage, []byte(fmt.Sprintf("\r\n\r\n%s\r\n\r\n", err.Error())))
 				if err != nil {
-					global.Log.Warn(c, "回写数据失败: %v", err)
+					global.Log.Warn(c, "write msg failed: %v", err)
 					break
 				}
 				continue

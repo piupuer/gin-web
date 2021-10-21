@@ -16,5 +16,4 @@ type MachineResp struct {
 	LoginPwd  string `json:"loginPwd"`
 	Status    *uint  `json:"status"`
 	Remark    string `json:"remark"`
-	Creator   string `json:"creator"`
 }

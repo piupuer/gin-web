@@ -7,10 +7,10 @@ import (
 	"strings"
 )
 
-func (s RedisService) GetMachines(req *request.MachineReq) ([]models.SysMachine, error) {
+func (s RedisService) FindMachine(req *request.MachineReq) ([]models.SysMachine, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		// 不使用redis
-		return s.mysql.GetMachines(req)
+		return s.mysql.FindMachine(req)
 	}
 	var err error
 	list := make([]models.SysMachine, 0)
@@ -24,10 +24,6 @@ func (s RedisService) GetMachines(req *request.MachineReq) ([]models.SysMachine,
 	loginName := strings.TrimSpace(req.LoginName)
 	if loginName != "" {
 		query = query.Where("login_name", "contains", loginName)
-	}
-	creator := strings.TrimSpace(req.Creator)
-	if creator != "" {
-		query = query.Where("creator", "contains", creator)
 	}
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)

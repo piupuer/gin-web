@@ -29,5 +29,4 @@ type UserResp struct {
 	Introduction string `json:"introduction"`
 	Status       *uint  `json:"status"`
 	RoleId       uint   `json:"roleId"`
-	Creator      string `json:"creator"`
 }

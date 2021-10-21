@@ -11,11 +11,11 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-func GetOperationLogs(c *gin.Context) {
+func FindOperationLog(c *gin.Context) {
 	var r request.OperationLogReq
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	list, err := s.GetOperationLogs(&r)
+	list, err := s.FindOperationLog(&r)
 	resp.CheckErr(err)
 	resp.SuccessWithPageData(list, []response.OperationLogResp{}, r.Page)
 }
@@ -24,10 +24,10 @@ func BatchDeleteOperationLogByIds(c *gin.Context) {
 	if !global.Conf.Logs.OperationAllowedToDelete {
 		resp.CheckErr("this feature has been turned off by the administrator")
 	}
-	var r request.Req
+	var r req.Ids
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.Q.DeleteByIds(r.GetUintIds(), new(models.SysOperationLog))
+	err := s.Q.DeleteByIds(r.Uints(), new(models.SysOperationLog))
 	resp.CheckErr(err)
 	resp.Success()
 }

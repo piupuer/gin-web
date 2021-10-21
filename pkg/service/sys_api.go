@@ -11,15 +11,7 @@ import (
 	"strings"
 )
 
-// 注意golang坑, 返回值有数组时, 不要为了return方便使用命名返回值
-// 如func GetApis(req *request.ApiReq) (apis []models.SysApi, err error) {
-// 这会导致apis被初始化无穷大的集合, 代码无法断点调试: collecting data..., 几秒后程序异常退出:
-// error layer=rpc writing response:write tcp xxx write: broken pipe
-// error layer=rpc rpc:read tcp xxx read: connection reset by peer
-// exit code 0
-// 我曾一度以为调试工具安装配置错误, 使用其他项目代码却能稳定调试, 最终还是定位到代码本身. 踩过的坑希望大家不要再踩
-// 获取所有接口
-func (my MysqlService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
+func (my MysqlService) FindApi(req *request.ApiReq) ([]models.SysApi, error) {
 	var err error
 	list := make([]models.SysApi, 0)
 	query := my.Q.Tx.
@@ -37,47 +29,39 @@ func (my MysqlService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 	if category != "" {
 		query = query.Where("category LIKE ?", fmt.Sprintf("%%%s%%", category))
 	}
-	creator := strings.TrimSpace(req.Creator)
-	if creator != "" {
-		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
-	}
-	// 查询列表
 	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
-// 根据权限编号获取以api分类分组的权限接口
-func (my MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
-	// 接口树
+// find all api group by api category
+func (my MysqlService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
 	tree := make([]response.ApiGroupByCategoryResp, 0)
-	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
-	// 查询全部api
+	// find all api
 	err := my.Q.Tx.Find(&allApi).Error
 	if err != nil {
 		return tree, accessIds, err
 	}
 	var currentRoleId uint
-	// 非超级管理员
+	// not super admin
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
 		currentRoleId = currentRole.Id
 	}
-	// 查询当前角色拥有api访问权限的casbin规则
-	currentCasbins, err := my.GetCasbinListByRoleId(currentRoleId)
-	// 查询指定角色拥有api访问权限的casbin规则(当前角色只能在自己权限范围内操作, 不得越权)
-	casbins, err := my.GetCasbinListByRoleId(roleId)
+	// find all casbin by current user's role id
+	currentCasbins, err := my.FindCasbinByRoleId(currentRoleId)
+	// find all casbin by current role id
+	casbins, err := my.FindCasbinByRoleId(roleId)
 	if err != nil {
 		return tree, accessIds, err
 	}
 
-	// 找到当前角色的全部api
 	newApi := make([]models.SysApi, 0)
 	for _, api := range allApi {
 		path := api.Path
 		method := api.Method
 		for _, currentCasbin := range currentCasbins {
-			// 该api有权限
+			// have permission
 			if path == currentCasbin.V1 && method == currentCasbin.V2 {
 				newApi = append(newApi, api)
 				break
@@ -85,24 +69,24 @@ func (my MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 		}
 	}
 
-	// 通过分类进行分组归纳
+	// group by category
 	for _, api := range newApi {
 		category := api.Category
 		path := api.Path
 		method := api.Method
 		access := false
 		for _, casbin := range casbins {
-			// 该api有权限
+			// have permission
 			if path == casbin.V1 && method == casbin.V2 {
 				access = true
 				break
 			}
 		}
-		// 加入权限集合
+		// add to access ids
 		if access {
 			accessIds = append(accessIds, api.Id)
 		}
-		// 生成接口树
+		// generate api tree
 		existIndex := -1
 		children := make([]response.ApiResp, 0)
 		for index, leaf := range tree {
@@ -112,18 +96,17 @@ func (my MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 				break
 			}
 		}
-		// api结构转换
 		var item response.ApiResp
 		utils.Struct2StructByJson(api, &item)
 		item.Title = fmt.Sprintf("%s %s[%s]", item.Desc, item.Path, item.Method)
 		children = append(children, item)
 		if existIndex != -1 {
-			// 更新元素
+			// update data
 			tree[existIndex].Children = children
 		} else {
-			// 新增元素
+			// create data
 			tree = append(tree, response.ApiGroupByCategoryResp{
-				Title:    category + "分组",
+				Title:    category + " group",
 				Category: category,
 				Children: children,
 			})
@@ -132,7 +115,6 @@ func (my MysqlService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 	return tree, accessIds, err
 }
 
-// 创建接口
 func (my MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
 	api := new(models.SysApi)
 	err = my.Q.Create(req, new(models.SysApi))

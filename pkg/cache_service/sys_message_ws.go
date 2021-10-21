@@ -275,9 +275,9 @@ func (c *MessageClient) receive() {
 				Detail: detail,
 			})
 		case MessageReqBatchRead:
-			var data request.Req
+			var data req.Ids
 			utils.Struct2StructByJson(r.Data, &data)
-			err = hub.Service.mysql.BatchUpdateMessageRead(data.GetUintIds())
+			err = hub.Service.mysql.BatchUpdateMessageRead(data.Uints())
 			detail := resp.GetSuccess()
 			if err != nil {
 				detail = resp.GetFailWithMsg(err.Error())
@@ -290,9 +290,9 @@ func (c *MessageClient) receive() {
 				Detail: detail,
 			})
 		case MessageReqBatchDeleted:
-			var data request.Req
+			var data req.Ids
 			utils.Struct2StructByJson(r.Data, &data)
-			err = hub.Service.mysql.BatchUpdateMessageDeleted(data.GetUintIds())
+			err = hub.Service.mysql.BatchUpdateMessageDeleted(data.Uints())
 			detail := resp.GetSuccess()
 			if err != nil {
 				detail = resp.GetFailWithMsg(err.Error())

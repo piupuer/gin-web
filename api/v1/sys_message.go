@@ -3,30 +3,25 @@ package v1
 import (
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/request"
+	"gin-web/pkg/response"
 	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-// 获取全部消息
-func GetAllMessages(c *gin.Context) {
+func FindMessage(c *gin.Context) {
 	var r request.MessageReq
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	r.ToUserId = user.Id
 	s := cache_service.New(c)
 
-	messages, err := s.GetUnDeleteMessages(&r)
+	list, err := s.FindUnDeleteMessage(&r)
 	resp.CheckErr(err)
-	// 返回分页数据
-	var rp resp.PageData
-	rp.Page = r.Page
-	rp.List = messages
-	resp.SuccessWithData(rp)
+	resp.SuccessWithPageData(list, []response.MessageResp{}, r.Page)
 }
 
-// 未读消息条数
 func GetUnReadMessageCount(c *gin.Context) {
 	user := GetCurrentUser(c)
 	s := cache_service.New(c)
@@ -36,7 +31,6 @@ func GetUnReadMessageCount(c *gin.Context) {
 	resp.SuccessWithData(total)
 }
 
-// 推送消息
 func PushMessage(c *gin.Context) {
 	var r request.PushMessageReq
 	req.ShouldBind(c, &r)
@@ -48,27 +42,24 @@ func PushMessage(c *gin.Context) {
 	resp.Success()
 }
 
-// 批量更新为已读
 func BatchUpdateMessageRead(c *gin.Context) {
-	var r request.Req
+	var r req.Ids
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.BatchUpdateMessageRead(r.GetUintIds())
+	err := s.BatchUpdateMessageRead(r.Uints())
 	resp.CheckErr(err)
 	resp.Success()
 }
 
-// 批量更新为删除
 func BatchUpdateMessageDeleted(c *gin.Context) {
-	var r request.Req
+	var r req.Ids
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.BatchUpdateMessageDeleted(r.GetUintIds())
+	err := s.BatchUpdateMessageDeleted(r.Uints())
 	resp.CheckErr(err)
 	resp.Success()
 }
 
-// 全部更新为已读
 func UpdateAllMessageRead(c *gin.Context) {
 	s := service.New(c)
 	user := GetCurrentUser(c)
@@ -77,7 +68,6 @@ func UpdateAllMessageRead(c *gin.Context) {
 	resp.Success()
 }
 
-// 全部更新为删除
 func UpdateAllMessageDeleted(c *gin.Context) {
 	s := service.New(c)
 	user := GetCurrentUser(c)

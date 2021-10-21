@@ -9,5 +9,4 @@ type RoleResp struct {
 	Sort    uint   `json:"sort"`
 	Desc    string `json:"desc"`
 	Status  *uint  `json:"status"`
-	Creator string `json:"creator"`
 }

@@ -10,7 +10,6 @@ type RoleReq struct {
 	Keyword           string `json:"keyword" form:"keyword"`
 	CurrentRoleSort   uint   `json:"currentRoleSort"`
 	Status            *uint  `json:"status" form:"status"`
-	Creator           string `json:"creator" form:"creator"`
 	resp.Page
 }
 
@@ -21,7 +20,6 @@ type CreateRoleReq struct {
 	Sort            *req.NullUint `json:"sort" validate:"required"`
 	Desc            string   `json:"desc"`
 	Status          *req.NullUint `json:"status"`
-	Creator         string   `json:"creator"`
 }
 
 func (s CreateRoleReq) FieldTrans() map[string]string {
@@ -38,5 +36,4 @@ type UpdateRoleReq struct {
 	Sort    *req.NullUint `json:"sort"`
 	Desc    *string  `json:"desc"`
 	Status  *req.NullUint `json:"status"`
-	Creator *string  `json:"creator"`
 }

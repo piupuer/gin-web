@@ -8,7 +8,6 @@ type ApiReq struct {
 	Method            string `json:"method" form:"method"`
 	Path              string `json:"path" form:"path"`
 	Category          string `json:"category" form:"category"`
-	Creator           string `json:"creator" form:"creator"`
 	resp.Page
 }
 
@@ -18,7 +17,6 @@ type CreateApiReq struct {
 	Category string `json:"category" validate:"required"`
 	Desc     string `json:"desc"`
 	Title    string `json:"title"`
-	Creator  string `json:"creator"`
 	RoleIds  []uint `json:"roleIds"` // 绑定可以访问该接口的角色
 }
 
@@ -36,6 +34,5 @@ type UpdateApiReq struct {
 	Category *string `json:"category"`
 	Desc     *string `json:"desc"`
 	Title    *string `json:"title"`
-	Creator  *string `json:"creator"`
 	RoleIds  []uint  `json:"roleIds"`
 }

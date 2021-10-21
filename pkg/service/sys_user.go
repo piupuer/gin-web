@@ -26,7 +26,7 @@ func (my MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 }
 
 // 获取用户
-func (my MysqlService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
+func (my MysqlService) FindUser(req *request.UserReq) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
 	query := my.Q.Tx.
@@ -51,10 +51,6 @@ func (my MysqlService) GetUsers(req *request.UserReq) ([]models.SysUser, error) 
 	nickname := strings.TrimSpace(req.Nickname)
 	if nickname != "" {
 		query = query.Where("nickname LIKE ?", fmt.Sprintf("%%%s%%", nickname))
-	}
-	creator := strings.TrimSpace(req.Creator)
-	if creator != "" {
-		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {

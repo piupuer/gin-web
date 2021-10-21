@@ -72,7 +72,7 @@ func (my MysqlService) BatchDeleteRoleCasbins(cs []models.SysRoleCasbin) (bool, 
 }
 
 // 根据权限编号读取casbin规则
-func (my MysqlService) GetCasbinListByRoleId(roleId uint) ([]models.SysCasbin, error) {
+func (my MysqlService) FindCasbinByRoleId(roleId uint) ([]models.SysCasbin, error) {
 	list := make([][]string, 0)
 	casbins := make([]models.SysCasbin, 0)
 	if roleId > 0 {

@@ -11,7 +11,7 @@ import (
 )
 
 // 获取机器
-func (my MysqlService) GetMachines(req *request.MachineReq) ([]models.SysMachine, error) {
+func (my MysqlService) FindMachine(req *request.MachineReq) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
 	query := my.Q.Tx.
@@ -24,10 +24,6 @@ func (my MysqlService) GetMachines(req *request.MachineReq) ([]models.SysMachine
 	loginName := strings.TrimSpace(req.LoginName)
 	if loginName != "" {
 		query = query.Where("login_name LIKE ?", fmt.Sprintf("%%%s%%", loginName))
-	}
-	creator := strings.TrimSpace(req.Creator)
-	if creator != "" {
-		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {

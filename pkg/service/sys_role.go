@@ -24,7 +24,7 @@ func (my MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 }
 
 // 获取所有角色
-func (my MysqlService) GetRoles(req *request.RoleReq) ([]models.SysRole, error) {
+func (my MysqlService) FindRole(req *request.RoleReq) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
 	query := my.Q.Tx.
@@ -38,10 +38,6 @@ func (my MysqlService) GetRoles(req *request.RoleReq) ([]models.SysRole, error) 
 	keyword := strings.TrimSpace(req.Keyword)
 	if keyword != "" {
 		query = query.Where("keyword LIKE ?", fmt.Sprintf("%%%s%%", keyword))
-	}
-	creator := strings.TrimSpace(req.Creator)
-	if creator != "" {
-		query = query.Where("creator LIKE ?", fmt.Sprintf("%%%s%%", creator))
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {
@@ -67,7 +63,7 @@ func (my MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, 
 		menuIds = append(menuIds, menu.Id)
 	}
 	// 获取菜单增量
-	incremental := req.GetIncremental(menuIds, allMenu)
+	incremental := req.FindIncremental(menuIds, allMenu)
 	// 查询所有菜单
 	incrementalMenus := make([]models.SysMenu, 0)
 	err = my.Q.Tx.

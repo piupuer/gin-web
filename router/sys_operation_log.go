@@ -9,7 +9,7 @@ import (
 func InitOperationLogRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)) (R gin.IRoutes) {
 	router := GetCasbinRouter(r, jwtOptions, "/operation/log")
 	{
-		router.GET("/list", v1.GetOperationLogs)
+		router.GET("/list", v1.FindOperationLog)
 		router.DELETE("/delete/batch", v1.BatchDeleteOperationLogByIds)
 	}
 	return r

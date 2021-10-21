@@ -9,7 +9,7 @@ import (
 )
 
 // 获取操作日志
-func (my MysqlService) GetOperationLogs(req *request.OperationLogReq) ([]models.SysOperationLog, error) {
+func (my MysqlService) FindOperationLog(req *request.OperationLogReq) ([]models.SysOperationLog, error) {
 	var err error
 	list := make([]models.SysOperationLog, 0)
 	query := global.Mysql.
