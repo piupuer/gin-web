@@ -203,7 +203,7 @@ func (h MessageHub) count() {
 			for _, client := range h.getClients() {
 				infos = append(infos, fmt.Sprintf("%d-%s", client.User.Id, client.Ip))
 			}
-			global.Log.Debug(h.Service.ctx, "[消息中心]当前活跃连接: %v", strings.Join(infos, ","))
+			global.Log.Debug(h.Service.Q.Ctx, "[消息中心]当前活跃连接: %v", strings.Join(infos, ","))
 		}
 	}
 }

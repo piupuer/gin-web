@@ -101,7 +101,7 @@ func (my MysqlService) GetDicts(req *request.DictReq) ([]models.SysDict, error) 
 		query = query.Where("status = ?", *req.Status)
 	}
 	// 查询列表
-	err = my.Q.Find(query, &req.Page, &list)
+	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
@@ -132,7 +132,7 @@ func (my MysqlService) GetDictDatas(req *request.DictDataReq) ([]models.SysDictD
 		query = query.Where("dict_id = ?", *req.DictId)
 	}
 	// 查询列表
-	err = my.Q.Find(query, &req.Page, &list)
+	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 

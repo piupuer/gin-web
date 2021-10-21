@@ -15,7 +15,7 @@ func (s RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 	}
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
-	err := s.redis.Table("sys_role").Where("sort", ">=", currentRoleSort).Find(&roles).Error
+	err := s.Q.Table("sys_role").Where("sort", ">=", currentRoleSort).Find(&roles).Error
 	if err != nil {
 		return roleIds, err
 	}
@@ -33,7 +33,7 @@ func (s RedisService) GetRoles(req *request.RoleReq) ([]models.SysRole, error) {
 	}
 	var err error
 	list := make([]models.SysRole, 0)
-	query := s.redis.
+	query := s.Q.
 		Table("sys_role").
 		Order("created_at DESC").
 		Where("sort", ">=", req.CurrentRoleSort)
@@ -57,6 +57,6 @@ func (s RedisService) GetRoles(req *request.RoleReq) ([]models.SysRole, error) {
 		}
 	}
 	// 查询列表
-	err = s.Find(query, &req.Page, &list)
+	err = s.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }

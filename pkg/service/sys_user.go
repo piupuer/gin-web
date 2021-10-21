@@ -64,7 +64,7 @@ func (my MysqlService) GetUsers(req *request.UserReq) ([]models.SysUser, error) 
 		}
 	}
 	// 查询列表
-	err = my.Q.Find(query, &req.Page, &list)
+	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 

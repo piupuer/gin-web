@@ -37,7 +37,7 @@ func (my MysqlService) GetMachines(req *request.MachineReq) ([]models.SysMachine
 		}
 	}
 	// 查询列表
-	err = my.Q.Find(query, &req.Page, &list)
+	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 

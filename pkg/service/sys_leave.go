@@ -28,7 +28,7 @@ func (my MysqlService) GetLeaves(r *request.LeaveReq) ([]models.SysLeave, error)
 		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
 	// 查询列表
-	err = my.Q.Find(query, &r.Page, &list)
+	err = my.Q.FindWithPage(query, &r.Page, &list)
 	return list, err
 }
 

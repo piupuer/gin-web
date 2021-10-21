@@ -62,7 +62,7 @@ func (my MysqlService) GetUnDeleteMessages(req *request.MessageReq) ([]response.
 
 	// 多表联合查询不用Find用Scan
 	// 查询列表
-	err := my.Q.Scan(query, &req.Page, &list)
+	err := my.Q.ScanWithPage(query, &req.Page, &list)
 	return list, err
 }
 

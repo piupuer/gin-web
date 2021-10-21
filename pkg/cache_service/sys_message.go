@@ -18,7 +18,7 @@ func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 	}
 	// 取出当前用户的所有消息
 	currentUserAllLogs := make([]models.SysMessageLog, 0)
-	err := s.redis.
+	err := s.Q.
 		Table("sys_message_log").
 		Preload("Message").
 		Preload("Message.FromUser").
@@ -33,7 +33,7 @@ func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 
 	messageLogs := make([]models.SysMessageLog, 0)
 	// 转为json, 再匹配前端其他条件
-	query := s.redis.
+	query := s.Q.
 		FromString(utils.Struct2Json(currentUserAllLogs)).
 		Order("created_at DESC")
 	title := strings.TrimSpace(req.Title)
@@ -51,7 +51,7 @@ func (s RedisService) GetUnDeleteMessages(req *request.MessageReq) ([]response.M
 		query = query.Where("status", "=", *req.Status)
 	}
 	// 查询列表
-	err = s.Find(query, &req.Page, &messageLogs)
+	err = s.Q.FindWithPage(query, &req.Page, &messageLogs)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +87,7 @@ func (s RedisService) GetUnReadMessageCount(userId uint) (int64, error) {
 		return s.mysql.GetUnReadMessageCount(userId)
 	}
 	var total int64
-	err := s.redis.
+	err := s.Q.
 		Table("sys_message_log").
 		Where("to_user_id", "=", userId).
 		Where("status", "=", models.SysMessageLogStatusUnRead).

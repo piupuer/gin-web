@@ -18,7 +18,7 @@ func (s RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) 
 	}
 	var u models.SysUser
 	// 查询用户及其角色
-	err := s.redis.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
+	err := s.Q.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
 	if err != nil {
 		return nil, errors.New(resp.LoginCheckErrorMsg)
 	}
@@ -36,7 +36,7 @@ func (s RedisService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
 	}
 	var err error
 	list := make([]models.SysUser, 0)
-	query := s.redis.
+	query := s.Q.
 		Table("sys_user").
 		Order("created_at DESC")
 	// 非超级管理员
@@ -67,7 +67,7 @@ func (s RedisService) GetUsers(req *request.UserReq) ([]models.SysUser, error) {
 		query = query.Where("status", "=", *req.Status)
 	}
 	// 查询列表
-	err = s.Find(query, &req.Page, &list)
+	err = s.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
@@ -79,7 +79,7 @@ func (s RedisService) GetUserById(id uint) (models.SysUser, error) {
 	}
 	var user models.SysUser
 	var err error
-	err = s.redis.
+	err = s.Q.
 		Table("sys_user").
 		Preload("Role").
 		Where("id", "=", id).

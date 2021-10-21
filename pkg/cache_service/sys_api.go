@@ -10,15 +10,13 @@ import (
 	"strings"
 )
 
-// 获取所有接口
 func (s RedisService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
-		// 不使用redis
 		return s.mysql.GetApis(req)
 	}
 	var err error
 	list := make([]models.SysApi, 0)
-	query := s.redis.
+	query := s.Q.
 		Table("sys_api").
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
@@ -37,15 +35,13 @@ func (s RedisService) GetApis(req *request.ApiReq) ([]models.SysApi, error) {
 	if creator != "" {
 		query = query.Where("creator", "contains", creator)
 	}
-	// 查询列表
-	err = s.Find(query, &req.Page, &list)
+	err = s.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
 // 根据权限编号获取以api分类分组的权限接口
 func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
 	if !global.Conf.System.UseRedis || !global.Conf.System.UseRedisService {
-		// 不使用redis
 		return s.mysql.GetAllApiGroupByCategoryByRoleId(currentRole, roleId)
 	}
 	// 接口树
@@ -54,7 +50,7 @@ func (s RedisService) GetAllApiGroupByCategoryByRoleId(currentRole models.SysRol
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
 	// 查询全部api
-	err := s.redis.Table("sys_api").Find(&allApi).Error
+	err := s.Q.Table("sys_api").Find(&allApi).Error
 	if err != nil {
 		return tree, accessIds, err
 	}

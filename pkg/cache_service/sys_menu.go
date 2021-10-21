@@ -48,13 +48,13 @@ func (s RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint
 func (s RedisService) getRoleMenus(roleId uint) []models.SysMenu {
 	var role models.SysRole
 	// 根据权限编号获取菜单
-	err := s.redis.
+	err := s.Q.
 		Table("sys_role").
 		Preload("Menus").
 		Where("id", "=", roleId).
 		First(&role).Error
 	if err != nil {
-		global.Log.Warn(s.ctx, "[getRoleMenu]", err)
+		global.Log.Warn(s.Q.Ctx, "[getRoleMenu]", err)
 	}
 	return role.Menus
 }
@@ -66,7 +66,7 @@ func (s RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 	// 查询关系表
 	relations := make([]models.SysRoleMenuRelation, 0)
 	menuIds := make([]uint, 0)
-	query := s.redis.Table("sys_role_menu_relation")
+	query := s.Q.Table("sys_role_menu_relation")
 	var err error
 	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
@@ -79,20 +79,20 @@ func (s RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 			menuIds = append(menuIds, relation.SysMenuId)
 		}
 		// 查询所有菜单
-		err = s.redis.
+		err = s.Q.
 			Table("sys_menu").
 			Where("id", "in", menuIds).
 			Order("sort").
 			Find(&menus).Error
 	} else {
-		err = s.redis.
+		err = s.Q.
 			Table("sys_menu").
 			Order("sort").
 			Find(&menus).Error
 	}
 
 	if err != nil {
-		global.Log.Warn(s.ctx, "[getAllMenu]", err)
+		global.Log.Warn(s.Q.Ctx, "[getAllMenu]", err)
 	}
 	return menus
 }

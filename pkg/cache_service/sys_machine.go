@@ -14,7 +14,7 @@ func (s RedisService) GetMachines(req *request.MachineReq) ([]models.SysMachine,
 	}
 	var err error
 	list := make([]models.SysMachine, 0)
-	query := s.redis.
+	query := s.Q.
 		Table("sys_machine").
 		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
@@ -33,6 +33,6 @@ func (s RedisService) GetMachines(req *request.MachineReq) ([]models.SysMachine,
 		query = query.Where("status", "=", *req.Status)
 	}
 	// 查询列表
-	err = s.Find(query, &req.Page, &list)
+	err = s.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
