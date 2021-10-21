@@ -26,7 +26,6 @@ type SysUser struct {
 	Nickname     string  `gorm:"comment:'昵称'" json:"nickname"`
 	Introduction string  `gorm:"comment:'自我介绍'" json:"introduction"`
 	Status       *uint   `gorm:"type:tinyint(1);default:1;comment:'用户状态(正常/禁用, 默认正常)'" json:"status"` // 由于设置了默认值, 这里使用ptr, 可避免赋值失败
-	Creator      string  `gorm:"comment:'创建人'" json:"creator"`
 	RoleId       uint    `gorm:"comment:'角色Id外键'" json:"roleId"`
 	Role         SysRole `gorm:"foreignKey:RoleId" json:"role"` // 将SysUser.RoleId指定为外键
 }

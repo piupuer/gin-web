@@ -13,7 +13,6 @@ import (
 	"strings"
 )
 
-// 初始化定时任务
 func Cron() {
 	j, err := job.New(
 		job.Config{
@@ -33,30 +32,27 @@ func Cron() {
 			Func: compress,
 		}).Start()
 	}
-	global.Log.Debug(ctx, "初始化定时任务完成")
+	global.Log.Debug(ctx, "initialize cron job success")
 }
 
 var dirs []string
 
 func compress(c context.Context) error {
 	ctx := query.NewRequestId(c, constant.MiddlewareRequestIdCtxKey)
-	global.Log.Info(ctx, "[定时任务][图片压缩]准备开始...")
-	// 获取工作目录
+	global.Log.Info(ctx, "[cron job][image compress]starting...")
 	pwd := utils.GetWorkDir()
-	// 默认目录为文件上传目录
+	// compress dir is default upload save dir
 	compressDir := pwd + "/" + global.Conf.Upload.SaveDir
-	// 配置了自定义压缩根目录
 	if global.Conf.Upload.CompressImageRootDir != "" {
 		compressDir = global.Conf.Upload.CompressImageRootDir
 	}
-	// 获取全部子目录
 	childDirList, _ := ioutil.ReadDir(compressDir)
 
 	for _, info := range childDirList {
 		if info.IsDir() {
 			currentDir := compressDir + "/" + info.Name()
 			if utils.Contains(dirs, currentDir) {
-				global.Log.Debug(ctx, "[定时任务][图片压缩]目录%s已扫描, 跳过", currentDir)
+				global.Log.Debug(ctx, "[cron job][image compress]dir %s scanned, skip", currentDir)
 				continue
 			}
 			filepath.Walk(currentDir, func(path string, fi os.FileInfo, errBack error) error {
@@ -64,22 +60,21 @@ func compress(c context.Context) error {
 					return errBack
 				}
 				var err error
-				// 压缩图片
 				if global.Conf.Upload.CompressImageOriginalSaveDir != "" {
 					if strings.Contains(path, global.Conf.Upload.CompressImageOriginalSaveDir) {
-						global.Log.Debug(ctx, "[定时任务][图片压缩]目录%s为源文件保存目录, 跳过", path)
+						global.Log.Debug(ctx, "[cron job][image compress]dir %s is original dir, skip", path)
 						return nil
 					}
-					// 保存源文件
+					// save original file
 					err = utils.CompressImageSaveOriginal(path, global.Conf.Upload.CompressImageOriginalSaveDir)
 				} else {
-					// 不保存源文件
+					// direct compression
 					err = utils.CompressImage(path)
 				}
 				if err != nil {
-					global.Log.Error(ctx, "[定时任务][图片压缩]压缩失败, 当前文件%s, %v", path, err)
+					global.Log.Error(ctx, "[cron job][image compress]compress filename %s failed: err", path, err)
 				} else {
-					global.Log.Info(ctx, "[定时任务][图片压缩]压缩成功, 当前文件%s", path)
+					global.Log.Info(ctx, "[cron job][image compress]compress filename %s success", path)
 				}
 				return nil
 			})
@@ -88,6 +83,6 @@ func compress(c context.Context) error {
 			}
 		}
 	}
-	global.Log.Info(ctx, "[定时任务][图片压缩]任务结束")
+	global.Log.Info(ctx, "[cron job][image compress]ended")
 	return nil
 }

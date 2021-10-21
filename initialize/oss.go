@@ -8,18 +8,13 @@ import (
 	"time"
 )
 
-// 初始化对象存储
 func Oss() {
-	// 初始化minio
 	Minio()
-	// 这里预留其他对象存储，如阿里云/七牛云等
-	// global.Log.Info("初始化对象存储完成")
 }
 
-// 初始化minio对象存储
 func Minio() {
 	if !global.Conf.Upload.Minio.Enable {
-		global.Log.Info(ctx, "未开启minio, 无需初始化")
+		global.Log.Info(ctx, "if minio is not enabled, there is no need to initialize minio")
 		return
 	}
 	init := false
@@ -30,9 +25,8 @@ func Minio() {
 			select {
 			case <-ctx.Done():
 				if !init {
-					panic(fmt.Sprintf("初始化minio异常: 连接超时(%ds)", global.Conf.System.ConnectTimeout))
+					panic(fmt.Sprintf("initialize object storage minio failed: connect timeout(%ds)", global.Conf.System.ConnectTimeout))
 				}
-				// 此处需return避免协程空跑
 				return
 			}
 		}
@@ -45,9 +39,8 @@ func Minio() {
 		global.Conf.Upload.Minio.UseHttps,
 	)
 
-	// 初始化一个默认存储桶
 	minio.MakeBucket(ctx, global.Conf.Upload.Minio.Bucket)
 	init = true
 	global.Minio = minio
-	global.Log.Info(ctx, "初始化对象存储: minio完成")
+	global.Log.Info(ctx, "initialize object storage minio success")
 }

@@ -5,10 +5,13 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
+	"gin-web/pkg/request"
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
+	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/utils"
 )
 
 func Routers() *gin.Engine {
@@ -37,10 +40,25 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPrefix),
 			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
 			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
+			middleware.WithOperationLogSaveMaxCount(1),
 			middleware.WithOperationLogSave(func(c *gin.Context, list []middleware.OperationRecord) {
+				arr := make([]models.SysOperationLog, len(list))
+				utils.Struct2StructByJson(list, &arr)
+				global.Mysql.Create(arr)
 			}),
 			middleware.WithOperationLogFindApi(func(c *gin.Context) []middleware.OperationApi {
-				return []middleware.OperationApi{}
+				s := cache_service.New(c)
+				list, err := s.GetApis(&request.ApiReq{
+					Page: resp.Page{
+						NoPagination: true,
+					},
+				})
+				r := make([]middleware.OperationApi, 0)
+				if err != nil {
+					return r
+				}
+				utils.Struct2StructByJson(list, &r)
+				return r
 			}),
 		),
 		middleware.Transaction(
