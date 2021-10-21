@@ -575,6 +575,8 @@ github.com/piupuer/go-helper v0.0.0-20211021054550-f942a46d7448 h1:RXIgukc+5esii
 github.com/piupuer/go-helper v0.0.0-20211021054550-f942a46d7448/go.mod h1:nop32SJPdajPAwDu+aLZnv6TusxC5sxJItefdEGKc64=
 github.com/piupuer/go-helper v0.0.0-20211021062530-80bb2435c059 h1:QX3LgrU3V56SsvAHtbG4WntRZcvcyoWK9jtE/eS9YZw=
 github.com/piupuer/go-helper v0.0.0-20211021062530-80bb2435c059/go.mod h1:nop32SJPdajPAwDu+aLZnv6TusxC5sxJItefdEGKc64=
+github.com/piupuer/go-helper v0.0.0-20211021080901-ec88df943072 h1:IuCSJ+Kn8d38Vw6OKuswHUkQRJzU7lRpwvlZ6Vvp0m4=
+github.com/piupuer/go-helper v0.0.0-20211021080901-ec88df943072/go.mod h1:nop32SJPdajPAwDu+aLZnv6TusxC5sxJItefdEGKc64=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
