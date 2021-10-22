@@ -184,7 +184,7 @@ func (h MessageHub) count() {
 			for _, client := range h.getClients() {
 				infos = append(infos, fmt.Sprintf("%d-%s", client.User.Id, client.Ip))
 			}
-			global.Log.Debug(h.Service.Q.Ctx, "[Message][healthier]active connection: %v", strings.Join(infos, ","))
+			global.Log.Debug(h.Service.Q.Ctx, "[Message]active connection: %v", strings.Join(infos, ","))
 		}
 	}
 }

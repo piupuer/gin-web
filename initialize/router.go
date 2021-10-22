@@ -5,12 +5,10 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
-	"gin-web/pkg/request"
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
-	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
 )
 
@@ -47,16 +45,11 @@ func Routers() *gin.Engine {
 				global.Mysql.Create(arr)
 			}),
 			middleware.WithOperationLogFindApi(func(c *gin.Context) []middleware.OperationApi {
-				s := cache_service.New(c)
-				list, err := s.FindApi(&request.ApiReq{
-					Page: resp.Page{
-						NoPagination: true,
-					},
-				})
+				list := make([]models.SysApi, 0)
+				global.Mysql.
+					Model(&models.SysApi{}).
+					Find(&list)
 				r := make([]middleware.OperationApi, 0)
-				if err != nil {
-					return r
-				}
 				utils.Struct2StructByJson(list, &r)
 				return r
 			}),
