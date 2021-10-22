@@ -52,3 +52,8 @@ type UpdateMenuReq struct {
 	Breadcrumb *req.NullUint `json:"breadcrumb"`
 	ParentId   *req.NullUint `json:"parentId"`
 }
+
+type UpdateMenuIncrementalIdsReq struct {
+	Create []uint `json:"create"`
+	Delete []uint `json:"delete"`
+}

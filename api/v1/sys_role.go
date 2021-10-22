@@ -63,7 +63,7 @@ func UpdateRoleById(c *gin.Context) {
 	resp.Success()
 }
 
-func UpdateRoleMenusById(c *gin.Context) {
+func UpdateRoleMenuById(c *gin.Context) {
 	var r request.UpdateMenuIncrementalIdsReq
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
@@ -77,13 +77,13 @@ func UpdateRoleMenusById(c *gin.Context) {
 	}
 
 	s := service.New(c)
-	err := s.UpdateRoleMenusById(user.Role, id, r)
+	err := s.UpdateRoleMenuById(user.Role, id, r)
 	resp.CheckErr(err)
 	CacheFlushMenuTree(c)
 	resp.Success()
 }
 
-func UpdateRoleApisById(c *gin.Context) {
+func UpdateRoleApiById(c *gin.Context) {
 	var r request.UpdateMenuIncrementalIdsReq
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
@@ -99,7 +99,7 @@ func UpdateRoleApisById(c *gin.Context) {
 	}
 
 	s := service.New(c)
-	err := s.UpdateRoleApisById(id, r)
+	err := s.UpdateRoleApiById(id, r)
 	resp.CheckErr(err)
 	CacheFlushMenuTree(c)
 	resp.Success()

@@ -3,6 +3,7 @@ package cache_service
 import (
 	"gin-web/models"
 	"gin-web/pkg/global"
+	"gin-web/pkg/service"
 )
 
 func (rd RedisService) FindMenu(currentRole models.SysRole) []models.SysMenu {
@@ -27,7 +28,7 @@ func (rd RedisService) FindMenuByRoleId(currentRole models.SysRole, roleId uint)
 	for _, menu := range roleMenus {
 		accessIds = append(accessIds, menu.Id)
 	}
-	accessIds = models.FindCheckedMenuId(accessIds, allMenu)
+	accessIds = service.FindCheckedMenuId(accessIds, allMenu)
 	return tree, accessIds, nil
 }
 

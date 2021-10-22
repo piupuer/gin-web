@@ -85,8 +85,57 @@ func (my MysqlService) FindMenuByRoleId(currentRole models.SysRole, roleId uint)
 	for _, menu := range roleMenus {
 		accessIds = append(accessIds, menu.Id)
 	}
-	accessIds = models.FindCheckedMenuId(accessIds, allMenu)
+	accessIds = FindCheckedMenuId(accessIds, allMenu)
 	return tree, accessIds, nil
+}
+
+func FindCheckedMenuId(list []uint, allMenu []models.SysMenu) []uint {
+	checked := make([]uint, 0)
+	for _, c := range list {
+		children := FindChildrenId(c, allMenu)
+		count := 0
+		for _, child := range children {
+			contains := false
+			for _, v := range list {
+				if v == child {
+					contains = true
+				}
+			}
+			if contains {
+				count++
+			}
+		}
+		if len(children) == count {
+			// all checked
+			checked = append(checked, c)
+		}
+	}
+	return checked
+}
+
+// find children menu ids
+func FindChildrenId(parentId uint, allMenu []models.SysMenu) []uint {
+	childrenIds := make([]uint, 0)
+	for _, menu := range allMenu {
+		if menu.ParentId == parentId {
+			childrenIds = append(childrenIds, menu.Id)
+		}
+	}
+	return childrenIds
+}
+
+func FindIncremental(req request.UpdateMenuIncrementalIdsReq, oldMenuIds []uint, allMenu []models.SysMenu) []uint {
+	createIds := FindCheckedMenuId(req.Create, allMenu)
+	deleteIds := FindCheckedMenuId(req.Delete, allMenu)
+	newList := make([]uint, 0)
+	for _, oldItem := range oldMenuIds {
+		// not in delete
+		if !utils.Contains(deleteIds, oldItem) {
+			newList = append(newList, oldItem)
+		}
+	}
+	// need create
+	return append(newList, createIds...)
 }
 
 func (my MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuReq) (err error) {
@@ -96,7 +145,7 @@ func (my MysqlService) CreateMenu(currentRole models.SysRole, req *request.Creat
 	menuReq := request.UpdateMenuIncrementalIdsReq{
 		Create: []uint{menu.Id},
 	}
-	err = my.UpdateRoleMenusById(currentRole, currentRole.Id, menuReq)
+	err = my.UpdateRoleMenuById(currentRole, currentRole.Id, menuReq)
 	return
 }
 

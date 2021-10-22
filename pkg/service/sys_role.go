@@ -47,14 +47,14 @@ func (my MysqlService) FindRole(req *request.RoleReq) ([]models.SysRole, error) 
 	return list, err
 }
 
-func (my MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
+func (my MysqlService) UpdateRoleMenuById(currentRole models.SysRole, id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
 	allMenu := my.FindMenu(currentRole)
 	roleMenus := my.findMenuByRoleId(id)
 	menuIds := make([]uint, 0)
 	for _, menu := range roleMenus {
 		menuIds = append(menuIds, menu.Id)
 	}
-	incremental := req.FindIncremental(menuIds, allMenu)
+	incremental := FindIncremental(req, menuIds, allMenu)
 	incrementalMenus := make([]models.SysMenu, 0)
 	err = my.Q.Tx.
 		Model(&models.SysMenu{}).
@@ -78,7 +78,7 @@ func (my MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, 
 	return
 }
 
-func (my MysqlService) UpdateRoleApisById(id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
+func (my MysqlService) UpdateRoleApiById(id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
 	var oldRole models.SysRole
 	query := my.Q.Tx.Model(&oldRole).Where("id = ?", id).First(&oldRole)
 	if query.Error == gorm.ErrRecordNotFound {
@@ -114,7 +114,7 @@ func (my MysqlService) UpdateRoleApisById(id uint, req request.UpdateMenuIncreme
 				Method:  api.Method,
 			})
 		}
-		_, err = my.BatchDeleteRoleCasbin(cs)
+		_, err = my.BatchCreateRoleCasbin(cs)
 
 	}
 	return
