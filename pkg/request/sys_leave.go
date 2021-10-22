@@ -7,10 +7,10 @@ import (
 )
 
 type LeaveReq struct {
-	UserId            uint          `json:"-"`
-	Status            *req.NullUint `json:"status" form:"status"`
-	ApprovalOpinion   string        `json:"approvalOpinion" form:"approvalOpinion"`
-	Desc              string        `json:"desc" form:"desc"`
+	UserId          uint          `json:"-"`
+	Status          *req.NullUint `json:"status" form:"status"`
+	ApprovalOpinion string        `json:"approvalOpinion" form:"approvalOpinion"`
+	Desc            string        `json:"desc" form:"desc"`
 	resp.Page
 }
 
@@ -21,7 +21,7 @@ type CreateLeaveReq struct {
 
 func (s CreateLeaveReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
-	m["Desc"] = "说明"
+	m["Desc"] = "description"
 	return m
 }
 

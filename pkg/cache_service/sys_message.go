@@ -10,21 +10,19 @@ import (
 	"strings"
 )
 
-// 查询指定用户未删除的消息
-func (s RedisService) FindUnDeleteMessage(req *request.MessageReq) ([]response.MessageResp, error) {
+// find status!=models.SysMessageLogStatusDeleted messages
+func (rd RedisService) FindUnDeleteMessage(req *request.MessageReq) ([]response.MessageResp, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.FindUnDeleteMessage(req)
+		return rd.mysql.FindUnDeleteMessage(req)
 	}
-	// 取出当前用户的所有消息
 	currentUserAllLogs := make([]models.SysMessageLog, 0)
-	err := s.Q.
+	err := rd.Q.
 		Table("sys_message_log").
 		Preload("Message").
 		Preload("Message.FromUser").
 		Preload("ToUser").
 		Where("to_user_id", "=", req.ToUserId).
-		// 未删除的
+		// un delete
 		Where("status", "!=", models.SysMessageLogStatusDeleted).
 		Find(&currentUserAllLogs).Error
 	if err != nil {
@@ -32,8 +30,8 @@ func (s RedisService) FindUnDeleteMessage(req *request.MessageReq) ([]response.M
 	}
 
 	messageLogs := make([]models.SysMessageLog, 0)
-	// 转为json, 再匹配前端其他条件
-	query := s.Q.
+	// all log json
+	query := rd.Q.
 		FromString(utils.Struct2Json(currentUserAllLogs)).
 		Order("created_at DESC")
 	title := strings.TrimSpace(req.Title)
@@ -50,14 +48,12 @@ func (s RedisService) FindUnDeleteMessage(req *request.MessageReq) ([]response.M
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
-	// 查询列表
-	err = s.Q.FindWithPage(query, &req.Page, &messageLogs)
+	err = rd.Q.FindWithPage(query, &req.Page, &messageLogs)
 	if err != nil {
 		return nil, err
 	}
-	// 将数据转为响应格式
+	// convert to MessageResp
 	list := make([]response.MessageResp, 0)
-
 	for _, log := range messageLogs {
 		res := response.MessageResp{
 			Base: resp.Base{
@@ -80,14 +76,13 @@ func (s RedisService) FindUnDeleteMessage(req *request.MessageReq) ([]response.M
 	return list, err
 }
 
-// 查询未读消息条数
-func (s RedisService) GetUnReadMessageCount(userId uint) (int64, error) {
+// un read total count
+func (rd RedisService) GetUnReadMessageCount(userId uint) (int64, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.GetUnReadMessageCount(userId)
+		return rd.mysql.GetUnReadMessageCount(userId)
 	}
 	var total int64
-	err := s.Q.
+	err := rd.Q.
 		Table("sys_message_log").
 		Where("to_user_id", "=", userId).
 		Where("status", "=", models.SysMessageLogStatusUnRead).

@@ -8,7 +8,6 @@ import (
 	"strings"
 )
 
-// 获取操作日志
 func (my MysqlService) FindOperationLog(req *request.OperationLogReq) ([]models.SysOperationLog, error) {
 	var err error
 	list := make([]models.SysOperationLog, 0)
@@ -31,7 +30,6 @@ func (my MysqlService) FindOperationLog(req *request.OperationLogReq) ([]models.
 	if status != "" {
 		query = query.Where("status LIKE ?", fmt.Sprintf("%%%s%%", status))
 	}
-	// 查询列表
 	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }

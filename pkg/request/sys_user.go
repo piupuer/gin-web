@@ -6,7 +6,6 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-// User login structure
 type RegisterAndLoginReq struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
@@ -14,8 +13,8 @@ type RegisterAndLoginReq struct {
 
 func (s RegisterAndLoginReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
-	m["Username"] = "用户名"
-	m["Password"] = "密码"
+	m["Username"] = "username"
+	m["Password"] = "password"
 	return m
 }
 
@@ -42,7 +41,7 @@ type UserReq struct {
 type CreateUserReq struct {
 	Username     string        `json:"username" validate:"required"`
 	Password     string        `json:"password"`
-	InitPassword string        `json:"initPassword" validate:"required"` // 不使用SysUser的Password字段, 避免请求劫持绕过系统校验
+	InitPassword string        `json:"initPassword" validate:"required"`
 	NewPassword  string        `json:"newPassword"`
 	Mobile       string        `json:"mobile" validate:"required"`
 	Avatar       string        `json:"avatar"`
@@ -54,10 +53,10 @@ type CreateUserReq struct {
 
 func (s CreateUserReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
-	m["Username"] = "用户名"
-	m["InitPassword"] = "初始密码"
-	m["Mobile"] = "手机号"
-	m["RoleId"] = "角色"
+	m["Username"] = "username"
+	m["InitPassword"] = "initialize password"
+	m["Mobile"] = "mobile number"
+	m["RoleId"] = "role id"
 	return m
 }
 

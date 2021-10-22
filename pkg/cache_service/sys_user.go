@@ -10,38 +10,35 @@ import (
 	"strings"
 )
 
-// 登录校验
-func (s RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
+// user login check
+func (rd RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.LoginCheck(user)
+		return rd.mysql.LoginCheck(user)
 	}
 	var u models.SysUser
-	// 查询用户及其角色
-	err := s.Q.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
+	// Does the user exist
+	err := rd.Q.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
 	if err != nil {
 		return nil, errors.New(resp.LoginCheckErrorMsg)
 	}
-	// 校验密码
+	// Verify password
 	if ok := utils.ComparePwd(user.Password, u.Password); !ok {
 		return nil, errors.New(resp.LoginCheckErrorMsg)
 	}
 	return &u, err
 }
 
-func (s RedisService) FindUser(req *request.UserReq) ([]models.SysUser, error) {
+func (rd RedisService) FindUser(req *request.UserReq) ([]models.SysUser, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.FindUser(req)
+		return rd.mysql.FindUser(req)
 	}
 	var err error
 	list := make([]models.SysUser, 0)
-	query := s.Q.
+	query := rd.Q.
 		Table("sys_user").
 		Order("created_at DESC")
-	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
-		roleIds, err := s.GetRoleIdsBySort(*req.CurrentRole.Sort)
+		roleIds, err := rd.FindRoleIdBySort(*req.CurrentRole.Sort)
 		if err != nil {
 			return list, err
 		}
@@ -62,24 +59,20 @@ func (s RedisService) FindUser(req *request.UserReq) ([]models.SysUser, error) {
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
-	// 查询列表
-	err = s.Q.FindWithPage(query, &req.Page, &list)
+	err = rd.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
-// 获取单个用户
-func (s RedisService) GetUserById(id uint) (models.SysUser, error) {
+func (rd RedisService) GetUserById(id uint) (models.SysUser, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.GetUserById(id)
+		return rd.mysql.GetUserById(id)
 	}
 	var user models.SysUser
 	var err error
-	err = s.Q.
+	err = rd.Q.
 		Table("sys_user").
 		Preload("Role").
 		Where("id", "=", id).
-		// 状态为正常
 		Where("status", "=", models.SysUserStatusEnable).
 		First(&user).Error
 	return user, err

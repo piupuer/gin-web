@@ -6,33 +6,33 @@ import (
 )
 
 type MessageReq struct {
-	ToUserId          uint   `json:"toUserId"`
-	Title             string `json:"title" form:"title"`
-	Content           string `json:"content" form:"content"`
-	Type              *uint  `json:"type" form:"type"`
-	Status            *uint  `json:"status" form:"status"`
+	ToUserId uint   `json:"toUserId"`
+	Title    string `json:"title" form:"title"`
+	Content  string `json:"content" form:"content"`
+	Type     *uint  `json:"type" form:"type"`
+	Status   *uint  `json:"status" form:"status"`
 	resp.Page
 }
 
 type PushMessageReq struct {
 	FromUserId       uint
 	Type             *req.NullUint `json:"type" form:"type" validate:"required"`
-	ToUserIds        []uint   `json:"toUserIds" form:"toUserIds"`
-	ToRoleIds        []uint   `json:"toRoleIds" form:"toRoleIds"`
-	Title            string   `json:"title" form:"title" validate:"required"`
-	Content          string   `json:"content" form:"content" validate:"required"`
-	IdempotenceToken string   `json:"idempotenceToken" form:"idempotenceToken"`
+	ToUserIds        []uint        `json:"toUserIds" form:"toUserIds"`
+	ToRoleIds        []uint        `json:"toRoleIds" form:"toRoleIds"`
+	Title            string        `json:"title" form:"title" validate:"required"`
+	Content          string        `json:"content" form:"content" validate:"required"`
+	IdempotenceToken string        `json:"idempotenceToken" form:"idempotenceToken"`
 }
 
 func (s PushMessageReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
-	m["Type"] = "消息类型"
-	m["Title"] = "消息标题"
-	m["Content"] = "消息内容"
+	m["Type"] = "type"
+	m["Title"] = "title"
+	m["Content"] = "content"
 	return m
 }
 
 type MessageWsReq struct {
-	Type string `json:"type"`
+	Type string      `json:"type"`
 	Data interface{} `json:"data"`
 }

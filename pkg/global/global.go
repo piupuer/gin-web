@@ -1,11 +1,11 @@
 package global
 
 import (
-	"gin-web/pkg/oss"
 	"github.com/casbin/casbin/v2"
 	"github.com/go-redis/redis/v8"
 	"github.com/gobuffalo/packr/v2"
 	"github.com/piupuer/go-helper/pkg/logger"
+	"github.com/piupuer/go-helper/pkg/oss"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
 	"io/ioutil"

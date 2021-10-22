@@ -3,9 +3,9 @@ package response
 import "github.com/piupuer/go-helper/pkg/resp"
 
 type LoginResp struct {
-	Username  string `json:"username"`  // 登录用户名
-	Token     string `json:"token"`     // jwt令牌
-	ExpiresAt int64  `json:"expiresAt"` // 过期时间, 秒
+	Username  string `json:"username"`
+	Token     string `json:"token"`
+	ExpiresAt int64  `json:"expiresAt"`
 }
 
 type UserInfoResp struct {

@@ -15,6 +15,6 @@ type MessageResp struct {
 }
 
 type MessageWsResp struct {
-	Type   string    `json:"type"`   // 消息类型
-	Detail resp.Resp `json:"detail"` // 消息详情
+	Type   string    `json:"type"` 
+	Detail resp.Resp `json:"detail"` 
 }

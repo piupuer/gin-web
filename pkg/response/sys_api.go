@@ -12,9 +12,9 @@ type ApiResp struct {
 }
 
 type ApiGroupByCategoryResp struct {
-	Title    string    `json:"title"`    // 标题
-	Category string    `json:"category"` // 分组名称
-	Children []ApiResp `json:"children"` // 前端以树形图结构展示, 这里用children表示
+	Title    string    `json:"title"`
+	Category string    `json:"category"`
+	Children []ApiResp `json:"children"`
 }
 
 type ApiTreeWithAccessResp struct {

@@ -5,71 +5,56 @@ import (
 	"gin-web/pkg/global"
 )
 
-// 获取所有菜单
-func (s RedisService) FindMenu(currentRole models.SysRole) []models.SysMenu {
+func (rd RedisService) FindMenu(currentRole models.SysRole) []models.SysMenu {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.FindMenu(currentRole)
+		return rd.mysql.FindMenu(currentRole)
 	}
 	tree := make([]models.SysMenu, 0)
-	// 获取全部菜单
-	menus := s.getAllMenu(currentRole)
-	// 生成菜单树
-	tree = s.mysql.GenMenuTree(0, menus)
+	menus := rd.findMenuByCurrentRole(currentRole)
+	tree = rd.mysql.GenMenuTree(0, menus)
 	return tree
 }
 
-// 根据权限编号获取全部菜单
-func (s RedisService) GetAllMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
+func (rd RedisService) FindMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.GetAllMenuByRoleId(currentRole, roleId)
+		return rd.mysql.FindMenuByRoleId(currentRole, roleId)
 	}
-	// 菜单树
 	tree := make([]models.SysMenu, 0)
-	// 有权限访问的id列表
 	accessIds := make([]uint, 0)
-	// 查询全部菜单
-	allMenu := s.getAllMenu(currentRole)
-	// 查询角色拥有菜单
-	roleMenus := s.getRoleMenus(roleId)
-	// 生成菜单树
-	tree = s.mysql.GenMenuTree(0, allMenu)
-	// 获取id列表
+	allMenu := rd.findMenuByCurrentRole(currentRole)
+	roleMenus := rd.findMenuByRoleId(roleId)
+	tree = rd.mysql.GenMenuTree(0, allMenu)
 	for _, menu := range roleMenus {
 		accessIds = append(accessIds, menu.Id)
 	}
-	// 只保留选中项目
 	accessIds = models.FindCheckedMenuId(accessIds, allMenu)
 	return tree, accessIds, nil
 }
 
-// 获取权限菜单, 非菜单树
-func (s RedisService) getRoleMenus(roleId uint) []models.SysMenu {
+// find all menus by role id(not menu tree)
+func (rd RedisService) findMenuByRoleId(roleId uint) []models.SysMenu {
 	var role models.SysRole
-	// 根据权限编号获取菜单
-	err := s.Q.
+	err := rd.Q.
 		Table("sys_role").
 		Preload("Menus").
 		Where("id", "=", roleId).
 		First(&role).Error
 	if err != nil {
-		global.Log.Warn(s.Q.Ctx, "[getRoleMenu]", err)
+		global.Log.Warn(rd.Q.Ctx, "%v", err)
 	}
 	return role.Menus
 }
 
-// 获取全部菜单, 非菜单树
-func (s RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
+// find all menus by current role(not menu tree)
+func (rd RedisService) findMenuByCurrentRole(currentRole models.SysRole) []models.SysMenu {
 	menus := make([]models.SysMenu, 0)
 
-	// 查询关系表
 	relations := make([]models.SysRoleMenuRelation, 0)
 	menuIds := make([]uint, 0)
-	query := s.Q.Table("sys_role_menu_relation")
+	query := rd.Q.Table("sys_role_menu_relation")
 	var err error
-	// 非超级管理员
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
+		// find menus by current role id
 		query = query.Where("sys_role_id", "=", currentRole.Id)
 		err = query.Find(&relations).Error
 		if err != nil {
@@ -78,21 +63,21 @@ func (s RedisService) getAllMenu(currentRole models.SysRole) []models.SysMenu {
 		for _, relation := range relations {
 			menuIds = append(menuIds, relation.SysMenuId)
 		}
-		// 查询所有菜单
-		err = s.Q.
+		err = rd.Q.
 			Table("sys_menu").
 			Where("id", "in", menuIds).
 			Order("sort").
 			Find(&menus).Error
 	} else {
-		err = s.Q.
+		// super admin has all menus
+		err = rd.Q.
 			Table("sys_menu").
 			Order("sort").
 			Find(&menus).Error
 	}
 
 	if err != nil {
-		global.Log.Warn(s.Q.Ctx, "[getAllMenu]", err)
+		global.Log.Warn(rd.Q.Ctx, "%v", err)
 	}
 	return menus
 }

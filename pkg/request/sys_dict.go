@@ -21,8 +21,8 @@ type CreateDictReq struct {
 
 func (s CreateDictReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
-	m["Name"] = "字典名称"
-	m["Desc"] = "字典描述"
+	m["Name"] = "dict name"
+	m["Desc"] = "dict description"
 	return m
 }
 
@@ -55,9 +55,9 @@ type CreateDictDataReq struct {
 
 func (s CreateDictDataReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
-	m["Key"] = "数据键"
-	m["Val"] = "数据值"
-	m["DictId"] = "字典编号"
+	m["Key"] = "key"
+	m["Val"] = "value"
+	m["DictId"] = "dict id"
 	return m
 }
 

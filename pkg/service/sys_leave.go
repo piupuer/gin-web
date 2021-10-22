@@ -12,7 +12,7 @@ import (
 	"strings"
 )
 
-// 获取所有请假(当前用户)
+// find leave by current user id
 func (my MysqlService) FindLeave(r *request.LeaveReq) ([]models.SysLeave, error) {
 	var err error
 	list := make([]models.SysLeave, 0)
@@ -27,7 +27,6 @@ func (my MysqlService) FindLeave(r *request.LeaveReq) ([]models.SysLeave, error)
 	if desc != "" {
 		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
-	// 查询列表
 	err = my.Q.FindWithPage(query, &r.Page, &list)
 	return list, err
 }

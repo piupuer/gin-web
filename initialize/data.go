@@ -688,7 +688,7 @@ func Data() {
 	}
 	if len(newRoleCasbins) > 0 {
 		s := service.New(nil)
-		s.CreateRoleCasbins(newRoleCasbins)
+		s.BatchCreateRoleCasbin(newRoleCasbins)
 	}
 }
 

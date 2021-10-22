@@ -7,14 +7,13 @@ import (
 	"strings"
 )
 
-func (s RedisService) FindMachine(req *request.MachineReq) ([]models.SysMachine, error) {
+func (rd RedisService) FindMachine(req *request.MachineReq) ([]models.SysMachine, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.FindMachine(req)
+		return rd.mysql.FindMachine(req)
 	}
 	var err error
 	list := make([]models.SysMachine, 0)
-	query := s.Q.
+	query := rd.Q.
 		Table("sys_machine").
 		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
@@ -28,7 +27,6 @@ func (s RedisService) FindMachine(req *request.MachineReq) ([]models.SysMachine,
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
-	// 查询列表
-	err = s.Q.FindWithPage(query, &req.Page, &list)
+	err = rd.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }

@@ -29,11 +29,11 @@ func GetMenuTree(c *gin.Context) {
 	resp.SuccessWithData(rp)
 }
 
-func GetAllMenuByRoleId(c *gin.Context) {
+func FindMenuByRoleId(c *gin.Context) {
 	id := req.UintId(c)
 	user := GetCurrentUser(c)
 	s := cache_service.New(c)
-	menus, ids, err := s.GetAllMenuByRoleId(user.Role, id)
+	menus, ids, err := s.FindMenuByRoleId(user.Role, id)
 	resp.CheckErr(err)
 	var rp response.MenuTreeWithAccessResp
 	rp.AccessIds = ids

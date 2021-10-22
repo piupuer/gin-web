@@ -113,11 +113,11 @@ func UploadMerge(c *gin.Context) {
 	previewUrl := "no preview"
 	if global.Conf.Upload.Minio.Enable {
 		// send to minio
-		err = global.Minio.PutLocalObject(c, global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
+		err = global.Minio.PutLocal(c, global.Conf.Upload.Minio.Bucket, mergeFileName, mergeFileName)
 		if err != nil {
 			resp.CheckErr("put object to minio failed, %v", err)
 		}
-		previewUrl = global.Minio.GetObjectPreviewUrl(c, global.Conf.Upload.Minio.Bucket, mergeFileName)
+		previewUrl = global.Minio.GetPreviewUrl(c, global.Conf.Upload.Minio.Bucket, mergeFileName)
 	}
 	// remove all chunk files
 	os.RemoveAll(r.GetChunkRootPath())

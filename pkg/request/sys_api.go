@@ -5,9 +5,9 @@ import (
 )
 
 type ApiReq struct {
-	Method            string `json:"method" form:"method"`
-	Path              string `json:"path" form:"path"`
-	Category          string `json:"category" form:"category"`
+	Method   string `json:"method" form:"method"`
+	Path     string `json:"path" form:"path"`
+	Category string `json:"category" form:"category"`
 	resp.Page
 }
 
@@ -17,14 +17,14 @@ type CreateApiReq struct {
 	Category string `json:"category" validate:"required"`
 	Desc     string `json:"desc"`
 	Title    string `json:"title"`
-	RoleIds  []uint `json:"roleIds"` // 绑定可以访问该接口的角色
+	RoleIds  []uint `json:"roleIds"`
 }
 
 func (s CreateApiReq) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
-	m["Method"] = "请求方式"
-	m["Path"] = "访问路径"
-	m["Category"] = "所属类别"
+	m["Method"] = "method"
+	m["Path"] = "path"
+	m["Category"] = "category"
 	return m
 }
 

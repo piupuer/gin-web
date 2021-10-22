@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
@@ -101,10 +100,8 @@ func (my MysqlService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysR
 		item.Title = fmt.Sprintf("%s %s[%s]", item.Desc, item.Path, item.Method)
 		children = append(children, item)
 		if existIndex != -1 {
-			// update data
 			tree[existIndex].Children = children
 		} else {
-			// create data
 			tree = append(tree, response.ApiGroupByCategoryResp{
 				Title:    category + " group",
 				Category: category,
@@ -121,15 +118,13 @@ func (my MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
 	if err != nil {
 		return err
 	}
-	// 添加了角色
 	if len(req.RoleIds) > 0 {
-		// 查询角色关键字
 		var roles []models.SysRole
 		err = my.Q.Tx.Where("id IN (?)", req.RoleIds).Find(&roles).Error
 		if err != nil {
 			return
 		}
-		// 构建casbin规则
+		// generate casbin rules
 		cs := make([]models.SysRoleCasbin, 0)
 		for _, role := range roles {
 			cs = append(cs, models.SysRoleCasbin{
@@ -138,39 +133,33 @@ func (my MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
 				Method:  api.Method,
 			})
 		}
-		// 批量创建
-		_, err = my.BatchCreateRoleCasbins(cs)
+		_, err = my.BatchCreateRoleCasbin(cs)
 	}
 	return
 }
 
-// 更新接口
 func (my MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err error) {
 	var api models.SysApi
 	query := my.Q.Tx.Model(&api).Where("id = ?", id).First(&api)
 	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
+		return gorm.ErrRecordNotFound
 	}
 
-	// 比对增量字段
 	m := make(map[string]interface{}, 0)
 	utils.CompareDifferenceStruct2SnakeKeyByJson(api, req, &m)
 
-	// 记录update前的旧数据, 执行Updates后api会变成新数据
 	oldApi := api
-	// 更新指定列
 	err = query.Updates(m).Error
 
-	// 对比api发生了哪些变化
+	// get diff fields
 	diff := make(map[string]interface{}, 0)
 	utils.CompareDifferenceStruct2SnakeKeyByJson(oldApi, api, &diff)
 
 	path, ok1 := diff["path"]
 	method, ok2 := diff["method"]
 	if (ok1 && path != "") || (ok2 && method != "") {
-		// path或method变化, 需要更新casbin规则
-		// 查找当前接口都有哪些角色在使用
-		oldCasbins := my.GetRoleCasbins(models.SysRoleCasbin{
+		// path/method change, the caspin rule needs to be updated
+		oldCasbins := my.FindRoleCasbin(models.SysRoleCasbin{
 			Path:   oldApi.Path,
 			Method: oldApi.Method,
 		})
@@ -179,9 +168,9 @@ func (my MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err err
 			for _, oldCasbin := range oldCasbins {
 				keywords = append(keywords, oldCasbin.Keyword)
 			}
-			// 删除旧规则, 添加新规则
-			my.BatchDeleteRoleCasbins(oldCasbins)
-			// 构建新casbin规则
+			// delete old rules
+			my.BatchDeleteRoleCasbin(oldCasbins)
+			// create new rules
 			newCasbins := make([]models.SysRoleCasbin, 0)
 			for _, keyword := range keywords {
 				newCasbins = append(newCasbins, models.SysRoleCasbin{
@@ -190,29 +179,26 @@ func (my MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err err
 					Method:  api.Method,
 				})
 			}
-			// 批量创建
-			_, err = my.BatchCreateRoleCasbins(newCasbins)
+			_, err = my.BatchCreateRoleCasbin(newCasbins)
 		}
 	}
 	return
 }
 
-// 批量删除接口
 func (my MysqlService) DeleteApiByIds(ids []uint) (err error) {
 	var list []models.SysApi
 	query := my.Q.Tx.Where("id IN (?)", ids).Find(&list)
 	if query.Error != nil {
 		return
 	}
-	// 查找当前接口都有哪些角色在使用
 	casbins := make([]models.SysRoleCasbin, 0)
 	for _, api := range list {
-		casbins = append(casbins, my.GetRoleCasbins(models.SysRoleCasbin{
+		casbins = append(casbins, my.FindRoleCasbin(models.SysRoleCasbin{
 			Path:   api.Path,
 			Method: api.Method,
 		})...)
 	}
-	// 删除所有规则
-	my.BatchDeleteRoleCasbins(casbins)
+	// delete old rules
+	my.BatchDeleteRoleCasbin(casbins)
 	return query.Delete(&models.SysApi{}).Error
 }

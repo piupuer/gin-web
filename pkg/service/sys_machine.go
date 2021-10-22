@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
@@ -10,7 +9,6 @@ import (
 	"strings"
 )
 
-// 获取机器
 func (my MysqlService) FindMachine(req *request.MachineReq) ([]models.SysMachine, error) {
 	var err error
 	list := make([]models.SysMachine, 0)
@@ -32,20 +30,18 @@ func (my MysqlService) FindMachine(req *request.MachineReq) ([]models.SysMachine
 			query = query.Where("status = ?", 0)
 		}
 	}
-	// 查询列表
 	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
-// 验证机器状态
+// connect machine
 func (my MysqlService) ConnectMachine(id uint) error {
 	var oldMachine models.SysMachine
 	query := my.Q.Tx.Model(&oldMachine).Where("id = ?", id).First(&oldMachine)
 	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
+		return gorm.ErrRecordNotFound
 	}
 
-	// 初始化机器
 	err := initRemoteMachine(&oldMachine)
 	var newMachine models.SysMachine
 	unConnectedStatus := models.SysMachineStatusUnhealthy
@@ -66,7 +62,7 @@ func (my MysqlService) ConnectMachine(id uint) error {
 	return nil
 }
 
-// 初始化机器信息
+// init machine
 func initRemoteMachine(machine *models.SysMachine) error {
 	config := utils.SshConfig{
 		LoginName: machine.LoginName,
@@ -76,21 +72,21 @@ func initRemoteMachine(machine *models.SysMachine) error {
 		Timeout:   2,
 	}
 	cmds := []string{
-		// 查看系统版本
+		// system version
 		"lsb_release -d | cut -f 2 -d : | awk '$1=$1'",
-		// 查看系统架构
+		// system arch
 		"arch",
-		// 查看机器名字
+		// system username
 		"uname -n",
-		// 查看cpu型号
+		// cpu info
 		"cat /proc/cpuinfo | grep name | cut -f 2 -d : | uniq | awk '$1=$1'",
-		// 查看cpu核数
+		// cpu cores
 		"cat /proc/cpuinfo| grep 'cpu cores' | uniq | awk '{print $4}'",
-		// 查看cpu线程数
+		// cpu processor
 		"cat /proc/cpuinfo | grep 'processor' | wc -l",
-		// 查看内存大小（G）
+		// memory(GB)
 		"cat /proc/meminfo | grep MemTotal | awk '{printf (\"%.2fG\\n\", $2 / 1024 / 1024)}'",
-		// 查看硬盘容量（G）
+		// disk(GB)
 		"df -h / | head -n 2 | tail -n 1 | awk '{print $2}'",
 	}
 	res := utils.ExecRemoteShell(config, cmds)
@@ -100,7 +96,7 @@ func initRemoteMachine(machine *models.SysMachine) error {
 
 	info := strings.Split(strings.TrimSuffix(res.Result, "\n"), "\n")
 	if len(info) != len(cmds) {
-		return fmt.Errorf("读取机器信息有误")
+		return fmt.Errorf("read machine info failed")
 	}
 
 	normalStatus := models.SysMachineStatusHealthy
@@ -109,7 +105,7 @@ func initRemoteMachine(machine *models.SysMachine) error {
 	machine.Version = info[0]
 	machine.Arch = info[1]
 	machine.Name = info[2]
-	machine.Cpu = fmt.Sprintf("%s核%s线程 | %s", info[4], info[5], info[3])
+	machine.Cpu = fmt.Sprintf("%s cores %s processor | %s", info[4], info[5], info[3])
 	machine.Memory = info[6]
 	machine.Disk = info[7]
 

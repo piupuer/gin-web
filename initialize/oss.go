@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"gin-web/pkg/global"
-	"gin-web/pkg/oss"
+	"github.com/piupuer/go-helper/pkg/oss"
 	"time"
 )
 
@@ -31,13 +31,20 @@ func Minio() {
 			}
 		}
 	}()
-	minio := oss.GetMinio(
-		global.Log,
-		global.Conf.Upload.Minio.Endpoint,
-		global.Conf.Upload.Minio.AccessId,
-		global.Conf.Upload.Minio.Secret,
-		global.Conf.Upload.Minio.UseHttps,
-	)
+	ops := []func(*oss.MinioOptions){
+		oss.WithMinioLogger(global.Log),
+		oss.WithMinioEndpoint(global.Conf.Upload.Minio.Endpoint),
+		oss.WithMinioAccessId(global.Conf.Upload.Minio.AccessId),
+		oss.WithMinioSecret(global.Conf.Upload.Minio.Secret),
+	}
+	if global.Conf.Upload.Minio.UseHttps {
+		ops = append(ops, oss.WithMinioHttps)
+	}
+
+	minio, err := oss.NewMinio(ops...)
+	if err != nil {
+		panic(fmt.Sprintf("initialize object storage minio failed: %v", err))
+	}
 
 	minio.MakeBucket(ctx, global.Conf.Upload.Minio.Bucket)
 	init = true

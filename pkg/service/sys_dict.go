@@ -8,17 +8,15 @@ import (
 	"strings"
 )
 
-// 获取指定字典名称且字典数据key的字典数据(不返回err)
-func (my MysqlService) GetDictDataByDictNameAndDictDataKeyNoErr(dictName, dictDataKey string) models.SysDictData {
-	dict, err := my.GetDictDataByDictNameAndDictDataKey(dictName, dictDataKey)
+func (my MysqlService) GetDictData(dictName, dictDataKey string) models.SysDictData {
+	dict, err := my.GetDictDataWithErr(dictName, dictDataKey)
 	if err != nil || dict == nil {
 		return models.SysDictData{}
 	}
 	return *dict
 }
 
-// 获取指定字典名称且字典数据key的字典数据
-func (my MysqlService) GetDictDataByDictNameAndDictDataKey(dictName, dictDataKey string) (*models.SysDictData, error) {
+func (my MysqlService) GetDictDataWithErr(dictName, dictDataKey string) (*models.SysDictData, error) {
 	oldCache, ok := CacheGetDictNameAndKey(my.Q.Ctx, dictName, dictDataKey)
 	if ok {
 		return oldCache, nil
@@ -42,8 +40,7 @@ func (my MysqlService) GetDictDataByDictNameAndDictDataKey(dictName, dictDataKey
 	return nil, gorm.ErrRecordNotFound
 }
 
-// 获取指定名称的字典数据
-func (my MysqlService) GetDictDatasByDictName(name string) ([]models.SysDictData, error) {
+func (my MysqlService) FindDictDataByName(name string) ([]models.SysDictData, error) {
 	oldCache, ok := CacheGetDictName(my.Q.Ctx, name)
 	if ok {
 		return oldCache, nil
@@ -68,7 +65,6 @@ func (my MysqlService) GetDictDatasByDictName(name string) ([]models.SysDictData
 	return newList, nil
 }
 
-// 获取所有字典
 func (my MysqlService) FindDict(req *request.DictReq) ([]models.SysDict, error) {
 	var err error
 	list := make([]models.SysDict, 0)
@@ -92,7 +88,6 @@ func (my MysqlService) FindDict(req *request.DictReq) ([]models.SysDict, error) 
 	return list, err
 }
 
-// 获取所有字典数据
 func (my MysqlService) FindDictData(req *request.DictDataReq) ([]models.SysDictData, error) {
 	var err error
 	list := make([]models.SysDictData, 0)
@@ -123,7 +118,6 @@ func (my MysqlService) FindDictData(req *request.DictDataReq) ([]models.SysDictD
 	return list, err
 }
 
-// 创建字典
 func (my MysqlService) CreateDict(req *request.CreateDictReq) (err error) {
 	err = my.Q.Create(req, new(models.SysDict))
 	CacheFlushDictName(my.Q.Ctx)
@@ -131,7 +125,6 @@ func (my MysqlService) CreateDict(req *request.CreateDictReq) (err error) {
 	return
 }
 
-// 更新字典
 func (my MysqlService) UpdateDictById(id uint, req request.UpdateDictReq) (err error) {
 	err = my.Q.UpdateById(id, req, new(models.SysDict))
 	CacheFlushDictName(my.Q.Ctx)
@@ -139,7 +132,6 @@ func (my MysqlService) UpdateDictById(id uint, req request.UpdateDictReq) (err e
 	return
 }
 
-// 批量删除字典
 func (my MysqlService) DeleteDictByIds(ids []uint) (err error) {
 	err = my.Q.DeleteByIds(ids, new(models.SysDict))
 	CacheFlushDictName(my.Q.Ctx)
@@ -147,7 +139,6 @@ func (my MysqlService) DeleteDictByIds(ids []uint) (err error) {
 	return
 }
 
-// 创建字典数据
 func (my MysqlService) CreateDictData(req *request.CreateDictDataReq) (err error) {
 	err = my.Q.Create(req, new(models.SysDictData))
 	CacheFlushDictName(my.Q.Ctx)
@@ -155,7 +146,6 @@ func (my MysqlService) CreateDictData(req *request.CreateDictDataReq) (err error
 	return
 }
 
-// 更新字典数据
 func (my MysqlService) UpdateDictDataById(id uint, req request.UpdateDictDataReq) (err error) {
 	err = my.Q.UpdateById(id, req, new(models.SysDictData))
 	CacheFlushDictName(my.Q.Ctx)
@@ -163,7 +153,6 @@ func (my MysqlService) UpdateDictDataById(id uint, req request.UpdateDictDataReq
 	return
 }
 
-// 批量删除字典数据
 func (my MysqlService) DeleteDictDataByIds(ids []uint) (err error) {
 	err = my.Q.DeleteByIds(ids, new(models.SysDictData))
 	CacheFlushDictName(my.Q.Ctx)

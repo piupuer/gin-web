@@ -64,7 +64,7 @@ func UpdateRoleById(c *gin.Context) {
 }
 
 func UpdateRoleMenusById(c *gin.Context) {
-	var r request.UpdateIncrementalIdsRequestStruct
+	var r request.UpdateMenuIncrementalIdsReq
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 	user := GetCurrentUser(c)
@@ -84,7 +84,7 @@ func UpdateRoleMenusById(c *gin.Context) {
 }
 
 func UpdateRoleApisById(c *gin.Context) {
-	var r request.UpdateIncrementalIdsRequestStruct
+	var r request.UpdateMenuIncrementalIdsReq
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 

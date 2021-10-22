@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
@@ -10,31 +9,26 @@ import (
 	"strings"
 )
 
-// 登录校验
 func (my MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
 	var u models.SysUser
-	// 查询用户及其角色
 	err := my.Q.Tx.Preload("Role").Where("username = ?", user.Username).First(&u).Error
 	if err != nil {
-		return nil, errors.New(resp.LoginCheckErrorMsg)
+		return nil, fmt.Errorf(resp.LoginCheckErrorMsg)
 	}
-	// 校验密码
 	if ok := utils.ComparePwd(user.Password, u.Password); !ok {
-		return nil, errors.New(resp.LoginCheckErrorMsg)
+		return nil, fmt.Errorf(resp.LoginCheckErrorMsg)
 	}
 	return &u, err
 }
 
-// 获取用户
 func (my MysqlService) FindUser(req *request.UserReq) ([]models.SysUser, error) {
 	var err error
 	list := make([]models.SysUser, 0)
 	query := my.Q.Tx.
 		Model(&models.SysUser{}).
 		Order("created_at DESC")
-	// 非超级管理员
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
-		roleIds, err := my.GetRoleIdsBySort(*req.CurrentRole.Sort)
+		roleIds, err := my.FindRoleIdBySort(*req.CurrentRole.Sort)
 		if err != nil {
 			return list, err
 		}
@@ -59,24 +53,20 @@ func (my MysqlService) FindUser(req *request.UserReq) ([]models.SysUser, error) 
 			query = query.Where("status = ?", 0)
 		}
 	}
-	// 查询列表
 	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
-// 获取单个用户
 func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	var user models.SysUser
 	var err error
 	err = my.Q.Tx.Preload("Role").
 		Where("id = ?", id).
-		// 状态为正常
 		Where("status = ?", models.SysUserStatusEnable).
 		First(&user).Error
 	return user, err
 }
 
-// 获取多个用户
 func (my MysqlService) GetUsersByIds(ids []uint) ([]models.SysUser, error) {
 	var users []models.SysUser
 	var err error

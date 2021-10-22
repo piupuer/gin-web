@@ -10,13 +10,13 @@ import (
 	"strings"
 )
 
-func (s RedisService) FindApi(req *request.ApiReq) ([]models.SysApi, error) {
+func (rd RedisService) FindApi(req *request.ApiReq) ([]models.SysApi, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		return s.mysql.FindApi(req)
+		return rd.mysql.FindApi(req)
 	}
 	var err error
 	list := make([]models.SysApi, 0)
-	query := s.Q.
+	query := rd.Q.
 		Table("sys_api").
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
@@ -31,19 +31,19 @@ func (s RedisService) FindApi(req *request.ApiReq) ([]models.SysApi, error) {
 	if category != "" {
 		query = query.Where("category", "contains", category)
 	}
-	err = s.Q.FindWithPage(query, &req.Page, &list)
+	err = rd.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
 // find all api group by api category
-func (s RedisService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
+func (rd RedisService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		return s.mysql.FindAllApiGroupByCategoryByRoleId(currentRole, roleId)
+		return rd.mysql.FindAllApiGroupByCategoryByRoleId(currentRole, roleId)
 	}
 	tree := make([]response.ApiGroupByCategoryResp, 0)
 	accessIds := make([]uint, 0)
 	allApi := make([]models.SysApi, 0)
-	err := s.Q.Table("sys_api").Find(&allApi).Error
+	err := rd.Q.Table("sys_api").Find(&allApi).Error
 	if err != nil {
 		return tree, accessIds, err
 	}
@@ -51,8 +51,8 @@ func (s RedisService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysRo
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
 		currentRoleId = currentRole.Id
 	}
-	currentCasbins, err := s.mysql.FindCasbinByRoleId(currentRoleId)
-	casbins, err := s.mysql.FindCasbinByRoleId(roleId)
+	currentCasbins, err := rd.mysql.FindCasbinByRoleId(currentRoleId)
+	casbins, err := rd.mysql.FindCasbinByRoleId(roleId)
 	if err != nil {
 		return tree, accessIds, err
 	}

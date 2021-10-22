@@ -7,15 +7,13 @@ import (
 	"strings"
 )
 
-// 根据当前角色顺序获取角色编号集合(主要功能是针对不同角色用户登录系统隐藏特定菜单)
-func (s RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
+func (rd RedisService) FindRoleIdBySort(currentRoleSort uint) ([]uint, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.GetRoleIdsBySort(currentRoleSort)
+		return rd.mysql.FindRoleIdBySort(currentRoleSort)
 	}
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
-	err := s.Q.Table("sys_role").Where("sort", ">=", currentRoleSort).Find(&roles).Error
+	err := rd.Q.Table("sys_role").Where("sort", ">=", currentRoleSort).Find(&roles).Error
 	if err != nil {
 		return roleIds, err
 	}
@@ -25,15 +23,13 @@ func (s RedisService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 	return roleIds, nil
 }
 
-// 获取所有角色
-func (s RedisService) FindRole(req *request.RoleReq) ([]models.SysRole, error) {
+func (rd RedisService) FindRole(req *request.RoleReq) ([]models.SysRole, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
-		// 不使用redis
-		return s.mysql.FindRole(req)
+		return rd.mysql.FindRole(req)
 	}
 	var err error
 	list := make([]models.SysRole, 0)
-	query := s.Q.
+	query := rd.Q.
 		Table("sys_role").
 		Order("created_at DESC").
 		Where("sort", ">=", req.CurrentRoleSort)
@@ -52,7 +48,6 @@ func (s RedisService) FindRole(req *request.RoleReq) ([]models.SysRole, error) {
 			query = query.Where("status", "=", 0)
 		}
 	}
-	// 查询列表
-	err = s.Q.FindWithPage(query, &req.Page, &list)
+	err = rd.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }

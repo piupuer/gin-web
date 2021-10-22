@@ -1,7 +1,6 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
@@ -9,8 +8,7 @@ import (
 	"strings"
 )
 
-// 根据当前角色顺序获取角色编号集合(主要功能是针对不同角色用户登录系统隐藏特定菜单)
-func (my MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
+func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) ([]uint, error) {
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
 	err := my.Q.Tx.Model(&models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
@@ -23,7 +21,6 @@ func (my MysqlService) GetRoleIdsBySort(currentRoleSort uint) ([]uint, error) {
 	return roleIds, nil
 }
 
-// 获取所有角色
 func (my MysqlService) FindRole(req *request.RoleReq) ([]models.SysRole, error) {
 	var err error
 	list := make([]models.SysRole, 0)
@@ -46,25 +43,18 @@ func (my MysqlService) FindRole(req *request.RoleReq) ([]models.SysRole, error) 
 			query = query.Where("status = ?", 0)
 		}
 	}
-	// 查询列表
 	err = my.Q.FindWithPage(query, &req.Page, &list)
 	return list, err
 }
 
-// 更新角色的权限菜单
-func (my MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
-	// 查询全部菜单
-	allMenu := my.getAllMenu(currentRole)
-	// 查询角色拥有菜单
-	roleMenus := my.getRoleMenus(id)
-	// 获取当前菜单编号集合
+func (my MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
+	allMenu := my.FindMenu(currentRole)
+	roleMenus := my.findMenuByRoleId(id)
 	menuIds := make([]uint, 0)
 	for _, menu := range roleMenus {
 		menuIds = append(menuIds, menu.Id)
 	}
-	// 获取菜单增量
 	incremental := req.FindIncremental(menuIds, allMenu)
-	// 查询所有菜单
 	incrementalMenus := make([]models.SysMenu, 0)
 	err = my.Q.Tx.
 		Model(&models.SysMenu{}).
@@ -73,39 +63,33 @@ func (my MysqlService) UpdateRoleMenusById(currentRole models.SysRole, id uint, 
 	if err != nil {
 		return
 	}
-	// 去除菜单增量中包含子菜单的父菜单
 	newIncrementalMenus := make([]models.SysMenu, 0)
 	for _, menu := range incrementalMenus {
 		if !hasChildrenMenu(menu.Id, allMenu) {
 			newIncrementalMenus = append(newIncrementalMenus, menu)
 		}
 	}
-	// 查询role
 	var role models.SysRole
 	err = my.Q.Tx.Where("id = ?", id).First(&role).Error
 	if err != nil {
 		return
 	}
-	// 替换菜单
 	err = my.Q.Tx.Model(&role).Association("Menus").Replace(&incrementalMenus)
 	return
 }
 
-// 更新角色的权限接口
-func (my MysqlService) UpdateRoleApisById(id uint, req request.UpdateIncrementalIdsRequestStruct) (err error) {
+func (my MysqlService) UpdateRoleApisById(id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
 	var oldRole models.SysRole
 	query := my.Q.Tx.Model(&oldRole).Where("id = ?", id).First(&oldRole)
 	if query.Error == gorm.ErrRecordNotFound {
-		return errors.New("记录不存在")
+		return gorm.ErrRecordNotFound
 	}
 	if len(req.Delete) > 0 {
-		// 查询需要删除的api
 		deleteApis := make([]models.SysApi, 0)
 		err = my.Q.Tx.Where("id IN (?)", req.Delete).Find(&deleteApis).Error
 		if err != nil {
 			return
 		}
-		// 构建casbin规则
 		cs := make([]models.SysRoleCasbin, 0)
 		for _, api := range deleteApis {
 			cs = append(cs, models.SysRoleCasbin{
@@ -114,17 +98,14 @@ func (my MysqlService) UpdateRoleApisById(id uint, req request.UpdateIncremental
 				Method:  api.Method,
 			})
 		}
-		// 批量删除
-		_, err = my.BatchDeleteRoleCasbins(cs)
+		_, err = my.BatchDeleteRoleCasbin(cs)
 	}
 	if len(req.Create) > 0 {
-		// 查询需要新增的api
 		createApis := make([]models.SysApi, 0)
 		err = my.Q.Tx.Where("id IN (?)", req.Create).Find(&createApis).Error
 		if err != nil {
 			return
 		}
-		// 构建casbin规则
 		cs := make([]models.SysRoleCasbin, 0)
 		for _, api := range createApis {
 			cs = append(cs, models.SysRoleCasbin{
@@ -133,17 +114,14 @@ func (my MysqlService) UpdateRoleApisById(id uint, req request.UpdateIncremental
 				Method:  api.Method,
 			})
 		}
-		// 批量创建
-		_, err = my.BatchCreateRoleCasbins(cs)
+		_, err = my.BatchDeleteRoleCasbin(cs)
 
 	}
 	return
 }
 
-// 批量删除角色
 func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	var roles []models.SysRole
-	// 查询符合条件的角色, 以及关联的用户
 	err = my.Q.Tx.Preload("Users").Where("id IN (?)", ids).Find(&roles).Error
 	if err != nil {
 		return
@@ -152,19 +130,17 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	oldCasbins := make([]models.SysRoleCasbin, 0)
 	for _, v := range roles {
 		if len(v.Users) > 0 {
-			return errors.New(fmt.Sprintf("角色[%s]仍有%d位关联用户, 请先删除用户再删除角色", v.Name, len(v.Users)))
+			return fmt.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users))
 		}
-		oldCasbins = append(oldCasbins, my.GetRoleCasbins(models.SysRoleCasbin{
+		oldCasbins = append(oldCasbins, my.FindRoleCasbin(models.SysRoleCasbin{
 			Keyword: v.Keyword,
 		})...)
 		newIds = append(newIds, v.Id)
 	}
 	if len(oldCasbins) > 0 {
-		// 删除关联的casbin
-		my.BatchDeleteRoleCasbins(oldCasbins)
+		my.BatchDeleteRoleCasbin(oldCasbins)
 	}
 	if len(newIds) > 0 {
-		// 执行删除
 		err = my.Q.DeleteByIds(newIds, new(models.SysRole))
 	}
 	return
