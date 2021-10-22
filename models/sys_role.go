@@ -22,7 +22,7 @@ type SysRole struct {
 	Keyword string    `gorm:"index:idx_keyword,unique;comment:'keyword(unique str)'" json:"keyword"`
 	Desc    string    `gorm:"comment:'description'" json:"desc"`
 	Status  *uint     `gorm:"type:tinyint(1);default:1;comment:'status(0: disabled, 1: enable)'" json:"status"`
-	Sort    *uint     `gorm:"default:1;comment:'sort(>=0, the smaller the sort, the greater the permissio, sort=0 is a super admin)'" json:"sort"`
+	Sort    *uint     `gorm:"default:1;comment:'sort(>=0, the smaller the sort, the greater the permission, sort=0 is a super admin)'" json:"sort"`
 	Menus   []SysMenu `gorm:"many2many:sys_role_menu_relation;" json:"menus"`
 	Users   []SysUser `gorm:"foreignKey:RoleId"`
 }

@@ -7,17 +7,17 @@ import (
 
 type SysOperationLog struct {
 	models.M
-	ApiDesc    string        `json:"apiDesc" gorm:"comment:'api description'"`
-	Path       string        `json:"path" gorm:"comment:'url path'"`
-	Method     string        `json:"method" gorm:"comment:'api method'"`
-	Header     string        `json:"header" gorm:"type:blob;comment:'request header'"`
-	Body       string        `json:"body" gorm:"type:blob;comment:'request body'"`
-	Data       string        `json:"data" gorm:"type:blob;comment:'response data'"`
-	Status     int           `json:"status" gorm:"comment:'response status'"`
-	Username   string        `json:"username" gorm:"comment:'login username'"`
-	RoleName   string        `json:"roleName" gorm:"comment:'login role name'"`
-	Ip         string        `json:"ip" gorm:"comment:'IP'"`
-	IpLocation string        `json:"ipLocation" gorm:"comment:'real location of the IP'"`
-	Latency    time.Duration `json:"latency" gorm:"comment:'request time(ms)'"`
-	UserAgent  string        `json:"userAgent" gorm:"comment:'browser user agent'"`
+	ApiDesc    string        `gorm:"comment:'api description'" json:"apiDesc"`
+	Path       string        `gorm:"comment:'url path'" json:"path"`
+	Method     string        `gorm:"comment:'api method'" json:"method"`
+	Header     string        `gorm:"type:blob;comment:'request header'" json:"header"`
+	Body       string        `gorm:"type:blob;comment:'request body'" json:"body"`
+	Data       string        `gorm:"type:blob;comment:'response data'" json:"data"`
+	Status     int           `gorm:"comment:'response status'" json:"status"`
+	Username   string        `gorm:"comment:'login username'" json:"username"`
+	RoleName   string        `gorm:"comment:'login role name'" json:"roleName"`
+	Ip         string        `gorm:"comment:'IP'" json:"ip"`
+	IpLocation string        `gorm:"comment:'real location of the IP'" json:"ipLocation"`
+	Latency    time.Duration `gorm:"comment:'request time(ms)'" json:"latency"`
+	UserAgent  string        `gorm:"comment:'browser user agent'" json:"userAgent"`
 }
