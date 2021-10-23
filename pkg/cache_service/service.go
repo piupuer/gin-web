@@ -20,10 +20,11 @@ func New(c *gin.Context) RedisService {
 		ops := []func(*query.RedisOptions){
 			query.WithRedisLogger(global.Log),
 			query.WithRedisCtx(c),
+			query.WithRedisClient(global.Redis),
 			query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),
 			query.WithRedisNamingStrategy(global.Mysql.NamingStrategy),
 		}
-		rd.Q = query.NewRedis(global.Redis, ops...)
+		rd.Q = query.NewRedis(ops...)
 	}
 	return rd
 }

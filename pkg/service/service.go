@@ -14,12 +14,13 @@ func New(c *gin.Context) MysqlService {
 	ops := []func(*query.MysqlOptions){
 		query.WithMysqlLogger(global.Log),
 		query.WithMysqlCtx(c),
+		query.WithMysqlDb(global.Mysql),
 	}
 	if global.Conf.Redis.Enable {
 		ops = append(ops, query.WithMysqlRedis(global.Redis))
 	}
 	my := MysqlService{
-		Q: query.NewMySql(global.Mysql, ops...),
+		Q: query.NewMySql(ops...),
 	}
 	return my
 }

@@ -46,11 +46,7 @@ func (rd RedisService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysR
 	rd.Q.
 		Table("sys_api").
 		Find(&allApi)
-	var currentRoleId uint
-	if *currentRole.Sort != models.SysRoleSuperAdminSort {
-		currentRoleId = currentRole.Id
-	}
-	currentCasbins, err := rd.mysql.FindCasbinByRoleId(currentRoleId)
+	currentCasbins, err := rd.mysql.FindCasbinByRoleId(currentRole.Id)
 	casbins, err := rd.mysql.FindCasbinByRoleId(roleId)
 	if err != nil {
 		return tree, accessIds, err
