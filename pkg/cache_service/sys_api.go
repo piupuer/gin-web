@@ -7,15 +7,16 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/ms"
 	"strings"
 )
 
-func (rd RedisService) FindApi(req *request.ApiReq) ([]models.SysApi, error) {
+func (rd RedisService) FindApi(req *request.ApiReq) ([]ms.SysApi, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		return rd.mysql.FindApi(req)
 	}
 	var err error
-	list := make([]models.SysApi, 0)
+	list := make([]ms.SysApi, 0)
 	query := rd.Q.
 		Table("sys_api").
 		Order("created_at DESC")
@@ -42,11 +43,10 @@ func (rd RedisService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysR
 	}
 	tree := make([]response.ApiGroupByCategoryResp, 0)
 	accessIds := make([]uint, 0)
-	allApi := make([]models.SysApi, 0)
-	err := rd.Q.Table("sys_api").Find(&allApi).Error
-	if err != nil {
-		return tree, accessIds, err
-	}
+	allApi := make([]ms.SysApi, 0)
+	rd.Q.
+		Table("sys_api").
+		Find(&allApi)
 	var currentRoleId uint
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
 		currentRoleId = currentRole.Id
@@ -57,7 +57,7 @@ func (rd RedisService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysR
 		return tree, accessIds, err
 	}
 
-	newApi := make([]models.SysApi, 0)
+	newApi := make([]ms.SysApi, 0)
 	for _, api := range allApi {
 		path := api.Path
 		method := api.Method

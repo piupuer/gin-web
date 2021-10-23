@@ -1,12 +1,12 @@
 package v1
 
 import (
-	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 )
@@ -25,7 +25,7 @@ func CreateMachine(c *gin.Context) {
 	req.ShouldBind(c, &r)
 	req.Validate(c, r, r.FieldTrans())
 	s := service.New(c)
-	err := s.Q.Create(r, new(models.SysMachine))
+	err := s.Q.Create(r, new(ms.SysMachine))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -35,7 +35,7 @@ func UpdateMachineById(c *gin.Context) {
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 	s := service.New(c)
-	err := s.Q.UpdateById(id, r, new(models.SysMachine))
+	err := s.Q.UpdateById(id, r, new(ms.SysMachine))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -52,7 +52,7 @@ func BatchDeleteMachineByIds(c *gin.Context) {
 	var r req.Ids
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.Q.DeleteByIds(r.Uints(), new(models.SysMachine))
+	err := s.Q.DeleteByIds(r.Uints(), new(ms.SysMachine))
 	resp.CheckErr(err)
 	resp.Success()
 }

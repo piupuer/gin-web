@@ -5,6 +5,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/ms"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strings"
@@ -55,21 +56,19 @@ func Data() {
 	}
 
 	// 2. init menus
-	menus := []models.SysMenu{
+	menus := []ms.SysMenu{
 		{
-			Name:  "dashboardRoot", 
+			Name:  "dashboardRoot",
 			Title: "Dashboard Root",
 			Icon:  "dashboard",
 			Path:  "/dashboard",
-			Roles: roles,
-			Children: []models.SysMenu{
+			Children: []ms.SysMenu{
 				{
 					Name:      "dashboard",
 					Title:     "Index",
 					Icon:      "dashboard",
 					Path:      "index",
 					Component: "/dashboard/index",
-					Roles:     roles,
 				},
 			},
 		},
@@ -78,12 +77,12 @@ func Data() {
 			Title: "System Root",
 			Icon:  "component",
 			Path:  "/system",
-			Children: []models.SysMenu{
+			Children: []ms.SysMenu{
 				{
 					Name:      "menu",
 					Title:     "Menus",
 					Icon:      "tree-table",
-					Path:      "menu", 
+					Path:      "menu",
 					Component: "/system/menu",
 				},
 				{
@@ -142,7 +141,7 @@ func Data() {
 			Title: "Tests",
 			Icon:  "bug",
 			Path:  "/test",
-			Children: []models.SysMenu{
+			Children: []ms.SysMenu{
 				{
 					Name:      "test",
 					Title:     "Test Case",
@@ -171,7 +170,7 @@ func Data() {
 			Title: "Uploader",
 			Icon:  "back-top",
 			Path:  "/uploader",
-			Children: []models.SysMenu{
+			Children: []ms.SysMenu{
 				{
 					Name:      "uploader1",
 					Title:     "Uploader1",
@@ -190,7 +189,10 @@ func Data() {
 		},
 	}
 	menus = genMenu(0, menus, roles[0])
-	createMenu(db, menus)
+	relations := createMenu(db, menus)
+	if len(relations) > 0 {
+		db.Create(relations)
+	}
 
 	// 3. init users
 	// default avatar image
@@ -231,7 +233,7 @@ func Data() {
 	}
 
 	// 4. init apis
-	apis := []models.SysApi{
+	apis := []ms.SysApi{
 		{
 			Method:   "POST",
 			Path:     "/v1/base/login",
@@ -641,17 +643,17 @@ func Data() {
 			Desc:     "batch delete dict data",
 		},
 	}
-	newApis := make([]models.SysApi, 0)
-	newRoleCasbins := make([]models.SysRoleCasbin, 0)
+	newApis := make([]ms.SysApi, 0)
+	newRoleCasbins := make([]ms.SysRoleCasbin, 0)
 	for i, api := range apis {
 		id := uint(i + 1)
-		oldApi := models.SysApi{}
+		oldApi := ms.SysApi{}
 		err := db.Where("id = ?", id).First(&oldApi).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			api.Id = id
 			newApis = append(newApis, api)
 			// super has all api permission
-			newRoleCasbins = append(newRoleCasbins, models.SysRoleCasbin{
+			newRoleCasbins = append(newRoleCasbins, ms.SysRoleCasbin{
 				Keyword: roles[0].Keyword,
 				Path:    api.Path,
 				Method:  api.Method,
@@ -674,7 +676,7 @@ func Data() {
 			if utils.Contains(basePaths, p) {
 				// basic permission
 				for i := 1; i < len(roles); i++ {
-					newRoleCasbins = append(newRoleCasbins, models.SysRoleCasbin{
+					newRoleCasbins = append(newRoleCasbins, ms.SysRoleCasbin{
 						Keyword: roles[i].Keyword,
 						Path:    api.Path,
 						Method:  api.Method,
@@ -694,8 +696,8 @@ func Data() {
 
 var menuTotal = 0
 
-func genMenu(parentId uint, menus []models.SysMenu, superRole models.SysRole) []models.SysMenu {
-	newMenus := make([]models.SysMenu, len(menus))
+func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.SysMenu {
+	newMenus := make([]ms.SysMenu, len(menus))
 	// sort
 	for i, menu := range menus {
 		sort := uint(i)
@@ -724,25 +726,34 @@ func genMenu(parentId uint, menus []models.SysMenu, superRole models.SysRole) []
 			menu.Component = ""
 			menu.Breadcrumb = &noBreadcrumb
 		}
-		if menu.Roles == nil {
-			menu.Roles = []models.SysRole{
-				superRole,
-			}
+		if len(menu.RoleIds) == 0 {
+			menu.RoleIds = append(menu.RoleIds, superRole.Id)
 		}
 		newMenus[i] = menu
 	}
 	return newMenus
 }
 
-func createMenu(db *gorm.DB, menus []models.SysMenu) {
+func createMenu(db *gorm.DB, menus []ms.SysMenu) []ms.SysMenuRoleRelation {
+	relations := make([]ms.SysMenuRoleRelation, 0)
 	for _, menu := range menus {
-		oldMenu := models.SysMenu{}
+		oldMenu := ms.SysMenu{}
 		err := db.Where("id = ?", menu.Id).First(&oldMenu).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			db.Create(&menu)
+			for _, id := range menu.RoleIds {
+				relations = append(relations, ms.SysMenuRoleRelation{
+					MenuId: menu.Id,
+					RoleId: id,
+				})
+			}
 		}
 		if len(menu.Children) > 0 {
-			createMenu(db, menu.Children)
+			childrenRelations := createMenu(db, menu.Children)
+			if len(childrenRelations) > 0 {
+				relations = append(relations, childrenRelations...)
+			}
 		}
 	}
+	return relations
 }

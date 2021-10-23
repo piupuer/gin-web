@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
-	"gorm.io/gorm"
+	"github.com/piupuer/go-helper/ms"
 	"strings"
 )
 
 func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) ([]uint, error) {
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
-	err := my.Q.Tx.Model(&models.SysRole{}).Where("sort >= ?", currentRoleSort).Find(&roles).Error
-	if err != nil {
-		return roleIds, err
-	}
+	my.Q.Tx.
+		Model(&models.SysRole{}).
+		Where("sort >= ?", currentRoleSort).
+		Find(&roles)
 	for _, role := range roles {
 		roleIds = append(roleIds, role.Id)
 	}
@@ -47,92 +47,19 @@ func (my MysqlService) FindRole(req *request.RoleReq) ([]models.SysRole, error) 
 	return list, err
 }
 
-func (my MysqlService) UpdateRoleMenuById(currentRole models.SysRole, id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
-	allMenu := my.FindMenu(currentRole)
-	roleMenus := my.findMenuByRoleId(id)
-	menuIds := make([]uint, 0)
-	for _, menu := range roleMenus {
-		menuIds = append(menuIds, menu.Id)
-	}
-	incremental := FindIncremental(req, menuIds, allMenu)
-	incrementalMenus := make([]models.SysMenu, 0)
-	err = my.Q.Tx.
-		Model(&models.SysMenu{}).
-		Where("id in (?)", incremental).
-		Find(&incrementalMenus).Error
-	if err != nil {
-		return
-	}
-	newIncrementalMenus := make([]models.SysMenu, 0)
-	for _, menu := range incrementalMenus {
-		if !hasChildrenMenu(menu.Id, allMenu) {
-			newIncrementalMenus = append(newIncrementalMenus, menu)
-		}
-	}
-	var role models.SysRole
-	err = my.Q.Tx.Where("id = ?", id).First(&role).Error
-	if err != nil {
-		return
-	}
-	err = my.Q.Tx.Model(&role).Association("Menus").Replace(&incrementalMenus)
-	return
-}
-
-func (my MysqlService) UpdateRoleApiById(id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
-	var oldRole models.SysRole
-	query := my.Q.Tx.Model(&oldRole).Where("id = ?", id).First(&oldRole)
-	if query.Error == gorm.ErrRecordNotFound {
-		return gorm.ErrRecordNotFound
-	}
-	if len(req.Delete) > 0 {
-		deleteApis := make([]models.SysApi, 0)
-		err = my.Q.Tx.Where("id IN (?)", req.Delete).Find(&deleteApis).Error
-		if err != nil {
-			return
-		}
-		cs := make([]models.SysRoleCasbin, 0)
-		for _, api := range deleteApis {
-			cs = append(cs, models.SysRoleCasbin{
-				Keyword: oldRole.Keyword,
-				Path:    api.Path,
-				Method:  api.Method,
-			})
-		}
-		_, err = my.BatchDeleteRoleCasbin(cs)
-	}
-	if len(req.Create) > 0 {
-		createApis := make([]models.SysApi, 0)
-		err = my.Q.Tx.Where("id IN (?)", req.Create).Find(&createApis).Error
-		if err != nil {
-			return
-		}
-		cs := make([]models.SysRoleCasbin, 0)
-		for _, api := range createApis {
-			cs = append(cs, models.SysRoleCasbin{
-				Keyword: oldRole.Keyword,
-				Path:    api.Path,
-				Method:  api.Method,
-			})
-		}
-		_, err = my.BatchCreateRoleCasbin(cs)
-
-	}
-	return
-}
-
 func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	var roles []models.SysRole
-	err = my.Q.Tx.Preload("Users").Where("id IN (?)", ids).Find(&roles).Error
-	if err != nil {
-		return
-	}
+	my.Q.Tx.
+		Preload("Users").
+		Where("id IN (?)", ids).
+		Find(&roles)
 	newIds := make([]uint, 0)
-	oldCasbins := make([]models.SysRoleCasbin, 0)
+	oldCasbins := make([]ms.SysRoleCasbin, 0)
 	for _, v := range roles {
 		if len(v.Users) > 0 {
 			return fmt.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users))
 		}
-		oldCasbins = append(oldCasbins, my.FindRoleCasbin(models.SysRoleCasbin{
+		oldCasbins = append(oldCasbins, my.FindRoleCasbin(ms.SysRoleCasbin{
 			Keyword: v.Keyword,
 		})...)
 		newIds = append(newIds, v.Id)

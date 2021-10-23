@@ -2,35 +2,31 @@ package service
 
 import (
 	"fmt"
-	"gin-web/models"
 	"gin-web/pkg/request"
+	"github.com/piupuer/go-helper/ms"
 	"gorm.io/gorm"
 	"strings"
 )
 
-func (my MysqlService) GetDictData(dictName, dictDataKey string) models.SysDictData {
+func (my MysqlService) GetDictData(dictName, dictDataKey string) ms.SysDictData {
 	dict, err := my.GetDictDataWithErr(dictName, dictDataKey)
 	if err != nil || dict == nil {
-		return models.SysDictData{}
+		return ms.SysDictData{}
 	}
 	return *dict
 }
 
-func (my MysqlService) GetDictDataWithErr(dictName, dictDataKey string) (*models.SysDictData, error) {
+func (my MysqlService) GetDictDataWithErr(dictName, dictDataKey string) (*ms.SysDictData, error) {
 	oldCache, ok := CacheGetDictNameAndKey(my.Q.Ctx, dictName, dictDataKey)
 	if ok {
 		return oldCache, nil
 	}
-	var err error
-	list := make([]models.SysDictData, 0)
-	err = my.Q.Tx.
-		Model(&models.SysDictData{}).
+	list := make([]ms.SysDictData, 0)
+	my.Q.Tx.
+		Model(&ms.SysDictData{}).
 		Preload("Dict").
 		Order("created_at DESC").
-		Find(&list).Error
-	if err != nil {
-		return nil, err
-	}
+		Find(&list)
 	for _, data := range list {
 		if data.Dict.Name == dictName && data.Key == dictDataKey {
 			CacheSetDictNameAndKey(my.Q.Ctx, dictName, dictDataKey, data)
@@ -40,22 +36,18 @@ func (my MysqlService) GetDictDataWithErr(dictName, dictDataKey string) (*models
 	return nil, gorm.ErrRecordNotFound
 }
 
-func (my MysqlService) FindDictDataByName(name string) ([]models.SysDictData, error) {
+func (my MysqlService) FindDictDataByName(name string) ([]ms.SysDictData, error) {
 	oldCache, ok := CacheGetDictName(my.Q.Ctx, name)
 	if ok {
 		return oldCache, nil
 	}
-	var err error
-	list := make([]models.SysDictData, 0)
-	err = my.Q.Tx.
-		Model(&models.SysDictData{}).
+	list := make([]ms.SysDictData, 0)
+	my.Q.Tx.
+		Model(&ms.SysDictData{}).
 		Preload("Dict").
 		Order("sort").
-		Find(&list).Error
-	if err != nil {
-		return list, err
-	}
-	newList := make([]models.SysDictData, 0)
+		Find(&list)
+	newList := make([]ms.SysDictData, 0)
 	for _, data := range list {
 		if data.Dict.Name == name {
 			newList = append(newList, data)
@@ -65,11 +57,11 @@ func (my MysqlService) FindDictDataByName(name string) ([]models.SysDictData, er
 	return newList, nil
 }
 
-func (my MysqlService) FindDict(req *request.DictReq) ([]models.SysDict, error) {
+func (my MysqlService) FindDict(req *request.DictReq) ([]ms.SysDict, error) {
 	var err error
-	list := make([]models.SysDict, 0)
+	list := make([]ms.SysDict, 0)
 	query := my.Q.Tx.
-		Model(&models.SysDict{}).
+		Model(&ms.SysDict{}).
 		Preload("DictDatas").
 		Order("created_at DESC")
 	name := strings.TrimSpace(req.Name)
@@ -88,11 +80,11 @@ func (my MysqlService) FindDict(req *request.DictReq) ([]models.SysDict, error) 
 	return list, err
 }
 
-func (my MysqlService) FindDictData(req *request.DictDataReq) ([]models.SysDictData, error) {
+func (my MysqlService) FindDictData(req *request.DictDataReq) ([]ms.SysDictData, error) {
 	var err error
-	list := make([]models.SysDictData, 0)
+	list := make([]ms.SysDictData, 0)
 	query := my.Q.Tx.
-		Model(&models.SysDictData{}).
+		Model(&ms.SysDictData{}).
 		Preload("Dict").
 		Order("created_at DESC")
 	key := strings.TrimSpace(req.Key)
@@ -119,42 +111,42 @@ func (my MysqlService) FindDictData(req *request.DictDataReq) ([]models.SysDictD
 }
 
 func (my MysqlService) CreateDict(req *request.CreateDictReq) (err error) {
-	err = my.Q.Create(req, new(models.SysDict))
+	err = my.Q.Create(req, new(ms.SysDict))
 	CacheFlushDictName(my.Q.Ctx)
 	CacheFlushDictNameAndKey(my.Q.Ctx)
 	return
 }
 
 func (my MysqlService) UpdateDictById(id uint, req request.UpdateDictReq) (err error) {
-	err = my.Q.UpdateById(id, req, new(models.SysDict))
+	err = my.Q.UpdateById(id, req, new(ms.SysDict))
 	CacheFlushDictName(my.Q.Ctx)
 	CacheFlushDictNameAndKey(my.Q.Ctx)
 	return
 }
 
 func (my MysqlService) DeleteDictByIds(ids []uint) (err error) {
-	err = my.Q.DeleteByIds(ids, new(models.SysDict))
+	err = my.Q.DeleteByIds(ids, new(ms.SysDict))
 	CacheFlushDictName(my.Q.Ctx)
 	CacheFlushDictNameAndKey(my.Q.Ctx)
 	return
 }
 
 func (my MysqlService) CreateDictData(req *request.CreateDictDataReq) (err error) {
-	err = my.Q.Create(req, new(models.SysDictData))
+	err = my.Q.Create(req, new(ms.SysDictData))
 	CacheFlushDictName(my.Q.Ctx)
 	CacheFlushDictNameAndKey(my.Q.Ctx)
 	return
 }
 
 func (my MysqlService) UpdateDictDataById(id uint, req request.UpdateDictDataReq) (err error) {
-	err = my.Q.UpdateById(id, req, new(models.SysDictData))
+	err = my.Q.UpdateById(id, req, new(ms.SysDictData))
 	CacheFlushDictName(my.Q.Ctx)
 	CacheFlushDictNameAndKey(my.Q.Ctx)
 	return
 }
 
 func (my MysqlService) DeleteDictDataByIds(ids []uint) (err error) {
-	err = my.Q.DeleteByIds(ids, new(models.SysDictData))
+	err = my.Q.DeleteByIds(ids, new(ms.SysDictData))
 	CacheFlushDictName(my.Q.Ctx)
 	CacheFlushDictNameAndKey(my.Q.Ctx)
 	return

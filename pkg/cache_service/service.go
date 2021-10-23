@@ -13,15 +13,17 @@ type RedisService struct {
 }
 
 func New(c *gin.Context) RedisService {
-	ops := []func(*query.RedisOptions){
-		query.WithRedisLogger(global.Log),
-		query.WithRedisCtx(c),
-		query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),
-		query.WithRedisNamingStrategy(global.Mysql.NamingStrategy),
-	}
 	rd := RedisService{
-		Q:     query.NewRedis(global.Redis, ops...),
 		mysql: service.New(c),
+	}
+	if global.Conf.Redis.Enable && global.Conf.Redis.EnableService {
+		ops := []func(*query.RedisOptions){
+			query.WithRedisLogger(global.Log),
+			query.WithRedisCtx(c),
+			query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),
+			query.WithRedisNamingStrategy(global.Mysql.NamingStrategy),
+		}
+		rd.Q = query.NewRedis(global.Redis, ops...)
 	}
 	return rd
 }

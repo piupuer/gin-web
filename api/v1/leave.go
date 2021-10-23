@@ -48,7 +48,7 @@ func UpdateLeaveById(c *gin.Context) {
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 	s := service.New(c)
-	err := s.Q.UpdateById(id, r, new(models.SysLeave))
+	err := s.Q.UpdateById(id, r, new(models.Leave))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -57,7 +57,7 @@ func BatchDeleteLeaveByIds(c *gin.Context) {
 	var r req.Ids
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.Q.DeleteByIds(r.Uints(), new(models.SysLeave))
+	err := s.Q.DeleteByIds(r.Uints(), new(models.Leave))
 	resp.CheckErr(err)
 	resp.Success()
 }

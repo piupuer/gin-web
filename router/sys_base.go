@@ -17,10 +17,11 @@ func InitBaseRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions
 		// need login
 		router.
 			Use(middleware.Jwt(jwtOptions...)).
-			Use(GetCasbinMiddleware()).
-			GET("/idempotenceToken", middleware.GetIdempotenceToken(
-				middleware.WithIdempotenceRedis(global.Redis),
-			))
+			Use(GetCasbinMiddleware())
+		// .
+		// 	GET("/idempotenceToken", middleware.GetIdempotenceToken(
+		// 		middleware.WithIdempotenceRedis(global.Redis),
+		// 	))
 	}
 	return r
 }
@@ -34,10 +35,11 @@ func GetCasbinRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOption
 
 // get casbin and idempotence middleware router
 func GetCasbinAndIdempotenceRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions), path string) gin.IRoutes {
-	return GetCasbinRouter(r, jwtOptions, path).
-		Use(
-			middleware.Idempotence(GetIdempotenceMiddlewareOps()...),
-		)
+	return GetCasbinRouter(r, jwtOptions, path)
+	// .
+	// 	Use(
+	// 		middleware.Idempotence(GetIdempotenceMiddlewareOps()...),
+	// 	)
 }
 
 func GetCasbinMiddleware() gin.HandlerFunc {

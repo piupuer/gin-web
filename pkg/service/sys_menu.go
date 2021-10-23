@@ -2,56 +2,40 @@ package service
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/ms"
 )
 
 // get menu tree by role id
-func (my MysqlService) GetMenuTree(roleId uint) ([]models.SysMenu, error) {
-	tree := make([]models.SysMenu, 0)
-	menus := make([]models.SysMenu, 0)
+func (my MysqlService) GetMenuTree(roleId uint) ([]ms.SysMenu, error) {
+	tree := make([]ms.SysMenu, 0)
 	// query all menus
-	allMenu := make([]models.SysMenu, 0)
-	err := my.Q.Tx.
-		Model(&models.SysMenu{}).
-		Find(&allMenu).Error
-	if err != nil {
-		return menus, err
-	}
-	// query current role's menus
-	var role models.SysRole
-	err = my.Q.Tx.
-		Model(&models.SysRole{}).
-		Preload("Menus").
-		Where("id = ?", roleId).
-		First(&role).Error
-	if err != nil {
-		return menus, err
-	}
-	_, newMenus := addParentMenu(role.Menus, allMenu)
+	allMenu := make([]ms.SysMenu, 0)
+	my.Q.Tx.
+		Model(&ms.SysMenu{}).
+		Find(&allMenu)
+	roleMenu := my.findMenuByRoleId(roleId)
+	_, newMenus := addParentMenu(roleMenu, allMenu)
 
 	tree = my.GenMenuTree(0, newMenus)
 	return tree, nil
 }
 
-func (my MysqlService) FindMenu(currentRole models.SysRole) []models.SysMenu {
-	tree := make([]models.SysMenu, 0)
+func (my MysqlService) FindMenu(currentRole models.SysRole) []ms.SysMenu {
+	tree := make([]ms.SysMenu, 0)
 	menus := my.findMenuByCurrentRole(currentRole)
 	tree = my.GenMenuTree(0, menus)
 	return tree
 }
 
 // generate menu tree
-func (my MysqlService) GenMenuTree(parentId uint, roleMenus []models.SysMenu) []models.SysMenu {
+func (my MysqlService) GenMenuTree(parentId uint, roleMenus []ms.SysMenu) []ms.SysMenu {
 	roleMenuIds := make([]uint, 0)
-	allMenu := make([]models.SysMenu, 0)
-	err := my.Q.Tx.
-		Model(&models.SysMenu{}).
-		Find(&allMenu).Error
-	if err != nil {
-		return roleMenus
-	}
+	allMenu := make([]ms.SysMenu, 0)
+	my.Q.Tx.
+		Model(&ms.SysMenu{}).
+		Find(&allMenu)
 	// add parent menu
 	_, newRoleMenus := addParentMenu(roleMenus, allMenu)
 	for _, menu := range newRoleMenus {
@@ -62,8 +46,8 @@ func (my MysqlService) GenMenuTree(parentId uint, roleMenus []models.SysMenu) []
 	return genMenuTree(parentId, roleMenuIds, allMenu)
 }
 
-func genMenuTree(parentId uint, roleMenuIds []uint, allMenu []models.SysMenu) []models.SysMenu {
-	tree := make([]models.SysMenu, 0)
+func genMenuTree(parentId uint, roleMenuIds []uint, allMenu []ms.SysMenu) []ms.SysMenu {
+	tree := make([]ms.SysMenu, 0)
 	for _, menu := range allMenu {
 		if !utils.ContainsUint(roleMenuIds, menu.Id) {
 			continue
@@ -76,8 +60,8 @@ func genMenuTree(parentId uint, roleMenuIds []uint, allMenu []models.SysMenu) []
 	return tree
 }
 
-func (my MysqlService) FindMenuByRoleId(currentRole models.SysRole, roleId uint) ([]models.SysMenu, []uint, error) {
-	tree := make([]models.SysMenu, 0)
+func (my MysqlService) FindMenuByRoleId(currentRole models.SysRole, roleId uint) ([]ms.SysMenu, []uint, error) {
+	tree := make([]ms.SysMenu, 0)
 	accessIds := make([]uint, 0)
 	allMenu := my.findMenuByCurrentRole(currentRole)
 	roleMenus := my.findMenuByRoleId(roleId)
@@ -89,7 +73,7 @@ func (my MysqlService) FindMenuByRoleId(currentRole models.SysRole, roleId uint)
 	return tree, accessIds, nil
 }
 
-func FindCheckedMenuId(list []uint, allMenu []models.SysMenu) []uint {
+func FindCheckedMenuId(list []uint, allMenu []ms.SysMenu) []uint {
 	checked := make([]uint, 0)
 	for _, c := range list {
 		children := FindChildrenId(c, allMenu)
@@ -114,7 +98,7 @@ func FindCheckedMenuId(list []uint, allMenu []models.SysMenu) []uint {
 }
 
 // find children menu ids
-func FindChildrenId(parentId uint, allMenu []models.SysMenu) []uint {
+func FindChildrenId(parentId uint, allMenu []ms.SysMenu) []uint {
 	childrenIds := make([]uint, 0)
 	for _, menu := range allMenu {
 		if menu.ParentId == parentId {
@@ -124,7 +108,7 @@ func FindChildrenId(parentId uint, allMenu []models.SysMenu) []uint {
 	return childrenIds
 }
 
-func FindIncremental(req request.UpdateMenuIncrementalIdsReq, oldMenuIds []uint, allMenu []models.SysMenu) []uint {
+func FindIncrementalMenu(req request.UpdateMenuIncrementalIdsReq, oldMenuIds []uint, allMenu []ms.SysMenu) []uint {
 	createIds := FindCheckedMenuId(req.Create, allMenu)
 	deleteIds := FindCheckedMenuId(req.Delete, allMenu)
 	newList := make([]uint, 0)
@@ -139,63 +123,80 @@ func FindIncremental(req request.UpdateMenuIncrementalIdsReq, oldMenuIds []uint,
 }
 
 func (my MysqlService) CreateMenu(currentRole models.SysRole, req *request.CreateMenuReq) (err error) {
-	var menu models.SysMenu
+	var menu ms.SysMenu
 	utils.Struct2StructByJson(req, &menu)
 	err = my.Q.Tx.Create(&menu).Error
 	menuReq := request.UpdateMenuIncrementalIdsReq{
 		Create: []uint{menu.Id},
 	}
-	err = my.UpdateRoleMenuById(currentRole, currentRole.Id, menuReq)
+	err = my.UpdateMenuByRoleId(currentRole, currentRole.Id, menuReq)
+	return
+}
+
+func (my MysqlService) UpdateMenuByRoleId(currentRole models.SysRole, targetRoleId uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
+	allMenu := my.FindMenu(currentRole)
+	roleMenus := my.findMenuByRoleId(targetRoleId)
+	menuIds := make([]uint, 0)
+	for _, menu := range roleMenus {
+		menuIds = append(menuIds, menu.Id)
+	}
+	incremental := FindIncrementalMenu(req, menuIds, allMenu)
+	incrementalMenus := make([]ms.SysMenu, 0)
+	my.Q.Tx.
+		Model(&ms.SysMenu{}).
+		Where("id in (?)", incremental).
+		Find(&incrementalMenus)
+	newRelations := make([]ms.SysMenuRoleRelation, 0)
+	for _, menu := range incrementalMenus {
+		newRelations = append(newRelations, ms.SysMenuRoleRelation{
+			MenuId: menu.Id,
+			RoleId: targetRoleId,
+		})
+	}
+	my.Q.Tx.
+		Where("role_id = ?", targetRoleId).
+		Delete(&ms.SysMenuRoleRelation{})
+	my.Q.Tx.
+		Model(&ms.SysMenuRoleRelation{}).
+		Create(&newRelations)
 	return
 }
 
 // find all menus by role id(not menu tree)
-func (my MysqlService) findMenuByRoleId(roleId uint) []models.SysMenu {
-	var role models.SysRole
-	err := my.Q.Tx.
-		Preload("Menus").
-		Where("id = ?", roleId).
-		First(&role).Error
-	if err != nil {
-		global.Log.Warn(my.Q.Ctx, "%v", err)
+func (my MysqlService) findMenuByRoleId(roleId uint) []ms.SysMenu {
+	// query current role menu relation
+	menuIds := make([]uint, 0)
+	my.Q.Tx.
+		Model(&ms.SysMenuRoleRelation{}).
+		Where("role_id = ?", roleId).
+		Pluck("menu_id", &menuIds)
+	roleMenu := make([]ms.SysMenu, 0)
+	if len(menuIds) > 0 {
+		my.Q.Tx.
+			Model(&ms.SysMenu{}).
+			Where("id IN (?)", menuIds).
+			Order("sort").
+			Find(&roleMenu)
 	}
-	return role.Menus
+	return roleMenu
 }
 
 // find all menus by current role(not menu tree)
-func (my MysqlService) findMenuByCurrentRole(currentRole models.SysRole) []models.SysMenu {
-	menus := make([]models.SysMenu, 0)
-	relations := make([]models.SysRoleMenuRelation, 0)
-	menuIds := make([]uint, 0)
-	query := my.Q.Tx.Model(&models.SysRoleMenuRelation{})
-	var err error
+func (my MysqlService) findMenuByCurrentRole(currentRole models.SysRole) []ms.SysMenu {
+	menus := make([]ms.SysMenu, 0)
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
 		// find menus by current role id
-		query = query.Where("sys_role_id = ?", currentRole.Id)
-		err = query.Find(&relations).Error
-		if err != nil {
-			return menus
-		}
-		for _, relation := range relations {
-			menuIds = append(menuIds, relation.SysMenuId)
-		}
-		err = my.Q.Tx.
-			Where("id IN (?)", menuIds).
-			Order("sort").
-			Find(&menus).Error
+		menus = my.findMenuByRoleId(currentRole.Id)
 	} else {
 		// super admin has all menus
-		err = my.Q.Tx.
+		my.Q.Tx.
 			Order("sort").
-			Find(&menus).Error
-	}
-	if err != nil {
-		global.Log.Warn(my.Q.Ctx, "%v", err)
+			Find(&menus)
 	}
 	return menus
 }
 
-func addParentMenu(menus, all []models.SysMenu) ([]uint, []models.SysMenu) {
+func addParentMenu(menus, all []ms.SysMenu) ([]uint, []ms.SysMenu) {
 	parentIds := make([]uint, 0)
 	menuIds := make([]uint, 0)
 	for _, menu := range menus {
@@ -214,7 +215,7 @@ func addParentMenu(menus, all []models.SysMenu) ([]uint, []models.SysMenu) {
 		menuIds = append(menuIds, parentIds...)
 	}
 	newMenuIds := make([]uint, 0)
-	newMenus := make([]models.SysMenu, 0)
+	newMenus := make([]ms.SysMenu, 0)
 	for _, menu := range all {
 		for _, id := range menuIds {
 			if id == menu.Id && !utils.ContainsUint(newMenuIds, id) {
@@ -227,8 +228,8 @@ func addParentMenu(menus, all []models.SysMenu) ([]uint, []models.SysMenu) {
 }
 
 // find parent menu ids
-func findParentMenuId(menuId uint, all []models.SysMenu) []uint {
-	var currentMenu models.SysMenu
+func findParentMenuId(menuId uint, all []ms.SysMenu) []uint {
+	var currentMenu ms.SysMenu
 	parentIds := make([]uint, 0)
 	for _, menu := range all {
 		if menuId == menu.Id {
@@ -245,21 +246,4 @@ func findParentMenuId(menuId uint, all []models.SysMenu) []uint {
 		parentIds = append(parentIds, newParentIds...)
 	}
 	return parentIds
-}
-
-// check whether has children menu
-func hasChildrenMenu(menuId uint, all []models.SysMenu) bool {
-	var currentMenu models.SysMenu
-	for _, menu := range all {
-		if menuId == menu.Id {
-			currentMenu = menu
-			break
-		}
-	}
-	for _, menu := range all {
-		if menu.ParentId == currentMenu.Id {
-			return true
-		}
-	}
-	return false
 }

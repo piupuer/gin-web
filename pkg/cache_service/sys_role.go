@@ -13,10 +13,10 @@ func (rd RedisService) FindRoleIdBySort(currentRoleSort uint) ([]uint, error) {
 	}
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
-	err := rd.Q.Table("sys_role").Where("sort", ">=", currentRoleSort).Find(&roles).Error
-	if err != nil {
-		return roleIds, err
-	}
+	rd.Q.
+		Table("sys_role").
+		Where("sort", ">=", currentRoleSort).
+		Find(&roles)
 	for _, role := range roles {
 		roleIds = append(roleIds, role.Id)
 	}

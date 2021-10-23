@@ -15,6 +15,7 @@ func InitMenuRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions
 		router1.GET("/list", v1.FindMenu)
 		router2.POST("/create", v1.CreateMenu)
 		router1.PATCH("/update/:id", v1.UpdateMenuById)
+		router1.PATCH("/role/update/:id", v1.UpdateMenuByRoleId)
 		router2.DELETE("/delete/batch", v1.BatchDeleteMenuByIds)
 	}
 	return r

@@ -23,7 +23,7 @@ type LeaveApproval struct {
 func (s LeaveApproval) UpdateTarget() error {
 	var err error
 	if *s.lastLog.Status > models.SysWorkflowLogStateSubmit {
-		var leave models.SysLeave
+		var leave models.Leave
 		leave.Status = s.lastLog.Status
 		// 更新请假审批状态
 		err = my.Q.Tx.Model(&leave).Where("id = ?", s.targetId).Updates(&leave).Error

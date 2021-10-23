@@ -13,11 +13,11 @@ import (
 )
 
 // find leave by current user id
-func (my MysqlService) FindLeave(r *request.LeaveReq) ([]models.SysLeave, error) {
+func (my MysqlService) FindLeave(r *request.LeaveReq) ([]models.Leave, error) {
 	var err error
-	list := make([]models.SysLeave, 0)
+	list := make([]models.Leave, 0)
 	query := my.Q.Tx.
-		Model(&models.SysLeave{}).
+		Model(&models.Leave{}).
 		Order("created_at DESC").
 		Where("user_id = ?", r.UserId)
 	if r.Status != nil {
@@ -72,7 +72,7 @@ func (my MysqlService) CreateLeave(r *request.CreateLeaveReq) error {
 	}
 
 	// create leave to db
-	var leave models.SysLeave
+	var leave models.Leave
 	// save fsm uuid
 	leave.FsmUuid = fsmUuid
 	leave.Desc = r.Desc
@@ -83,9 +83,9 @@ func (my MysqlService) CreateLeave(r *request.CreateLeaveReq) error {
 // query leave fsm uuid by id
 func (my MysqlService) GetLeaveFsmUuid(leaveId uint) string {
 	// create leave to db
-	var leave models.SysLeave
+	var leave models.Leave
 	my.Q.Tx.
-		Model(&models.SysLeave{}).
+		Model(&models.Leave{}).
 		Where("id = ?", leaveId).
 		First(&leave)
 	return leave.FsmUuid

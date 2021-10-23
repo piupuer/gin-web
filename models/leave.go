@@ -1,9 +1,9 @@
 package models
 
-import "github.com/piupuer/go-helper/models"
+import "github.com/piupuer/go-helper/ms"
 
-type SysLeave struct {
-	models.M
+type Leave struct {
+	ms.M
 	UserId          uint    `gorm:"comment:'user id(SysUser.Id)'" json:"userId"`
 	User            SysUser `gorm:"foreignKey:UserId" json:"user"`
 	FsmUuid         string  `gorm:"size:100;comment:'finite state machine uuid'" json:"fsmUuid"`

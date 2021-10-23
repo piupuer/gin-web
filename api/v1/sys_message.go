@@ -17,8 +17,7 @@ func FindMessage(c *gin.Context) {
 	r.ToUserId = user.Id
 	s := cache_service.New(c)
 
-	list, err := s.FindUnDeleteMessage(&r)
-	resp.CheckErr(err)
+	list := s.FindUnDeleteMessage(&r)
 	resp.SuccessWithPageData(list, []response.MessageResp{}, r.Page)
 }
 

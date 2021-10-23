@@ -1,6 +1,6 @@
 package models
 
-import "github.com/piupuer/go-helper/models"
+import "github.com/piupuer/go-helper/ms"
 
 const (
 	SysUserStatusDisabled    uint   = 0
@@ -15,7 +15,7 @@ var SysUserStatusConst = map[uint]string{
 }
 
 type SysUser struct {
-	models.M
+	ms.M
 	Username     string  `gorm:"idx_username,unique;comment:'user login name'" json:"username"`
 	Password     string  `gorm:"comment:'password'" json:"password"`
 	Mobile       string  `gorm:"comment:'mobile number'" json:"mobile"`

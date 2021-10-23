@@ -14,7 +14,7 @@ require (
 	github.com/gorilla/websocket v1.4.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/piupuer/go-helper v0.0.0-20211022040923-e3b14a0be160
+	github.com/piupuer/go-helper v0.0.0-20211023032508-a2d123f740cc
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/shopspring/decimal v1.2.0

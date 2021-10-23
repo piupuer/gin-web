@@ -2,18 +2,18 @@ package service
 
 import (
 	"fmt"
-	"gin-web/models"
 	"gin-web/pkg/request"
 	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/ms"
 	"gorm.io/gorm"
 	"strings"
 )
 
-func (my MysqlService) FindMachine(req *request.MachineReq) ([]models.SysMachine, error) {
+func (my MysqlService) FindMachine(req *request.MachineReq) ([]ms.SysMachine, error) {
 	var err error
-	list := make([]models.SysMachine, 0)
+	list := make([]ms.SysMachine, 0)
 	query := my.Q.Tx.
-		Model(&models.SysMachine{}).
+		Model(&ms.SysMachine{}).
 		Order("created_at DESC")
 	host := strings.TrimSpace(req.Host)
 	if host != "" {
@@ -36,16 +36,16 @@ func (my MysqlService) FindMachine(req *request.MachineReq) ([]models.SysMachine
 
 // connect machine
 func (my MysqlService) ConnectMachine(id uint) error {
-	var oldMachine models.SysMachine
+	var oldMachine ms.SysMachine
 	query := my.Q.Tx.Model(&oldMachine).Where("id = ?", id).First(&oldMachine)
 	if query.Error == gorm.ErrRecordNotFound {
 		return gorm.ErrRecordNotFound
 	}
 
 	err := initRemoteMachine(&oldMachine)
-	var newMachine models.SysMachine
-	unConnectedStatus := models.SysMachineStatusUnhealthy
-	normalStatus := models.SysMachineStatusHealthy
+	var newMachine ms.SysMachine
+	unConnectedStatus := ms.SysMachineStatusUnhealthy
+	normalStatus := ms.SysMachineStatusHealthy
 	if err != nil {
 		newMachine.Status = &unConnectedStatus
 		query.Updates(newMachine)
@@ -63,7 +63,7 @@ func (my MysqlService) ConnectMachine(id uint) error {
 }
 
 // init machine
-func initRemoteMachine(machine *models.SysMachine) error {
+func initRemoteMachine(machine *ms.SysMachine) error {
 	config := utils.SshConfig{
 		LoginName: machine.LoginName,
 		LoginPwd:  machine.LoginPwd,
@@ -99,7 +99,7 @@ func initRemoteMachine(machine *models.SysMachine) error {
 		return fmt.Errorf("read machine info failed")
 	}
 
-	normalStatus := models.SysMachineStatusHealthy
+	normalStatus := ms.SysMachineStatusHealthy
 
 	machine.Status = &normalStatus
 	machine.Version = info[0]

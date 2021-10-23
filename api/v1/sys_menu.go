@@ -1,13 +1,13 @@
 package v1
 
 import (
-	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
 	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 )
@@ -66,7 +66,7 @@ func UpdateMenuById(c *gin.Context) {
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 	s := service.New(c)
-	err := s.Q.UpdateById(id, r, new(models.SysMenu))
+	err := s.Q.UpdateById(id, r, new(ms.SysMenu))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -75,7 +75,7 @@ func BatchDeleteMenuByIds(c *gin.Context) {
 	var r req.Ids
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.Q.DeleteByIds(r.Uints(), new(models.SysMenu))
+	err := s.Q.DeleteByIds(r.Uints(), new(ms.SysMenu))
 	resp.CheckErr(err)
 	resp.Success()
 }

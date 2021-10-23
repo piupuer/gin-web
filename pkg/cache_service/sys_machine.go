@@ -1,18 +1,18 @@
 package cache_service
 
 import (
-	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
+	"github.com/piupuer/go-helper/ms"
 	"strings"
 )
 
-func (rd RedisService) FindMachine(req *request.MachineReq) ([]models.SysMachine, error) {
+func (rd RedisService) FindMachine(req *request.MachineReq) ([]ms.SysMachine, error) {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		return rd.mysql.FindMachine(req)
 	}
 	var err error
-	list := make([]models.SysMachine, 0)
+	list := make([]ms.SysMachine, 0)
 	query := rd.Q.
 		Table("sys_machine").
 		Order("created_at DESC")

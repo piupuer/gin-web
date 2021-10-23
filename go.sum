@@ -450,8 +450,12 @@ github.com/pingcap/log v0.0.0-20210317133921-96f4fcab92a4 h1:ERrF0fTuIOnwfGbt71J
 github.com/pingcap/log v0.0.0-20210317133921-96f4fcab92a4/go.mod h1:4rbK1p9ILyIfb6hU7OG2CiWSqMXnp3JMbiaVJ6mvoY8=
 github.com/pingcap/parser v0.0.0-20210415081931-48e7f467fd74 h1:FkVEC3Fck3fD16hMObMl/IWs72jR9FmqPn0Bdf728Sk=
 github.com/pingcap/parser v0.0.0-20210415081931-48e7f467fd74/go.mod h1:xZC8I7bug4GJ5KtHhgAikjTfU4kBv1Sbo3Pf1MZ6lVw=
-github.com/piupuer/go-helper v0.0.0-20211022040923-e3b14a0be160 h1:jPDwJocc4hXXgVORpbwgEGudS5DfvvDVLYjK7PlnT0Y=
-github.com/piupuer/go-helper v0.0.0-20211022040923-e3b14a0be160/go.mod h1:tyVIhpMFZQN8M9/XYAaxsavQzS3ztOiLicLS288V1A8=
+github.com/piupuer/go-helper v0.0.0-20211023024842-65744e19bfd1 h1:tkMG4KRpIlDQ3k5Z5Qh/kdHD/XHJkcopKDLDWqUIbmI=
+github.com/piupuer/go-helper v0.0.0-20211023024842-65744e19bfd1/go.mod h1:tyVIhpMFZQN8M9/XYAaxsavQzS3ztOiLicLS288V1A8=
+github.com/piupuer/go-helper v0.0.0-20211023030005-601224dca324 h1:o+NXcAiPwn9Xl8EDMi9e/lW8fGCCLHSIdzquF0guoPI=
+github.com/piupuer/go-helper v0.0.0-20211023030005-601224dca324/go.mod h1:tyVIhpMFZQN8M9/XYAaxsavQzS3ztOiLicLS288V1A8=
+github.com/piupuer/go-helper v0.0.0-20211023032508-a2d123f740cc h1:iPqf738wF7/ORD3c2Jayd7v/wgWabHBAJnPwErMp9yU=
+github.com/piupuer/go-helper v0.0.0-20211023032508-a2d123f740cc/go.mod h1:tyVIhpMFZQN8M9/XYAaxsavQzS3ztOiLicLS288V1A8=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

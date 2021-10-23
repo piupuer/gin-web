@@ -3,8 +3,8 @@ package service
 import (
 	"context"
 	"fmt"
-	"gin-web/models"
 	"gin-web/pkg/global"
+	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/utils"
 )
 
@@ -14,11 +14,11 @@ const (
 )
 
 // get dict name from cache by uid
-func CacheGetDictName(c context.Context, name string) ([]models.SysDictData, bool) {
+func CacheGetDictName(c context.Context, name string) ([]ms.SysDictData, bool) {
 	if global.Conf.Redis.Enable {
 		res, err := global.Redis.HGet(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixDictName), name).Result()
 		if err == nil && res != "" {
-			list := make([]models.SysDictData, 0)
+			list := make([]ms.SysDictData, 0)
 			utils.Json2Struct(res, &list)
 			return list, true
 		}
@@ -27,7 +27,7 @@ func CacheGetDictName(c context.Context, name string) ([]models.SysDictData, boo
 }
 
 // set dict name to cache by uid
-func CacheSetDictName(c context.Context, name string, data []models.SysDictData) {
+func CacheSetDictName(c context.Context, name string, data []ms.SysDictData) {
 	if global.Conf.Redis.Enable {
 		global.Redis.HSet(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixDictName), name, utils.Struct2Json(data))
 	}
@@ -48,11 +48,11 @@ func CacheFlushDictName(c context.Context) {
 }
 
 // get dict name and key from cache by uid
-func CacheGetDictNameAndKey(c context.Context, name, key string) (*models.SysDictData, bool) {
+func CacheGetDictNameAndKey(c context.Context, name, key string) (*ms.SysDictData, bool) {
 	if global.Conf.Redis.Enable {
 		res, err := global.Redis.HGet(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixDictNameAndKey), fmt.Sprintf("%s_%s", name, key)).Result()
 		if err == nil && res != "" {
-			item := models.SysDictData{}
+			item := ms.SysDictData{}
 			utils.Json2Struct(res, &item)
 			return &item, true
 		}
@@ -61,7 +61,7 @@ func CacheGetDictNameAndKey(c context.Context, name, key string) (*models.SysDic
 }
 
 // set dict name and key to cache by uid
-func CacheSetDictNameAndKey(c context.Context, name, key string, data models.SysDictData) {
+func CacheSetDictNameAndKey(c context.Context, name, key string, data ms.SysDictData) {
 	if global.Conf.Redis.Enable {
 		global.Redis.HSet(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixDictNameAndKey), fmt.Sprintf("%s_%s", name, key), utils.Struct2Json(data))
 	}

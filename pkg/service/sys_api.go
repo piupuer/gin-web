@@ -6,15 +6,16 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/ms"
 	"gorm.io/gorm"
 	"strings"
 )
 
-func (my MysqlService) FindApi(req *request.ApiReq) ([]models.SysApi, error) {
+func (my MysqlService) FindApi(req *request.ApiReq) ([]ms.SysApi, error) {
 	var err error
-	list := make([]models.SysApi, 0)
+	list := make([]ms.SysApi, 0)
 	query := my.Q.Tx.
-		Model(&models.SysApi{}).
+		Model(&ms.SysApi{}).
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {
@@ -36,12 +37,9 @@ func (my MysqlService) FindApi(req *request.ApiReq) ([]models.SysApi, error) {
 func (my MysqlService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysRole, roleId uint) ([]response.ApiGroupByCategoryResp, []uint, error) {
 	tree := make([]response.ApiGroupByCategoryResp, 0)
 	accessIds := make([]uint, 0)
-	allApi := make([]models.SysApi, 0)
+	allApi := make([]ms.SysApi, 0)
 	// find all api
-	err := my.Q.Tx.Find(&allApi).Error
-	if err != nil {
-		return tree, accessIds, err
-	}
+	my.Q.Tx.Find(&allApi)
 	var currentRoleId uint
 	// not super admin
 	if *currentRole.Sort != models.SysRoleSuperAdminSort {
@@ -55,7 +53,7 @@ func (my MysqlService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysR
 		return tree, accessIds, err
 	}
 
-	newApi := make([]models.SysApi, 0)
+	newApi := make([]ms.SysApi, 0)
 	for _, api := range allApi {
 		path := api.Path
 		method := api.Method
@@ -113,21 +111,20 @@ func (my MysqlService) FindAllApiGroupByCategoryByRoleId(currentRole models.SysR
 }
 
 func (my MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
-	api := new(models.SysApi)
-	err = my.Q.Create(req, new(models.SysApi))
+	api := new(ms.SysApi)
+	err = my.Q.Create(req, new(ms.SysApi))
 	if err != nil {
 		return err
 	}
 	if len(req.RoleIds) > 0 {
 		var roles []models.SysRole
-		err = my.Q.Tx.Where("id IN (?)", req.RoleIds).Find(&roles).Error
-		if err != nil {
-			return
-		}
+		my.Q.Tx.
+			Where("id IN (?)", req.RoleIds).
+			Find(&roles)
 		// generate casbin rules
-		cs := make([]models.SysRoleCasbin, 0)
+		cs := make([]ms.SysRoleCasbin, 0)
 		for _, role := range roles {
-			cs = append(cs, models.SysRoleCasbin{
+			cs = append(cs, ms.SysRoleCasbin{
 				Keyword: role.Keyword,
 				Path:    api.Path,
 				Method:  api.Method,
@@ -139,7 +136,7 @@ func (my MysqlService) CreateApi(req *request.CreateApiReq) (err error) {
 }
 
 func (my MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err error) {
-	var api models.SysApi
+	var api ms.SysApi
 	query := my.Q.Tx.Model(&api).Where("id = ?", id).First(&api)
 	if query.Error == gorm.ErrRecordNotFound {
 		return gorm.ErrRecordNotFound
@@ -159,7 +156,7 @@ func (my MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err err
 	method, ok2 := diff["method"]
 	if (ok1 && path != "") || (ok2 && method != "") {
 		// path/method change, the caspin rule needs to be updated
-		oldCasbins := my.FindRoleCasbin(models.SysRoleCasbin{
+		oldCasbins := my.FindRoleCasbin(ms.SysRoleCasbin{
 			Path:   oldApi.Path,
 			Method: oldApi.Method,
 		})
@@ -171,9 +168,9 @@ func (my MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err err
 			// delete old rules
 			my.BatchDeleteRoleCasbin(oldCasbins)
 			// create new rules
-			newCasbins := make([]models.SysRoleCasbin, 0)
+			newCasbins := make([]ms.SysRoleCasbin, 0)
 			for _, keyword := range keywords {
-				newCasbins = append(newCasbins, models.SysRoleCasbin{
+				newCasbins = append(newCasbins, ms.SysRoleCasbin{
 					Keyword: keyword,
 					Path:    api.Path,
 					Method:  api.Method,
@@ -185,20 +182,60 @@ func (my MysqlService) UpdateApiById(id uint, req request.UpdateApiReq) (err err
 	return
 }
 
-func (my MysqlService) DeleteApiByIds(ids []uint) (err error) {
-	var list []models.SysApi
-	query := my.Q.Tx.Where("id IN (?)", ids).Find(&list)
-	if query.Error != nil {
-		return
+func (my MysqlService) UpdateApiByRoleId(id uint, req request.UpdateMenuIncrementalIdsReq) (err error) {
+	var oldRole models.SysRole
+	query := my.Q.Tx.
+		Model(&oldRole).
+		Where("id = ?", id).
+		First(&oldRole)
+	if query.Error == gorm.ErrRecordNotFound {
+		return gorm.ErrRecordNotFound
 	}
-	casbins := make([]models.SysRoleCasbin, 0)
+	if len(req.Delete) > 0 {
+		deleteApis := make([]ms.SysApi, 0)
+		my.Q.Tx.
+			Where("id IN (?)", req.Delete).
+			Find(&deleteApis)
+		cs := make([]ms.SysRoleCasbin, 0)
+		for _, api := range deleteApis {
+			cs = append(cs, ms.SysRoleCasbin{
+				Keyword: oldRole.Keyword,
+				Path:    api.Path,
+				Method:  api.Method,
+			})
+		}
+		_, err = my.BatchDeleteRoleCasbin(cs)
+	}
+	if len(req.Create) > 0 {
+		createApis := make([]ms.SysApi, 0)
+		my.Q.Tx.
+			Where("id IN (?)", req.Create).
+			Find(&createApis)
+		cs := make([]ms.SysRoleCasbin, 0)
+		for _, api := range createApis {
+			cs = append(cs, ms.SysRoleCasbin{
+				Keyword: oldRole.Keyword,
+				Path:    api.Path,
+				Method:  api.Method,
+			})
+		}
+		_, err = my.BatchCreateRoleCasbin(cs)
+
+	}
+	return
+}
+
+func (my MysqlService) DeleteApiByIds(ids []uint) (err error) {
+	var list []ms.SysApi
+	query := my.Q.Tx.Where("id IN (?)", ids).Find(&list)
+	casbins := make([]ms.SysRoleCasbin, 0)
 	for _, api := range list {
-		casbins = append(casbins, my.FindRoleCasbin(models.SysRoleCasbin{
+		casbins = append(casbins, my.FindRoleCasbin(ms.SysRoleCasbin{
 			Path:   api.Path,
 			Method: api.Method,
 		})...)
 	}
 	// delete old rules
 	my.BatchDeleteRoleCasbin(casbins)
-	return query.Delete(&models.SysApi{}).Error
+	return query.Delete(&ms.SysApi{}).Error
 }

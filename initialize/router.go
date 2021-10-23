@@ -7,6 +7,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/utils"
@@ -40,14 +41,14 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
 			middleware.WithOperationLogSaveMaxCount(1),
 			middleware.WithOperationLogSave(func(c *gin.Context, list []middleware.OperationRecord) {
-				arr := make([]models.SysOperationLog, len(list))
+				arr := make([]ms.SysOperationLog, len(list))
 				utils.Struct2StructByJson(list, &arr)
 				global.Mysql.Create(arr)
 			}),
 			middleware.WithOperationLogFindApi(func(c *gin.Context) []middleware.OperationApi {
-				list := make([]models.SysApi, 0)
+				list := make([]ms.SysApi, 0)
 				global.Mysql.
-					Model(&models.SysApi{}).
+					Model(&ms.SysApi{}).
 					Find(&list)
 				r := make([]middleware.OperationApi, 0)
 				utils.Struct2StructByJson(list, &r)

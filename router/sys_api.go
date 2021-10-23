@@ -14,6 +14,7 @@ func InitApiRouter(r *gin.RouterGroup, jwtOptions []func(*middleware.JwtOptions)
 		router1.GET("/all/category/:roleId", v1.FindAllApiGroupByCategoryByRoleId)
 		router2.POST("/create", v1.CreateApi)
 		router1.PATCH("/update/:id", v1.UpdateApiById)
+		router1.PATCH("/role/update/:id", v1.UpdateApiByRoleId)
 		router1.DELETE("/delete/batch", v1.BatchDeleteApiByIds)
 	}
 	return r

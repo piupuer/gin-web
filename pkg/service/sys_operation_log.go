@@ -2,17 +2,17 @@ package service
 
 import (
 	"fmt"
-	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
+	"github.com/piupuer/go-helper/ms"
 	"strings"
 )
 
-func (my MysqlService) FindOperationLog(req *request.OperationLogReq) ([]models.SysOperationLog, error) {
+func (my MysqlService) FindOperationLog(req *request.OperationLogReq) ([]ms.SysOperationLog, error) {
 	var err error
-	list := make([]models.SysOperationLog, 0)
+	list := make([]ms.SysOperationLog, 0)
 	query := global.Mysql.
-		Model(&models.SysOperationLog{}).
+		Model(&ms.SysOperationLog{}).
 		Order("created_at DESC")
 	method := strings.TrimSpace(req.Method)
 	if method != "" {

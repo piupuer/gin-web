@@ -66,10 +66,3 @@ func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
 		First(&user).Error
 	return user, err
 }
-
-func (my MysqlService) GetUsersByIds(ids []uint) ([]models.SysUser, error) {
-	var users []models.SysUser
-	var err error
-	err = my.Q.Tx.Preload("Role").Where("id IN (?)", ids).Find(&users).Error
-	return users, err
-}

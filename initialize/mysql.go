@@ -6,6 +6,7 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	m "github.com/go-sql-driver/mysql"
+	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/binlog"
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"gorm.io/driver/mysql"
@@ -67,18 +68,19 @@ func Mysql() {
 
 func autoMigrate() {
 	global.Mysql.WithContext(ctx).AutoMigrate(
+		new(ms.SysMenu),
+		new(ms.SysMenuRoleRelation),
+		new(ms.SysApi),
+		new(ms.SysCasbin),
+		new(ms.SysOperationLog),
+		new(ms.SysMessage),
+		new(ms.SysMessageLog),
+		new(ms.SysMachine),
+		new(ms.SysDict),
+		new(ms.SysDictData),
 		new(models.SysUser),
 		new(models.SysRole),
-		new(models.SysMenu),
-		new(models.SysApi),
-		new(models.SysCasbin),
-		new(models.SysLeave),
-		new(models.SysOperationLog),
-		new(models.SysMessage),
-		new(models.SysMessageLog),
-		new(models.SysMachine),
-		new(models.SysDict),
-		new(models.SysDictData),
+		new(models.Leave),
 	)
 	// auto migrate fsm
 	fsm.Migrate(global.Mysql, fsm.WithContext(ctx))
@@ -104,18 +106,18 @@ func binlogListen() {
 		),
 		binlog.WithModels(
 			// The following tables will be sync to redis
+			new(ms.SysMenu),
+			new(ms.SysMenuRoleRelation),
+			new(ms.SysApi),
+			new(ms.SysCasbin),
+			new(ms.SysMessage),
+			new(ms.SysMessageLog),
+			new(ms.SysMachine),
+			new(ms.SysDict),
+			new(ms.SysDictData),
 			new(models.SysUser),
 			new(models.SysRole),
-			new(models.SysMenu),
-			new(models.SysRoleMenuRelation),
-			new(models.SysApi),
-			new(models.SysCasbin),
-			new(models.SysLeave),
-			new(models.SysMessage),
-			new(models.SysMessageLog),
-			new(models.SysMachine),
-			new(models.SysDict),
-			new(models.SysDictData),
+			new(models.Leave),
 		),
 	)
 	if err != nil {
