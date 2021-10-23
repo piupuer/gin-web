@@ -11,11 +11,10 @@ import (
 	"strings"
 )
 
-func (rd RedisService) FindApi(req *request.ApiReq) ([]ms.SysApi, error) {
+func (rd RedisService) FindApi(req *request.ApiReq) []ms.SysApi {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		return rd.mysql.FindApi(req)
 	}
-	var err error
 	list := make([]ms.SysApi, 0)
 	query := rd.Q.
 		Table("sys_api").
@@ -32,8 +31,8 @@ func (rd RedisService) FindApi(req *request.ApiReq) ([]ms.SysApi, error) {
 	if category != "" {
 		query = query.Where("category", "contains", category)
 	}
-	err = rd.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	rd.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }
 
 // find all api group by api category

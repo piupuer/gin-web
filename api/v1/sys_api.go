@@ -16,8 +16,7 @@ func FindApi(c *gin.Context) {
 	req.ShouldBind(c, &r)
 
 	s := cache_service.New(c)
-	list, err := s.FindApi(&r)
-	resp.CheckErr(err)
+	list := s.FindApi(&r)
 	resp.SuccessWithPageData(list, []response.ApiResp{}, r.Page)
 }
 

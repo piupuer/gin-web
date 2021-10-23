@@ -15,8 +15,7 @@ func FindMachine(c *gin.Context) {
 	var r request.MachineReq
 	req.ShouldBind(c, &r)
 	s := cache_service.New(c)
-	list, err := s.FindMachine(&r)
-	resp.CheckErr(err)
+	list := s.FindMachine(&r)
 	resp.SuccessWithPageData(list, []response.MachineResp{}, r.Page)
 }
 

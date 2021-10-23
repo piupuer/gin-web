@@ -15,8 +15,7 @@ func FindOperationLog(c *gin.Context) {
 	var r request.OperationLogReq
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	list, err := s.FindOperationLog(&r)
-	resp.CheckErr(err)
+	list := s.FindOperationLog(&r)
 	resp.SuccessWithPageData(list, []response.OperationLogResp{}, r.Page)
 }
 

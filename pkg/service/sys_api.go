@@ -11,8 +11,7 @@ import (
 	"strings"
 )
 
-func (my MysqlService) FindApi(req *request.ApiReq) ([]ms.SysApi, error) {
-	var err error
+func (my MysqlService) FindApi(req *request.ApiReq) []ms.SysApi {
 	list := make([]ms.SysApi, 0)
 	query := my.Q.Tx.
 		Model(&ms.SysApi{}).
@@ -29,8 +28,8 @@ func (my MysqlService) FindApi(req *request.ApiReq) ([]ms.SysApi, error) {
 	if category != "" {
 		query = query.Where("category LIKE ?", fmt.Sprintf("%%%s%%", category))
 	}
-	err = my.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	my.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }
 
 // find all api group by api category

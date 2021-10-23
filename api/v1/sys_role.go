@@ -20,8 +20,7 @@ func FindRole(c *gin.Context) {
 	r.CurrentRoleSort = *user.Role.Sort
 
 	s := cache_service.New(c)
-	list, err := s.FindRole(&r)
-	resp.CheckErr(err)
+	list := s.FindRole(&r)
 	resp.SuccessWithPageData(list, []response.RoleResp{}, r.Page)
 }
 

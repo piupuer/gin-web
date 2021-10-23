@@ -14,8 +14,7 @@ func FindDict(c *gin.Context) {
 	req.ShouldBind(c, &r)
 
 	s := service.New(c)
-	list, err := s.FindDict(&r)
-	resp.CheckErr(err)
+	list := s.FindDict(&r)
 	resp.SuccessWithPageData(list, []response.DictResp{}, r.Page)
 }
 
@@ -54,8 +53,7 @@ func FindDictData(c *gin.Context) {
 	req.ShouldBind(c, &r)
 
 	s := service.New(c)
-	list, err := s.FindDictData(&r)
-	resp.CheckErr(err)
+	list := s.FindDictData(&r)
 	resp.SuccessWithPageData(list, []response.DictDataResp{}, r.Page)
 }
 

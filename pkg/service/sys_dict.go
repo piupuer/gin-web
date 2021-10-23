@@ -57,8 +57,7 @@ func (my MysqlService) FindDictDataByName(name string) ([]ms.SysDictData, error)
 	return newList, nil
 }
 
-func (my MysqlService) FindDict(req *request.DictReq) ([]ms.SysDict, error) {
-	var err error
+func (my MysqlService) FindDict(req *request.DictReq) []ms.SysDict {
 	list := make([]ms.SysDict, 0)
 	query := my.Q.Tx.
 		Model(&ms.SysDict{}).
@@ -75,13 +74,11 @@ func (my MysqlService) FindDict(req *request.DictReq) ([]ms.SysDict, error) {
 	if req.Status != nil {
 		query = query.Where("status = ?", *req.Status)
 	}
-	// 查询列表
-	err = my.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	my.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }
 
-func (my MysqlService) FindDictData(req *request.DictDataReq) ([]ms.SysDictData, error) {
-	var err error
+func (my MysqlService) FindDictData(req *request.DictDataReq) []ms.SysDictData {
 	list := make([]ms.SysDictData, 0)
 	query := my.Q.Tx.
 		Model(&ms.SysDictData{}).
@@ -105,9 +102,8 @@ func (my MysqlService) FindDictData(req *request.DictDataReq) ([]ms.SysDictData,
 	if req.DictId != nil {
 		query = query.Where("dict_id = ?", *req.DictId)
 	}
-	// 查询列表
-	err = my.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	my.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }
 
 func (my MysqlService) CreateDict(req *request.CreateDictReq) (err error) {

@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) ([]uint, error) {
+func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) []uint {
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
 	my.Q.Tx.
@@ -18,11 +18,10 @@ func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) ([]uint, error) {
 	for _, role := range roles {
 		roleIds = append(roleIds, role.Id)
 	}
-	return roleIds, nil
+	return roleIds
 }
 
-func (my MysqlService) FindRole(req *request.RoleReq) ([]models.SysRole, error) {
-	var err error
+func (my MysqlService) FindRole(req *request.RoleReq) []models.SysRole {
 	list := make([]models.SysRole, 0)
 	query := my.Q.Tx.
 		Model(&models.SysRole{}).
@@ -43,8 +42,8 @@ func (my MysqlService) FindRole(req *request.RoleReq) ([]models.SysRole, error) 
 			query = query.Where("status = ?", 0)
 		}
 	}
-	err = my.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	my.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }
 
 func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {

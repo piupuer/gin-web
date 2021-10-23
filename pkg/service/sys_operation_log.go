@@ -8,8 +8,7 @@ import (
 	"strings"
 )
 
-func (my MysqlService) FindOperationLog(req *request.OperationLogReq) ([]ms.SysOperationLog, error) {
-	var err error
+func (my MysqlService) FindOperationLog(req *request.OperationLogReq) []ms.SysOperationLog {
 	list := make([]ms.SysOperationLog, 0)
 	query := global.Mysql.
 		Model(&ms.SysOperationLog{}).
@@ -30,6 +29,6 @@ func (my MysqlService) FindOperationLog(req *request.OperationLogReq) ([]ms.SysO
 	if status != "" {
 		query = query.Where("status LIKE ?", fmt.Sprintf("%%%s%%", status))
 	}
-	err = my.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	my.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }

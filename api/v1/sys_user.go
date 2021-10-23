@@ -40,8 +40,7 @@ func FindUser(c *gin.Context) {
 	user := GetCurrentUser(c)
 	r.CurrentRole = user.Role
 	s := cache_service.New(c)
-	list, err := s.FindUser(&r)
-	resp.CheckErr(err)
+	list := s.FindUser(&r)
 	resp.SuccessWithPageData(list, []response.UserResp{}, r.Page)
 }
 

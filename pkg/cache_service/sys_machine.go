@@ -7,11 +7,10 @@ import (
 	"strings"
 )
 
-func (rd RedisService) FindMachine(req *request.MachineReq) ([]ms.SysMachine, error) {
+func (rd RedisService) FindMachine(req *request.MachineReq) []ms.SysMachine {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		return rd.mysql.FindMachine(req)
 	}
-	var err error
 	list := make([]ms.SysMachine, 0)
 	query := rd.Q.
 		Table("sys_machine").
@@ -27,6 +26,6 @@ func (rd RedisService) FindMachine(req *request.MachineReq) ([]ms.SysMachine, er
 	if req.Status != nil {
 		query = query.Where("status", "=", *req.Status)
 	}
-	err = rd.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	rd.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }

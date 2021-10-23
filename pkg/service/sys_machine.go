@@ -9,8 +9,7 @@ import (
 	"strings"
 )
 
-func (my MysqlService) FindMachine(req *request.MachineReq) ([]ms.SysMachine, error) {
-	var err error
+func (my MysqlService) FindMachine(req *request.MachineReq) []ms.SysMachine {
 	list := make([]ms.SysMachine, 0)
 	query := my.Q.Tx.
 		Model(&ms.SysMachine{}).
@@ -30,8 +29,8 @@ func (my MysqlService) FindMachine(req *request.MachineReq) ([]ms.SysMachine, er
 			query = query.Where("status = ?", 0)
 		}
 	}
-	err = my.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	my.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }
 
 // connect machine

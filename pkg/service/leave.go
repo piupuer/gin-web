@@ -13,8 +13,7 @@ import (
 )
 
 // find leave by current user id
-func (my MysqlService) FindLeave(r *request.LeaveReq) ([]models.Leave, error) {
-	var err error
+func (my MysqlService) FindLeave(r *request.LeaveReq) []models.Leave {
 	list := make([]models.Leave, 0)
 	query := my.Q.Tx.
 		Model(&models.Leave{}).
@@ -27,8 +26,8 @@ func (my MysqlService) FindLeave(r *request.LeaveReq) ([]models.Leave, error) {
 	if desc != "" {
 		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
-	err = my.Q.FindWithPage(query, &r.Page, &list)
-	return list, err
+	my.Q.FindWithPage(query, &r.Page, &list)
+	return list
 }
 
 // query leave fsm track

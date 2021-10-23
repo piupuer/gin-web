@@ -16,8 +16,7 @@ func FindLeave(c *gin.Context) {
 	user := GetCurrentUser(c)
 	r.UserId = user.Id
 	s := service.New(c)
-	list, err := s.FindLeave(&r)
-	resp.CheckErr(err)
+	list := s.FindLeave(&r)
 	resp.SuccessWithPageData(list, []response.LeaveResp{}, r.Page)
 }
 

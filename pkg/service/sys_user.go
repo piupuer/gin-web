@@ -21,17 +21,13 @@ func (my MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 	return &u, err
 }
 
-func (my MysqlService) FindUser(req *request.UserReq) ([]models.SysUser, error) {
-	var err error
+func (my MysqlService) FindUser(req *request.UserReq) []models.SysUser {
 	list := make([]models.SysUser, 0)
 	query := my.Q.Tx.
 		Model(&models.SysUser{}).
 		Order("created_at DESC")
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
-		roleIds, err := my.FindRoleIdBySort(*req.CurrentRole.Sort)
-		if err != nil {
-			return list, err
-		}
+		roleIds := my.FindRoleIdBySort(*req.CurrentRole.Sort)
 		query = query.Where("role_id IN (?)", roleIds)
 	}
 	username := strings.TrimSpace(req.Username)
@@ -53,8 +49,8 @@ func (my MysqlService) FindUser(req *request.UserReq) ([]models.SysUser, error) 
 			query = query.Where("status = ?", 0)
 		}
 	}
-	err = my.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	my.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }
 
 func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {

@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func (rd RedisService) FindRoleIdBySort(currentRoleSort uint) ([]uint, error) {
+func (rd RedisService) FindRoleIdBySort(currentRoleSort uint) []uint {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		return rd.mysql.FindRoleIdBySort(currentRoleSort)
 	}
@@ -20,14 +20,13 @@ func (rd RedisService) FindRoleIdBySort(currentRoleSort uint) ([]uint, error) {
 	for _, role := range roles {
 		roleIds = append(roleIds, role.Id)
 	}
-	return roleIds, nil
+	return roleIds
 }
 
-func (rd RedisService) FindRole(req *request.RoleReq) ([]models.SysRole, error) {
+func (rd RedisService) FindRole(req *request.RoleReq) []models.SysRole {
 	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
 		return rd.mysql.FindRole(req)
 	}
-	var err error
 	list := make([]models.SysRole, 0)
 	query := rd.Q.
 		Table("sys_role").
@@ -48,6 +47,6 @@ func (rd RedisService) FindRole(req *request.RoleReq) ([]models.SysRole, error) 
 			query = query.Where("status", "=", 0)
 		}
 	}
-	err = rd.Q.FindWithPage(query, &req.Page, &list)
-	return list, err
+	rd.Q.FindWithPage(query, &req.Page, &list)
+	return list
 }

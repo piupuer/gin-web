@@ -49,7 +49,7 @@ func (rd RedisService) findMenuByRoleId(roleId uint) []ms.SysMenu {
 	if len(menuIds) > 0 {
 		rd.Q.
 			Table("sys_menu").
-			Where("id", "contains", menuIds).
+			Where("id", "in", menuIds).
 			Order("sort").
 			Find(&roleMenu)
 	}
