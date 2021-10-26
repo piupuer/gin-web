@@ -2,15 +2,19 @@ package initialize
 
 import (
 	"gin-web/api"
+	v1 "gin-web/api/v1"
 	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
+	hv1 "github.com/piupuer/go-helper/api/v1"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
+	"github.com/piupuer/go-helper/pkg/query"
 	"github.com/piupuer/go-helper/pkg/utils"
+	hr "github.com/piupuer/go-helper/router"
 )
 
 func Routers() *gin.Engine {
@@ -39,7 +43,7 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPrefix),
 			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
 			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
-			middleware.WithOperationLogSaveMaxCount(1),
+			middleware.WithOperationLogSaveMaxCount(50),
 			middleware.WithOperationLogSave(func(c *gin.Context, list []middleware.OperationRecord) {
 				arr := make([]ms.SysOperationLog, len(list))
 				utils.Struct2StructByJson(list, &arr)
@@ -87,20 +91,55 @@ func Routers() *gin.Engine {
 
 	// set path prefix
 	v1Group := apiGroup.Group(global.Conf.System.ApiVersion)
-	// init routers
-	router.InitPublicRouter(v1Group)
-	router.InitBaseRouter(v1Group, jwtOps)
-	router.InitUserRouter(v1Group, jwtOps)
-	router.InitMenuRouter(v1Group, jwtOps)
-	router.InitRoleRouter(v1Group, jwtOps)
-	router.InitApiRouter(v1Group, jwtOps)
-	router.InitFsmRouter(v1Group, jwtOps)
-	router.InitLeaveRouter(v1Group, jwtOps)
-	router.InitUploadRouter(v1Group, jwtOps)
-	router.InitOperationLogRouter(v1Group, jwtOps)
-	router.InitMessageRouter(v1Group, jwtOps)
-	router.InitMachineRouter(v1Group, jwtOps)
-	router.InitDictRouter(v1Group, jwtOps)
+
+	// init default routers
+	nr := hr.NewRouter(
+		hr.WithLogger(global.Log),
+		hr.WithRedis(global.Redis),
+		hr.WithRedisBinlog(global.Conf.Redis.EnableBinlog),
+		hr.WithGroup(v1Group),
+		hr.WithJwt(true),
+		hr.WithJwtOps(jwtOps...),
+		hr.WithCasbin(true),
+		hr.WithCasbinOps(
+			middleware.WithCasbinEnforcer(global.CasbinEnforcer),
+			middleware.WithCasbinGetCurrentUser(v1.GetCurrentUserAndRole),
+		),
+		hr.WithIdempotence(true),
+		hr.WithIdempotenceOps(),
+		hr.WithV1Ops(
+			hv1.WithDbOps(
+				query.WithMysqlDb(global.Mysql),
+			),
+			hv1.WithBinlogOps(
+				query.WithRedisCasbinEnforcer(global.CasbinEnforcer),
+				query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),
+				query.WithRedisNamingStrategy(global.Mysql.NamingStrategy),
+			),
+			hv1.WithGetCurrentUser(v1.GetCurrentUserAndRole),
+			hv1.WithFindRoleKeywordByRoleIds(v1.FindRoleKeywordByRoleIds),
+			hv1.WithFindUserByIds(v1.FindUserByIds),
+			hv1.WithUploadSaveDir(global.Conf.Upload.SaveDir),
+			hv1.WithUploadSingleMaxSize(global.Conf.Upload.SingleMaxSize),
+			hv1.WithUploadMergeConcurrentCount(global.Conf.Upload.MergeConcurrentCount),
+			hv1.WithUploadMinio(global.Minio),
+			hv1.WithUploadMinioBucket(global.Conf.Upload.Minio.Bucket),
+		),
+	)
+	nr.Api()
+	nr.Base()
+	nr.Dict()
+	nr.Fsm()
+	nr.Machine()
+	nr.Menu()
+	nr.Message()
+	nr.OperationLog()
+	nr.Upload()
+
+	// init custom routers
+	router.InitLeaveRouter(nr)
+	router.InitRoleRouter(nr)
+	router.InitUserRouter(nr)
 
 	global.Log.Info(ctx, "initialize router success")
 	return r

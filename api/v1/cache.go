@@ -10,37 +10,9 @@ import (
 )
 
 const (
-	CacheSuffixMenuTree = "menu_tree"
 	CacheSuffixUserInfo = "user_info"
 	CacheSuffixUser     = "user"
 )
-
-// get menu tree from cache by uid
-func CacheGetMenuTree(c context.Context, uid uint) ([]response.MenuTreeResp, bool) {
-	if global.Conf.Redis.Enable {
-		res, err := global.Redis.HGet(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixMenuTree), fmt.Sprintf("%d", uid)).Result()
-		if err == nil && res != "" {
-			list := make([]response.MenuTreeResp, 0)
-			utils.Json2Struct(res, &list)
-			return list, true
-		}
-	}
-	return nil, false
-}
-
-// set menu tree to cache by uid
-func CacheSetMenuTree(c context.Context, uid uint, data []response.MenuTreeResp) {
-	if global.Conf.Redis.Enable {
-		global.Redis.HSet(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixMenuTree), fmt.Sprintf("%d", uid), utils.Struct2Json(data))
-	}
-}
-
-// clear menu tree cache
-func CacheFlushMenuTree(c context.Context) {
-	if global.Conf.Redis.Enable {
-		global.Redis.Del(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixMenuTree))
-	}
-}
 
 // get user info from cache by uid
 func CacheGetUserInfo(c context.Context, uid uint) (*response.UserInfoResp, bool) {

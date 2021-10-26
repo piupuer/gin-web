@@ -58,7 +58,7 @@ redis:
   binlog-pos: mysql_binlog_pos
   # enable redis
   enable: true
-  # enable redis service((pkg.cache_service)
+  # enable binlog redis service(pkg.cache_service)
   enable-binlog: true
 
 jwt:

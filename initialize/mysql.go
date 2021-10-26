@@ -87,7 +87,7 @@ func autoMigrate() {
 }
 
 func binlogListen() {
-	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
+	if !global.Conf.Redis.EnableBinlog {
 		global.Log.Info(ctx, "if redis is not used or binlog is not enabled, there is no need to initialize the MySQL binlog listener")
 		return
 	}

@@ -3,16 +3,15 @@ package cache_service
 import (
 	"errors"
 	"gin-web/models"
-	"gin-web/pkg/global"
 	"gin-web/pkg/request"
-	"gin-web/pkg/utils"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/utils"
 	"strings"
 )
 
 // user login check
 func (rd RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
-	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
+	if !rd.binlog {
 		return rd.mysql.LoginCheck(user)
 	}
 	var u models.SysUser
@@ -29,7 +28,7 @@ func (rd RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 }
 
 func (rd RedisService) FindUser(req *request.UserReq) []models.SysUser {
-	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
+	if !rd.binlog {
 		return rd.mysql.FindUser(req)
 	}
 	list := make([]models.SysUser, 0)
@@ -60,7 +59,7 @@ func (rd RedisService) FindUser(req *request.UserReq) []models.SysUser {
 }
 
 func (rd RedisService) GetUserById(id uint) (models.SysUser, error) {
-	if !global.Conf.Redis.Enable || !global.Conf.Redis.EnableService {
+	if !rd.binlog {
 		return rd.mysql.GetUserById(id)
 	}
 	var user models.SysUser

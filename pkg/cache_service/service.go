@@ -8,15 +8,17 @@ import (
 )
 
 type RedisService struct {
-	Q     query.Redis
-	mysql service.MysqlService
+	Q      query.Redis
+	mysql  service.MysqlService
+	binlog bool
 }
 
 func New(c *gin.Context) RedisService {
 	rd := RedisService{
-		mysql: service.New(c),
+		mysql:  service.New(c),
+		binlog: global.Conf.Redis.EnableBinlog,
 	}
-	if global.Conf.Redis.Enable && global.Conf.Redis.EnableService {
+	if global.Conf.Redis.EnableBinlog {
 		ops := []func(*query.RedisOptions){
 			query.WithRedisLogger(global.Log),
 			query.WithRedisCtx(c),

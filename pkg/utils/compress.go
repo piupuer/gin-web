@@ -1,46 +1,17 @@
 package utils
 
 import (
-	"bytes"
-	"compress/zlib"
-	"encoding/base64"
 	"fmt"
 	"github.com/foobaz/lossypng/lossypng"
 	"github.com/nfnt/resize"
+	"github.com/piupuer/go-helper/pkg/utils"
 	"image"
 	"image/jpeg"
 	"image/png"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
 )
-
-// 压缩字符串(zlib)
-func CompressStrByZlib(s string) (*string, error) {
-	var b bytes.Buffer
-	gz := zlib.NewWriter(&b)
-	if _, err := gz.Write([]byte(s)); err != nil {
-		return nil, err
-	}
-	if err := gz.Flush(); err != nil {
-		return nil, err
-	}
-	if err := gz.Close(); err != nil {
-		return nil, err
-	}
-	res := base64.StdEncoding.EncodeToString(b.Bytes())
-	return &res, nil
-}
-
-// 解压字符串(zlib)
-func DeCompressStrByZlib(s string) string {
-	data, _ := base64.StdEncoding.DecodeString(s)
-	rData := bytes.NewReader(data)
-	r, _ := zlib.NewReader(rData)
-	b, _ := ioutil.ReadAll(r)
-	return string(b)
-}
 
 // 压缩图像(支持jpg/png, 不保存原始图像)
 func CompressImage(filename string) error {
@@ -127,7 +98,7 @@ func CompressImageSaveOriginal(filename string, before string) error {
 	}
 	// 保存原始文件
 	if beforeDir != "" {
-		CreateDirIfNotExists(beforeDir)
+		utils.CreateDirIfNotExists(beforeDir)
 		// 移动源文件到before目录
 		err = os.Rename(filename, beforeFilename)
 		if err != nil {

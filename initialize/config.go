@@ -92,6 +92,10 @@ func Config(c context.Context) {
 		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")
 	}
 
+	if !global.Conf.Redis.Enable {
+		global.Conf.Redis.EnableBinlog = false
+	}
+
 	global.Conf.Logs.OperationDisabledPathArr = make([]string, 0)
 	if strings.TrimSpace(global.Conf.Logs.OperationDisabledPaths) != "" {
 		global.Conf.Logs.OperationDisabledPathArr = strings.Split(global.Conf.Logs.OperationDisabledPaths, ",")

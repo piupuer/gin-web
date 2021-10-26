@@ -58,16 +58,36 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 		if len(v.Users) > 0 {
 			return fmt.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users))
 		}
-		oldCasbins = append(oldCasbins, my.FindRoleCasbin(ms.SysRoleCasbin{
+		oldCasbins = append(oldCasbins, my.Q.FindRoleCasbin(ms.SysRoleCasbin{
 			Keyword: v.Keyword,
 		})...)
 		newIds = append(newIds, v.Id)
 	}
 	if len(oldCasbins) > 0 {
-		my.BatchDeleteRoleCasbin(oldCasbins)
+		my.Q.BatchDeleteRoleCasbin(oldCasbins)
 	}
 	if len(newIds) > 0 {
 		err = my.Q.DeleteByIds(newIds, new(models.SysRole))
 	}
 	return
+}
+
+func (my MysqlService) GetRoleById(id uint) (models.SysRole, error) {
+	var role models.SysRole
+	var err error
+	err = my.Q.Tx.
+		Where("id = ?", id).
+		Where("status = ?", models.SysRoleStatusNormal).
+		First(&role).Error
+	return role, err
+}
+
+func (my MysqlService) FindRoleByIds(ids []uint) []models.SysRole {
+	roles := make([]models.SysRole, 0)
+	my.Q.Tx.
+		Model(&models.SysRole{}).
+		Where("id IN (?)", ids).
+		Where("status", "=", models.SysRoleStatusNormal).
+		Find(&roles)
+	return roles
 }

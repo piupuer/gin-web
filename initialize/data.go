@@ -4,8 +4,8 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/service"
-	"gin-web/pkg/utils"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strings"
@@ -690,7 +690,7 @@ func Data() {
 	}
 	if len(newRoleCasbins) > 0 {
 		s := service.New(nil)
-		s.BatchCreateRoleCasbin(newRoleCasbins)
+		s.Q.BatchCreateRoleCasbin(newRoleCasbins)
 	}
 }
 

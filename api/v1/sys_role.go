@@ -62,46 +62,14 @@ func UpdateRoleById(c *gin.Context) {
 	resp.Success()
 }
 
-func UpdateMenuByRoleId(c *gin.Context) {
-	var r request.UpdateMenuIncrementalIdsReq
-	req.ShouldBind(c, &r)
-	id := req.UintId(c)
-	user := GetCurrentUser(c)
-	if user.RoleId == id {
-		if *user.Role.Sort == models.SysRoleSuperAdminSort && len(r.Delete) > 0 {
-			resp.CheckErr("cannot remove super admin privileges")
-		} else if *user.Role.Sort != models.SysRoleSuperAdminSort {
-			resp.CheckErr("cannot change your permissions")
-		}
+func FindRoleKeywordByRoleIds(c *gin.Context, roleIds []uint) []string {
+	s := cache_service.New(c)
+	roles := s.FindRoleByIds(roleIds)
+	keywords := make([]string, 0)
+	for _, role := range roles {
+		keywords = append(keywords, role.Keyword)
 	}
-
-	s := service.New(c)
-	err := s.UpdateMenuByRoleId(user.Role, id, r)
-	resp.CheckErr(err)
-	CacheFlushMenuTree(c)
-	resp.Success()
-}
-
-func UpdateApiByRoleId(c *gin.Context) {
-	var r request.UpdateMenuIncrementalIdsReq
-	req.ShouldBind(c, &r)
-	id := req.UintId(c)
-
-	user := GetCurrentUser(c)
-
-	if user.RoleId == id {
-		if *user.Role.Sort == models.SysRoleSuperAdminSort && len(r.Delete) > 0 {
-			resp.CheckErr("cannot remove super admin privileges")
-		} else if *user.Role.Sort != models.SysRoleSuperAdminSort {
-			resp.CheckErr("cannot change your permissions")
-		}
-	}
-
-	s := service.New(c)
-	err := s.UpdateApiByRoleId(id, r)
-	resp.CheckErr(err)
-	CacheFlushMenuTree(c)
-	resp.Success()
+	return keywords
 }
 
 func BatchDeleteRoleByIds(c *gin.Context) {

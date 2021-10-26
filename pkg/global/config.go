@@ -52,10 +52,10 @@ type MysqlConfiguration struct {
 }
 
 type RedisConfiguration struct {
-	Uri           string `mapstructure:"uri" json:"uri"`
-	BinlogPos     string `mapstructure:"binlog-pos" json:"binlogPos"`
-	Enable        bool   `mapstructure:"enable" json:"enable"`
-	EnableService bool   `mapstructure:"enable-service" json:"enableService"`
+	Uri          string `mapstructure:"uri" json:"uri"`
+	BinlogPos    string `mapstructure:"binlog-pos" json:"binlogPos"`
+	Enable       bool   `mapstructure:"enable" json:"enable"`
+	EnableBinlog bool   `mapstructure:"enable-binlog" json:"enableBinlog"`
 }
 
 type JwtConfiguration struct {
@@ -72,8 +72,8 @@ type JwtConfiguration struct {
 type UploadConfiguration struct {
 	Minio                        UploadOssMinioConfiguration `mapstructure:"oss-minio" json:"ossMinio"`
 	SaveDir                      string                      `mapstructure:"save-dir" json:"saveDir"`
-	SingleMaxSize                uint                        `mapstructure:"single-max-size" json:"singleMaxSize"`
-	MergeConcurrentCount         uint                        `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
+	SingleMaxSize                int64                       `mapstructure:"single-max-size" json:"singleMaxSize"`
+	MergeConcurrentCount         int                         `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
 	CompressImageCronTask        string                      `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
 	CompressImageRootDir         string                      `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
 	CompressImageOriginalSaveDir string                      `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`

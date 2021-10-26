@@ -8,10 +8,11 @@ import (
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
-	"gin-web/pkg/utils"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/utils"
 	"strings"
 )
 
@@ -74,6 +75,44 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	newUser, _ = s.GetUserById(uid)
 	CacheSetUser(c, uid, newUser)
 	return newUser
+}
+
+func GetCurrentUserAndRole(c *gin.Context) ms.User {
+	user := GetCurrentUser(c)
+	s := cache_service.New(c)
+	var roleSort uint
+	if user.Role.Sort != nil {
+		roleSort = *user.Role.Sort
+	}
+	pathRoleId, err := req.UintIdWithErr(c)
+	pathRoleKeyword := ""
+	if err == nil {
+		role, _ := s.GetRoleById(pathRoleId)
+		pathRoleKeyword = role.Keyword
+	}
+	return ms.User{
+		M: ms.M{
+			Id:        user.Id,
+			CreatedAt: user.CreatedAt,
+			UpdatedAt: user.UpdatedAt,
+		},
+		RoleId:          user.RoleId,
+		RoleSort:        roleSort,
+		RoleKeyword:     user.Role.Keyword,
+		PathRoleId:      pathRoleId,
+		PathRoleKeyword: pathRoleKeyword,
+	}
+}
+
+func FindUserByIds(c *gin.Context, userIds []uint) []ms.User {
+	users := make([]models.SysUser, 0)
+	global.Mysql.
+		Model(&models.SysUser{}).
+		Where("id IN (?)", userIds).
+		Find(&users)
+	newUsers := make([]ms.User, 0)
+	utils.Struct2StructByJson(users, &newUsers)
+	return newUsers
 }
 
 func CreateUser(c *gin.Context) {

@@ -10,21 +10,16 @@ require (
 	github.com/go-redis/redis/v8 v8.11.2
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gobuffalo/packr/v2 v2.7.1
-	github.com/golang-module/carbon v1.5.4
-	github.com/gorilla/websocket v1.4.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646
-	github.com/piupuer/go-helper v0.0.0-20211023141658-09c8cebe1fb1
+	github.com/piupuer/go-helper v0.0.0-20211026111047-a29cecb1d968
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
-	github.com/shopspring/decimal v1.2.0
-	github.com/siddontang/go v0.0.0-20180604090527-bdc77568d726
 	github.com/silenceper/wechat/v2 v2.0.6
 	github.com/spf13/viper v1.8.1
 	github.com/thoas/go-funk v0.9.1
 	go.uber.org/zap v1.18.1
-	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e
-	golang.org/x/text v0.3.6
+	golang.org/x/crypto v0.0.0-20210616213533-5ff15b29337e // indirect
 	gorm.io/driver/mysql v1.1.2
 	gorm.io/gorm v1.21.12
 )
