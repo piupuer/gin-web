@@ -18,7 +18,7 @@ system:
   casbin-model-path: 'rbac_model.conf'
   # max request per second
   rate-limit-max: 200
-  # amap key for request real ip
+  # amap key for request real ip(https://lbs.amap.com/)
   amap-key: ''
 
 logs:

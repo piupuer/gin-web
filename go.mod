@@ -1,6 +1,6 @@
 module gin-web
 
-go 1.14
+go 1.17
 
 require (
 	github.com/casbin/casbin/v2 v2.37.4
@@ -12,7 +12,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/piupuer/go-helper v1.0.0
+	github.com/piupuer/go-helper v1.0.1-0.20211027091153-8df1977634fe
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.8.1
