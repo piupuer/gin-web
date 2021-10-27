@@ -33,13 +33,13 @@
 
 ## 中间件
 
-- `RateLimiter` 访问速率限制中间件 -- 限制访问流量
+- `Rate` 访问速率限制中间件 -- 限制访问流量
 - `Exception` 全局异常处理中间件 -- 使用golang recover特性, 捕获所有异常, 保存到日志, 方便追溯
 - `Transaction` 全局事务处理中间件 -- 每次请求无异常自动提交, 有异常自动回滚事务, 无需每个service单独调用(GET/OPTIONS跳过)
 - `AccessLog` 请求日志中间件 -- 每次请求的路由、IP自动写入日志
 - `Cors 跨域中间件` -- 所有请求均可跨域访问
-- `JwtAuth` 权限认证中间件 -- 处理登录、登出、无状态token校验
-- `CasbinMiddleware` 权限访问中间件 -- 基于Cabin RBAC, 对不同角色访问不同API进行校验
+- `Jwt` 权限认证中间件 -- 处理登录、登出、无状态token校验
+- `Casbin` 权限访问中间件 -- 基于Cabin RBAC, 对不同角色访问不同API进行校验
 - `Idempotence` 接口幂等性中间件 -- 保证接口不受网络波动影响而重复点击或提交(目前针对create接口加了处理，可根据实际情况更改)
 
 
@@ -195,5 +195,5 @@ go run main.go
 
 ## MIT License
 
-    Copyright (c) 2020 piupuer
+    Copyright (c) 2021 piupuer
 

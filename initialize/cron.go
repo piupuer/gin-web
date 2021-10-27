@@ -3,7 +3,6 @@ package initialize
 import (
 	"context"
 	"gin-web/pkg/global"
-	localUtils "gin-web/pkg/utils"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/job"
 	"github.com/piupuer/go-helper/pkg/query"
@@ -67,10 +66,10 @@ func compress(c context.Context) error {
 						return nil
 					}
 					// save original file
-					err = localUtils.CompressImageSaveOriginal(path, global.Conf.Upload.CompressImageOriginalSaveDir)
+					err = utils.CompressImageSaveOriginal(path, global.Conf.Upload.CompressImageOriginalSaveDir)
 				} else {
 					// direct compression
-					err = localUtils.CompressImage(path)
+					err = utils.CompressImage(path)
 				}
 				if err != nil {
 					global.Log.Error(ctx, "[cron job][image compress]compress filename %s failed: err", path, err)

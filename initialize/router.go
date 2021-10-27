@@ -9,11 +9,9 @@ import (
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
 	hv1 "github.com/piupuer/go-helper/api/v1"
-	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/query"
-	"github.com/piupuer/go-helper/pkg/utils"
 	hr "github.com/piupuer/go-helper/router"
 )
 
@@ -44,20 +42,8 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
 			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
 			middleware.WithOperationLogSaveMaxCount(50),
-			middleware.WithOperationLogSave(func(c *gin.Context, list []middleware.OperationRecord) {
-				arr := make([]ms.SysOperationLog, len(list))
-				utils.Struct2StructByJson(list, &arr)
-				global.Mysql.Create(arr)
-			}),
-			middleware.WithOperationLogFindApi(func(c *gin.Context) []middleware.OperationApi {
-				list := make([]ms.SysApi, 0)
-				global.Mysql.
-					Model(&ms.SysApi{}).
-					Find(&list)
-				r := make([]middleware.OperationApi, 0)
-				utils.Struct2StructByJson(list, &r)
-				return r
-			}),
+			middleware.WithOperationLogSave(v1.OperationLogSave),
+			middleware.WithOperationLogFindApi(v1.OperationLogFindApi),
 		),
 		middleware.Transaction(
 			middleware.WithTransactionDbNoTx(global.Mysql),
@@ -106,7 +92,6 @@ func Routers() *gin.Engine {
 			middleware.WithCasbinGetCurrentUser(v1.GetCurrentUserAndRole),
 		),
 		hr.WithIdempotence(true),
-		hr.WithIdempotenceOps(),
 		hr.WithV1Ops(
 			hv1.WithDbOps(
 				query.WithMysqlDb(global.Mysql),
