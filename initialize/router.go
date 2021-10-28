@@ -36,16 +36,6 @@ func Routers() *gin.Engine {
 			middleware.WithAccessLogLogger(global.Log),
 			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPrefix),
 		),
-		middleware.OperationLog(
-			middleware.WithOperationLogLogger(global.Log),
-			middleware.WithOperationLogRedis(global.Redis),
-			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPrefix),
-			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
-			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
-			middleware.WithOperationLogSaveMaxCount(50),
-			middleware.WithOperationLogSave(v1.OperationLogSave),
-			middleware.WithOperationLogFindApi(v1.OperationLogFindApi),
-		),
 		middleware.Transaction(
 			middleware.WithTransactionDbNoTx(global.Mysql),
 			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),

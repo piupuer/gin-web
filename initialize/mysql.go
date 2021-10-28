@@ -78,7 +78,6 @@ func autoMigrate() {
 		new(ms.SysDictData),
 		new(models.SysUser),
 		new(models.SysRole),
-		new(models.Leave),
 	)
 	// auto migrate fsm
 	fsm.Migrate(global.Mysql, fsm.WithContext(ctx))
