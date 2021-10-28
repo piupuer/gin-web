@@ -25,6 +25,8 @@ func Routers() *gin.Engine {
 		middleware.WithPrintRouterLogger(global.Log),
 		middleware.WithPrintRouterCtx(ctx),
 	)
+	
+	// set middleware
 	r.Use(
 		middleware.Rate(
 			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
