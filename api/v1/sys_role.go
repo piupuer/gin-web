@@ -62,7 +62,7 @@ func UpdateRoleById(c *gin.Context) {
 }
 
 func FindRoleKeywordByRoleIds(c *gin.Context, roleIds []uint) []string {
-	s := cache_service.New(c)
+	s := service.New(c)
 	roles := s.FindRoleByIds(roleIds)
 	keywords := make([]string, 0)
 	for _, role := range roles {

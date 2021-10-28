@@ -7,7 +7,6 @@ import (
 	"gin-web/pkg/global"
 	m "github.com/go-sql-driver/mysql"
 	"github.com/piupuer/go-helper/ms"
-	"github.com/piupuer/go-helper/pkg/binlog"
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"

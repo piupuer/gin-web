@@ -39,7 +39,7 @@ func FindUser(c *gin.Context) {
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	r.CurrentRole = user.Role
-	s := cache_service.New(c)
+	s := service.New(c)
 	list := s.FindUser(&r)
 	resp.SuccessWithPageData(list, []response.UserResp{}, r.Page)
 }
@@ -78,7 +78,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 
 func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	user := GetCurrentUser(c)
-	s := cache_service.New(c)
+	s := service.New(c)
 	var roleSort uint
 	if user.Role.Sort != nil {
 		roleSort = *user.Role.Sort

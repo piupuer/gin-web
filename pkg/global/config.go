@@ -13,7 +13,6 @@ type Configuration struct {
 	Redis  RedisConfiguration  `mapstructure:"redis" json:"redis"`
 	Jwt    JwtConfiguration    `mapstructure:"jwt" json:"jwt"`
 	Upload UploadConfiguration `mapstructure:"upload" json:"upload"`
-	WeChat WeChatConfiguration `mapstructure:"we-chat" json:"weChat"`
 }
 
 type SystemConfiguration struct {
@@ -68,39 +67,10 @@ type JwtConfiguration struct {
 }
 
 type UploadConfiguration struct {
-	Minio                        UploadOssMinioConfiguration `mapstructure:"oss-minio" json:"ossMinio"`
 	SaveDir                      string                      `mapstructure:"save-dir" json:"saveDir"`
 	SingleMaxSize                int64                       `mapstructure:"single-max-size" json:"singleMaxSize"`
 	MergeConcurrentCount         int                         `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
 	CompressImageCronTask        string                      `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
 	CompressImageRootDir         string                      `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
 	CompressImageOriginalSaveDir string                      `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
-}
-
-type UploadOssMinioConfiguration struct {
-	Enable   bool   `mapstructure:"enable" json:"enable"`
-	Bucket   string `mapstructure:"bucket" json:"bucket"`
-	Endpoint string `mapstructure:"endpoint" json:"endpoint"`
-	AccessId string `mapstructure:"access-id" json:"accessId"`
-	Secret   string `mapstructure:"secret" json:"secret"`
-	UseHttps bool   `mapstructure:"use-https" json:"useHttps"`
-}
-
-type WeChatConfiguration struct {
-	Official WeChatOfficialConfiguration `mapstructure:"official" json:"official"`
-}
-
-type WeChatOfficialConfiguration struct {
-	AppId              string                                        `mapstructure:"app-id" json:"appId"`
-	AppSecret          string                                        `mapstructure:"app-secret" json:"appSecret"`
-	Encoding           string                                        `mapstructure:"encoding" json:"encoding"`
-	TplMessageCronTask WeChatOfficialTplMessageCronTaskConfiguration `mapstructure:"tpl-message-cron-task" json:"tplMessageCronTask"`
-}
-
-type WeChatOfficialTplMessageCronTaskConfiguration struct {
-	Expr                string `mapstructure:"expr" json:"expr"`
-	Users               string `mapstructure:"users" json:"users"`
-	TemplateId          string `mapstructure:"template-id" json:"templateId"`
-	MiniProgramAppId    string `mapstructure:"mini-program-app-id" json:"miniProgramAppId"`
-	MiniProgramPagePath string `mapstructure:"mini-program-page-path" json:"miniProgramPagePath"`
 }

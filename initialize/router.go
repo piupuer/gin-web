@@ -4,8 +4,8 @@ import (
 	"gin-web/api"
 	v1 "gin-web/api/v1"
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
+	"gin-web/pkg/service"
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
 	hv1 "github.com/piupuer/go-helper/api/v1"
@@ -21,9 +21,10 @@ func Routers() *gin.Engine {
 	r := gin.New()
 
 	// replace default router
-	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
-		global.Log.Debug(ctx, "[gin-route] %-6s %-40s --> %s (%d handlers)", httpMethod, absolutePath, handlerName, nuHandlers)
-	}
+	gin.DebugPrintRouteFunc = middleware.PrintRouter(
+		middleware.WithPrintRouterLogger(global.Log),
+		middleware.WithPrintRouterCtx(ctx),
+	)
 	r.Use(
 		middleware.Rate(
 			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
@@ -63,7 +64,7 @@ func Routers() *gin.Engine {
 		middleware.WithJwtMaxRefresh(global.Conf.Jwt.MaxRefresh),
 		middleware.WithJwtPrivateBytes(global.Conf.Jwt.RSAPrivateBytes),
 		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, username, password string) (userId int64, pass bool) {
-			s := cache_service.New(c)
+			s := service.New(c)
 			user, err := s.LoginCheck(&models.SysUser{
 				Username: username,
 				Password: password,
@@ -82,7 +83,6 @@ func Routers() *gin.Engine {
 	nr := hr.NewRouter(
 		hr.WithLogger(global.Log),
 		hr.WithRedis(global.Redis),
-		hr.WithRedisBinlog(global.Conf.Redis.EnableBinlog),
 		hr.WithGroup(v1Group),
 		hr.WithJwt(true),
 		hr.WithJwtOps(jwtOps...),
@@ -107,22 +107,17 @@ func Routers() *gin.Engine {
 			hv1.WithUploadSaveDir(global.Conf.Upload.SaveDir),
 			hv1.WithUploadSingleMaxSize(global.Conf.Upload.SingleMaxSize),
 			hv1.WithUploadMergeConcurrentCount(global.Conf.Upload.MergeConcurrentCount),
-			hv1.WithUploadMinio(global.Minio),
-			hv1.WithUploadMinioBucket(global.Conf.Upload.Minio.Bucket),
+			hv1.WithMessageHub(false),
 		),
 	)
 	nr.Api()
 	nr.Base()
 	nr.Dict()
-	nr.Fsm()
-	nr.Machine()
 	nr.Menu()
 	nr.Message()
-	nr.OperationLog()
 	nr.Upload()
 
 	// init custom routers
-	router.InitLeaveRouter(nr)
 	router.InitRoleRouter(nr)
 	router.InitUserRouter(nr)
 

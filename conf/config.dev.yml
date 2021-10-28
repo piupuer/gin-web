@@ -69,14 +69,6 @@ jwt:
   rsa-private-key: gin-web-rsa
 
 upload:
-  # minio
-  oss-minio:
-    enable: false
-    bucket: gin-web
-    endpoint: 127.0.0.1:9005
-    access-id: minio
-    secret: minio123
-    use-https: false
   # file save dir
   save-dir: upload
   # MB
@@ -89,17 +81,3 @@ upload:
   compress-image-root-dir:
   # the source file is saved in the directory. It is recommended to open it to avoid secondary compression loss of quality
   compress-image-original-save-dir: .before
-
-we-chat:
-  official:
-    app-id: xxx
-    app-secret: xxx
-    # When the encoding is not empty, the transmitted data will be encrypted by AES
-    encoding: gin-web
-    tpl-message-cron-task:
-      expr: ''
-      users: xxx
-      template-id: xxx
-      mini-program-app-id: xxx
-      mini-program-page-path: pages/index/index
-
