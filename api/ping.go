@@ -1,11 +1,11 @@
 package api
 
 import (
-	"gin-web/pkg/response"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/resp"
 )
 
 // 检查服务器是否通畅
 func Ping(c *gin.Context) {
-	response.SuccessWithData("pong")
+	resp.SuccessWithData("pong")
 }

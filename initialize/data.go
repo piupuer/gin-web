@@ -4,37 +4,36 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/service"
-	"gin-web/pkg/utils"
+	"github.com/piupuer/go-helper/ms"
+	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
 	"strings"
 )
 
 var (
-	creator      = "系统自动创建"
 	status       = uint(1)
 	visible      = uint(1)
 	noBreadcrumb = uint(0)
 )
 
-// 初始化数据
 func Data() {
-	if !global.Conf.System.InitData {
+	if !global.Conf.Mysql.InitData {
 		return
 	}
 	db := global.Mysql.WithContext(ctx)
-	// 1. 初始化角色
+	// 1. init roles
 	newRoles := make([]models.SysRole, 0)
 	roles := []models.SysRole{
 		{
-			Name:    "超级管理员",
+			Name:    "Super Admin",
 			Keyword: "super",
-			Desc:    "超级管理员",
+			Desc:    "Super Admin",
 		},
 		{
-			Name:    "访客",
+			Name:    "Guest",
 			Keyword: "guest",
-			Desc:    "外来访问人员",
+			Desc:    "foreign visitors",
 		},
 	}
 	for i, role := range roles {
@@ -45,7 +44,6 @@ func Data() {
 		err := db.Where("id = ?", id).First(&oldRole).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			role.Id = id
-			role.Creator = creator
 			role.Status = &status
 			if role.Sort == nil {
 				role.Sort = &sort
@@ -57,84 +55,81 @@ func Data() {
 		db.Create(&newRoles)
 	}
 
-	// 2. 初始化菜单
-
-	menus := []models.SysMenu{
+	// 2. init menus
+	menus := []ms.SysMenu{
 		{
-			Name:  "dashboardRoot", // 对于想让子菜单显示在上层不显示的父级菜单不设置名字
-			Title: "首页根目录",
+			Name:  "dashboardRoot",
+			Title: "Dashboard Root",
 			Icon:  "dashboard",
 			Path:  "/dashboard",
-			Roles: roles,
-			Children: []models.SysMenu{
+			Children: []ms.SysMenu{
 				{
 					Name:      "dashboard",
-					Title:     "首页",
+					Title:     "Index",
 					Icon:      "dashboard",
 					Path:      "index",
 					Component: "/dashboard/index",
-					Roles:     roles,
 				},
 			},
 		},
 		{
 			Name:  "systemRoot",
-			Title: "系统设置根目录",
+			Title: "System Root",
 			Icon:  "component",
 			Path:  "/system",
-			Children: []models.SysMenu{
+			Children: []ms.SysMenu{
 				{
 					Name:      "menu",
-					Title:     "菜单管理",
+					Title:     "Menus",
 					Icon:      "tree-table",
-					Path:      "menu", // 子菜单不用全路径, 自动继承
+					Path:      "menu",
 					Component: "/system/menu",
 				},
 				{
 					Name:      "role",
-					Title:     "角色管理",
+					Title:     "Roles",
 					Icon:      "peoples",
 					Path:      "role",
 					Component: "/system/role",
 				},
 				{
 					Name:      "user",
-					Title:     "用户管理",
+					Title:     "Users",
 					Icon:      "user",
 					Path:      "user",
 					Component: "/system/user",
 				},
 				{
 					Name:      "api",
-					Title:     "接口管理",
+					Title:     "Apis",
 					Icon:      "tree",
 					Path:      "api",
 					Component: "/system/api",
 				},
 				{
 					Name:      "workflow",
-					Title:     "工作流管理",
+					Title:     "Workflows",
 					Icon:      "example",
 					Path:      "workflow",
 					Component: "/system/workflow",
 				},
 				{
 					Name:      "operation-log",
-					Title:     "操作日志",
+					Title:     "Operation Logs",
 					Icon:      "example",
 					Path:      "operation-log",
 					Component: "/system/operation-log",
 				},
 				{
 					Name:      "message-push",
-					Title:     "消息推送",
+					Title:     "Message Push",
 					Icon:      "guide",
 					Path:      "message-push",
 					Component: "/system/message-push",
 				},
 				{
 					Name:      "machine",
-					Title:     "机器管理",
+					Title:     "Machines",
 					Icon:      "guide",
 					Path:      "machine",
 					Component: "/system/machine",
@@ -143,27 +138,27 @@ func Data() {
 		},
 		{
 			Name:  "testRoot",
-			Title: "测试页面",
+			Title: "Tests",
 			Icon:  "bug",
 			Path:  "/test",
-			Children: []models.SysMenu{
+			Children: []ms.SysMenu{
 				{
 					Name:      "test",
-					Title:     "测试用例",
+					Title:     "Test Case",
 					Icon:      "bug",
 					Path:      "index",
 					Component: "/test/index",
 				},
 				{
 					Name:      "leave",
-					Title:     "我的请假条",
+					Title:     "My Leave",
 					Icon:      "skill",
 					Path:      "leave",
 					Component: "/test/leave",
 				},
 				{
 					Name:      "approving",
-					Title:     "待审批列表",
+					Title:     "Approving",
 					Icon:      "form",
 					Path:      "approving",
 					Component: "/test/approving",
@@ -172,20 +167,20 @@ func Data() {
 		},
 		{
 			Name:  "uploader",
-			Title: "上传组件",
+			Title: "Uploader",
 			Icon:  "back-top",
 			Path:  "/uploader",
-			Children: []models.SysMenu{
+			Children: []ms.SysMenu{
 				{
 					Name:      "uploader1",
-					Title:     "上传示例1",
+					Title:     "Uploader1",
 					Icon:      "guide",
 					Path:      "uploader1",
 					Component: "/uploader/uploader1",
 				},
 				{
 					Name:      "uploader2",
-					Title:     "上传示例2",
+					Title:     "Uploader2",
 					Icon:      "guide",
 					Path:      "uploader2",
 					Component: "/uploader/uploader2",
@@ -194,10 +189,13 @@ func Data() {
 		},
 	}
 	menus = genMenu(0, menus, roles[0])
-	createMenu(db, menus)
+	relations := createMenu(db, menus)
+	if len(relations) > 0 {
+		db.Create(relations)
+	}
 
-	// 3. 初始化用户
-	// 默认头像
+	// 3. init users
+	// default avatar image
 	avatar := "https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif"
 	users := []models.SysUser{
 		{
@@ -205,16 +203,16 @@ func Data() {
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "19999999999",
 			Avatar:       avatar,
-			Nickname:     "超级管理员",
-			Introduction: "我是超管我怕谁？",
+			Nickname:     "super admin",
+			Introduction: "I'm super. Who am I afraid of ?",
 		},
 		{
 			Username:     "guest",
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "13999999999",
 			Avatar:       avatar,
-			Nickname:     "访客",
-			Introduction: "这个人很懒, 什么也没留下",
+			Nickname:     "guest",
+			Introduction: "The man was lazy and left nothing",
 		},
 	}
 	newUsers := make([]models.SysUser, 0)
@@ -224,7 +222,6 @@ func Data() {
 		err := db.Where("id = ?", id).First(&oldUser).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			user.Id = id
-			user.Creator = creator
 			if user.RoleId == 0 {
 				user.RoleId = id
 			}
@@ -235,351 +232,350 @@ func Data() {
 		db.Create(&newUsers)
 	}
 
-	// 4. 初始化接口
-	apis := []models.SysApi{
+	// 4. init apis
+	apis := []ms.SysApi{
 		{
 			Method:   "POST",
 			Path:     "/v1/base/login",
 			Category: "base",
-			Desc:     "用户登录",
+			Desc:     "login",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/base/logout",
 			Category: "base",
-			Desc:     "用户登出",
+			Desc:     "logout",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/base/refreshToken",
 			Category: "base",
-			Desc:     "刷新JWT令牌",
+			Desc:     "refresh token",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/base/idempotenceToken",
 			Category: "base",
-			Desc:     "获取幂等性token",
+			Desc:     "get idempotence token",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/user/info",
 			Category: "user",
-			Desc:     "获取当前登录用户信息",
+			Desc:     "get current login user info",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/user/list",
 			Category: "user",
-			Desc:     "获取用户列表",
+			Desc:     "find users",
 		},
 		{
 			Method:   "PUT",
 			Path:     "/v1/user/changePwd",
 			Category: "user",
-			Desc:     "修改用户登录密码",
+			Desc:     "change user password",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/user/create",
 			Category: "user",
-			Desc:     "创建用户",
+			Desc:     "create user",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/user/update/:userId",
 			Category: "user",
-			Desc:     "更新用户",
+			Desc:     "update user",
 		},
 		{
 			Method:   "DELETE",
 			Path:     "/v1/user/delete/batch",
 			Category: "user",
-			Desc:     "批量删除用户",
+			Desc:     "batch delete users",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/menu/tree",
 			Category: "menu",
-			Desc:     "获取权限菜单",
+			Desc:     "get menu tree",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/menu/list",
 			Category: "menu",
-			Desc:     "获取菜单列表",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/menu/create",
-			Category: "menu",
-			Desc:     "创建菜单",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/menu/update/:menuId",
-			Category: "menu",
-			Desc:     "更新菜单",
-		},
-		{
-			Method:   "DELETE",
-			Path:     "/v1/menu/delete/batch",
-			Category: "menu",
-			Desc:     "批量删除菜单",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/role/list",
-			Category: "role",
-			Desc:     "获取角色列表",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/role/create",
-			Category: "role",
-			Desc:     "创建角色",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/role/update/:roleId",
-			Category: "role",
-			Desc:     "更新角色",
-		},
-		{
-			Method:   "DELETE",
-			Path:     "/v1/role/delete/batch",
-			Category: "role",
-			Desc:     "批量删除角色",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/api/list",
-			Category: "api",
-			Desc:     "获取接口列表",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/api/create",
-			Category: "api",
-			Desc:     "创建接口",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/api/update/:roleId",
-			Category: "api",
-			Desc:     "更新接口",
-		},
-		{
-			Method:   "DELETE",
-			Path:     "/v1/api/delete/batch",
-			Category: "api",
-			Desc:     "批量删除接口",
+			Desc:     "find menus",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/menu/all/:roleId",
 			Category: "menu",
-			Desc:     "查询指定角色的菜单树",
+			Desc:     "get all menu by role id",
+		},
+		{
+			Method:   "POST",
+			Path:     "/v1/menu/create",
+			Category: "menu",
+			Desc:     "create menu",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/menu/update/:menuId",
+			Category: "menu",
+			Desc:     "update menu",
+		},
+		{
+			Method:   "DELETE",
+			Path:     "/v1/menu/delete/batch",
+			Category: "menu",
+			Desc:     "batch delete menu",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/role/list",
+			Category: "role",
+			Desc:     "find roles",
+		},
+		{
+			Method:   "POST",
+			Path:     "/v1/role/create",
+			Category: "role",
+			Desc:     "create role",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/role/update/:roleId",
+			Category: "role",
+			Desc:     "update role",
+		},
+		{
+			Method:   "DELETE",
+			Path:     "/v1/role/delete/batch",
+			Category: "role",
+			Desc:     "batch delete role",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/api/list",
+			Category: "api",
+			Desc:     "find apis",
+		},
+		{
+			Method:   "POST",
+			Path:     "/v1/api/create",
+			Category: "api",
+			Desc:     "create api",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/api/update/:roleId",
+			Category: "api",
+			Desc:     "update api",
+		},
+		{
+			Method:   "DELETE",
+			Path:     "/v1/api/delete/batch",
+			Category: "api",
+			Desc:     "batch delete api",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/api/all/category/:roleId",
 			Category: "api",
-			Desc:     "查询指定角色的接口(以分类分组)",
+			Desc:     "get all api by role id",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/role/menus/update/:roleId",
 			Category: "role",
-			Desc:     "更新角色的权限菜单",
+			Desc:     "update role menus",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/role/apis/update/:roleId",
 			Category: "role",
-			Desc:     "更新角色的权限接口",
+			Desc:     "update role apis",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/upload/file",
 			Category: "upload",
-			Desc:     "获取文件块信息以及上传完成部分",
+			Desc:     "get uploaded file info",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/upload/file",
 			Category: "upload",
-			Desc:     "上传文件(分片)",
+			Desc:     "upload file",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/upload/merge",
 			Category: "upload",
-			Desc:     "合并分片文件",
+			Desc:     "merge file",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/operation/log/list",
 			Category: "operation-log",
-			Desc:     "获取操作日志列表",
+			Desc:     "find operation logs",
 		},
 		{
 			Method:   "DELETE",
 			Path:     "/v1/operation/log/delete/batch",
 			Category: "operation-log",
-			Desc:     "批量删除操作日志",
+			Desc:     "batch delete operation log",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/upload/unzip",
 			Category: "upload",
-			Desc:     "解压ZIP文件",
+			Desc:     "unzip",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/message/all",
 			Category: "message",
-			Desc:     "获取全部消息",
+			Desc:     "find messages",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/message/unRead/count",
 			Category: "message",
-			Desc:     "获取未读消息条数",
+			Desc:     "get unread message count",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/message/push",
 			Category: "message",
-			Desc:     "发送新消息",
+			Desc:     "push new message",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/message/read/batch",
 			Category: "message",
-			Desc:     "批量标为已读",
+			Desc:     "batch marked as read",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/message/deleted/batch",
 			Category: "message",
-			Desc:     "批量标为删除",
+			Desc:     "batch marked as deleted",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/message/read/all",
 			Category: "message",
-			Desc:     "全部标为已读",
+			Desc:     "all marked as read",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/message/deleted/all",
 			Category: "message",
-			Desc:     "全部标为删除",
+			Desc:     "batch marked as deleted",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/message/ws",
 			Category: "message",
-			Desc:     "消息中心长连接",
+			Desc:     "message websocket",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/machine/shell/ws",
 			Category: "machine",
-			Desc:     "机器终端shell长连接",
+			Desc:     "machine shell websocket",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/machine/list",
 			Category: "machine",
-			Desc:     "获取机器列表",
+			Desc:     "find machines",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/machine/create",
 			Category: "machine",
-			Desc:     "创建机器",
+			Desc:     "create machine",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/machine/update/:machineId",
 			Category: "machine",
-			Desc:     "更新机器",
+			Desc:     "update machine",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/machine/connect/:machineId",
 			Category: "machine",
-			Desc:     "连接或刷新机器状态",
+			Desc:     "connect or refresh machine status",
 		},
 		{
 			Method:   "DELETE",
 			Path:     "/v1/machine/delete/batch",
 			Category: "machine",
-			Desc:     "批量删除机器",
+			Desc:     "batch delete machine",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/dict/list",
 			Category: "dict",
-			Desc:     "获取数据字典列表",
+			Desc:     "find dicts",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/dict/create",
 			Category: "dict",
-			Desc:     "创建数据字典",
+			Desc:     "create dict",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/dict/update/:dictId",
 			Category: "dict",
-			Desc:     "更新数据字典",
+			Desc:     "update dict",
 		},
 		{
 			Method:   "DELETE",
 			Path:     "/v1/dict/delete/batch",
 			Category: "dict",
-			Desc:     "批量删除数据字典",
+			Desc:     "batch delete dict",
 		},
 		{
 			Method:   "GET",
 			Path:     "/v1/dict/data/list",
 			Category: "dict",
-			Desc:     "获取数据字典数据列表",
+			Desc:     "find dict datas",
 		},
 		{
 			Method:   "POST",
 			Path:     "/v1/dict/data/create",
 			Category: "dict",
-			Desc:     "创建数据字典数据",
+			Desc:     "create dict data",
 		},
 		{
 			Method:   "PATCH",
 			Path:     "/v1/dict/data/update/:dictDataId",
 			Category: "dict",
-			Desc:     "更新数据字典数据",
+			Desc:     "update dict data",
 		},
 		{
 			Method:   "DELETE",
 			Path:     "/v1/dict/data/delete/batch",
 			Category: "dict",
-			Desc:     "批量删除数据字典数据",
+			Desc:     "batch delete dict data",
 		},
 	}
-	newApis := make([]models.SysApi, 0)
-	newRoleCasbins := make([]models.SysRoleCasbin, 0)
+	newApis := make([]ms.SysApi, 0)
+	newRoleCasbins := make([]ms.SysRoleCasbin, 0)
 	for i, api := range apis {
 		id := uint(i + 1)
-		oldApi := models.SysApi{}
+		oldApi := ms.SysApi{}
 		err := db.Where("id = ?", id).First(&oldApi).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			api.Id = id
-			api.Creator = creator
 			newApis = append(newApis, api)
-			// 超级管理员拥有所有API权限
-			newRoleCasbins = append(newRoleCasbins, models.SysRoleCasbin{
+			// super has all api permission
+			newRoleCasbins = append(newRoleCasbins, ms.SysRoleCasbin{
 				Keyword: roles[0].Keyword,
 				Path:    api.Path,
 				Method:  api.Method,
@@ -600,9 +596,9 @@ func Data() {
 			}
 			p := strings.TrimPrefix(api.Path, "/"+global.Conf.System.ApiVersion)
 			if utils.Contains(basePaths, p) {
-				// 非超级管理员有基础权限
+				// basic permission
 				for i := 1; i < len(roles); i++ {
-					newRoleCasbins = append(newRoleCasbins, models.SysRoleCasbin{
+					newRoleCasbins = append(newRoleCasbins, ms.SysRoleCasbin{
 						Keyword: roles[i].Keyword,
 						Path:    api.Path,
 						Method:  api.Method,
@@ -616,20 +612,18 @@ func Data() {
 	}
 	if len(newRoleCasbins) > 0 {
 		s := service.New(nil)
-		s.CreateRoleCasbins(newRoleCasbins)
+		s.Q.BatchCreateRoleCasbin(newRoleCasbins)
 	}
 }
 
 var menuTotal = 0
 
-// 生成菜单
-func genMenu(parentId uint, menus []models.SysMenu, superRole models.SysRole) []models.SysMenu {
-	newMenus := make([]models.SysMenu, len(menus))
+func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.SysMenu {
+	newMenus := make([]ms.SysMenu, len(menus))
 	// sort
 	for i, menu := range menus {
 		sort := uint(i)
 		menu.Sort = &sort
-		menu.Creator = creator
 		menu.Status = &status
 		menu.Visible = &visible
 		newMenus[i] = menu
@@ -650,29 +644,38 @@ func genMenu(parentId uint, menus []models.SysMenu, superRole models.SysRole) []
 		if parentId > 0 {
 			menu.ParentId = parentId
 		} else {
-			menu.Component = ""             // 如果包含子菜单, Component为空
-			menu.Breadcrumb = &noBreadcrumb // 面包屑不可见
+			// The component of the submenu is empty
+			menu.Component = ""
+			menu.Breadcrumb = &noBreadcrumb
 		}
-		if menu.Roles == nil {
-			menu.Roles = []models.SysRole{
-				superRole,
-			}
+		if len(menu.RoleIds) == 0 {
+			menu.RoleIds = append(menu.RoleIds, superRole.Id)
 		}
 		newMenus[i] = menu
 	}
 	return newMenus
 }
 
-// 创建菜单
-func createMenu(db *gorm.DB, menus []models.SysMenu) {
+func createMenu(db *gorm.DB, menus []ms.SysMenu) []ms.SysMenuRoleRelation {
+	relations := make([]ms.SysMenuRoleRelation, 0)
 	for _, menu := range menus {
-		oldMenu := models.SysMenu{}
+		oldMenu := ms.SysMenu{}
 		err := db.Where("id = ?", menu.Id).First(&oldMenu).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			db.Create(&menu)
+			for _, id := range menu.RoleIds {
+				relations = append(relations, ms.SysMenuRoleRelation{
+					MenuId: menu.Id,
+					RoleId: id,
+				})
+			}
 		}
 		if len(menu.Children) > 0 {
-			createMenu(db, menu.Children)
+			childrenRelations := createMenu(db, menu.Children)
+			if len(childrenRelations) > 0 {
+				relations = append(relations, childrenRelations...)
+			}
 		}
 	}
+	return relations
 }

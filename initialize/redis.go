@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 	"gin-web/pkg/global"
-	"github.com/piupuer/go-helper/job"
+	"github.com/piupuer/go-helper/pkg/job"
 	"time"
 )
 
-// 初始化redis数据库
 func Redis() {
-	if !global.Conf.System.UseRedis {
-		global.Log.Info(ctx, "未使用redis, 无需初始化")
+	if !global.Conf.Redis.Enable {
+		global.Log.Info(ctx, "if redis is not used, there is no need to initialize redis")
 		return
 	}
 	init := false
@@ -22,9 +21,8 @@ func Redis() {
 			select {
 			case <-ctx.Done():
 				if !init {
-					panic(fmt.Sprintf("初始化redis异常: 连接超时(%ds)", global.Conf.System.ConnectTimeout))
+					panic(fmt.Sprintf("initialize redis failed: connect timeout(%ds)", global.Conf.System.ConnectTimeout))
 				}
-				// 此处需return避免协程空跑
 				return
 			}
 		}
@@ -32,14 +30,14 @@ func Redis() {
 	// parse redis URI
 	client, err := job.ParseRedisURI(global.Conf.Redis.Uri)
 	if err != nil {
-		panic(fmt.Sprintf("初始化redis异常: %v", err))
+		panic(fmt.Sprintf("initialize redis failed: %v", err))
 	}
-	err = client.Ping().Err()
+	err = client.Ping(ctx).Err()
 	if err != nil {
-		panic(fmt.Sprintf("初始化redis异常: %v", err))
+		panic(fmt.Sprintf("initialize redis failed: %v", err))
 	}
 	global.Redis = client
 
 	init = true
-	global.Log.Info(ctx, "初始化redis完成")
+	global.Log.Info(ctx, "initialize redis success")
 }

@@ -1,11 +1,5 @@
 package global
 
-// request id
-const (
-	RequestIdHeader     = "X-Request-Id"
-	RequestIdContextKey = "RequestId"
-)
-
 // mode
 const (
 	Dev   = "development"
@@ -14,6 +8,11 @@ const (
 )
 
 const (
-	ProName = "gin-web"
+	ProName    = "gin-web"
 	ProEnvName = "GIN_WEB"
+)
+
+// fsm categories
+const (
+	FsmCategoryLeave uint = iota + 1
 )

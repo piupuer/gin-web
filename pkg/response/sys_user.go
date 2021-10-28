@@ -1,9 +1,11 @@
 package response
 
+import "github.com/piupuer/go-helper/pkg/resp"
+
 type LoginResp struct {
-	Username  string `json:"username"`  // 登录用户名
-	Token     string `json:"token"`     // jwt令牌
-	ExpiresAt int64  `json:"expiresAt"` // 过期时间, 秒
+	Username  string `json:"username"`
+	Token     string `json:"token"`
+	ExpiresAt int64  `json:"expiresAt"`
 }
 
 type UserInfoResp struct {
@@ -19,7 +21,7 @@ type UserInfoResp struct {
 }
 
 type UserResp struct {
-	BaseData
+	resp.Base
 	Username     string `json:"username"`
 	Mobile       string `json:"mobile"`
 	Avatar       string `json:"avatar"`
@@ -27,5 +29,4 @@ type UserResp struct {
 	Introduction string `json:"introduction"`
 	Status       *uint  `json:"status"`
 	RoleId       uint   `json:"roleId"`
-	Creator      string `json:"creator"`
 }

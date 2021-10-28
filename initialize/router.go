@@ -1,66 +1,131 @@
 package initialize
 
 import (
-	"fmt"
 	"gin-web/api"
-	"gin-web/middleware"
+	v1 "gin-web/api/v1"
+	"gin-web/models"
+	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
+	hv1 "github.com/piupuer/go-helper/api/v1"
+	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/middleware"
+	"github.com/piupuer/go-helper/pkg/query"
+	hr "github.com/piupuer/go-helper/router"
 )
 
-// 初始化总路由
 func Routers() *gin.Engine {
-	// 创建带有默认中间件的路由:
-	// 日志与恢复中间件
+	// use custom router not default
 	// r := gin.Default()
-	// 创建不带中间件的路由:
 	r := gin.New()
 
-	// 替换gin默认的路由打印
+	// replace default router
 	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
 		global.Log.Debug(ctx, "[gin-route] %-6s %-40s --> %s (%d handlers)", httpMethod, absolutePath, handlerName, nuHandlers)
 	}
-	// 添加速率访问中间件
-	r.Use(middleware.RateLimiter(ctx))
-	// 添加跨域中间件, 让请求支持跨域
-	r.Use(middleware.Cors)
-	// 添加request id中间件
-	r.Use(middleware.RequestId)
-	// 添加访问记录
-	r.Use(middleware.AccessLog)
-	// 添加操作日志
-	r.Use(middleware.OperationLog)
-	// 添加全局异常处理中间件
-	r.Use(middleware.Exception)
-	// 添加全局事务处理中间件
-	r.Use(middleware.Transaction)
+	r.Use(
+		middleware.Rate(
+			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
+		),
+		middleware.Cors,
+		middleware.RequestId(),
+		middleware.Exception(),
+		middleware.AccessLog(
+			middleware.WithAccessLogLogger(global.Log),
+			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPrefix),
+		),
+		middleware.OperationLog(
+			middleware.WithOperationLogLogger(global.Log),
+			middleware.WithOperationLogRedis(global.Redis),
+			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPrefix),
+			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
+			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
+			middleware.WithOperationLogSaveMaxCount(50),
+			middleware.WithOperationLogSave(v1.OperationLogSave),
+			middleware.WithOperationLogFindApi(v1.OperationLogFindApi),
+		),
+		middleware.Transaction(
+			middleware.WithTransactionDbNoTx(global.Mysql),
+			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),
+		),
+	)
 
-	// 初始化jwt auth中间件
-	authMiddleware, err := middleware.InitAuth()
-
-	if err != nil {
-		panic(fmt.Sprintf("初始化jwt auth中间件失败: %v", err))
-	}
-	global.Log.Info(ctx, "初始化jwt auth中间件完成")
-
-	apiGroup := r.Group(global.Conf.System.UrlPathPrefix)
+	apiGroup := r.Group(global.Conf.System.UrlPrefix)
 	// ping
 	apiGroup.GET("/ping", api.Ping)
 
-	// 方便统一添加路由前缀
-	v1Group := apiGroup.Group(global.Conf.System.ApiVersion)
-	router.InitPublicRouter(v1Group)                       // 注册公共路由
-	router.InitBaseRouter(v1Group, authMiddleware)         // 注册基础路由
-	router.InitUserRouter(v1Group, authMiddleware)         // 注册用户路由
-	router.InitMenuRouter(v1Group, authMiddleware)         // 注册菜单路由
-	router.InitRoleRouter(v1Group, authMiddleware)         // 注册角色路由
-	router.InitApiRouter(v1Group, authMiddleware)          // 注册接口路由
-	router.InitUploadRouter(v1Group, authMiddleware)       // 注册文件上传路由
-	router.InitOperationLogRouter(v1Group, authMiddleware) // 注册操作日志路由
-	router.InitMessageRouter(v1Group, authMiddleware)      // 注册消息中心路由
-	router.InitDictRouter(v1Group, authMiddleware)         // 注册数据字典路由
+	jwtOps := []func(*middleware.JwtOptions){
+		middleware.WithJwtLogger(global.Log),
+		middleware.WithJwtRealm(global.Conf.Jwt.Realm),
+		middleware.WithJwtKey(global.Conf.Jwt.Key),
+		middleware.WithJwtTimeout(global.Conf.Jwt.Timeout),
+		middleware.WithJwtMaxRefresh(global.Conf.Jwt.MaxRefresh),
+		middleware.WithJwtPrivateBytes(global.Conf.Jwt.RSAPrivateBytes),
+		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, username, password string) (userId int64, pass bool) {
+			s := cache_service.New(c)
+			user, err := s.LoginCheck(&models.SysUser{
+				Username: username,
+				Password: password,
+			})
+			if err != nil {
+				return 0, false
+			}
+			return int64(user.Id), true
+		}),
+	}
 
-	global.Log.Info(ctx, "初始化路由完成")
+	// set path prefix
+	v1Group := apiGroup.Group(global.Conf.System.ApiVersion)
+
+	// init default routers
+	nr := hr.NewRouter(
+		hr.WithLogger(global.Log),
+		hr.WithRedis(global.Redis),
+		hr.WithRedisBinlog(global.Conf.Redis.EnableBinlog),
+		hr.WithGroup(v1Group),
+		hr.WithJwt(true),
+		hr.WithJwtOps(jwtOps...),
+		hr.WithCasbin(true),
+		hr.WithCasbinOps(
+			middleware.WithCasbinEnforcer(global.CasbinEnforcer),
+			middleware.WithCasbinGetCurrentUser(v1.GetCurrentUserAndRole),
+		),
+		hr.WithIdempotence(true),
+		hr.WithV1Ops(
+			hv1.WithDbOps(
+				query.WithMysqlDb(global.Mysql),
+			),
+			hv1.WithBinlogOps(
+				query.WithRedisCasbinEnforcer(global.CasbinEnforcer),
+				query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),
+				query.WithRedisNamingStrategy(global.Mysql.NamingStrategy),
+			),
+			hv1.WithGetCurrentUser(v1.GetCurrentUserAndRole),
+			hv1.WithFindRoleKeywordByRoleIds(v1.FindRoleKeywordByRoleIds),
+			hv1.WithFindUserByIds(v1.FindUserByIds),
+			hv1.WithUploadSaveDir(global.Conf.Upload.SaveDir),
+			hv1.WithUploadSingleMaxSize(global.Conf.Upload.SingleMaxSize),
+			hv1.WithUploadMergeConcurrentCount(global.Conf.Upload.MergeConcurrentCount),
+			hv1.WithUploadMinio(global.Minio),
+			hv1.WithUploadMinioBucket(global.Conf.Upload.Minio.Bucket),
+		),
+	)
+	nr.Api()
+	nr.Base()
+	nr.Dict()
+	nr.Fsm()
+	nr.Machine()
+	nr.Menu()
+	nr.Message()
+	nr.OperationLog()
+	nr.Upload()
+
+	// init custom routers
+	router.InitLeaveRouter(nr)
+	router.InitRoleRouter(nr)
+	router.InitUserRouter(nr)
+
+	global.Log.Info(ctx, "initialize router success")
 	return r
 }
