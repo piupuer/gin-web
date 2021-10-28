@@ -36,9 +36,7 @@ func Minio() {
 		oss.WithMinioEndpoint(global.Conf.Upload.Minio.Endpoint),
 		oss.WithMinioAccessId(global.Conf.Upload.Minio.AccessId),
 		oss.WithMinioSecret(global.Conf.Upload.Minio.Secret),
-	}
-	if global.Conf.Upload.Minio.UseHttps {
-		ops = append(ops, oss.WithMinioHttps)
+		oss.WithMinioHttps(global.Conf.Upload.Minio.UseHttps),
 	}
 
 	minio, err := oss.NewMinio(ops...)

@@ -12,7 +12,7 @@ require (
 	github.com/kr/text v0.2.0 // indirect
 	github.com/natefinch/lumberjack v2.0.0+incompatible
 	github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e // indirect
-	github.com/piupuer/go-helper v1.0.1-0.20211028042658-890fcf3f113d
+	github.com/piupuer/go-helper v1.0.1-0.20211028083356-5dbd67f13d35
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.8.1

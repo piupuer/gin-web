@@ -19,8 +19,8 @@ func Cron() {
 			RedisClient: global.Redis,
 		},
 		job.WithLogger(global.Log),
-		job.WithContext(ctx),
-		job.WithAutoRequestId,
+		job.WithCtx(ctx),
+		job.WithAutoRequestId(true),
 	)
 	if err != nil {
 		panic(err)

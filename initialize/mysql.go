@@ -83,7 +83,7 @@ func autoMigrate() {
 		new(models.Leave),
 	)
 	// auto migrate fsm
-	fsm.Migrate(global.Mysql, fsm.WithContext(ctx))
+	fsm.Migrate(global.Mysql, fsm.WithCtx(ctx))
 }
 
 func binlogListen() {
@@ -93,7 +93,7 @@ func binlogListen() {
 	}
 	err := binlog.NewMysqlBinlog(
 		binlog.WithLogger(global.Log),
-		binlog.WithContext(ctx),
+		binlog.WithCtx(ctx),
 		binlog.WithRedis(global.Redis),
 		binlog.WithDb(global.Mysql),
 		binlog.WithDsn(&global.Conf.Mysql.DSN),

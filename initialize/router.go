@@ -21,9 +21,12 @@ func Routers() *gin.Engine {
 	r := gin.New()
 
 	// replace default router
-	gin.DebugPrintRouteFunc = func(httpMethod, absolutePath, handlerName string, nuHandlers int) {
-		global.Log.Debug(ctx, "[gin-route] %-6s %-40s --> %s (%d handlers)", httpMethod, absolutePath, handlerName, nuHandlers)
-	}
+	gin.DebugPrintRouteFunc = middleware.PrintRouter(
+		middleware.WithPrintRouterLogger(global.Log),
+		middleware.WithPrintRouterCtx(ctx),
+	)
+	
+	// set middleware
 	r.Use(
 		middleware.Rate(
 			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
