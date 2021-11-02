@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"github.com/gobuffalo/packr/v2"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/spf13/viper"
 	"os"
@@ -55,12 +56,12 @@ func Config(c context.Context) {
 	// project mode
 	env := strings.ToLower(os.Getenv(fmt.Sprintf("%s_MODE", global.ProEnvName)))
 	configName := ""
-	if env == global.Stage {
+	if env == constant.Stage {
 		configName = stagingConfig
-	} else if env == global.Prod {
+	} else if env == constant.Prod {
 		configName = productionConfig
 	} else {
-		env = global.Dev
+		env = constant.Dev
 	}
 	global.Mode = env
 	if configName != "" {

@@ -1,12 +1,5 @@
 package global
 
-// mode
-const (
-	Dev   = "development"
-	Stage = "staging"
-	Prod  = "production"
-)
-
 const (
 	ProName    = "gin-web"
 	ProEnvName = "GIN_WEB"

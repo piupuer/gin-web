@@ -25,9 +25,9 @@ func main() {
 	defer func() {
 		if err := recover(); err != nil {
 			if global.Log != nil {
-				global.Log.Error(ctx, "project run failed: %v\nstack: %v", err, string(debug.Stack()))
+				global.Log.Error(ctx, "[%s]project run failed: %v\nstack: %v", global.ProName, err, string(debug.Stack()))
 			} else {
-				fmt.Printf("project run failed: %v\nstack: %v\n", err, string(debug.Stack()))
+				fmt.Printf("[%s]project run failed: %v\nstack: %v\n", global.ProName, err, string(debug.Stack()))
 			}
 		}
 	}()
@@ -56,9 +56,9 @@ func main() {
 
 	go func() {
 		// listen pprof port
-		global.Log.Info(ctx, "[gin-web]debug pprof is running at %s:%d", host, global.Conf.System.PprofPort)
+		global.Log.Info(ctx, "[%s]debug pprof is running at %s:%d", global.ProName, host, global.Conf.System.PprofPort)
 		if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, global.Conf.System.PprofPort), nil); err != nil {
-			global.Log.Error(ctx, "listen pprof error: %v", err)
+			global.Log.Error(ctx, "[%s]listen pprof error: %v", global.ProName, err)
 		}
 	}()
 
@@ -66,7 +66,7 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			global.Log.Error(ctx, "listen error: %v", err)
+			global.Log.Error(ctx, "[%s]listen error: %v", global.ProName, err)
 		}
 	}()
 
@@ -81,15 +81,15 @@ func main() {
 	// kill -9 is syscall.SIGKILL but can't be catch, so don't need add it
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
-	global.Log.Info(ctx, "Shutting down server...")
+	global.Log.Info(ctx, "[%s]shutting down server...", global.ProName)
 
 	// The context is used to inform the server it has 5 seconds to finish
 	// the request it is currently handling
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	if err := srv.Shutdown(ctx); err != nil {
-		global.Log.Error(ctx, "Server forced to shutdown: %v", err)
+		global.Log.Error(ctx, "[%s]server forced to shutdown: %v", global.ProName, err)
 	}
 
-	global.Log.Info(ctx, "Server exiting")
+	global.Log.Info(ctx, "[%s]server exiting", global.ProName)
 }

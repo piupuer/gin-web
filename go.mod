@@ -10,7 +10,7 @@ require (
 	github.com/go-sql-driver/mysql v1.6.0
 	github.com/gobuffalo/packr/v2 v2.7.1
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/piupuer/go-helper v1.0.1-0.20211028110347-d77ac805c85c
+	github.com/piupuer/go-helper v1.0.1-0.20211102071916-391f8d5186d6
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.8.1
