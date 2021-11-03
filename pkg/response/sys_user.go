@@ -2,13 +2,13 @@ package response
 
 import "github.com/piupuer/go-helper/pkg/resp"
 
-type LoginResp struct {
+type Login struct {
 	Username  string `json:"username"`
 	Token     string `json:"token"`
 	ExpiresAt int64  `json:"expiresAt"`
 }
 
-type UserInfoResp struct {
+type UserInfo struct {
 	Id           uint     `json:"id"`
 	Username     string   `json:"username"`
 	Mobile       string   `json:"mobile"`
@@ -20,7 +20,7 @@ type UserInfoResp struct {
 	Keyword      string   `json:"keyword"`
 }
 
-type UserResp struct {
+type User struct {
 	resp.Base
 	Username     string `json:"username"`
 	Mobile       string `json:"mobile"`

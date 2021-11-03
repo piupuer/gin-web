@@ -13,20 +13,20 @@ import (
 )
 
 // find leave by current user id
-func (my MysqlService) FindLeave(r *request.LeaveReq) []models.Leave {
+func (my MysqlService) FindLeave(r *request.Leave) []models.Leave {
 	list := make([]models.Leave, 0)
-	query := my.Q.Tx.
+	q := my.Q.Tx.
 		Model(&models.Leave{}).
 		Order("created_at DESC").
 		Where("user_id = ?", r.UserId)
 	if r.Status != nil {
-		query = query.Where("status = ?", *r.Status)
+		q.Where("status = ?", *r.Status)
 	}
 	desc := strings.TrimSpace(r.Desc)
 	if desc != "" {
-		query = query.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
+		q.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
-	my.Q.FindWithPage(query, &r.Page, &list)
+	my.Q.FindWithPage(q, &r.Page, &list)
 	return list
 }
 
@@ -55,7 +55,7 @@ func (my MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, erro
 }
 
 // create leave
-func (my MysqlService) CreateLeave(r *request.CreateLeaveReq) error {
+func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
 	f := fsm.New(my.Q.Tx)
 	fsmUuid := uuid.NewV4().String()
 	// submit fsm log

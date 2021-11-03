@@ -11,17 +11,17 @@ import (
 )
 
 func FindLeave(c *gin.Context) {
-	var r request.LeaveReq
+	var r request.Leave
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	r.UserId = user.Id
 	s := service.New(c)
 	list := s.FindLeave(&r)
-	resp.SuccessWithPageData(list, []response.LeaveResp{}, r.Page)
+	resp.SuccessWithPageData(list, []response.Leave{}, r.Page)
 }
 
 func FindLeaveFsmTrack(c *gin.Context) {
-	var r request.LeaveReq
+	var r request.Leave
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 	s := service.New(c)
@@ -32,7 +32,7 @@ func FindLeaveFsmTrack(c *gin.Context) {
 
 func CreateLeave(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var r request.CreateLeaveReq
+	var r request.CreateLeave
 	req.ShouldBind(c, &r)
 	req.Validate(c, r, r.FieldTrans())
 	r.User = user
@@ -43,7 +43,7 @@ func CreateLeave(c *gin.Context) {
 }
 
 func UpdateLeaveById(c *gin.Context) {
-	var r request.UpdateLeaveReq
+	var r request.UpdateLeave
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 	s := service.New(c)

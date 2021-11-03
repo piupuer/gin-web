@@ -6,24 +6,24 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-type RegisterAndLoginReq struct {
+type RegisterAndLogin struct {
 	Username string `json:"username" validate:"required"`
 	Password string `json:"password" validate:"required"`
 }
 
-func (s RegisterAndLoginReq) FieldTrans() map[string]string {
+func (s RegisterAndLogin) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Username"] = "username"
 	m["Password"] = "password"
 	return m
 }
 
-type ChangePwdReq struct {
+type ChangePwd struct {
 	OldPassword string `json:"oldPassword" form:"oldPassword"`
 	NewPassword string `json:"newPassword" form:"newPassword"`
 }
 
-type UserReq struct {
+type User struct {
 	CurrentRole  models.SysRole `json:"currentRole"`
 	Username     string         `json:"username" form:"username"`
 	Mobile       string         `json:"mobile" form:"mobile"`
@@ -38,7 +38,7 @@ type UserReq struct {
 	resp.Page
 }
 
-type CreateUserReq struct {
+type CreateUser struct {
 	Username     string        `json:"username" validate:"required"`
 	Password     string        `json:"password"`
 	InitPassword string        `json:"initPassword" validate:"required"`
@@ -51,7 +51,7 @@ type CreateUserReq struct {
 	RoleId       uint          `json:"roleId" validate:"required"`
 }
 
-func (s CreateUserReq) FieldTrans() map[string]string {
+func (s CreateUser) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Username"] = "username"
 	m["InitPassword"] = "initialize password"
@@ -60,7 +60,7 @@ func (s CreateUserReq) FieldTrans() map[string]string {
 	return m
 }
 
-type UpdateUserReq struct {
+type UpdateUser struct {
 	Username     *string       `json:"username"`
 	Password     *string       `json:"password"`
 	InitPassword *string       `json:"initPassword"`

@@ -2,7 +2,7 @@ package response
 
 import "github.com/piupuer/go-helper/pkg/resp"
 
-type RoleResp struct {
+type Role struct {
 	resp.Base
 	Name    string `json:"name"`
 	Keyword string `json:"keyword"`

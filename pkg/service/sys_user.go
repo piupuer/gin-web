@@ -21,35 +21,35 @@ func (my MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 	return &u, err
 }
 
-func (my MysqlService) FindUser(req *request.UserReq) []models.SysUser {
+func (my MysqlService) FindUser(req *request.User) []models.SysUser {
 	list := make([]models.SysUser, 0)
-	query := my.Q.Tx.
+	q := my.Q.Tx.
 		Model(&models.SysUser{}).
 		Order("created_at DESC")
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
 		roleIds := my.FindRoleIdBySort(*req.CurrentRole.Sort)
-		query = query.Where("role_id IN (?)", roleIds)
+		q.Where("role_id IN (?)", roleIds)
 	}
 	username := strings.TrimSpace(req.Username)
 	if username != "" {
-		query = query.Where("username LIKE ?", fmt.Sprintf("%%%s%%", username))
+		q.Where("username LIKE ?", fmt.Sprintf("%%%s%%", username))
 	}
 	mobile := strings.TrimSpace(req.Mobile)
 	if mobile != "" {
-		query = query.Where("mobile LIKE ?", fmt.Sprintf("%%%s%%", mobile))
+		q.Where("mobile LIKE ?", fmt.Sprintf("%%%s%%", mobile))
 	}
 	nickname := strings.TrimSpace(req.Nickname)
 	if nickname != "" {
-		query = query.Where("nickname LIKE ?", fmt.Sprintf("%%%s%%", nickname))
+		q.Where("nickname LIKE ?", fmt.Sprintf("%%%s%%", nickname))
 	}
 	if req.Status != nil {
 		if *req.Status > 0 {
-			query = query.Where("status = ?", 1)
+			q.Where("status = ?", 1)
 		} else {
-			query = query.Where("status = ?", 0)
+			q.Where("status = ?", 0)
 		}
 	}
-	my.Q.FindWithPage(query, &req.Page, &list)
+	my.Q.FindWithPage(q, &req.Page, &list)
 	return list
 }
 

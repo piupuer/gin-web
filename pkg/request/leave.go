@@ -6,7 +6,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-type LeaveReq struct {
+type Leave struct {
 	UserId          uint          `json:"-"`
 	Status          *req.NullUint `json:"status" form:"status"`
 	ApprovalOpinion string        `json:"approvalOpinion" form:"approvalOpinion"`
@@ -14,17 +14,17 @@ type LeaveReq struct {
 	resp.Page
 }
 
-type CreateLeaveReq struct {
+type CreateLeave struct {
 	User models.SysUser `json:"user"`
 	Desc string         `json:"desc" validate:"required"`
 }
 
-func (s CreateLeaveReq) FieldTrans() map[string]string {
+func (s CreateLeave) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Desc"] = "description"
 	return m
 }
 
-type UpdateLeaveReq struct {
+type UpdateLeave struct {
 	Desc *string `json:"desc"`
 }

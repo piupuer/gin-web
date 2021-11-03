@@ -27,34 +27,34 @@ func (rd RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error)
 	return &u, err
 }
 
-func (rd RedisService) FindUser(req *request.UserReq) []models.SysUser {
+func (rd RedisService) FindUser(req *request.User) []models.SysUser {
 	if !rd.binlog {
 		return rd.mysql.FindUser(req)
 	}
 	list := make([]models.SysUser, 0)
-	query := rd.Q.
+	q := rd.Q.
 		Table("sys_user").
 		Order("created_at DESC")
 	if *req.CurrentRole.Sort != models.SysRoleSuperAdminSort {
 		roleIds := rd.FindRoleIdBySort(*req.CurrentRole.Sort)
-		query = query.Where("role_id", "in", roleIds)
+		q.Where("role_id", "in", roleIds)
 	}
 	username := strings.TrimSpace(req.Username)
 	if username != "" {
-		query = query.Where("username", "contains", username)
+		q.Where("username", "contains", username)
 	}
 	mobile := strings.TrimSpace(req.Mobile)
 	if mobile != "" {
-		query = query.Where("mobile", "contains", mobile)
+		q.Where("mobile", "contains", mobile)
 	}
 	nickname := strings.TrimSpace(req.Nickname)
 	if nickname != "" {
-		query = query.Where("nickname", "contains", nickname)
+		q.Where("nickname", "contains", nickname)
 	}
 	if req.Status != nil {
-		query = query.Where("status", "=", *req.Status)
+		q.Where("status", "=", *req.Status)
 	}
-	rd.Q.FindWithPage(query, &req.Page, &list)
+	rd.Q.FindWithPage(q, &req.Page, &list)
 	return list
 }
 

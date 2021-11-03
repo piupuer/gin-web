@@ -15,11 +15,11 @@ const (
 )
 
 // get user info from cache by uid
-func CacheGetUserInfo(c context.Context, uid uint) (*response.UserInfoResp, bool) {
+func CacheGetUserInfo(c context.Context, uid uint) (*response.UserInfo, bool) {
 	if global.Conf.Redis.Enable {
 		res, err := global.Redis.HGet(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixUserInfo), fmt.Sprintf("%d", uid)).Result()
 		if err == nil && res != "" {
-			item := response.UserInfoResp{}
+			item := response.UserInfo{}
 			utils.Json2Struct(res, &item)
 			return &item, true
 		}
@@ -28,7 +28,7 @@ func CacheGetUserInfo(c context.Context, uid uint) (*response.UserInfoResp, bool
 }
 
 // set user info to cache by uid
-func CacheSetUserInfo(c context.Context, uid uint, data response.UserInfoResp) {
+func CacheSetUserInfo(c context.Context, uid uint, data response.UserInfo) {
 	if global.Conf.Redis.Enable {
 		global.Redis.HSet(c, fmt.Sprintf("%s_%s", global.ProName, CacheSuffixUserInfo), fmt.Sprintf("%d", uid), utils.Struct2Json(data))
 	}

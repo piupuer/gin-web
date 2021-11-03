@@ -24,7 +24,7 @@ func GetUserInfo(c *gin.Context) {
 		return
 	}
 
-	var rp response.UserInfoResp
+	var rp response.UserInfo
 	utils.Struct2StructByJson(user, &rp)
 	rp.Roles = []string{
 		"admin",
@@ -36,17 +36,17 @@ func GetUserInfo(c *gin.Context) {
 }
 
 func FindUser(c *gin.Context) {
-	var r request.UserReq
+	var r request.User
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	r.CurrentRole = user.Role
 	s := cache_service.New(c)
 	list := s.FindUser(&r)
-	resp.SuccessWithPageData(list, []response.UserResp{}, r.Page)
+	resp.SuccessWithPageData(list, []response.User{}, r.Page)
 }
 
 func ChangePwd(c *gin.Context) {
-	var r request.ChangePwdReq
+	var r request.ChangePwd
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	query := global.Mysql.Where("username = ?", user.Username).First(&user)
@@ -116,7 +116,7 @@ func FindUserByIds(c *gin.Context, userIds []uint) []ms.User {
 }
 
 func CreateUser(c *gin.Context) {
-	var r request.CreateUserReq
+	var r request.CreateUser
 	req.ShouldBind(c, &r)
 	req.Validate(c, r, r.FieldTrans())
 	s := service.New(c)
@@ -128,7 +128,7 @@ func CreateUser(c *gin.Context) {
 }
 
 func UpdateUserById(c *gin.Context) {
-	var r request.UpdateUserReq
+	var r request.UpdateUser
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 

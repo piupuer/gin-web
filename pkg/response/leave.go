@@ -5,13 +5,13 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-type LeaveResp struct {
+type Leave struct {
 	resp.Base
 	Status *uint  `json:"status"`
 	Desc   string `json:"desc"`
 }
 
-type LeaveLogResp struct {
+type LeaveLog struct {
 	LeaveId uint    `json:"leaveId"`
 	Log     fsm.Log `json:"log"`
 }

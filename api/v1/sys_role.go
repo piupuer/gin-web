@@ -13,7 +13,7 @@ import (
 )
 
 func FindRole(c *gin.Context) {
-	var r request.RoleReq
+	var r request.Role
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	// bind current user role sort(low level cannot view high level)
@@ -21,12 +21,12 @@ func FindRole(c *gin.Context) {
 
 	s := cache_service.New(c)
 	list := s.FindRole(&r)
-	resp.SuccessWithPageData(list, []response.RoleResp{}, r.Page)
+	resp.SuccessWithPageData(list, []response.Role{}, r.Page)
 }
 
 func CreateRole(c *gin.Context) {
 	user := GetCurrentUser(c)
-	var r request.CreateRoleReq
+	var r request.CreateRole
 	req.ShouldBind(c, &r)
 	req.Validate(c, r, r.FieldTrans())
 
@@ -41,7 +41,7 @@ func CreateRole(c *gin.Context) {
 }
 
 func UpdateRoleById(c *gin.Context) {
-	var r request.UpdateRoleReq
+	var r request.UpdateRole
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 	if r.Sort != nil {
