@@ -110,6 +110,7 @@ func Routers() *gin.Engine {
 			hv1.WithFindUserByIds(v1.RouterFindUserByIds),
 			hv1.WithFsmTransition(v1.LeaveTransition),
 			hv1.WithFsmGetFsmSubmitterDetail(v1.GetLeaveFsmDetail),
+			hv1.WithFsmUpdateFsmSubmitterDetail(v1.UpdateLeaveFsmDetail),
 			hv1.WithUploadSaveDir(global.Conf.Upload.SaveDir),
 			hv1.WithUploadSingleMaxSize(global.Conf.Upload.SingleMaxSize),
 			hv1.WithUploadMergeConcurrentCount(global.Conf.Upload.MergeConcurrentCount),

@@ -9,6 +9,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/utils"
 	uuid "github.com/satori/go.uuid"
 	"strings"
 )
@@ -193,8 +194,8 @@ func (my MysqlService) LeaveTransition(logs ...resp.FsmApprovalLog) (err error) 
 	return nil
 }
 
-func (my MysqlService) GetLeaveFsmDetail(detail req.FsmSubmitterDetail) []string {
-	arr := make([]string, 0)
+func (my MysqlService) GetLeaveFsmDetail(detail req.FsmSubmitterDetail) []resp.FsmSubmitterDetail {
+	arr := make([]resp.FsmSubmitterDetail, 0)
 	switch uint(detail.Category) {
 	case global.FsmCategoryLeave:
 		var leave models.Leave
@@ -203,20 +204,47 @@ func (my MysqlService) GetLeaveFsmDetail(detail req.FsmSubmitterDetail) []string
 			Where("fsm_uuid = ?", detail.Uuid).
 			First(&leave)
 		if leave.Id > 0 {
-			arr = append(arr,
-				fmt.Sprintf("desc: %s", leave.Desc),
-			)
+			arr = append(arr, resp.FsmSubmitterDetail{
+				Name: "leave desc",
+				Key:  "desc",
+				Val:  leave.Desc,
+			})
 			if !leave.StartTime.IsZero() {
-				arr = append(arr,
-					fmt.Sprintf("start time: %s", leave.StartTime),
-				)
+				arr = append(arr, resp.FsmSubmitterDetail{
+					Name: "leave start time",
+					Key:  "startTime",
+					Val:  leave.StartTime.String(),
+				})
 			}
 			if !leave.EndTime.IsZero() {
-				arr = append(arr,
-					fmt.Sprintf("end time: %s", leave.EndTime),
-				)
+				arr = append(arr, resp.FsmSubmitterDetail{
+					Name: "leave end time",
+					Key:  "endTime",
+					Val:  leave.EndTime.String(),
+				})
 			}
 		}
 	}
 	return arr
+}
+
+func (my MysqlService) UpdateLeaveFsmDetail(detail req.UpdateFsmSubmitterDetail) (err error) {
+	switch uint(detail.Category) {
+	case global.FsmCategoryLeave:
+		detail.Parse()
+		m := make(map[string]interface{})
+		for i, key := range detail.Keys {
+			m[utils.SnakeCase(key)] = detail.Vals[i]
+		}
+		var leave models.Leave
+		q := my.Q.Tx.
+			Model(&models.Leave{}).
+			Where("fsm_uuid = ?", detail.Uuid)
+		q.First(&leave)
+		if leave.Id > 0 {
+			err = q.Updates(&m).Error
+			return
+		}
+	}
+	return nil
 }

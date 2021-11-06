@@ -109,7 +109,12 @@ func LeaveTransition(c *gin.Context, logs ...resp.FsmApprovalLog) error {
 	return s.LeaveTransition(logs...)
 }
 
-func GetLeaveFsmDetail(c *gin.Context, detail req.FsmSubmitterDetail) []string {
+func GetLeaveFsmDetail(c *gin.Context, detail req.FsmSubmitterDetail) []resp.FsmSubmitterDetail {
 	s := service.New(c)
 	return s.GetLeaveFsmDetail(detail)
+}
+
+func UpdateLeaveFsmDetail(c *gin.Context, detail req.UpdateFsmSubmitterDetail) error {
+	s := service.New(c)
+	return s.UpdateLeaveFsmDetail(detail)
 }
