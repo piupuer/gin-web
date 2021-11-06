@@ -29,7 +29,9 @@ func (s CreateLeave) FieldTrans() map[string]string {
 }
 
 type UpdateLeave struct {
-	Desc *string `json:"desc"`
+	Desc      *string                  `json:"desc"`
+	StartTime *carbon.ToDateTimeString `json:"startTime"`
+	EndTime   *carbon.ToDateTimeString `json:"endTime"`
 }
 
 type ApproveLeave struct {
