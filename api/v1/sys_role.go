@@ -12,6 +12,13 @@ import (
 	"github.com/piupuer/go-helper/pkg/utils"
 )
 
+func FindRoleByIds(c *gin.Context) {
+	ids := req.UintIds(c)
+	s := cache_service.New(c)
+	list := s.FindRoleByIds(ids)
+	resp.SuccessWithData(list)
+}
+
 func FindRole(c *gin.Context) {
 	var r request.Role
 	req.ShouldBind(c, &r)
@@ -21,7 +28,7 @@ func FindRole(c *gin.Context) {
 
 	s := cache_service.New(c)
 	list := s.FindRole(&r)
-	resp.SuccessWithPageData(list, []response.Role{}, r.Page)
+	resp.SuccessWithPageData(list, &[]response.Role{}, r.Page)
 }
 
 func CreateRole(c *gin.Context) {
@@ -62,7 +69,7 @@ func UpdateRoleById(c *gin.Context) {
 	resp.Success()
 }
 
-func FindRoleKeywordByRoleIds(c *gin.Context, roleIds []uint) []string {
+func RouterFindRoleKeywordByRoleIds(c *gin.Context, roleIds []uint) []string {
 	s := cache_service.New(c)
 	roles := s.FindRoleByIds(roleIds)
 	keywords := make([]string, 0)

@@ -5,6 +5,7 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
+	"github.com/jinzhu/copier"
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
@@ -62,7 +63,6 @@ func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
 	_, err := f.SubmitLog(req.FsmCreateLog{
 		Category:        req.NullUint(global.FsmCategoryLeave),
 		Uuid:            fsmUuid,
-		MachineId:       1,
 		SubmitterUserId: r.User.Id,
 		SubmitterRoleId: r.User.RoleId,
 	})
@@ -72,9 +72,11 @@ func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
 
 	// create leave to db
 	var leave models.Leave
+	copier.Copy(&leave, r)
 	// save fsm uuid
 	leave.FsmUuid = fsmUuid
-	leave.Desc = r.Desc
+	leave.Status = models.LevelStatusWaiting
+	leave.UserId = r.User.Id
 	err = my.Q.Tx.Create(&leave).Error
 	return err
 }
@@ -88,4 +90,133 @@ func (my MysqlService) GetLeaveFsmUuid(leaveId uint) string {
 		Where("id = ?", leaveId).
 		First(&leave)
 	return leave.FsmUuid
+}
+
+// query leave by fsm uuids
+func (my MysqlService) FindLevelByFsmUuids(uuids []string) []models.Leave {
+	// create leave to db
+	leaves := make([]models.Leave, 0)
+	my.Q.Tx.
+		Model(&models.Leave{}).
+		Where("uuid IN (?)", uuids).
+		Find(&leaves)
+	return leaves
+}
+
+func (my MysqlService) ApprovedLeaveById(r request.ApproveLeave) (err error) {
+	var leave models.Leave
+	q := my.Q.Tx.
+		Model(&models.Leave{}).
+		Where("id = ?", r.Id)
+	err = q.First(&leave).Error
+	if err != nil {
+		return err
+	}
+	f := fsm.New(my.Q.Tx)
+	var log *resp.FsmApprovalLog
+	log, err = f.ApproveLog(req.FsmApproveLog{
+		Category:       req.NullUint(global.FsmCategoryLeave),
+		Uuid:           leave.FsmUuid,
+		ApprovalRoleId: r.User.RoleId,
+		ApprovalUserId: r.User.Id,
+		Approved:       req.NullUint(r.Approved),
+	})
+	if err != nil {
+		return
+	}
+	// log status transition
+	return my.LeaveTransition(*log)
+}
+
+func (my MysqlService) DeleteLeaveByIds(ids []uint) (err error) {
+	list := make([]string, 0)
+	my.Q.Tx.
+		Model(&models.Leave{}).
+		Where("id IN (?)", ids).
+		Pluck("fsm_uuid", &list)
+	if len(list) > 0 {
+		f := fsm.New(my.Q.Tx)
+		_, err = f.CancelLogByUuids(list)
+		if err != nil {
+			return
+		}
+	}
+	return my.Q.DeleteByIds(ids, new(models.Leave))
+}
+
+func (my MysqlService) LeaveTransition(logs ...resp.FsmApprovalLog) (err error) {
+	m := make(map[uint][]string)
+	for _, log := range logs {
+		if log.Category == global.FsmCategoryLeave {
+			if log.Resubmit {
+				arr := make([]string, 0)
+				if item, ok := m[models.LevelStatusWaitingConfirm]; ok {
+					arr = item
+				}
+				m[models.LevelStatusRefused] = append(arr, log.Uuid)
+			} else if log.Cancel {
+				arr := make([]string, 0)
+				if item, ok := m[models.LevelStatusCancelled]; ok {
+					arr = item
+				}
+				m[models.LevelStatusCancelled] = append(arr, log.Uuid)
+			} else if log.Confirm {
+				arr := make([]string, 0)
+				if item, ok := m[models.LevelStatusWaitingConfirm]; ok {
+					arr = item
+				}
+				m[models.LevelStatusWaitingConfirm] = append(arr, log.Uuid)
+			} else if log.End {
+				arr := make([]string, 0)
+				if item, ok := m[models.LevelStatusApproved]; ok {
+					arr = item
+				}
+				m[models.LevelStatusApproved] = append(arr, log.Uuid)
+			} else {
+				arr := make([]string, 0)
+				if item, ok := m[models.LevelStatusApproving]; ok {
+					arr = item
+				}
+				m[models.LevelStatusApproving] = append(arr, log.Uuid)
+			}
+		}
+	}
+	for status, uuids := range m {
+		err = my.Q.Tx.
+			Model(&models.Leave{}).
+			Where("fsm_uuid IN (?)", uuids).
+			Update("status", status).Error
+		if err != nil {
+			return
+		}
+	}
+	return nil
+}
+
+func (my MysqlService) GetLeaveFsmDetail(detail req.FsmSubmitterDetail) []string {
+	arr := make([]string, 0)
+	switch uint(detail.Category) {
+	case global.FsmCategoryLeave:
+		var leave models.Leave
+		my.Q.Tx.
+			Model(&models.Leave{}).
+			Where("fsm_uuid = ?", detail.Uuid).
+			First(&leave)
+		if leave.Id > 0 {
+			arr = append(arr,
+				fmt.Sprintf("desc: %s", leave.Desc),
+			)
+			if !leave.StartTime.IsZero() {
+				arr = append(arr,
+					fmt.Sprintf("start time: %s", leave.StartTime),
+				)
+			}
+			if !leave.EndTime.IsZero() {
+				arr = append(arr,
+					fmt.Sprintf("end time: %s", leave.EndTime),
+				)
+			}
+		}
+	}
+	return arr
 }

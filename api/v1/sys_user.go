@@ -42,7 +42,7 @@ func FindUser(c *gin.Context) {
 	r.CurrentRole = user.Role
 	s := cache_service.New(c)
 	list := s.FindUser(&r)
-	resp.SuccessWithPageData(list, []response.User{}, r.Page)
+	resp.SuccessWithPageData(list, &[]response.User{}, r.Page)
 }
 
 func ChangePwd(c *gin.Context) {
@@ -104,7 +104,14 @@ func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	}
 }
 
-func FindUserByIds(c *gin.Context, userIds []uint) []ms.User {
+func FindUserByIds(c *gin.Context) {
+	ids := req.UintIds(c)
+	s := cache_service.New(c)
+	list := s.FindUserByIds(ids)
+	resp.SuccessWithData(list)
+}
+
+func RouterFindUserByIds(c *gin.Context, userIds []uint) []ms.User {
 	users := make([]models.SysUser, 0)
 	global.Mysql.
 		Model(&models.SysUser{}).
@@ -113,6 +120,17 @@ func FindUserByIds(c *gin.Context, userIds []uint) []ms.User {
 	newUsers := make([]ms.User, 0)
 	utils.Struct2StructByJson(users, &newUsers)
 	return newUsers
+}
+
+func RouterFindRoleByIds(c *gin.Context, roleIds []uint) []ms.Role {
+	roles := make([]models.SysRole, 0)
+	global.Mysql.
+		Model(&models.SysRole{}).
+		Where("id IN (?)", roleIds).
+		Find(&roles)
+	newRoles := make([]ms.Role, 0)
+	utils.Struct2StructByJson(roles, &newRoles)
+	return newRoles
 }
 
 func CreateUser(c *gin.Context) {

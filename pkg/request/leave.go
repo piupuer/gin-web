@@ -2,6 +2,7 @@ package request
 
 import (
 	"gin-web/models"
+	"github.com/golang-module/carbon"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 )
@@ -15,8 +16,10 @@ type Leave struct {
 }
 
 type CreateLeave struct {
-	User models.SysUser `json:"user"`
-	Desc string         `json:"desc" validate:"required"`
+	User      models.SysUser          `json:"user"`
+	Desc      string                  `json:"desc" validate:"required"`
+	StartTime carbon.ToDateTimeString `json:"startTime"`
+	EndTime   carbon.ToDateTimeString `json:"endTime"`
 }
 
 func (s CreateLeave) FieldTrans() map[string]string {
@@ -27,4 +30,11 @@ func (s CreateLeave) FieldTrans() map[string]string {
 
 type UpdateLeave struct {
 	Desc *string `json:"desc"`
+}
+
+type ApproveLeave struct {
+	Id          uint           `json:"id"`
+	AfterStatus uint           `json:"afterStatus"`
+	Approved    uint           `json:"approved"`
+	User        models.SysUser `json:"user"`
 }

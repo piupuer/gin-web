@@ -72,3 +72,16 @@ func (rd RedisService) GetUserById(id uint) (models.SysUser, error) {
 		First(&user).Error
 	return user, err
 }
+
+func (rd RedisService) FindUserByIds(ids []uint) []models.SysUser {
+	if !rd.binlog {
+		return rd.mysql.FindUserByIds(ids)
+	}
+	list := make([]models.SysUser, 0)
+	rd.Q.
+		Table("sys_user").
+		Where("id", "in", ids).
+		Where("status", "=", models.SysUserStatusEnable).
+		Find(&list)
+	return list
+}

@@ -15,6 +15,7 @@ func New(c *gin.Context) MysqlService {
 		query.WithMysqlLogger(global.Log),
 		query.WithMysqlCtx(c),
 		query.WithMysqlDb(global.Mysql),
+		query.WithMysqlCasbinEnforcer(global.CasbinEnforcer),
 	}
 	if global.Conf.Redis.Enable {
 		ops = append(ops, query.WithMysqlRedis(global.Redis))

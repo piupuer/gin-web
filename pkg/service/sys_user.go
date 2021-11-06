@@ -62,3 +62,13 @@ func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
 		First(&user).Error
 	return user, err
 }
+
+func (my MysqlService) FindUserByIds(ids []uint) []models.SysUser {
+	list := make([]models.SysUser, 0)
+	my.Q.Tx.
+		Model(&models.SysUser{}).
+		Where("id IN (?)", ids).
+		Where("status", "=", models.SysUserStatusEnable).
+		Find(&list)
+	return list
+}

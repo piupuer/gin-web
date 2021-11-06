@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 )
@@ -17,7 +18,7 @@ func FindLeave(c *gin.Context) {
 	r.UserId = user.Id
 	s := service.New(c)
 	list := s.FindLeave(&r)
-	resp.SuccessWithPageData(list, []response.Leave{}, r.Page)
+	resp.SuccessWithPageData(list, &[]response.Leave{}, r.Page)
 }
 
 func FindLeaveFsmTrack(c *gin.Context) {
@@ -52,11 +53,63 @@ func UpdateLeaveById(c *gin.Context) {
 	resp.Success()
 }
 
+func ConfirmLeaveById(c *gin.Context) {
+	id := req.UintId(c)
+	s := service.New(c)
+	user := GetCurrentUser(c)
+	err := s.ApprovedLeaveById(request.ApproveLeave{
+		Id:          id,
+		User:        user,
+		AfterStatus: models.LevelStatusApproved,
+		Approved:    constant.FsmLogStatusApproved,
+	})
+	resp.CheckErr(err)
+	resp.Success()
+}
+
+func ResubmitLeaveById(c *gin.Context) {
+	id := req.UintId(c)
+	s := service.New(c)
+	user := GetCurrentUser(c)
+	err := s.ApprovedLeaveById(request.ApproveLeave{
+		Id:          id,
+		User:        user,
+		AfterStatus: models.LevelStatusWaiting,
+		Approved:    constant.FsmLogStatusApproved,
+	})
+	resp.CheckErr(err)
+	resp.Success()
+}
+
+func CancelLeaveById(c *gin.Context) {
+	id := req.UintId(c)
+	s := service.New(c)
+	user := GetCurrentUser(c)
+	err := s.ApprovedLeaveById(request.ApproveLeave{
+		Id:          id,
+		User:        user,
+		AfterStatus: models.LevelStatusCancelled,
+		Approved:    constant.FsmLogStatusCancelled,
+	})
+	resp.CheckErr(err)
+	resp.Success()
+}
+
 func BatchDeleteLeaveByIds(c *gin.Context) {
 	var r req.Ids
 	req.ShouldBind(c, &r)
 	s := service.New(c)
-	err := s.Q.DeleteByIds(r.Uints(), new(models.Leave))
+	err := s.DeleteLeaveByIds(r.Uints())
 	resp.CheckErr(err)
 	resp.Success()
+}
+
+func LeaveTransition(c *gin.Context, logs ...resp.FsmApprovalLog) error {
+	s := service.New(c)
+	return s.LeaveTransition(logs...)
+}
+
+func GetLeaveFsmDetail(c *gin.Context, detail req.FsmSubmitterDetail) []string {
+	s := service.New(c)
+	return s.GetLeaveFsmDetail(detail)
 }
