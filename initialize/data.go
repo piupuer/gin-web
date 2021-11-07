@@ -82,20 +82,20 @@ func Data() {
 		{
 			Name:  "systemRoot",
 			Title: "System Root",
-			Icon:  "component",
+			Icon:  "system",
 			Path:  "/system",
 			Children: []ms.SysMenu{
 				{
 					Name:      "menu",
 					Title:     "Menus",
-					Icon:      "tree-table",
+					Icon:      "menu",
 					Path:      "menu",
 					Component: "/system/menu",
 				},
 				{
 					Name:      "role",
 					Title:     "Roles",
-					Icon:      "peoples",
+					Icon:      "role",
 					Path:      "role",
 					Component: "/system/role",
 				},
@@ -109,21 +109,21 @@ func Data() {
 				{
 					Name:      "api",
 					Title:     "Apis",
-					Icon:      "tree",
+					Icon:      "api",
 					Path:      "api",
 					Component: "/system/api",
 				},
 				{
 					Name:      "operation-log",
 					Title:     "Operation Logs",
-					Icon:      "example",
+					Icon:      "log",
 					Path:      "operation-log",
 					Component: "/system/operation-log",
 				},
 				{
 					Name:      "message-push",
 					Title:     "Message Push",
-					Icon:      "guide",
+					Icon:      "push",
 					Path:      "message-push",
 					Component: "/system/message-push",
 					RoleIds: []uint{
@@ -133,7 +133,7 @@ func Data() {
 				{
 					Name:      "machine",
 					Title:     "Machines",
-					Icon:      "guide",
+					Icon:      "machine",
 					Path:      "machine",
 					Component: "/system/machine",
 				},
@@ -142,20 +142,20 @@ func Data() {
 		{
 			Name:  "fsmRoot",
 			Title: "Fsm",
-			Icon:  "bug",
+			Icon:  "fsm",
 			Path:  "/fsm",
 			Children: []ms.SysMenu{
 				{
 					Name:      "machine",
 					Title:     "Machines",
-					Icon:      "bug",
+					Icon:      "fsm-machine",
 					Path:      "index",
 					Component: "/fsm/machine",
 				},
 				{
 					Name:      "leave",
 					Title:     "My Leave",
-					Icon:      "skill",
+					Icon:      "leave",
 					Path:      "leave",
 					Component: "/fsm/leave",
 					RoleIds: []uint{
@@ -165,7 +165,7 @@ func Data() {
 				{
 					Name:      "approving",
 					Title:     "Approving",
-					Icon:      "form",
+					Icon:      "approve",
 					Path:      "approving",
 					Component: "/fsm/approving",
 					RoleIds: []uint{
@@ -177,13 +177,13 @@ func Data() {
 		{
 			Name:  "uploader",
 			Title: "Uploader",
-			Icon:  "back-top",
+			Icon:  "upload",
 			Path:  "/uploader",
 			Children: []ms.SysMenu{
 				{
 					Name:      "uploader1",
 					Title:     "Uploader1",
-					Icon:      "guide",
+					Icon:      "image",
 					Path:      "uploader1",
 					Component: "/uploader/uploader1",
 					RoleIds: []uint{
@@ -193,7 +193,7 @@ func Data() {
 				{
 					Name:      "uploader2",
 					Title:     "Uploader2",
-					Icon:      "guide",
+					Icon:      "zip",
 					Path:      "uploader2",
 					Component: "/uploader/uploader2",
 					RoleIds: []uint{
@@ -205,13 +205,13 @@ func Data() {
 		{
 			Name:  "testRoot",
 			Title: "Tests",
-			Icon:  "bug",
+			Icon:  "debug",
 			Path:  "/test",
 			Children: []ms.SysMenu{
 				{
 					Name:      "test",
 					Title:     "Test Case",
-					Icon:      "bug",
+					Icon:      "test",
 					Path:      "index",
 					Component: "/test/index",
 					RoleIds: []uint{
