@@ -16,7 +16,7 @@ func FindRoleByIds(c *gin.Context) {
 	ids := req.UintIds(c)
 	s := cache_service.New(c)
 	list := s.FindRoleByIds(ids)
-	resp.SuccessWithData(list)
+	resp.SuccessWithData(list, &[]response.Role{})
 }
 
 func FindRole(c *gin.Context) {

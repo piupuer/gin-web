@@ -12,7 +12,7 @@ require (
 	github.com/golang-module/carbon v1.5.4
 	github.com/jinzhu/copier v0.3.2
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/piupuer/go-helper v1.0.1-0.20211106055049-11b7210184d8
+	github.com/piupuer/go-helper v1.0.1-0.20211107033137-2efc07faba90
 	github.com/pkg/errors v0.9.1
 	github.com/satori/go.uuid v1.2.0
 	github.com/spf13/viper v1.8.1

@@ -98,6 +98,7 @@ func Routers() *gin.Engine {
 		hr.WithV1Ops(
 			hv1.WithDbOps(
 				query.WithMysqlDb(global.Mysql),
+				query.WithMysqlFsmTransition(v1.LeaveTransition),
 			),
 			hv1.WithBinlogOps(
 				query.WithRedisCasbinEnforcer(global.CasbinEnforcer),

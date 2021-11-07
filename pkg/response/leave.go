@@ -9,6 +9,7 @@ import (
 type Leave struct {
 	resp.Base
 	Status    *uint                   `json:"status"`
+	FsmUuid   string                  `json:"fsmUuid"`
 	Desc      string                  `json:"desc"`
 	StartTime carbon.ToDateTimeString `json:"startTime"`
 	EndTime   carbon.ToDateTimeString `json:"endTime"`

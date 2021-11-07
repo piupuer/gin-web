@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"github.com/jinzhu/copier"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
@@ -82,6 +83,30 @@ func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
 	return err
 }
 
+func (my MysqlService) UpdateLeaveById(id uint, r request.UpdateLeave, u models.SysUser) (err error) {
+	var leave models.Leave
+	err = my.Q.Tx.
+		Where("id = ?", id).
+		First(&leave).Error
+	if err != nil {
+		return
+	}
+	// check edit permission
+	err = my.Q.FsmCheckEditLogDetailPermission(req.FsmCheckEditLogDetailPermission{
+		Category:       req.NullUint(global.FsmCategoryLeave),
+		Uuid:           leave.FsmUuid,
+		ApprovalRoleId: u.RoleId,
+		ApprovalUserId: u.Id,
+		Fields:         []string{"desc", "start_time", "end_time"},
+	})
+	if err != nil {
+		return
+	}
+	// update
+	err = my.Q.UpdateById(id, r, new(models.Leave))
+	return
+}
+
 // query leave fsm uuid by id
 func (my MysqlService) GetLeaveFsmUuid(leaveId uint) string {
 	// create leave to db
@@ -129,7 +154,7 @@ func (my MysqlService) ApprovedLeaveById(r request.ApproveLeave) (err error) {
 	return my.LeaveTransition(*log)
 }
 
-func (my MysqlService) DeleteLeaveByIds(ids []uint) (err error) {
+func (my MysqlService) DeleteLeaveByIds(ids []uint, u models.SysUser) (err error) {
 	list := make([]string, 0)
 	my.Q.Tx.
 		Model(&models.Leave{}).
@@ -137,7 +162,11 @@ func (my MysqlService) DeleteLeaveByIds(ids []uint) (err error) {
 		Pluck("fsm_uuid", &list)
 	if len(list) > 0 {
 		f := fsm.New(my.Q.Tx)
-		_, err = f.CancelLogByUuids(list)
+		err = f.CancelLogByUuids(req.FsmCancelLog{
+			ApprovalRoleId: u.RoleId,
+			ApprovalUserId: u.Id,
+			Uuids:          list,
+		})
 		if err != nil {
 			return
 		}
@@ -149,25 +178,25 @@ func (my MysqlService) LeaveTransition(logs ...resp.FsmApprovalLog) (err error) 
 	m := make(map[uint][]string)
 	for _, log := range logs {
 		if log.Category == global.FsmCategoryLeave {
-			if log.Resubmit {
+			if log.Resubmit == constant.One {
 				arr := make([]string, 0)
 				if item, ok := m[models.LevelStatusWaitingConfirm]; ok {
 					arr = item
 				}
 				m[models.LevelStatusRefused] = append(arr, log.Uuid)
-			} else if log.Cancel {
+			} else if log.Cancel == constant.One {
 				arr := make([]string, 0)
 				if item, ok := m[models.LevelStatusCancelled]; ok {
 					arr = item
 				}
 				m[models.LevelStatusCancelled] = append(arr, log.Uuid)
-			} else if log.Confirm {
+			} else if log.Confirm == constant.One {
 				arr := make([]string, 0)
 				if item, ok := m[models.LevelStatusWaitingConfirm]; ok {
 					arr = item
 				}
 				m[models.LevelStatusWaitingConfirm] = append(arr, log.Uuid)
-			} else if log.End {
+			} else if log.End == constant.One {
 				arr := make([]string, 0)
 				if item, ok := m[models.LevelStatusApproved]; ok {
 					arr = item
