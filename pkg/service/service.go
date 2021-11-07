@@ -1,8 +1,8 @@
 package service
 
 import (
+	"context"
 	"gin-web/pkg/global"
-	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/pkg/query"
 )
 
@@ -10,10 +10,10 @@ type MysqlService struct {
 	Q query.MySql
 }
 
-func New(c *gin.Context) MysqlService {
+func New(ctx context.Context) MysqlService {
 	ops := []func(*query.MysqlOptions){
 		query.WithMysqlLogger(global.Log),
-		query.WithMysqlCtx(c),
+		query.WithMysqlCtx(ctx),
 		query.WithMysqlDb(global.Mysql),
 		query.WithMysqlCasbinEnforcer(global.CasbinEnforcer),
 	}
