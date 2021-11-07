@@ -25,6 +25,7 @@ func New(ctx context.Context) RedisService {
 			query.WithRedisClient(global.Redis),
 			query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),
 			query.WithRedisNamingStrategy(global.Mysql.NamingStrategy),
+			query.WithRedisCasbinEnforcer(global.CasbinEnforcer),
 		}
 		rd.Q = query.NewRedis(ops...)
 	}

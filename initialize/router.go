@@ -25,7 +25,7 @@ func Routers() *gin.Engine {
 		middleware.WithPrintRouterLogger(global.Log),
 		middleware.WithPrintRouterCtx(ctx),
 	)
-	
+
 	// set middleware
 	r.Use(
 		middleware.Rate(
@@ -101,7 +101,6 @@ func Routers() *gin.Engine {
 				query.WithMysqlFsmTransition(v1.LeaveTransition),
 			),
 			hv1.WithBinlogOps(
-				query.WithRedisCasbinEnforcer(global.CasbinEnforcer),
 				query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),
 				query.WithRedisNamingStrategy(global.Mysql.NamingStrategy),
 			),
@@ -109,7 +108,6 @@ func Routers() *gin.Engine {
 			hv1.WithFindRoleKeywordByRoleIds(v1.RouterFindRoleKeywordByRoleIds),
 			hv1.WithFindRoleByIds(v1.RouterFindRoleByIds),
 			hv1.WithFindUserByIds(v1.RouterFindUserByIds),
-			hv1.WithFsmTransition(v1.LeaveTransition),
 			hv1.WithFsmGetFsmSubmitterDetail(v1.GetLeaveFsmDetail),
 			hv1.WithFsmUpdateFsmSubmitterDetail(v1.UpdateLeaveFsmDetail),
 			hv1.WithUploadSaveDir(global.Conf.Upload.SaveDir),
