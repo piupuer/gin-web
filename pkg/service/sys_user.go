@@ -68,7 +68,7 @@ func (my MysqlService) FindUserByIds(ids []uint) []models.SysUser {
 	my.Q.Tx.
 		Model(&models.SysUser{}).
 		Where("id IN (?)", ids).
-		Where("status", "=", models.SysUserStatusEnable).
+		Where("status = ?", models.SysUserStatusEnable).
 		Find(&list)
 	return list
 }

@@ -87,7 +87,7 @@ func (my MysqlService) FindRoleByIds(ids []uint) []models.SysRole {
 	my.Q.Tx.
 		Model(&models.SysRole{}).
 		Where("id IN (?)", ids).
-		Where("status", "=", models.SysRoleStatusNormal).
+		Where("status = ?", models.SysRoleStatusNormal).
 		Find(&roles)
 	return roles
 }
