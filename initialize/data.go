@@ -1,10 +1,14 @@
 package initialize
 
 import (
+	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/service"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -26,14 +30,14 @@ func Data() {
 	newRoles := make([]models.SysRole, 0)
 	roles := []models.SysRole{
 		{
-			Name:    "Super Admin",
+			Name:    "Super Admin Role",
 			Keyword: "super",
-			Desc:    "Super Admin",
+			Desc:    "Super administrator role",
 		},
 		{
-			Name:    "Guest",
+			Name:    "Guest Role",
 			Keyword: "guest",
-			Desc:    "foreign visitors",
+			Desc:    "External visitor role",
 		},
 	}
 	for i, role := range roles {
@@ -71,6 +75,9 @@ func Data() {
 					Component: "/dashboard/index",
 				},
 			},
+			RoleIds: []uint{
+				roles[1].Id,
+			},
 		},
 		{
 			Name:  "systemRoot",
@@ -107,13 +114,6 @@ func Data() {
 					Component: "/system/api",
 				},
 				{
-					Name:      "workflow",
-					Title:     "Workflows",
-					Icon:      "example",
-					Path:      "workflow",
-					Component: "/system/workflow",
-				},
-				{
 					Name:      "operation-log",
 					Title:     "Operation Logs",
 					Icon:      "example",
@@ -126,6 +126,9 @@ func Data() {
 					Icon:      "guide",
 					Path:      "message-push",
 					Component: "/system/message-push",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
 				},
 				{
 					Name:      "machine",
@@ -137,31 +140,37 @@ func Data() {
 			},
 		},
 		{
-			Name:  "testRoot",
-			Title: "Tests",
+			Name:  "fsmRoot",
+			Title: "Fsm",
 			Icon:  "bug",
-			Path:  "/test",
+			Path:  "/fsm",
 			Children: []ms.SysMenu{
 				{
-					Name:      "test",
-					Title:     "Test Case",
+					Name:      "machine",
+					Title:     "Machines",
 					Icon:      "bug",
 					Path:      "index",
-					Component: "/test/index",
+					Component: "/fsm/machine",
 				},
 				{
 					Name:      "leave",
 					Title:     "My Leave",
 					Icon:      "skill",
 					Path:      "leave",
-					Component: "/test/leave",
+					Component: "/fsm/leave",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
 				},
 				{
 					Name:      "approving",
 					Title:     "Approving",
 					Icon:      "form",
 					Path:      "approving",
-					Component: "/test/approving",
+					Component: "/fsm/approving",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
 				},
 			},
 		},
@@ -177,6 +186,9 @@ func Data() {
 					Icon:      "guide",
 					Path:      "uploader1",
 					Component: "/uploader/uploader1",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
 				},
 				{
 					Name:      "uploader2",
@@ -184,6 +196,27 @@ func Data() {
 					Icon:      "guide",
 					Path:      "uploader2",
 					Component: "/uploader/uploader2",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
+				},
+			},
+		},
+		{
+			Name:  "testRoot",
+			Title: "Tests",
+			Icon:  "bug",
+			Path:  "/test",
+			Children: []ms.SysMenu{
+				{
+					Name:      "test",
+					Title:     "Test Case",
+					Icon:      "bug",
+					Path:      "index",
+					Component: "/test/index",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
 				},
 			},
 		},
@@ -203,7 +236,7 @@ func Data() {
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "19999999999",
 			Avatar:       avatar,
-			Nickname:     "super admin",
+			Nickname:     "Super Admin",
 			Introduction: "I'm super. Who am I afraid of ?",
 		},
 		{
@@ -211,13 +244,23 @@ func Data() {
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "13999999999",
 			Avatar:       avatar,
-			Nickname:     "guest",
+			Nickname:     "Guest",
 			Introduction: "The man was lazy and left nothing",
+		},
+		{
+			Username:     "leave",
+			Password:     utils.GenPwd("123456"),
+			Mobile:       "15999999999",
+			Avatar:       avatar,
+			Nickname:     "Leave Tester",
+			Introduction: "The man was lazy and left nothing",
+			RoleId:       roles[1].Id,
 		},
 	}
 	newUsers := make([]models.SysUser, 0)
 	for i, user := range users {
 		id := uint(i + 1)
+		users[i].Id = id
 		oldUser := models.SysUser{}
 		err := db.Where("id = ?", id).First(&oldUser).Error
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -284,7 +327,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/user/update/:userId",
+			Path:     "/v1/user/update/:id",
 			Category: "user",
 			Desc:     "update user",
 		},
@@ -308,7 +351,7 @@ func Data() {
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/menu/all/:roleId",
+			Path:     "/v1/menu/all/:id",
 			Category: "menu",
 			Desc:     "get all menu by role id",
 		},
@@ -320,9 +363,15 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/menu/update/:menuId",
+			Path:     "/v1/menu/update/:id",
 			Category: "menu",
 			Desc:     "update menu",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/menu/role/update/:id",
+			Category: "menu",
+			Desc:     "update role menus",
 		},
 		{
 			Method:   "DELETE",
@@ -344,7 +393,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/role/update/:roleId",
+			Path:     "/v1/role/update/:id",
 			Category: "role",
 			Desc:     "update role",
 		},
@@ -368,7 +417,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/api/update/:roleId",
+			Path:     "/v1/api/update/:id",
 			Category: "api",
 			Desc:     "update api",
 		},
@@ -380,57 +429,75 @@ func Data() {
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/api/all/category/:roleId",
+			Path:     "/v1/api/all/category/:id",
 			Category: "api",
 			Desc:     "get all api by role id",
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/role/menus/update/:roleId",
-			Category: "role",
-			Desc:     "update role menus",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/role/apis/update/:roleId",
-			Category: "role",
+			Path:     "/v1/api/role/update/:id",
+			Category: "api",
 			Desc:     "update role apis",
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/workflow/list",
-			Category: "workflow",
-			Desc:     "find workflows",
+			Path:     "/v1/fsm/list",
+			Category: "fsm",
+			Desc:     "find fsm machines",
 		},
 		{
 			Method:   "POST",
-			Path:     "/v1/workflow/create",
-			Category: "workflow",
-			Desc:     "create workflow",
+			Path:     "/v1/fsm/create",
+			Category: "fsm",
+			Desc:     "create fsm machine",
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/workflow/update/:roleId",
-			Category: "workflow",
-			Desc:     "update workflow",
-		},
-		{
-			Method:   "DELETE",
-			Path:     "/v1/workflow/delete/batch",
-			Category: "workflow",
-			Desc:     "batch delete workflow",
+			Path:     "/v1/fsm/update/:id",
+			Category: "fsm",
+			Desc:     "update fsm machine",
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/workflow/line/list",
-			Category: "workflow",
-			Desc:     "find workflow lines",
+			Path:     "/v1/fsm/approving/list",
+			Category: "fsm",
+			Desc:     "find fsm pending approve logs",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/fsm/log/track",
+			Category: "fsm",
+			Desc:     "find fsm log history track",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/fsm/submitter/detail",
+			Category: "fsm",
+			Desc:     "get submitter fsm log detail",
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/workflow/line/update",
-			Category: "workflow",
-			Desc:     "update workflow line",
+			Path:     "/v1/fsm/submitter/detail",
+			Category: "fsm",
+			Desc:     "update submitter fsm log detail",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/fsm/approve",
+			Category: "fsm",
+			Desc:     "approved/refused fsm log",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/fsm/cancel",
+			Category: "fsm",
+			Desc:     "cancelled fsm log",
+		},
+		{
+			Method:   "DELETE",
+			Path:     "/v1/fsm/delete/batch",
+			Category: "fsm",
+			Desc:     "batch delete fsm log",
 		},
 		{
 			Method:   "GET",
@@ -446,7 +513,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/leave/update/:leaveId",
+			Path:     "/v1/leave/update/:id",
 			Category: "leave",
 			Desc:     "update leave",
 		},
@@ -455,24 +522,6 @@ func Data() {
 			Path:     "/v1/leave/delete/batch",
 			Category: "leave",
 			Desc:     "batch delete leave",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/leave/approval/list/:leaveId",
-			Category: "leave",
-			Desc:     "find leave approval logs",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/workflow/approving/list",
-			Category: "workflow",
-			Desc:     "find current user approvings",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/workflow/log/approval",
-			Category: "workflow",
-			Desc:     "approve workflow log",
 		},
 		{
 			Method:   "GET",
@@ -578,13 +627,13 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/machine/update/:machineId",
+			Path:     "/v1/machine/update/:id",
 			Category: "machine",
 			Desc:     "update machine",
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/machine/connect/:machineId",
+			Path:     "/v1/machine/connect/:id",
 			Category: "machine",
 			Desc:     "connect or refresh machine status",
 		},
@@ -608,7 +657,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/dict/update/:dictId",
+			Path:     "/v1/dict/update/:id",
 			Category: "dict",
 			Desc:     "update dict",
 		},
@@ -632,7 +681,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/dict/data/update/:dictDataId",
+			Path:     "/v1/dict/data/update/:id",
 			Category: "dict",
 			Desc:     "update dict data",
 		},
@@ -671,6 +720,15 @@ func Data() {
 				"/message/deleted/batch",
 				"/message/read/all",
 				"/message/ws",
+				"/leave/list",
+				"/leave/create",
+				"/leave/update/:id",
+				"/leave/delete/batch",
+				"/fsm/approving/list",
+				"/fsm/log/track",
+				"/fsm/submitter/detail",
+				"/fsm/approve",
+				"/fsm/cancel",
 			}
 			p := strings.TrimPrefix(api.Path, "/"+global.Conf.System.ApiVersion)
 			if utils.Contains(basePaths, p) {
@@ -692,6 +750,32 @@ func Data() {
 		s := service.New(nil)
 		s.Q.BatchCreateRoleCasbin(newRoleCasbins)
 	}
+
+	// 5. init leave fsm machine
+	// auto migrate fsm
+	f := fsm.New(global.Mysql, fsm.WithCtx(ctx))
+	f.CreateMachine(req.FsmCreateMachine{
+		Category:            req.NullUint(global.FsmCategoryLeave),
+		Name:                "Leave approval workflow",
+		SubmitterName:       "Leave Submitter",
+		SubmitterEditFields: "Desc,StartTime,EndTime",
+		Levels: []req.FsmCreateEvent{
+			{
+				Name:       "First Level",
+				Edit:       req.NullUint(constant.One),
+				EditFields: "StartTime,EndTime",
+				Refuse:     req.NullUint(constant.One),
+				Users:      req.IdsStr(fmt.Sprintf("%d", users[1].Id)),
+			},
+			{
+				Name:       "Second Level",
+				Edit:       req.NullUint(constant.One),
+				EditFields: "StartTime,EndTime",
+				Refuse:     req.NullUint(constant.One),
+				Roles:      req.IdsStr(fmt.Sprintf("%d", roles[0].Id)),
+			},
+		},
+	})
 }
 
 var menuTotal = 0
@@ -726,7 +810,8 @@ func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.S
 			menu.Component = ""
 			menu.Breadcrumb = &noBreadcrumb
 		}
-		if len(menu.RoleIds) == 0 {
+		// add super role
+		if !utils.ContainsUint(menu.RoleIds, superRole.Id) {
 			menu.RoleIds = append(menu.RoleIds, superRole.Id)
 		}
 		newMenus[i] = menu
