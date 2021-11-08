@@ -33,7 +33,6 @@ func Routers() *gin.Engine {
 		),
 		middleware.Cors,
 		middleware.RequestId(),
-		middleware.Exception(),
 		middleware.AccessLog(
 			middleware.WithAccessLogLogger(global.Log),
 			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPrefix),
@@ -48,6 +47,7 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogSave(v1.OperationLogSave),
 			middleware.WithOperationLogFindApi(v1.OperationLogFindApi),
 		),
+		middleware.Exception(),
 		middleware.Transaction(
 			middleware.WithTransactionDbNoTx(global.Mysql),
 			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),
@@ -123,7 +123,7 @@ func Routers() *gin.Engine {
 	nr.Fsm()
 	nr.Machine()
 	nr.Menu()
-	nr.Message()
+	// nr.Message()
 	nr.OperationLog()
 	nr.Upload()
 
