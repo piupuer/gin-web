@@ -114,14 +114,14 @@ func Data() {
 					Component: "/system/api",
 				},
 				{
-					Name:      "operation-log",
+					Name:      "operationLog",
 					Title:     "Operation Logs",
 					Icon:      "log",
 					Path:      "operation-log",
 					Component: "/system/operation-log",
 				},
 				{
-					Name:      "message-push",
+					Name:      "messagePush",
 					Title:     "Message Push",
 					Icon:      "push",
 					Path:      "message-push",
@@ -146,7 +146,7 @@ func Data() {
 			Path:  "/fsm",
 			Children: []ms.SysMenu{
 				{
-					Name:      "machine",
+					Name:      "fsm",
 					Title:     "Machines",
 					Icon:      "fsm-machine",
 					Path:      "index",
@@ -314,6 +314,12 @@ func Data() {
 			Desc:     "find users",
 		},
 		{
+			Method:   "GET",
+			Path:     "/v1/user/list/:ids",
+			Category: "user",
+			Desc:     "find users by ids",
+		},
+		{
 			Method:   "PUT",
 			Path:     "/v1/user/changePwd",
 			Category: "user",
@@ -384,6 +390,12 @@ func Data() {
 			Path:     "/v1/role/list",
 			Category: "role",
 			Desc:     "find roles",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/role/list/:ids",
+			Category: "role",
+			Desc:     "find roles by ids",
 		},
 		{
 			Method:   "POST",

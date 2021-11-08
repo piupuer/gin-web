@@ -27,7 +27,7 @@ func (my MysqlService) FindLeave(r *request.Leave) []models.Leave {
 	}
 	desc := strings.TrimSpace(r.Desc)
 	if desc != "" {
-		q.Where("desc LIKE ?", fmt.Sprintf("%%%s%%", desc))
+		q.Where("`desc` LIKE ?", fmt.Sprintf("%%%s%%", desc))
 	}
 	my.Q.FindWithPage(q, &r.Page, &list)
 	return list
