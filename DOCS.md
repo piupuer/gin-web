@@ -4,4 +4,6 @@
 ## [nginx配置反向代理去除端口](https://github.com/piupuer/gin-web/blob/dev/docs/nginx.md)
 ## [redis一主多从哨兵模式配置](https://github.com/piupuer/gin-web/blob/dev/docs/redis-sentinel.md)
 ## [loki配置和使用](https://github.com/piupuer/gin-web/blob/dev/docs/loki.md)
+## [Fsm状态机使用](https://github.com/piupuer/gin-web/blob/dev/docs/fsm.md)
+## [Iconfont使用](https://github.com/piupuer/gin-web/blob/dev/docs/iconfont.md)
 ## 分布式定时任务配置和使用(筹备中)
