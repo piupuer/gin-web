@@ -123,7 +123,7 @@ func Routers() *gin.Engine {
 	nr.Fsm()
 	nr.Machine()
 	nr.Menu()
-	// nr.Message()
+	nr.Message()
 	nr.OperationLog()
 	nr.Upload()
 
