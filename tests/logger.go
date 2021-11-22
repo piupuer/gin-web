@@ -3,6 +3,7 @@ package tests
 import (
 	"gin-web/pkg/global"
 	"github.com/natefinch/lumberjack"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/logger"
 	"go.uber.org/zap/zapcore"
 )
@@ -12,7 +13,7 @@ func Logger() {
 	if global.Conf.Logs.Level <= zapcore.DebugLevel {
 		colorful = true
 	}
-	if global.Mode == global.Prod {
+	if global.Mode == constant.Prod {
 		colorful = false
 	}
 	global.Log = logger.New(

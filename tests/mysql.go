@@ -63,5 +63,5 @@ func autoMigrate() {
 		new(models.SysRole),
 	)
 	// auto migrate fsm
-	fsm.Migrate(global.Mysql, fsm.WithContext(ctx))
+	fsm.Migrate(global.Mysql, fsm.WithCtx(ctx))
 }
