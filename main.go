@@ -8,13 +8,12 @@ import (
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/query"
 	"net/http"
-	"runtime"
-	"strings"
-
 	_ "net/http/pprof"
 	"os"
 	"os/signal"
+	"runtime"
 	"runtime/debug"
+	"strings"
 	"syscall"
 	"time"
 )

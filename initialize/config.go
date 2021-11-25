@@ -8,6 +8,7 @@ import (
 	"github.com/gobuffalo/packr/v2"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/utils"
+	"github.com/pkg/errors"
 	"github.com/spf13/viper"
 	"os"
 	"strings"
@@ -70,7 +71,7 @@ func Config(c context.Context) {
 	}
 	// unmarshal to global.Conf
 	if err := v.Unmarshal(&global.Conf); err != nil {
-		panic(fmt.Sprintf("initialize config failed: %v, config env: %s_CONF: %s", err, global.ProEnvName, global.ConfBox.ConfEnv))
+		panic(errors.Wrapf(err, "initialize config failed, config env: %s_CONF: %s", global.ProEnvName, global.ConfBox.ConfEnv))
 	}
 
 	// read env to global.Conf: config.yml system.port => CFG_SYSTEM_PORT
@@ -126,6 +127,6 @@ func readConfig(v *viper.Viper, configFile string) {
 		panic(fmt.Sprintf("initialize config failed, config env: %s_CONF: %s", global.ProEnvName, global.ConfBox.ConfEnv))
 	}
 	if err := v.ReadConfig(bytes.NewReader(config)); err != nil {
-		panic(fmt.Sprintf("initialize config failed: %v, config env: %s_CONF: %s", err, global.ProEnvName, global.ConfBox.ConfEnv))
+		panic(errors.Wrapf(err, "initialize config failed, config env: %s_CONF: %s", global.ProEnvName, global.ConfBox.ConfEnv))
 	}
 }

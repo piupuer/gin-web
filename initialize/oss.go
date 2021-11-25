@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"github.com/piupuer/go-helper/pkg/oss"
+	"github.com/pkg/errors"
 	"time"
 )
 
@@ -41,7 +42,7 @@ func Minio() {
 
 	minio, err := oss.NewMinio(ops...)
 	if err != nil {
-		panic(fmt.Sprintf("initialize object storage minio failed: %v", err))
+		panic(errors.Wrap(err, "initialize object storage minio failed"))
 	}
 
 	minio.MakeBucket(ctx, global.Conf.Upload.Minio.Bucket)

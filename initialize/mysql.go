@@ -9,6 +9,7 @@ import (
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/binlog"
 	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"
@@ -19,7 +20,7 @@ import (
 func Mysql() {
 	cfg, err := m.ParseDSN(global.Conf.Mysql.Uri)
 	if err != nil {
-		panic(fmt.Sprintf("initialize mysql failed: %v", err))
+		panic(errors.Wrap(err, "initialize mysql failed"))
 	}
 	global.Conf.Mysql.DSN = *cfg
 
@@ -57,7 +58,7 @@ func Mysql() {
 		Logger:      l,
 	})
 	if err != nil {
-		panic(fmt.Sprintf("initialize mysql failed: %v", err))
+		panic(errors.Wrap(err, "initialize mysql failed"))
 	}
 	init = true
 	global.Mysql = db

@@ -11,6 +11,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
+	"github.com/pkg/errors"
 	uuid "github.com/satori/go.uuid"
 	"strings"
 )
@@ -52,7 +53,7 @@ func (my MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, erro
 		Uuid:     fsmUuid,
 	})
 	if err != nil {
-		return nil, err
+		return nil, errors.WithStack(err)
 	}
 	return f.FindLogTrack(logs)
 }
@@ -69,7 +70,7 @@ func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
 		SubmitterRoleId: r.User.RoleId,
 	})
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 
 	// create leave to db
@@ -89,7 +90,7 @@ func (my MysqlService) UpdateLeaveById(id uint, r request.UpdateLeave, u models.
 		Where("id = ?", id).
 		First(&leave).Error
 	if err != nil {
-		return
+		return errors.WithStack(err)
 	}
 	// check edit permission
 	err = my.Q.FsmCheckEditLogDetailPermission(req.FsmCheckEditLogDetailPermission{
@@ -100,11 +101,11 @@ func (my MysqlService) UpdateLeaveById(id uint, r request.UpdateLeave, u models.
 		Fields:         []string{"desc", "start_time", "end_time"},
 	})
 	if err != nil {
-		return
+		return errors.WithStack(err)
 	}
 	// update
 	err = my.Q.UpdateById(id, r, new(models.Leave))
-	return
+	return errors.WithStack(err)
 }
 
 // query leave fsm uuid by id
@@ -136,7 +137,7 @@ func (my MysqlService) ApprovedLeaveById(r request.ApproveLeave) (err error) {
 		Where("id = ?", r.Id)
 	err = q.First(&leave).Error
 	if err != nil {
-		return err
+		return errors.WithStack(err)
 	}
 	f := fsm.New(my.Q.Tx)
 	var log *resp.FsmApprovalLog
@@ -148,7 +149,7 @@ func (my MysqlService) ApprovedLeaveById(r request.ApproveLeave) (err error) {
 		Approved:       req.NullUint(r.Approved),
 	})
 	if err != nil {
-		return
+		return errors.WithStack(err)
 	}
 	// log status transition
 	return my.LeaveTransition(*log)
@@ -168,7 +169,7 @@ func (my MysqlService) DeleteLeaveByIds(ids []uint, u models.SysUser) (err error
 			Uuids:          list,
 		})
 		if err != nil {
-			return
+			return errors.WithStack(err)
 		}
 	}
 	return my.Q.DeleteByIds(ids, new(models.Leave))
@@ -217,7 +218,7 @@ func (my MysqlService) LeaveTransition(logs ...resp.FsmApprovalLog) (err error) 
 			Where("fsm_uuid IN (?)", uuids).
 			Update("status", status).Error
 		if err != nil {
-			return
+			return errors.WithStack(err)
 		}
 	}
 	return nil
@@ -272,7 +273,7 @@ func (my MysqlService) UpdateLeaveFsmDetail(detail req.UpdateFsmSubmitterDetail)
 		q.First(&leave)
 		if leave.Id > 0 {
 			err = q.Updates(&m).Error
-			return
+			return errors.WithStack(err)
 		}
 	}
 	return nil

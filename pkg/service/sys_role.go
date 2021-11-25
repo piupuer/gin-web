@@ -5,6 +5,7 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/request"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -56,7 +57,7 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	oldCasbins := make([]ms.SysRoleCasbin, 0)
 	for _, v := range roles {
 		if len(v.Users) > 0 {
-			return fmt.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users))
+			return errors.WithStack(fmt.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users)))
 		}
 		oldCasbins = append(oldCasbins, my.Q.FindRoleCasbin(ms.SysRoleCasbin{
 			Keyword: v.Keyword,
@@ -68,6 +69,7 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	}
 	if len(newIds) > 0 {
 		err = my.Q.DeleteByIds(newIds, new(models.SysRole))
+		err = errors.WithStack(err)
 	}
 	return
 }
