@@ -7,6 +7,7 @@ import (
 	"gin-web/pkg/global"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/pkg/errors"
 	"net/http"
 	_ "net/http/pprof"
 	"os"
@@ -57,7 +58,7 @@ func main() {
 		// listen pprof port
 		global.Log.Info(ctx, "[%s]debug pprof is running at %s:%d", global.ProName, host, global.Conf.System.PprofPort)
 		if err := http.ListenAndServe(fmt.Sprintf("%s:%d", host, global.Conf.System.PprofPort), nil); err != nil {
-			global.Log.Error(ctx, "[%s]listen pprof error: %v", global.ProName, err)
+			global.Log.Error(ctx, "[%s]listen pprof err: %+v", global.ProName, errors.WithStack(err))
 		}
 	}()
 
@@ -65,7 +66,7 @@ func main() {
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			global.Log.Error(ctx, "[%s]listen error: %v", global.ProName, err)
+			global.Log.Error(ctx, "[%s]listen err: %+v", global.ProName, errors.WithStack(err))
 		}
 	}()
 
