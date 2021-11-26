@@ -3,6 +3,7 @@
 ## 后端
 
 ### 1. 安装Golang环境
+
 至少1.14版本, [点我下载](https://golang.org/dl/), 具体安装步骤不再此处过多描述
 
 ### 2. 下载项目到本地
@@ -12,6 +13,7 @@ git clone https://github.com/piupuer/gin-web
 ```
 
 ### 3. 使用国内代理(加速依赖下载, 能翻也可以不配置)
+
 #### 3.1. 只针对当前会话生效
 
 ```bash
@@ -41,8 +43,8 @@ cd gin-web/conf
 cat config.dev.yml
 ```
 
-
 ### 5. 运行
+
 #### 5.1. 命令行
 
 ```bash
@@ -53,14 +55,15 @@ go run main.go
 ```
 
 #### 5.2. 开发工具(以Idea为例)
+
 ##### 5.2.1. 配置项目(配置好后会自动下载依赖)
 
-GOROOT: 
+GOROOT:
 <p align="center">
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/idea_goroot.jpeg?raw=true" width="600" alt="Idea中配置GOROOT" />
 </p>
 
-GOPROXY(能翻也可以不配置): 
+GOPROXY(能翻也可以不配置):
 <p align="center">
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/idea_goproxy.jpeg?raw=true" width="600" alt="Idea中配置Golang国内代理" />
 </p>
@@ -77,10 +80,10 @@ GOPROXY(能翻也可以不配置):
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/idea_run_success.jpeg?raw=true" width="600" alt="Idea中运行main.go成功" />
 </p>
 
-
 ## 前端
 
 ### 1. 安装Npm环境
+
 node自带npm, [点我下载](https://nodejs.org/en/download/), 具体安装步骤不再此处过多描述
 
 ### 2. 下载项目到本地
@@ -114,6 +117,7 @@ VUE_APP_BASE_WS = 'ws://127.0.0.1:10000/api/v1'
 ```bash
 npm run serve
 ```
+
 运行成功会出现App running at:
 <p align="center">
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/vue_run_success.jpeg?raw=true" width="600" alt="运行vue成功" />

@@ -20,7 +20,7 @@ chmod +x control.sh
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/loki/run.jpeg?raw=true" width="600" alt="启动loki" />
 </p>
 
-等待初始化完成即可: 
+等待初始化完成即可:
 <p align="center">
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/loki/ps.jpeg?raw=true" width="600" alt="查看容器运行状态" />
 </p>
@@ -43,7 +43,7 @@ chmod +x control.sh
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/loki/grafana_add_source.jpeg?raw=true" width="600" alt="添加source" />
 </p>
 
-选择loki: 
+选择loki:
 <p align="center">
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/loki/grafana_select_loki.jpeg?raw=true" width="600" alt="选择loki" />
 </p>
@@ -60,7 +60,7 @@ chmod +x control.sh
 
 ### 查看日志
 
-进入explore: 
+进入explore:
 <p align="center">
 <img src="https://github.com/piupuer/gin-web-images/blob/master/docs/loki/grafana_explore.jpeg?raw=true" width="600" alt="进入explore" />
 </p>

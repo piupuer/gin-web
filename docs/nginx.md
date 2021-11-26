@@ -124,8 +124,8 @@ http {
 ```
 
 > 特别注意这两行不能少  
-  include /etc/nginx/conf.d/*.conf;  
-  include /etc/nginx/sites-enabled/*;  
+include /etc/nginx/conf.d/*.conf;  
+include /etc/nginx/sites-enabled/*;
 
 ### 3. 配置前后端虚拟主机映射
 
