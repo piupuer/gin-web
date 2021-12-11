@@ -21,6 +21,14 @@ import (
 
 var ctx = query.NewRequestId(nil, constant.MiddlewareRequestIdCtxKey)
 
+// @title Gin Web
+// @version 1.2.1
+// @description A simple RBAC admin system written by golang
+// @license.name MIT
+// @license.url https://github.com/piupuer/gin-web/blob/dev/LICENSE
+// @securityDefinitions.apikey Bearer
+// @in header
+// @name Authorization
 func main() {
 	defer func() {
 		if err := recover(); err != nil {

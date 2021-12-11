@@ -10,6 +10,15 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
+// FindLeave
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Leave
+// @Description FindLeave
+// @Param params query request.Leave true "params"
+// @Router /leave/list [GET]
 func FindLeave(c *gin.Context) {
 	var r request.Leave
 	req.ShouldBind(c, &r)
@@ -20,6 +29,15 @@ func FindLeave(c *gin.Context) {
 	resp.SuccessWithPageData(list, &[]response.Leave{}, r.Page)
 }
 
+// CreateLeave
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Leave
+// @Description CreateLeave
+// @Param params body request.CreateLeave true "params"
+// @Router /leave/create [POST]
 func CreateLeave(c *gin.Context) {
 	user := GetCurrentUser(c)
 	var r request.CreateLeave
@@ -32,6 +50,16 @@ func CreateLeave(c *gin.Context) {
 	resp.Success()
 }
 
+// UpdateLeaveById
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Leave
+// @Description UpdateLeaveById
+// @Param id path uint true "id"
+// @Param params body request.UpdateLeave true "params"
+// @Router /leave/update/{id} [PATCH]
 func UpdateLeaveById(c *gin.Context) {
 	var r request.UpdateLeave
 	req.ShouldBind(c, &r)
@@ -43,6 +71,15 @@ func UpdateLeaveById(c *gin.Context) {
 	resp.Success()
 }
 
+// BatchDeleteLeaveByIds
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Leave
+// @Description BatchDeleteLeaveByIds
+// @Param ids body req.Ids true "ids"
+// @Router /leave/delete/batch [DELETE]
 func BatchDeleteLeaveByIds(c *gin.Context) {
 	var r req.Ids
 	req.ShouldBind(c, &r)

@@ -12,6 +12,15 @@ import (
 	"github.com/piupuer/go-helper/pkg/utils"
 )
 
+// FindRoleByIds
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Role
+// @Description FindRoleByIds
+// @Param ids path string true "ids"
+// @Router /role/list/{ids} [GET]
 func FindRoleByIds(c *gin.Context) {
 	ids := req.UintIds(c)
 	s := cache_service.New(c)
@@ -19,6 +28,15 @@ func FindRoleByIds(c *gin.Context) {
 	resp.SuccessWithData(list, &[]response.Role{})
 }
 
+// FindRole
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Role
+// @Description FindRole
+// @Param params query request.Role true "params"
+// @Router /role/list [GET]
 func FindRole(c *gin.Context) {
 	var r request.Role
 	req.ShouldBind(c, &r)
@@ -31,6 +49,15 @@ func FindRole(c *gin.Context) {
 	resp.SuccessWithPageData(list, &[]response.Role{}, r.Page)
 }
 
+// CreateRole
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Role
+// @Description CreateRole
+// @Param params body request.CreateRole true "params"
+// @Router /role/create [POST]
 func CreateRole(c *gin.Context) {
 	user := GetCurrentUser(c)
 	var r request.CreateRole
@@ -47,6 +74,16 @@ func CreateRole(c *gin.Context) {
 	resp.Success()
 }
 
+// UpdateRoleById
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Role
+// @Description UpdateRoleById
+// @Param id path uint true "id"
+// @Param params body request.UpdateRole true "params"
+// @Router /role/update/{id} [PATCH]
 func UpdateRoleById(c *gin.Context) {
 	var r request.UpdateRole
 	req.ShouldBind(c, &r)
@@ -79,6 +116,15 @@ func RouterFindRoleKeywordByRoleIds(c *gin.Context, roleIds []uint) []string {
 	return keywords
 }
 
+// BatchDeleteRoleByIds
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags Role
+// @Description BatchDeleteRoleByIds
+// @Param ids body req.Ids true "ids"
+// @Router /role/delete/batch [DELETE]
 func BatchDeleteRoleByIds(c *gin.Context) {
 	var r req.Ids
 	req.ShouldBind(c, &r)

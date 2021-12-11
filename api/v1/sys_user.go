@@ -16,6 +16,14 @@ import (
 	"strings"
 )
 
+// GetUserInfo
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description GetUserInfo
+// @Router /user/info [GET]
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
 	oldCache, ok := CacheGetUserInfo(c, user.Id)
@@ -35,6 +43,15 @@ func GetUserInfo(c *gin.Context) {
 	resp.SuccessWithData(rp)
 }
 
+// FindUser
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description FindUser
+// @Param params query request.User true "params"
+// @Router /user/list [GET]
 func FindUser(c *gin.Context) {
 	var r request.User
 	req.ShouldBind(c, &r)
@@ -45,6 +62,15 @@ func FindUser(c *gin.Context) {
 	resp.SuccessWithPageData(list, &[]response.User{}, r.Page)
 }
 
+// ChangePwd
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description ChangePwd
+// @Param params body request.ChangePwd true "params"
+// @Router /user/changePwd [PUT]
 func ChangePwd(c *gin.Context) {
 	var r request.ChangePwd
 	req.ShouldBind(c, &r)
@@ -104,6 +130,15 @@ func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	}
 }
 
+// FindUserByIds
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description FindUserByIds
+// @Param ids path string true "ids"
+// @Router /user/list/{ids} [GET]
 func FindUserByIds(c *gin.Context) {
 	ids := req.UintIds(c)
 	s := cache_service.New(c)
@@ -133,6 +168,15 @@ func RouterFindRoleByIds(c *gin.Context, roleIds []uint) []ms.Role {
 	return newRoles
 }
 
+// CreateUser
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description CreateUser
+// @Param params body request.CreateUser true "params"
+// @Router /user/create [POST]
 func CreateUser(c *gin.Context) {
 	var r request.CreateUser
 	req.ShouldBind(c, &r)
@@ -145,6 +189,16 @@ func CreateUser(c *gin.Context) {
 	resp.Success()
 }
 
+// UpdateUserById
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description UpdateUserById
+// @Param id path uint true "id"
+// @Param params body request.UpdateUser true "params"
+// @Router /user/update/{id} [PATCH]
 func UpdateUserById(c *gin.Context) {
 	var r request.UpdateUser
 	req.ShouldBind(c, &r)
@@ -178,6 +232,15 @@ func UpdateUserById(c *gin.Context) {
 	resp.Success()
 }
 
+// BatchDeleteUserByIds
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description BatchDeleteUserByIds
+// @Param ids body req.Ids true "ids"
+// @Router /user/delete/batch [DELETE]
 func BatchDeleteUserByIds(c *gin.Context) {
 	var r req.Ids
 	req.ShouldBind(c, &r)

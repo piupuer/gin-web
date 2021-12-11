@@ -30,6 +30,7 @@
 - `testing` 测试标准包, 快速进行单元测试
 - `Grafana Loki` 轻量日志收集工具loki, 支持分布式日志收集(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
 - `Minio` 轻量对象存储服务(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
+- `Swagger` Swagger V2接口文档
 
 ## 中间件
 

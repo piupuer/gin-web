@@ -24,7 +24,7 @@ type ChangePwd struct {
 }
 
 type User struct {
-	CurrentRole  models.SysRole `json:"currentRole"`
+	CurrentRole  models.SysRole `json:"currentRole" swaggerignore:"true"`
 	Username     string         `json:"username" form:"username"`
 	Mobile       string         `json:"mobile" form:"mobile"`
 	Avatar       string         `json:"avatar" form:"avatar"`

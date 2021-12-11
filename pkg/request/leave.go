@@ -16,10 +16,10 @@ type Leave struct {
 }
 
 type CreateLeave struct {
-	User      models.SysUser          `json:"user"`
+	User      models.SysUser          `json:"user" swaggerignore:"true"`
 	Desc      string                  `json:"desc" validate:"required"`
-	StartTime carbon.ToDateTimeString `json:"startTime"`
-	EndTime   carbon.ToDateTimeString `json:"endTime"`
+	StartTime carbon.ToDateTimeString `json:"startTime" swaggertype:"string"`
+	EndTime   carbon.ToDateTimeString `json:"endTime" swaggertype:"string"`
 }
 
 func (s CreateLeave) FieldTrans() map[string]string {
@@ -30,13 +30,13 @@ func (s CreateLeave) FieldTrans() map[string]string {
 
 type UpdateLeave struct {
 	Desc      *string                  `json:"desc"`
-	StartTime *carbon.ToDateTimeString `json:"startTime"`
-	EndTime   *carbon.ToDateTimeString `json:"endTime"`
+	StartTime *carbon.ToDateTimeString `json:"startTime" swaggertype:"string"`
+	EndTime   *carbon.ToDateTimeString `json:"endTime" swaggertype:"string"`
 }
 
 type ApproveLeave struct {
 	Id          uint           `json:"id"`
 	AfterStatus uint           `json:"afterStatus"`
 	Approved    uint           `json:"approved"`
-	User        models.SysUser `json:"user"`
+	User        models.SysUser `json:"user" swaggerignore:"true"`
 }

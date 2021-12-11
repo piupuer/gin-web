@@ -573,7 +573,7 @@ func Data() {
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/message/all",
+			Path:     "/v1/message/list",
 			Category: "message",
 			Desc:     "find messages",
 		},
@@ -726,7 +726,7 @@ func Data() {
 				"/base/idempotenceToken",
 				"/user/info",
 				"/menu/tree",
-				"/message/all",
+				"/message/list",
 				"/message/unRead/count",
 				"/message/read/batch",
 				"/message/deleted/batch",

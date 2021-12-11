@@ -3,6 +3,7 @@ package initialize
 import (
 	"gin-web/api"
 	v1 "gin-web/api/v1"
+	"gin-web/docs/swagger"
 	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
@@ -13,6 +14,8 @@ import (
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/query"
 	hr "github.com/piupuer/go-helper/router"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func Routers() *gin.Engine {
@@ -80,6 +83,16 @@ func Routers() *gin.Engine {
 
 	// set path prefix
 	v1Group := apiGroup.Group(global.Conf.System.ApiVersion)
+	// set swagger
+	swagger.SwaggerInfo.Version = global.Conf.System.ApiVersion
+	swagger.SwaggerInfo.BasePath = v1Group.BasePath()
+	r.GET(
+		"/swagger/*any",
+		ginSwagger.WrapHandler(
+			swaggerFiles.Handler,
+			ginSwagger.DocExpansion("none"),
+		),
+	)
 
 	// init default routers
 	nr := hr.NewRouter(
