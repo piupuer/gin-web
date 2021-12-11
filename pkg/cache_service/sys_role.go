@@ -22,31 +22,31 @@ func (rd RedisService) FindRoleIdBySort(currentRoleSort uint) []uint {
 	return roleIds
 }
 
-func (rd RedisService) FindRole(req *request.Role) []models.SysRole {
+func (rd RedisService) FindRole(r *request.Role) []models.SysRole {
 	if !rd.binlog {
-		return rd.mysql.FindRole(req)
+		return rd.mysql.FindRole(r)
 	}
 	list := make([]models.SysRole, 0)
 	q := rd.Q.
 		Table("sys_role").
 		Order("created_at DESC").
-		Where("sort", ">=", req.CurrentRoleSort)
-	name := strings.TrimSpace(req.Name)
+		Where("sort", ">=", r.CurrentRoleSort)
+	name := strings.TrimSpace(r.Name)
 	if name != "" {
 		q.Where("name", "contains", name)
 	}
-	keyword := strings.TrimSpace(req.Keyword)
+	keyword := strings.TrimSpace(r.Keyword)
 	if keyword != "" {
 		q.Where("keyword", "contains", keyword)
 	}
-	if req.Status != nil {
-		if *req.Status > 0 {
+	if r.Status != nil {
+		if *r.Status > 0 {
 			q.Where("status", "=", 1)
 		} else {
 			q.Where("status", "=", 0)
 		}
 	}
-	rd.Q.FindWithPage(q, &req.Page, &list)
+	rd.Q.FindWithPage(q, &r.Page, &list)
 	return list
 }
 

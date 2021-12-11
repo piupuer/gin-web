@@ -22,28 +22,28 @@ func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) []uint {
 	return roleIds
 }
 
-func (my MysqlService) FindRole(req *request.Role) []models.SysRole {
+func (my MysqlService) FindRole(r *request.Role) []models.SysRole {
 	list := make([]models.SysRole, 0)
 	q := my.Q.Tx.
 		Model(&models.SysRole{}).
 		Order("created_at DESC").
-		Where("sort >= ?", req.CurrentRoleSort)
-	name := strings.TrimSpace(req.Name)
+		Where("sort >= ?", r.CurrentRoleSort)
+	name := strings.TrimSpace(r.Name)
 	if name != "" {
 		q.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
 	}
-	keyword := strings.TrimSpace(req.Keyword)
+	keyword := strings.TrimSpace(r.Keyword)
 	if keyword != "" {
 		q.Where("keyword LIKE ?", fmt.Sprintf("%%%s%%", keyword))
 	}
-	if req.Status != nil {
-		if *req.Status > 0 {
+	if r.Status != nil {
+		if *r.Status > 0 {
 			q.Where("status = ?", 1)
 		} else {
 			q.Where("status = ?", 0)
 		}
 	}
-	my.Q.FindWithPage(q, &req.Page, &list)
+	my.Q.FindWithPage(q, &r.Page, &list)
 	return list
 }
 
