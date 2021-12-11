@@ -27,7 +27,8 @@ func Logger() {
 				MaxAge:     global.Conf.Logs.MaxAge,
 				Compress:   global.Conf.Logs.Compress,
 			},
-			LogPath: global.Conf.Logs.Path,
+			LogPath:   global.Conf.Logs.Path,
+			LogSuffix: ".log",
 		}),
 	)
 	global.Log.Debug(ctx, "initialize logger success")
