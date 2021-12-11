@@ -1,30 +1,36 @@
 package cache_service
 
 import (
-	"errors"
 	"gin-web/models"
 	"gin-web/pkg/request"
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
+	"github.com/pkg/errors"
 	"strings"
 )
 
 // user login check
-func (rd RedisService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
+func (rd RedisService) LoginCheck(user *models.SysUser) (u models.SysUser, err error) {
 	if !rd.binlog {
 		return rd.mysql.LoginCheck(user)
 	}
-	var u models.SysUser
 	// Does the user exist
-	err := rd.Q.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
+	err = rd.Q.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
 	if err != nil {
-		return nil, errors.New(resp.LoginCheckErrorMsg)
+		err = errors.Errorf(resp.LoginCheckErrorMsg)
+		return
 	}
 	// Verify password
 	if ok := utils.ComparePwd(user.Password, u.Password); !ok {
-		return nil, errors.New(resp.LoginCheckErrorMsg)
+		err = rd.mysql.UserWrongPwd(u)
+		if err != nil {
+			return
+		}
+		err = errors.Errorf(resp.LoginCheckErrorMsg)
+		return
 	}
-	return &u, err
+	err = rd.mysql.UserLastLogin(user.Id)
+	return
 }
 
 func (rd RedisService) FindUser(r *request.User) []models.SysUser {

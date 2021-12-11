@@ -57,7 +57,7 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	oldCasbins := make([]ms.SysRoleCasbin, 0)
 	for _, v := range roles {
 		if len(v.Users) > 0 {
-			return errors.WithStack(fmt.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users)))
+			return errors.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users))
 		}
 		oldCasbins = append(oldCasbins, my.Q.FindRoleCasbin(ms.SysRoleCasbin{
 			Keyword: v.Keyword,

@@ -4,21 +4,66 @@ import (
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
+	"github.com/golang-module/carbon"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
+	"github.com/pkg/errors"
 	"strings"
+	"time"
 )
 
-func (my MysqlService) LoginCheck(user *models.SysUser) (*models.SysUser, error) {
-	var u models.SysUser
-	err := my.Q.Tx.Preload("Role").Where("username = ?", user.Username).First(&u).Error
+func (my MysqlService) LoginCheck(user *models.SysUser) (u models.SysUser, err error) {
+	err = my.Q.Tx.Preload("Role").Where("username = ?", user.Username).First(&u).Error
 	if err != nil {
-		return nil, fmt.Errorf(resp.LoginCheckErrorMsg)
+		err = errors.Errorf(resp.LoginCheckErrorMsg)
+		return
+	}
+	timestamp := time.Now().Unix()
+	if u.Locked == constant.One && (u.LockExpire == 0 || timestamp < u.LockExpire) {
+		err = errors.Errorf(resp.UserLockedMsg)
+		return
 	}
 	if ok := utils.ComparePwd(user.Password, u.Password); !ok {
-		return nil, fmt.Errorf(resp.LoginCheckErrorMsg)
+		err = my.UserWrongPwd(u)
+		if err != nil {
+			return
+		}
+		err = errors.Errorf(resp.LoginCheckErrorMsg)
+		return
 	}
-	return &u, err
+	err = my.UserLastLogin(user.Id)
+	return
+}
+
+func (my MysqlService) UserWrongPwd(user models.SysUser) (err error) {
+	// do not use transaction
+	q := my.Q.Db.
+		Model(&models.SysUser{}).
+		Where("id = ?", user.Id)
+	m := make(map[string]interface{})
+	newWrong := user.Wrong + 1
+	if newWrong >= 10 {
+		m["locked"] = constant.One
+		if newWrong == 10 {
+			m["lock_expire"] = carbon.Now().AddDuration("10m").Time.Unix()
+		} else if newWrong == 20 {
+			m["lock_expire"] = carbon.Now().AddDuration("60m").Time.Unix()
+		} else if newWrong >= 30 {
+			m["lock_expire"] = 0
+		}
+	}
+	m["wrong"] = newWrong
+	err = q.Updates(&m).Error
+	return
+}
+
+func (my MysqlService) UserLastLogin(id uint) (err error) {
+	err = my.Q.Tx.
+		Model(&models.SysUser{}).
+		Where("id = ?", id).
+		Where("last_login = ?", carbon.Now()).Error
+	return
 }
 
 func (my MysqlService) FindUser(r *request.User) []models.SysUser {
@@ -58,6 +103,16 @@ func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
 	var err error
 	err = my.Q.Tx.Preload("Role").
 		Where("id = ?", id).
+		Where("status = ?", models.SysUserStatusEnable).
+		First(&user).Error
+	return user, err
+}
+
+func (my MysqlService) GetUserByUsername(username string) (models.SysUser, error) {
+	var user models.SysUser
+	var err error
+	err = my.Q.Tx.Preload("Role").
+		Where("username = ?", username).
 		Where("status = ?", models.SysUserStatusEnable).
 		First(&user).Error
 	return user, err

@@ -68,16 +68,13 @@ func Routers() *gin.Engine {
 		middleware.WithJwtTimeout(global.Conf.Jwt.Timeout),
 		middleware.WithJwtMaxRefresh(global.Conf.Jwt.MaxRefresh),
 		middleware.WithJwtPrivateBytes(global.Conf.Jwt.RSAPrivateBytes),
-		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, username, password string) (userId int64, pass bool) {
+		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, username, password string) (userId int64, err error) {
 			s := cache_service.New(c)
 			user, err := s.LoginCheck(&models.SysUser{
 				Username: username,
 				Password: password,
 			})
-			if err != nil {
-				return 0, false
-			}
-			return int64(user.Id), true
+			return int64(user.Id), err
 		}),
 	}
 
@@ -121,6 +118,7 @@ func Routers() *gin.Engine {
 			hv1.WithFindRoleKeywordByRoleIds(v1.RouterFindRoleKeywordByRoleIds),
 			hv1.WithFindRoleByIds(v1.RouterFindRoleByIds),
 			hv1.WithFindUserByIds(v1.RouterFindUserByIds),
+			hv1.WithGetUserLoginStatus(v1.GetUserLoginStatus),
 			hv1.WithFsmGetFsmSubmitterDetail(v1.GetLeaveFsmDetail),
 			hv1.WithFsmUpdateFsmSubmitterDetail(v1.UpdateLeaveFsmDetail),
 			hv1.WithUploadSaveDir(global.Conf.Upload.SaveDir),

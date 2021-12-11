@@ -130,6 +130,18 @@ func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	}
 }
 
+func GetUserLoginStatus(c *gin.Context, r *req.UserStatus) (err error) {
+	my := service.New(c)
+	var u models.SysUser
+	u, err = my.GetUserByUsername(r.Username)
+	if err != nil {
+		return nil
+	}
+	r.Locked = u.Locked
+	r.Wrong = u.Wrong
+	return
+}
+
 // FindUserByIds
 // @Security Bearer
 // @Accept json
