@@ -3,6 +3,7 @@ package cache_service
 import (
 	"gin-web/models"
 	"gin-web/pkg/request"
+	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
@@ -10,18 +11,18 @@ import (
 )
 
 // user login check
-func (rd RedisService) LoginCheck(user *models.SysUser) (u models.SysUser, err error) {
+func (rd RedisService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error) {
 	if !rd.binlog {
-		return rd.mysql.LoginCheck(user)
+		return rd.mysql.LoginCheck(r)
 	}
 	// Does the user exist
-	err = rd.Q.Table("sys_user").Preload("Role").Where("username", "=", user.Username).First(&u).Error
+	err = rd.Q.Table("sys_user").Preload("Role").Where("username", "=", r.Username).First(&u).Error
 	if err != nil {
 		err = errors.Errorf(resp.LoginCheckErrorMsg)
 		return
 	}
 	// Verify password
-	if ok := utils.ComparePwd(user.Password, u.Password); !ok {
+	if ok := utils.ComparePwd(r.Password, u.Password); !ok {
 		err = rd.mysql.UserWrongPwd(u)
 		if err != nil {
 			return
@@ -29,7 +30,7 @@ func (rd RedisService) LoginCheck(user *models.SysUser) (u models.SysUser, err e
 		err = errors.Errorf(resp.LoginCheckErrorMsg)
 		return
 	}
-	err = rd.mysql.UserLastLogin(user.Id)
+	err = rd.mysql.UserLastLogin(u.Id)
 	return
 }
 

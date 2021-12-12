@@ -20,6 +20,7 @@ func Logger() {
 		logger.WithLevel(logger.Level(global.Conf.Logs.Level)),
 		logger.WithColorful(colorful),
 		logger.WithLineNumPrefix(global.RuntimeRoot),
+		logger.WithKeepSourceDir(false),
 		logger.WithLumberjackOption(logger.LumberjackOption{
 			Logger: lumberjack.Logger{
 				MaxSize:    global.Conf.Logs.MaxSize,

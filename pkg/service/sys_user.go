@@ -6,6 +6,7 @@ import (
 	"gin-web/pkg/request"
 	"github.com/golang-module/carbon"
 	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
@@ -13,8 +14,8 @@ import (
 	"time"
 )
 
-func (my MysqlService) LoginCheck(user *models.SysUser) (u models.SysUser, err error) {
-	err = my.Q.Tx.Preload("Role").Where("username = ?", user.Username).First(&u).Error
+func (my MysqlService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error) {
+	err = my.Q.Tx.Preload("Role").Where("username = ?", r.Username).First(&u).Error
 	if err != nil {
 		err = errors.Errorf(resp.LoginCheckErrorMsg)
 		return
@@ -24,7 +25,16 @@ func (my MysqlService) LoginCheck(user *models.SysUser) (u models.SysUser, err e
 		err = errors.Errorf(resp.UserLockedMsg)
 		return
 	}
-	if ok := utils.ComparePwd(user.Password, u.Password); !ok {
+	flag := my.Q.UserNeedCaptcha(req.UserNeedCaptcha{
+		Wrong: u.Wrong,
+	})
+	if flag {
+		if !my.Q.VerifyCaptcha(r) {
+			err = errors.Errorf(resp.InvalidCaptchaMsg)
+			return
+		}
+	}
+	if ok := utils.ComparePwd(r.Password, u.Password); !ok {
 		err = my.UserWrongPwd(u)
 		if err != nil {
 			return
@@ -32,7 +42,7 @@ func (my MysqlService) LoginCheck(user *models.SysUser) (u models.SysUser, err e
 		err = errors.Errorf(resp.LoginCheckErrorMsg)
 		return
 	}
-	err = my.UserLastLogin(user.Id)
+	err = my.UserLastLogin(u.Id)
 	return
 }
 
@@ -59,10 +69,13 @@ func (my MysqlService) UserWrongPwd(user models.SysUser) (err error) {
 }
 
 func (my MysqlService) UserLastLogin(id uint) (err error) {
+	m := make(map[string]interface{})
+	m["wrong"] = constant.Zero
+	m["last_login"] = carbon.Now()
 	err = my.Q.Tx.
 		Model(&models.SysUser{}).
 		Where("id = ?", id).
-		Where("last_login = ?", carbon.Now()).Error
+		Updates(&m).Error
 	return
 }
 

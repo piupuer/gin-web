@@ -4,7 +4,6 @@ import (
 	"gin-web/api"
 	v1 "gin-web/api/v1"
 	"gin-web/docs/swagger"
-	"gin-web/models"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/router"
@@ -13,6 +12,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/piupuer/go-helper/pkg/req"
 	hr "github.com/piupuer/go-helper/router"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -68,12 +68,9 @@ func Routers() *gin.Engine {
 		middleware.WithJwtTimeout(global.Conf.Jwt.Timeout),
 		middleware.WithJwtMaxRefresh(global.Conf.Jwt.MaxRefresh),
 		middleware.WithJwtPrivateBytes(global.Conf.Jwt.RSAPrivateBytes),
-		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, username, password string) (userId int64, err error) {
+		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, r req.LoginCheck) (userId int64, err error) {
 			s := cache_service.New(c)
-			user, err := s.LoginCheck(&models.SysUser{
-				Username: username,
-				Password: password,
-			})
+			user, err := s.LoginCheck(r)
 			return int64(user.Id), err
 		}),
 	}
