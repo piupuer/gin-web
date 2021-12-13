@@ -786,6 +786,75 @@ func Data() {
 			},
 		},
 	})
+
+	// 6. init dict
+	dicts := []ms.SysDict{
+		{
+			Name: constant.UserLoginDict,
+			DictDatas: []ms.SysDictData{
+				{
+					Key:      constant.UserLoginCaptcha,
+					Val:      "3",
+					Addition: "The password is wrong for 3 times. You need to enter the verification code",
+				},
+			},
+		},
+		{
+			Name: constant.UserResetPwdDict,
+			DictDatas: []ms.SysDictData{
+				{
+					Key:      constant.UserResetPwdFirstLogin,
+					Val:      "1",
+					Addition: "Reset password for first login",
+				},
+				{
+					Key: constant.UserResetPwdAfterSomeTime,
+					Val: "3",
+					// Regular reset password(carbon time duration/month/year)
+					Addition: constant.UserResetPwdAfterSomeTimeAdditionMonth,
+				},
+				{
+					Key: constant.UserResetPwdWeakLen,
+					Val: "8",
+					// Minimum length of weak password rule
+					Addition: "The password must be at least 8 digits",
+				},
+				{
+					Key:      constant.UserResetPwdWeakContainsChinese,
+					Val:      "3",
+					Addition: "The password cannot contain Chinese",
+				},
+				{
+					Key:      constant.UserResetPwdWeakCaseSensitive,
+					Val:      "1",
+					Addition: "The password must contain upper and lower case letters such as (Aa, Bb)",
+				},
+				{
+					Key:      constant.UserResetPwdWeakSpecialChar,
+					Val:      "[`~!@#$%^&*()_\\-+=<>?:\"{}|,.\\/;'\\\\[\\]·~！@#￥%……&*\\-+={}|]",
+					Addition: "The password must contain special characters, such as (._+=)",
+				},
+				{
+					Key:      constant.UserResetPwdWeakContinuousNum,
+					Val:      "3",
+					Addition: "The password cannot contain more than 3 continuous num, such as (1234, 8765)",
+				},
+			},
+		},
+	}
+	newDicts := make([]ms.SysDict, 0)
+	for i, dict := range dicts {
+		id := uint(i + 1)
+		oldDict := ms.SysDict{}
+		err := db.Where("id = ?", id).First(&oldDict).Error
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			dict.Id = id
+			newDicts = append(newDicts, dict)
+		}
+	}
+	if len(newDicts) > 0 {
+		db.Create(&newDicts)
+	}
 }
 
 var menuTotal = 0
