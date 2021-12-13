@@ -3,11 +3,13 @@ package cache_service
 import (
 	"gin-web/models"
 	"gin-web/pkg/request"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"strings"
+	"time"
 )
 
 // user login check
@@ -19,6 +21,22 @@ func (rd RedisService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error
 	err = rd.Q.Table("sys_user").Preload("Role").Where("username", "=", r.Username).First(&u).Error
 	if err != nil {
 		err = errors.Errorf(resp.LoginCheckErrorMsg)
+		return
+	}
+	// Need captcha
+	flag := rd.mysql.Q.UserNeedCaptcha(req.UserNeedCaptcha{
+		Wrong: u.Wrong,
+	})
+	if flag {
+		if !rd.mysql.Q.VerifyCaptcha(r) {
+			err = errors.Errorf(resp.InvalidCaptchaMsg)
+			return
+		}
+	}
+	// Is locked
+	timestamp := time.Now().Unix()
+	if u.Locked == constant.One && (u.LockExpire == 0 || timestamp < u.LockExpire) {
+		err = errors.Errorf(resp.UserLockedMsg)
 		return
 	}
 	// Verify password

@@ -20,11 +20,6 @@ func (my MysqlService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error
 		err = errors.Errorf(resp.LoginCheckErrorMsg)
 		return
 	}
-	timestamp := time.Now().Unix()
-	if u.Locked == constant.One && (u.LockExpire == 0 || timestamp < u.LockExpire) {
-		err = errors.Errorf(resp.UserLockedMsg)
-		return
-	}
 	flag := my.Q.UserNeedCaptcha(req.UserNeedCaptcha{
 		Wrong: u.Wrong,
 	})
@@ -33,6 +28,11 @@ func (my MysqlService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error
 			err = errors.Errorf(resp.InvalidCaptchaMsg)
 			return
 		}
+	}
+	timestamp := time.Now().Unix()
+	if u.Locked == constant.One && (u.LockExpire == 0 || timestamp < u.LockExpire) {
+		err = errors.Errorf(resp.UserLockedMsg)
+		return
 	}
 	if ok := utils.ComparePwd(r.Password, u.Password); !ok {
 		err = my.UserWrongPwd(u)
@@ -72,6 +72,8 @@ func (my MysqlService) UserLastLogin(id uint) (err error) {
 	m := make(map[string]interface{})
 	m["wrong"] = constant.Zero
 	m["last_login"] = carbon.Now()
+	m["locked"] = constant.Zero
+	m["lock_expire"] = constant.Zero
 	err = my.Q.Tx.
 		Model(&models.SysUser{}).
 		Where("id = ?", id).
