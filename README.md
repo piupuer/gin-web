@@ -168,7 +168,7 @@ go run main.go
 <br/>
 [dcron](https://github.com/libi/dcron): 分布式定时任务库.
 <br/>
-[dcron](https://github.com/looplab/fsm): FSM is a finite state machine for Go.
+[fsm](https://github.com/looplab/fsm): FSM is a finite state machine for Go.
 <br/>
 
 日志搜集:
