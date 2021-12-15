@@ -85,7 +85,7 @@ go run main.go
 
 > 启动成功之后, 可在浏览器中输入: [http://127.0.0.1:10000/api/ping](http://127.0.0.1:10000/api/ping), 若不能访问请检查Go环境变量或数据库配置是否正确
 
-## [文档](https://github.com/piupuer/gin-web/blob/dev/DOCS.md)
+## [文档](https://piupuer.github.io/gin-web-slate)
 
 ## 项目结构概览
 
