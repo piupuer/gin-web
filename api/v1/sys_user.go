@@ -9,6 +9,7 @@ import (
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
@@ -116,18 +117,15 @@ func GetCurrentUserAndRole(c *gin.Context) ms.User {
 		role, _ := s.GetRoleById(pathRoleId)
 		pathRoleKeyword = role.Keyword
 	}
-	return ms.User{
-		M: ms.M{
-			Id:        user.Id,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-		},
-		RoleId:          user.RoleId,
-		RoleSort:        roleSort,
-		RoleKeyword:     user.Role.Keyword,
-		PathRoleId:      pathRoleId,
-		PathRoleKeyword: pathRoleKeyword,
-	}
+	var u ms.User
+	copier.Copy(&u, user)
+	u.RoleId = user.RoleId
+	u.RoleName = user.Role.Name
+	u.RoleSort = roleSort
+	u.RoleKeyword = user.Role.Keyword
+	u.PathRoleId = pathRoleId
+	u.PathRoleKeyword = pathRoleKeyword
+	return u
 }
 
 func GetUserLoginStatus(c *gin.Context, r *req.UserStatus) (err error) {
@@ -138,6 +136,7 @@ func GetUserLoginStatus(c *gin.Context, r *req.UserStatus) (err error) {
 		return nil
 	}
 	r.Locked = u.Locked
+	r.LockExpire = u.LockExpire
 	r.Wrong = u.Wrong
 	return
 }

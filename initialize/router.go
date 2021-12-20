@@ -32,6 +32,7 @@ func Routers() *gin.Engine {
 	// set middleware
 	r.Use(
 		middleware.Rate(
+			middleware.WithRateRedis(global.Redis),
 			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
 		),
 		middleware.Cors,
@@ -47,6 +48,7 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
 			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
 			middleware.WithOperationLogSaveMaxCount(50),
+			middleware.WithOperationLogGetCurrentUser(v1.GetCurrentUserAndRole),
 			middleware.WithOperationLogSave(v1.OperationLogSave),
 			middleware.WithOperationLogFindApi(v1.OperationLogFindApi),
 		),
