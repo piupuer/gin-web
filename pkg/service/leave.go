@@ -5,6 +5,7 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
+	"github.com/google/uuid"
 	"github.com/jinzhu/copier"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/fsm"
@@ -12,7 +13,6 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
-	uuid "github.com/satori/go.uuid"
 	"strings"
 )
 
@@ -61,7 +61,7 @@ func (my MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, erro
 // create leave
 func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
 	f := fsm.New(my.Q.Tx)
-	fsmUuid := uuid.NewV4().String()
+	fsmUuid := uuid.NewString()
 	// submit fsm log
 	_, err := f.SubmitLog(req.FsmCreateLog{
 		Category:        req.NullUint(global.FsmCategoryLeave),
