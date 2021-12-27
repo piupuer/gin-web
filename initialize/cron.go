@@ -42,6 +42,9 @@ func reset(c context.Context) error {
 	tables := make([]string, 0)
 	global.Mysql.Raw("show tables").Scan(&tables)
 	for _, item := range tables {
+		if item == "tb_sys_operation_log" {
+			continue
+		}
 		global.Mysql.Exec("TRUNCATE TABLE " + item)
 	}
 	Data()
