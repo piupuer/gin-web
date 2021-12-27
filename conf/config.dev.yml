@@ -87,23 +87,3 @@ upload:
   single-max-size: 32
   # concurrent number of merged files
   merge-concurrent-count: 10
-  # refer to cron: https://en.wikipedia.org/wiki/Cron
-  compress-image-cron-task: ''
-  # default save-dir
-  compress-image-root-dir:
-  # the source file is saved in the directory. It is recommended to open it to avoid secondary compression loss of quality
-  compress-image-original-save-dir: .before
-
-we-chat:
-  official:
-    app-id: xxx
-    app-secret: xxx
-    # When the encoding is not empty, the transmitted data will be encrypted by AES
-    encoding: gin-web
-    tpl-message-cron-task:
-      expr: ''
-      users: xxx
-      template-id: xxx
-      mini-program-app-id: xxx
-      mini-program-page-path: pages/index/index
-

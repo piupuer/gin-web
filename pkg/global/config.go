@@ -70,13 +70,10 @@ type JwtConfiguration struct {
 }
 
 type UploadConfiguration struct {
-	Minio                        UploadOssMinioConfiguration `mapstructure:"oss-minio" json:"ossMinio"`
-	SaveDir                      string                      `mapstructure:"save-dir" json:"saveDir"`
-	SingleMaxSize                int64                       `mapstructure:"single-max-size" json:"singleMaxSize"`
-	MergeConcurrentCount         int                         `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
-	CompressImageCronTask        string                      `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
-	CompressImageRootDir         string                      `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
-	CompressImageOriginalSaveDir string                      `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
+	Minio                UploadOssMinioConfiguration `mapstructure:"oss-minio" json:"ossMinio"`
+	SaveDir              string                      `mapstructure:"save-dir" json:"saveDir"`
+	SingleMaxSize        int64                       `mapstructure:"single-max-size" json:"singleMaxSize"`
+	MergeConcurrentCount int                         `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
 }
 
 type UploadOssMinioConfiguration struct {

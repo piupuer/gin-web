@@ -21,6 +21,8 @@ var (
 	noBreadcrumb = uint(0)
 )
 
+var menuTotal = 0
+
 func Data() {
 	if !global.Conf.Mysql.InitData {
 		return
@@ -60,6 +62,7 @@ func Data() {
 	}
 
 	// 2. init menus
+	menuTotal = 0
 	menus := []ms.SysMenu{
 		{
 			Name:  "dashboardRoot",
@@ -856,8 +859,6 @@ func Data() {
 		db.Create(&newDicts)
 	}
 }
-
-var menuTotal = 0
 
 func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.SysMenu {
 	newMenus := make([]ms.SysMenu, len(menus))

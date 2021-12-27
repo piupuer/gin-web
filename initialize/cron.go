@@ -6,11 +6,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/job"
 	"github.com/piupuer/go-helper/pkg/query"
-	"github.com/piupuer/go-helper/pkg/utils"
-	"io/ioutil"
 	"os"
-	"path/filepath"
-	"strings"
 )
 
 func Cron() {
@@ -25,64 +21,31 @@ func Cron() {
 	if err != nil {
 		panic(err)
 	}
-	if global.Conf.Upload.CompressImageCronTask != "" {
+	expr := os.Getenv("CRON_RESET")
+	if expr != "" {
 		j.AddTask(job.GoodTask{
-			Name: "compress",
-			Expr: global.Conf.Upload.CompressImageCronTask,
-			Func: compress,
+			Name: "reset",
+			Expr: expr,
+			Func: reset,
 		}).Start()
 	}
 	global.Log.Debug(ctx, "initialize cron job success")
 }
 
-var dirs []string
-
-func compress(c context.Context) error {
+func reset(c context.Context) error {
 	ctx := query.NewRequestId(c, constant.MiddlewareRequestIdCtxKey)
-	global.Log.Info(ctx, "[cron job][image compress]starting...")
-	pwd := utils.GetWorkDir()
-	// compress dir is default upload save dir
-	compressDir := pwd + "/" + global.Conf.Upload.SaveDir
-	if global.Conf.Upload.CompressImageRootDir != "" {
-		compressDir = global.Conf.Upload.CompressImageRootDir
-	}
-	childDirList, _ := ioutil.ReadDir(compressDir)
+	global.Log.Info(ctx, "[cron job][reset]starting...")
 
-	for _, info := range childDirList {
-		if info.IsDir() {
-			currentDir := compressDir + "/" + info.Name()
-			if utils.Contains(dirs, currentDir) {
-				global.Log.Debug(ctx, "[cron job][image compress]dir %s scanned, skip", currentDir)
-				continue
-			}
-			filepath.Walk(currentDir, func(path string, fi os.FileInfo, errBack error) error {
-				if errBack != nil {
-					return errBack
-				}
-				var err error
-				if global.Conf.Upload.CompressImageOriginalSaveDir != "" {
-					if strings.Contains(path, global.Conf.Upload.CompressImageOriginalSaveDir) {
-						global.Log.Debug(ctx, "[cron job][image compress]dir %s is original dir, skip", path)
-						return nil
-					}
-					// save original file
-					err = utils.CompressImageSaveOriginal(path, global.Conf.Upload.CompressImageOriginalSaveDir)
-				} else {
-					// direct compression
-					err = utils.CompressImage(path)
-				}
-				if err != nil {
-					global.Log.Error(ctx, "[cron job][image compress]compress filename %s failed: err", path, err)
-				} else {
-					global.Log.Info(ctx, "[cron job][image compress]compress filename %s success", path)
-				}
-				return nil
-			})
-			if !utils.Contains(dirs, currentDir) {
-				dirs = append(dirs, currentDir)
-			}
-		}
+	if global.Conf.Redis.EnableBinlog {
+		global.Redis.FlushAll(ctx)
 	}
-	global.Log.Info(ctx, "[cron job][image compress]ended")
+	tables := make([]string, 0)
+	global.Mysql.Raw("show tables").Scan(&tables)
+	for _, item := range tables {
+		global.Mysql.Exec("TRUNCATE TABLE " + item)
+	}
+	Data()
+
+	global.Log.Info(ctx, "[cron job][reset]ended")
 	return nil
 }
