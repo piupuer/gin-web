@@ -70,5 +70,8 @@ type UpdateUser struct {
 	Nickname     *string       `json:"nickname"`
 	Introduction *string       `json:"introduction"`
 	Status       *req.NullUint `json:"status"`
+	Locked       *req.NullUint `json:"locked"`
+	LockExpire   *int64        `json:"lockExpire"`
+	Wrong        *int          `json:"wrong"`
 	RoleId       *uint         `json:"roleId"`
 }

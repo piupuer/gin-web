@@ -28,5 +28,6 @@ type User struct {
 	Nickname     string `json:"nickname"`
 	Introduction string `json:"introduction"`
 	Status       *uint  `json:"status"`
+	Locked       uint   `json:"locked"`
 	RoleId       uint   `json:"roleId"`
 }

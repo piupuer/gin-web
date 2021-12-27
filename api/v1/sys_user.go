@@ -11,6 +11,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/copier"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
@@ -233,6 +234,13 @@ func UpdateUserById(c *gin.Context) {
 				resp.CheckErr("cannot change super admin's role")
 			}
 		}
+	}
+
+	if r.Locked != nil && *r.Locked == req.NullUint(constant.One) {
+		var i int64 = 0
+		var j = 0
+		r.LockExpire = &i
+		r.Wrong = &j
 	}
 
 	s := service.New(c)
