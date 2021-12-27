@@ -9,6 +9,7 @@ import (
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/binlog"
 	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/piupuer/go-helper/pkg/query"
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -68,6 +69,9 @@ func Mysql() {
 }
 
 func autoMigrate() {
+	// migrate database
+	query.MigrateDatabase(global.Conf.Mysql.DSN)
+	// migrate tables
 	global.Mysql.WithContext(ctx).AutoMigrate(
 		new(ms.SysMenu),
 		new(ms.SysMenuRoleRelation),
