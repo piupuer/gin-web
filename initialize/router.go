@@ -36,6 +36,7 @@ func Routers() *gin.Engine {
 			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
 		),
 		middleware.Cors,
+		middleware.SecurityHeader,
 		middleware.RequestId(),
 		middleware.AccessLog(
 			middleware.WithAccessLogLogger(global.Log),
