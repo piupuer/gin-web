@@ -8,6 +8,7 @@ import (
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/piupuer/go-helper/pkg/query"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
@@ -27,7 +28,20 @@ func Data() {
 	if !global.Conf.Mysql.InitData {
 		return
 	}
-	db := global.Mysql.WithContext(ctx)
+	tx := global.Mysql.WithContext(ctx).Begin()
+	c := query.NewRequestIdReturnGinCtx(ctx, constant.MiddlewareRequestIdCtxKey)
+	c.Set(constant.MiddlewareTransactionTxCtxKey, tx)
+	my := service.New(c)
+	err := data(my)
+	if err != nil {
+		my.Q.Tx.Rollback()
+		global.Log.Error(ctx, "initialize data failed: %v", err)
+	} else {
+		my.Q.Tx.Commit()
+	}
+}
+
+func data(my service.MysqlService) (err error) {
 	// 1. init roles
 	newRoles := make([]models.SysRole, 0)
 	roles := []models.SysRole{
@@ -47,8 +61,8 @@ func Data() {
 		id := uint(i + 1)
 		roles[i].Id = id
 		oldRole := models.SysRole{}
-		err := db.Where("id = ?", id).First(&oldRole).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := my.Q.Tx.Where("id = ?", id).First(&oldRole).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
 			role.Id = id
 			role.Status = &status
 			if role.Sort == nil {
@@ -58,7 +72,10 @@ func Data() {
 		}
 	}
 	if len(newRoles) > 0 {
-		db.Create(&newRoles)
+		err = my.Q.Tx.Create(&newRoles).Error
+		if err != nil {
+			return
+		}
 	}
 
 	// 2. init menus
@@ -232,9 +249,12 @@ func Data() {
 		},
 	}
 	menus = genMenu(0, menus, roles[0])
-	relations := createMenu(db, menus)
+	relations := createMenu(my.Q.Tx, menus)
 	if len(relations) > 0 {
-		db.Create(relations)
+		err = my.Q.Tx.Create(relations).Error
+		if err != nil {
+			return
+		}
 	}
 
 	// 3. init users
@@ -272,8 +292,8 @@ func Data() {
 		id := uint(i + 1)
 		users[i].Id = id
 		oldUser := models.SysUser{}
-		err := db.Where("id = ?", id).First(&oldUser).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := my.Q.Tx.Where("id = ?", id).First(&oldUser).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
 			user.Id = id
 			if user.RoleId == 0 {
 				user.RoleId = id
@@ -282,7 +302,10 @@ func Data() {
 		}
 	}
 	if len(newUsers) > 0 {
-		db.Create(&newUsers)
+		err = my.Q.Tx.Create(&newUsers).Error
+		if err != nil {
+			return
+		}
 	}
 
 	// 4. init apis
@@ -719,8 +742,8 @@ func Data() {
 	for i, api := range apis {
 		id := uint(i + 1)
 		oldApi := ms.SysApi{}
-		err := db.Where("id = ?", id).First(&oldApi).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := my.Q.Tx.Where("id = ?", id).First(&oldApi).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
 			api.Id = id
 			newApis = append(newApis, api)
 			// super has all api permission
@@ -766,17 +789,23 @@ func Data() {
 		}
 	}
 	if len(newApis) > 0 {
-		db.Create(&newApis)
+		err = my.Q.Tx.Create(&newApis).Error
+		if err != nil {
+			return
+		}
 	}
 	if len(newRoleCasbins) > 0 {
-		s := service.New(nil)
-		s.Q.BatchCreateRoleCasbin(newRoleCasbins)
+		ok, e := my.Q.BatchCreateRoleCasbin(newRoleCasbins)
+		if !ok || e != nil {
+			err = errors.Errorf("CreateRoleCasbin failed")
+			return
+		}
 	}
 
 	// 5. init leave fsm machine
 	// auto migrate fsm
 	f := fsm.New(global.Mysql, fsm.WithCtx(ctx))
-	f.CreateMachine(req.FsmCreateMachine{
+	_, err = f.CreateMachine(req.FsmCreateMachine{
 		Category:            req.NullUint(global.FsmCategoryLeave),
 		Name:                "Leave approval workflow",
 		SubmitterName:       "Leave Submitter",
@@ -796,6 +825,9 @@ func Data() {
 			},
 		},
 	})
+	if err != nil {
+		return
+	}
 
 	// 6. init dict
 	dicts := []ms.SysDict{
@@ -858,15 +890,19 @@ func Data() {
 	for i, dict := range dicts {
 		id := uint(i + 1)
 		oldDict := ms.SysDict{}
-		err := db.Where("id = ?", id).First(&oldDict).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := my.Q.Tx.Where("id = ?", id).First(&oldDict).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
 			dict.Id = id
 			newDicts = append(newDicts, dict)
 		}
 	}
 	if len(newDicts) > 0 {
-		db.Create(&newDicts)
+		err = my.Q.Tx.Create(&newDicts).Error
+		if err != nil {
+			return
+		}
 	}
+	return
 }
 
 func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.SysMenu {
@@ -908,13 +944,13 @@ func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.S
 	return newMenus
 }
 
-func createMenu(db *gorm.DB, menus []ms.SysMenu) []ms.SysMenuRoleRelation {
+func createMenu(tx *gorm.DB, menus []ms.SysMenu) []ms.SysMenuRoleRelation {
 	relations := make([]ms.SysMenuRoleRelation, 0)
 	for _, menu := range menus {
 		oldMenu := ms.SysMenu{}
-		err := db.Where("id = ?", menu.Id).First(&oldMenu).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			db.Create(&menu)
+		e := tx.Where("id = ?", menu.Id).First(&oldMenu).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
+			tx.Create(&menu)
 			for _, id := range menu.RoleIds {
 				relations = append(relations, ms.SysMenuRoleRelation{
 					MenuId: menu.Id,
@@ -923,7 +959,7 @@ func createMenu(db *gorm.DB, menus []ms.SysMenu) []ms.SysMenuRoleRelation {
 			}
 		}
 		if len(menu.Children) > 0 {
-			childrenRelations := createMenu(db, menu.Children)
+			childrenRelations := createMenu(tx, menu.Children)
 			if len(childrenRelations) > 0 {
 				relations = append(relations, childrenRelations...)
 			}
