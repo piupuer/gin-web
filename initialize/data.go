@@ -795,11 +795,7 @@ func data(my service.MysqlService) (err error) {
 		}
 	}
 	if len(newRoleCasbins) > 0 {
-		ok, e := my.Q.BatchCreateRoleCasbin(newRoleCasbins)
-		if !ok || e != nil {
-			err = errors.Errorf("CreateRoleCasbin failed")
-			return
-		}
+		my.Q.BatchCreateRoleCasbin(newRoleCasbins)
 	}
 
 	// 5. init leave fsm machine

@@ -37,12 +37,35 @@ func reset(c context.Context) error {
 	global.Log.Info(ctx, "[cron job][reset]starting...")
 
 	if global.Conf.Redis.EnableBinlog {
-		global.Redis.FlushAll(ctx)
+		global.Redis.Del(ctx, []string{
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_event",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_event_item",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_event_role_relation",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_event_src_item_relation",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_event_user_relation",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_log",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_log_approval_role_relation",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_log_approval_user_relation",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_machine",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_role",
+			global.Conf.Mysql.DSN.DBName + "_tb_fsm_user",
+			global.Conf.Mysql.DSN.DBName + "_tb_leave",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_api",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_dict",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_dict_data",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_machine",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_menu",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_menu_role_relation",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_message",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_message_log",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_role",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_user",
+		}...)
 	}
 	tables := make([]string, 0)
 	global.Mysql.Raw("show tables").Scan(&tables)
 	for _, item := range tables {
-		if item == "tb_sys_operation_log" {
+		if item == "tb_sys_operation_log" || item == "tb_sys_casbin" {
 			continue
 		}
 		global.Mysql.Exec("TRUNCATE TABLE " + item)
