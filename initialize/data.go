@@ -117,6 +117,13 @@ func Data() {
 					Component: "/system/api",
 				},
 				{
+					Name:      "dict",
+					Title:     "Dictionaries",
+					Icon:      "dict",
+					Path:      "dict",
+					Component: "/system/dict",
+				},
+				{
 					Name:      "operationLog",
 					Title:     "Operation Logs",
 					Icon:      "log",
@@ -794,6 +801,7 @@ func Data() {
 	dicts := []ms.SysDict{
 		{
 			Name: constant.UserLoginDict,
+			Desc: "User login dictionary",
 			DictDatas: []ms.SysDictData{
 				{
 					Key:      constant.UserLoginCaptcha,
@@ -804,6 +812,7 @@ func Data() {
 		},
 		{
 			Name: constant.UserResetPwdDict,
+			Desc: "User reset password dictionary",
 			DictDatas: []ms.SysDictData{
 				{
 					Key:      constant.UserResetPwdFirstLogin,
