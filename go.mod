@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.4
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/piupuer/go-helper v1.0.3-0.20211231085553-79f88ecacbc6
+	github.com/piupuer/go-helper v1.0.3-0.20220104085158-032cdfeb3086
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.3.2
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
