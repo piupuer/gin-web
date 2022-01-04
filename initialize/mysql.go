@@ -103,7 +103,6 @@ func binlogListen() {
 		binlog.WithDb(global.Mysql),
 		binlog.WithDsn(&global.Conf.Mysql.DSN),
 		binlog.WithBinlogPos(global.Conf.Redis.BinlogPos),
-		binlog.WithServerId(global.Conf.System.MachineId),
 		binlog.WithIgnore(
 			// The following tables will have more and more data over time
 			// It is not suitable to store the entire table JSON in redis
