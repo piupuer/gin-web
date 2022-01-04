@@ -1,6 +1,7 @@
 package initialize
 
 import (
+	"fmt"
 	"gin-web/api"
 	v1 "gin-web/api/v1"
 	"gin-web/docs/swagger"
@@ -45,6 +46,7 @@ func Routers() *gin.Engine {
 		middleware.OperationLog(
 			middleware.WithOperationLogLogger(global.Log),
 			middleware.WithOperationLogRedis(global.Redis),
+			middleware.WithOperationLogCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, constant.MiddlewareOperationLogApiCacheKey)),
 			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPrefix),
 			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
 			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
@@ -105,7 +107,11 @@ func Routers() *gin.Engine {
 			middleware.WithCasbinGetCurrentUser(v1.GetCurrentUserAndRole),
 		),
 		hr.WithIdempotence(true),
+		hr.WithIdempotenceOps(
+			middleware.WithIdempotenceCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, constant.MiddlewareIdempotencePrefix)),
+		),
 		hr.WithV1Ops(
+			hv1.WithCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, "v1")),
 			hv1.WithDbOps(
 				query.WithMysqlDb(global.Mysql),
 				query.WithMysqlFsmTransition(v1.LeaveTransition),
