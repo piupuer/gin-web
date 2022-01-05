@@ -2,8 +2,10 @@ package v1
 
 import (
 	"gin-web/pkg/global"
+	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/utils"
 )
@@ -13,6 +15,12 @@ func OperationLogSave(c *gin.Context, list []middleware.OperationRecord) {
 	arr := make([]ms.SysOperationLog, len(list))
 	utils.Struct2StructByJson(list, &arr)
 	global.Mysql.Create(arr)
+}
+
+// operation log find skip path callback
+func OperationLogFindSkipPath(c *gin.Context) []string {
+	my := service.New(c)
+	return my.Q.FindDictDataValByName(constant.MiddlewareOperationLogSkipPathDict)
 }
 
 // operation log find api callback

@@ -49,7 +49,7 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, constant.MiddlewareOperationLogApiCacheKey)),
 			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPrefix),
 			middleware.WithOperationLogRealIpKey(global.Conf.System.AmapKey),
-			middleware.WithOperationLogSkipPaths(global.Conf.Logs.OperationDisabledPathArr...),
+			middleware.WithOperationLogFindSkipPath(v1.OperationLogFindSkipPath),
 			middleware.WithOperationLogSaveMaxCount(50),
 			middleware.WithOperationLogGetCurrentUser(v1.GetCurrentUserAndRole),
 			middleware.WithOperationLogSave(v1.OperationLogSave),
@@ -115,6 +115,7 @@ func Routers() *gin.Engine {
 			hv1.WithDbOps(
 				query.WithMysqlDb(global.Mysql),
 				query.WithMysqlFsmTransition(v1.LeaveTransition),
+				query.WithMysqlCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, constant.QueryCachePrefix)),
 			),
 			hv1.WithBinlogOps(
 				query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),

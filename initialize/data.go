@@ -881,6 +881,32 @@ func data(my service.MysqlService) (err error) {
 				},
 			},
 		},
+		{
+			Name: constant.MiddlewareOperationLogSkipPathDict,
+			Desc: "Operation log skip path dictionary",
+			DictDatas: []ms.SysDictData{
+				{
+					Key: "1",
+					Val: "/operation/log/delete/batch",
+				},
+				{
+					Key: "2",
+					Val: "/upload/file",
+				},
+				{
+					Key: "3",
+					Val: "/ping",
+				},
+				{
+					Key: "4",
+					Val: "/message/ws",
+				},
+				{
+					Key: "5",
+					Val: "/operation/log/list",
+				},
+			},
+		},
 	}
 	newDicts := make([]ms.SysDict, 0)
 	for i, dict := range dicts {

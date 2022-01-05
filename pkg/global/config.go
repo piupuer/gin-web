@@ -37,8 +37,6 @@ type LogsConfiguration struct {
 	MaxAge                   int           `mapstructure:"max-age" json:"maxAge"`
 	Compress                 bool          `mapstructure:"compress" json:"compress"`
 	OperationKey             string        `mapstructure:"operation-key" json:"operationKey"`
-	OperationDisabledPaths   string        `mapstructure:"operation-disabled-paths" json:"operationDisabledPaths"`
-	OperationDisabledPathArr []string      `mapstructure:"-" json:"-"`
 	OperationAllowedToDelete bool          `mapstructure:"operation-allowed-to-delete" json:"operationAllowedToDelete"`
 }
 

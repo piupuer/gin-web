@@ -98,11 +98,6 @@ func Config(c context.Context) {
 		global.Conf.Redis.EnableBinlog = false
 	}
 
-	global.Conf.Logs.OperationDisabledPathArr = make([]string, 0)
-	if strings.TrimSpace(global.Conf.Logs.OperationDisabledPaths) != "" {
-		global.Conf.Logs.OperationDisabledPathArr = strings.Split(global.Conf.Logs.OperationDisabledPaths, ",")
-	}
-
 	// read rsa files
 	publicBytes := global.ConfBox.Find(global.Conf.Jwt.RSAPublicKey)
 	if len(publicBytes) == 0 {

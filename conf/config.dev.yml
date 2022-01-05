@@ -31,8 +31,6 @@ logs:
   compress: false
   # operation log context key
   operation-key: operation_log_response
-  # not record operation log when url prefix equal operation-disabled-paths
-  operation-disabled-paths: /operation/log/delete/batch,/upload/file
   # allow users to delete operation logs
   operation-allowed-to-delete: false
 
