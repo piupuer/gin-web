@@ -89,7 +89,7 @@ func ChangePwd(c *gin.Context) {
 }
 
 func GetCurrentUser(c *gin.Context) models.SysUser {
-	userId, exists := c.Get("user")
+	userId, exists := c.Get(constant.MiddlewareJwtUserCtxKey)
 	var newUser models.SysUser
 	if !exists {
 		return newUser
