@@ -31,6 +31,8 @@
 - `Grafana Loki` 轻量日志收集工具loki, 支持分布式日志收集(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
 - `Minio` 轻量对象存储服务(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
 - `Swagger` Swagger V2接口文档
+- `Captcha` 密码输错次数过多需输入验证码
+- `Sign` API接口签名(防重放攻击、防数据篡改)
 
 ## 中间件
 
@@ -51,9 +53,10 @@
     - 角色管理
     - 用户管理
     - 接口管理
-    - 工作流管理
+    - 数据字典
     - 操作日志
     - 消息推送
+    - 机器管理
 - 状态机
     - 状态机配置
     - 我的请假条
@@ -63,7 +66,6 @@
     - 上传示例2(主要是针对ZIP压缩包上传及解压)
 - 测试页面
     - 测试用例
-    - 我的请假条
 
 ## 在线演示(前端静态文件已上传至阿里云OSS, 访问速度飞起)
 
