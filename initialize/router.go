@@ -10,6 +10,7 @@ import (
 	"gin-web/router"
 	"github.com/gin-gonic/gin"
 	hv1 "github.com/piupuer/go-helper/api/v1"
+	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/query"
@@ -39,6 +40,22 @@ func Routers() *gin.Engine {
 		middleware.Cors,
 		middleware.SecurityHeader,
 		middleware.RequestId(),
+		middleware.Sign(
+			middleware.WithSignLogger(global.Log),
+			middleware.WithSignCheckScope(false),
+			middleware.WithSignGetSignUser(func(c *gin.Context, appId string) ms.SignUser {
+				return ms.SignUser{
+					AppSecret: "gin-web",
+					Status:    constant.One,
+				}
+			}),
+			middleware.WithSignFindSkipPath(func(c *gin.Context) []string {
+				return []string{
+					fmt.Sprintf("%s/message/ws", global.Conf.System.Base),
+					fmt.Sprintf("%s/upload/file", global.Conf.System.Base),
+				}
+			}),
+		),
 		middleware.AccessLog(
 			middleware.WithAccessLogLogger(global.Log),
 			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPrefix),
