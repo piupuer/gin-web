@@ -60,6 +60,11 @@ func Routers() *gin.Engine {
 			middleware.WithAccessLogLogger(global.Log),
 			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPrefix),
 		),
+		middleware.Exception(),
+		middleware.Transaction(
+			middleware.WithTransactionDbNoTx(global.Mysql),
+			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),
+		),
 		middleware.OperationLog(
 			middleware.WithOperationLogLogger(global.Log),
 			middleware.WithOperationLogRedis(global.Redis),
@@ -71,11 +76,6 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogGetCurrentUser(v1.GetCurrentUserAndRole),
 			middleware.WithOperationLogSave(v1.OperationLogSave),
 			middleware.WithOperationLogFindApi(v1.OperationLogFindApi),
-		),
-		middleware.Exception(),
-		middleware.Transaction(
-			middleware.WithTransactionDbNoTx(global.Mysql),
-			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),
 		),
 	)
 
