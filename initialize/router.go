@@ -51,6 +51,7 @@ func Routers() *gin.Engine {
 			}),
 			middleware.WithSignFindSkipPath(func(c *gin.Context) []string {
 				return []string{
+					fmt.Sprintf("%s/ping", global.Conf.System.UrlPrefix),
 					fmt.Sprintf("%s/message/ws", global.Conf.System.Base),
 					fmt.Sprintf("%s/upload/file", global.Conf.System.Base),
 				}
