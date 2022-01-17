@@ -1,13 +1,13 @@
-package initialize
+package router
 
 import (
+	"context"
 	"fmt"
 	"gin-web/api"
 	v1 "gin-web/api/v1"
 	"gin-web/docs/swagger"
 	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
-	"gin-web/router"
 	"github.com/gin-gonic/gin"
 	hv1 "github.com/piupuer/go-helper/api/v1"
 	"github.com/piupuer/go-helper/ms"
@@ -20,7 +20,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func Routers() *gin.Engine {
+func RegisterServers(ctx context.Context) *gin.Engine {
 	// use custom router not default
 	// r := gin.Default()
 	r := gin.New()
@@ -61,11 +61,6 @@ func Routers() *gin.Engine {
 			middleware.WithAccessLogLogger(global.Log),
 			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPrefix),
 		),
-		middleware.Exception(),
-		middleware.Transaction(
-			middleware.WithTransactionDbNoTx(global.Mysql),
-			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),
-		),
 		middleware.OperationLog(
 			middleware.WithOperationLogLogger(global.Log),
 			middleware.WithOperationLogRedis(global.Redis),
@@ -77,6 +72,11 @@ func Routers() *gin.Engine {
 			middleware.WithOperationLogGetCurrentUser(v1.GetCurrentUserAndRole),
 			middleware.WithOperationLogSave(v1.OperationLogSave),
 			middleware.WithOperationLogFindApi(v1.OperationLogFindApi),
+		),
+		middleware.Exception(),
+		middleware.Transaction(
+			middleware.WithTransactionDbNoTx(global.Mysql),
+			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),
 		),
 	)
 
@@ -164,10 +164,10 @@ func Routers() *gin.Engine {
 	nr.Upload()
 
 	// init custom routers
-	router.InitLeaveRouter(nr)
-	router.InitRoleRouter(nr)
-	router.InitUserRouter(nr)
+	InitLeaveRouter(nr)
+	InitRoleRouter(nr)
+	InitUserRouter(nr)
 
-	global.Log.Info(ctx, "initialize router success")
+	global.Log.Info(ctx, "initialize http router success")
 	return r
 }
