@@ -13,7 +13,7 @@ require (
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.4
 	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/piupuer/go-helper v1.0.3-0.20220110084945-caca99efd426
+	github.com/piupuer/go-helper v1.0.3-0.20220114021126-bc76bd6e793f
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.3.2
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
@@ -55,6 +55,7 @@ require (
 	github.com/golang/freetype v0.0.0-20170609003504-e2365dfdc4a0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hibiken/asynq v0.20.0 // indirect
 	github.com/jackc/chunkreader/v2 v2.0.1 // indirect
@@ -88,6 +89,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.1 // indirect
 	github.com/mojocn/base64Captcha v1.3.5 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pelletier/go-toml v1.2.0 // indirect
 	github.com/pingcap/errors v0.11.5-0.20201126102027-b0a155152ca3 // indirect
 	github.com/pingcap/log v0.0.0-20210317133921-96f4fcab92a4 // indirect
@@ -118,6 +120,7 @@ require (
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	golang.org/x/tools v0.1.7 // indirect
+	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013 // indirect
 	google.golang.org/grpc v1.43.0 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/go-playground/validator.v9 v9.31.0 // indirect
