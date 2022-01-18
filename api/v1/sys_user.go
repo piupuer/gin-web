@@ -96,12 +96,15 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	}
 	uid := utils.Str2Uint(fmt.Sprintf("%d", userId))
 	oldCache, ok := CacheGetUser(c, uid)
-	if ok {
+	if ok && oldCache.Id > constant.Zero {
 		return *oldCache
 	}
 	s := service.New(c)
 	newUser, _ = s.GetUserById(uid)
-	CacheSetUser(c, uid, newUser)
+	if newUser.Id > constant.Zero {
+		// if user id exists, set to cache
+		CacheSetUser(c, uid, newUser)
+	}
 	return newUser
 }
 
