@@ -18,7 +18,7 @@ var (
 	RuntimeRoot    string
 	Conf           Configuration
 	ConfBox        *CustomConfBox
-	Log            *logger.Logger
+	Log            *logger.Wrapper
 	Mysql          *gorm.DB
 	Redis          redis.UniversalClient
 	CasbinEnforcer *casbin.Enforcer

@@ -28,7 +28,7 @@ func main() {
 	defer func() {
 		if err := recover(); err != nil {
 			if global.Log != nil {
-				global.Log.Error(ctx, "[%s]project run failed: %v\nstack: %v", global.ProName, err, string(debug.Stack()))
+				global.Log.Error("[%s]project run failed: %v\nstack: %v", global.ProName, err, string(debug.Stack()))
 			} else {
 				fmt.Printf("[%s]project run failed: %v\nstack: %v\n", global.ProName, err, string(debug.Stack()))
 			}

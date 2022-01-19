@@ -29,12 +29,12 @@ func Cron() {
 			Func: reset,
 		}).Start()
 	}
-	global.Log.Debug(ctx, "initialize cron job success")
+	global.Log.Debug("initialize cron job success")
 }
 
 func reset(c context.Context) error {
 	ctx := query.NewRequestId(c, constant.MiddlewareRequestIdCtxKey)
-	global.Log.Info(ctx, "[cron job][reset]starting...")
+	global.Log.Info("[cron job][reset]starting...")
 
 	if global.Conf.Redis.EnableBinlog {
 		global.Redis.Del(ctx, []string{
@@ -72,6 +72,6 @@ func reset(c context.Context) error {
 	}
 	Data()
 
-	global.Log.Info(ctx, "[cron job][reset]ended")
+	global.Log.Info("[cron job][reset]ended")
 	return nil
 }

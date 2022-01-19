@@ -14,7 +14,7 @@ func CasbinEnforcer() {
 		panic(errors.Wrap(err, "initialize casbin enforcer failed"))
 	}
 	global.CasbinEnforcer = e
-	global.Log.Info(ctx, "initialize casbin enforcer success")
+	global.Log.Info("initialize casbin enforcer success")
 }
 
 func mysqlCasbin() (*casbin.Enforcer, error) {

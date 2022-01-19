@@ -17,5 +17,5 @@ func Redis() {
 		panic(fmt.Sprintf("[unit test]initialize redis failed: %v", err))
 	}
 	global.Redis = client
-	global.Log.Debug(ctx, "[unit test]initialize redis success")
+	global.Log.Debug("[unit test]initialize redis success")
 }

@@ -7,6 +7,7 @@ import (
 	m "github.com/go-sql-driver/mysql"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/piupuer/go-helper/pkg/logger"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"
@@ -20,13 +21,13 @@ func Mysql() {
 	}
 	global.Conf.Mysql.DSN = *cfg
 
-	global.Log.Info(ctx, "[unit test]mysql dsn: %s", cfg.FormatDSN())
-	var l glogger.Interface
+	global.Log.Info("[unit test]mysql dsn: %s", cfg.FormatDSN())
+	l := logger.NewDefaultGormLogger()
 	if global.Conf.Mysql.NoSql {
 		// not show sql log
-		l = global.Log.LogMode(glogger.Silent)
+		l = l.LogMode(glogger.Silent)
 	} else {
-		l = global.Log.LogMode(glogger.Info)
+		l = l.LogMode(glogger.Info)
 	}
 	db, err := gorm.Open(mysql.Open(cfg.FormatDSN()), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -43,7 +44,7 @@ func Mysql() {
 	}
 	global.Mysql = db
 	autoMigrate()
-	global.Log.Debug(ctx, "[unit test]initialize mysql success")
+	global.Log.Debug("[unit test]initialize mysql success")
 }
 
 func autoMigrate() {
