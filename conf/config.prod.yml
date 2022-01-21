@@ -4,7 +4,7 @@ system:
   pprof-port: 8005
 
 logs:
-  level: 0
+  level: 4
 
 mysql:
   uri: 'root:root@tcp(docker-mysql:3306)/gin_web_prod?charset=utf8mb4&collation=utf8mb4_general_ci&parseTime=True&loc=Local&timeout=10000ms'
