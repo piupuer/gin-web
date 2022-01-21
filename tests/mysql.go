@@ -7,7 +7,7 @@ import (
 	m "github.com/go-sql-driver/mysql"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/fsm"
-	"github.com/piupuer/go-helper/pkg/logger"
+	"github.com/piupuer/go-helper/pkg/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"
@@ -21,8 +21,8 @@ func Mysql() {
 	}
 	global.Conf.Mysql.DSN = *cfg
 
-	global.Log.Info("[unit test]mysql dsn: %s", cfg.FormatDSN())
-	l := logger.NewDefaultGormLogger()
+	log.WithRequestId(ctx).Info("[unit test]mysql dsn: %s", cfg.FormatDSN())
+	l := log.NewDefaultGormLogger()
 	if global.Conf.Mysql.NoSql {
 		// not show sql log
 		l = l.LogMode(glogger.Silent)
@@ -44,7 +44,7 @@ func Mysql() {
 	}
 	global.Mysql = db
 	autoMigrate()
-	global.Log.Debug("[unit test]initialize mysql success")
+	log.WithRequestId(ctx).Debug("[unit test]initialize mysql success")
 }
 
 func autoMigrate() {

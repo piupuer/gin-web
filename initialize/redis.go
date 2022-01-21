@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"gin-web/pkg/global"
 	"github.com/piupuer/go-helper/pkg/job"
+	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/pkg/errors"
 	"time"
 )
 
 func Redis() {
 	if !global.Conf.Redis.Enable {
-		global.Log.Info("if redis is not used, there is no need to initialize redis")
+		log.WithRequestId(ctx).Info("if redis is not used, there is no need to initialize redis")
 		return
 	}
 	init := false
@@ -40,5 +41,5 @@ func Redis() {
 	global.Redis = client
 
 	init = true
-	global.Log.Info("initialize redis success")
+	log.WithRequestId(ctx).Info("initialize redis success")
 }

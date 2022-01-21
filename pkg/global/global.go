@@ -4,7 +4,6 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/go-redis/redis/v8"
 	"github.com/gobuffalo/packr/v2"
-	"github.com/piupuer/go-helper/pkg/logger"
 	"github.com/piupuer/go-helper/pkg/oss"
 	"github.com/spf13/viper"
 	"gorm.io/gorm"
@@ -12,13 +11,9 @@ import (
 )
 
 var (
-	// project mode: development/staging/production
-	Mode string
-	// runtime root path prefix
-	RuntimeRoot    string
+	Mode           string
 	Conf           Configuration
 	ConfBox        *CustomConfBox
-	Log            *logger.Wrapper
 	Mysql          *gorm.DB
 	Redis          redis.UniversalClient
 	CasbinEnforcer *casbin.Enforcer

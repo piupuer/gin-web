@@ -23,8 +23,8 @@ import (
 // @Router /role/list/{ids} [GET]
 func FindRoleByIds(c *gin.Context) {
 	ids := req.UintIds(c)
-	s := cache_service.New(c)
-	list := s.FindRoleByIds(ids)
+	cs := cache_service.New(c)
+	list := cs.FindRoleByIds(ids)
 	resp.SuccessWithData(list, &[]response.Role{})
 }
 
@@ -44,8 +44,8 @@ func FindRole(c *gin.Context) {
 	// bind current user role sort(low level cannot view high level)
 	r.CurrentRoleSort = *user.Role.Sort
 
-	s := cache_service.New(c)
-	list := s.FindRole(&r)
+	cs := cache_service.New(c)
+	list := cs.FindRole(&r)
 	resp.SuccessWithPageData(list, &[]response.Role{}, r.Page)
 }
 
@@ -68,8 +68,8 @@ func CreateRole(c *gin.Context) {
 		resp.CheckErr("sort must >= %d", *user.Role.Sort)
 	}
 
-	s := service.New(c)
-	err := s.Q.Create(r, new(models.SysRole))
+	my := service.New(c)
+	err := my.Q.Create(r, new(models.SysRole))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -100,15 +100,15 @@ func UpdateRoleById(c *gin.Context) {
 		resp.CheckErr("cannot disable your role")
 	}
 
-	s := service.New(c)
-	err := s.Q.UpdateById(id, r, new(models.SysRole))
+	my := service.New(c)
+	err := my.Q.UpdateById(id, r, new(models.SysRole))
 	resp.CheckErr(err)
 	resp.Success()
 }
 
 func RouterFindRoleKeywordByRoleIds(c *gin.Context, roleIds []uint) []string {
-	s := cache_service.New(c)
-	roles := s.FindRoleByIds(roleIds)
+	cs := cache_service.New(c)
+	roles := cs.FindRoleByIds(roleIds)
 	keywords := make([]string, 0)
 	for _, role := range roles {
 		keywords = append(keywords, role.Keyword)
@@ -133,8 +133,8 @@ func BatchDeleteRoleByIds(c *gin.Context) {
 		resp.CheckErr("cannot delete your role")
 	}
 
-	s := service.New(c)
-	err := s.DeleteRoleByIds(r.Uints())
+	my := service.New(c)
+	err := my.DeleteRoleByIds(r.Uints())
 	resp.CheckErr(err)
 	resp.Success()
 }

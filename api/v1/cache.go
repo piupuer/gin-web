@@ -10,9 +10,9 @@ import (
 )
 
 // get user info from cache by uid
-func CacheGetUserInfo(c context.Context, uid uint) (*response.UserInfo, bool) {
+func CacheGetUserInfo(ctx context.Context, uid uint) (*response.UserInfo, bool) {
 	if global.Conf.Redis.Enable {
-		res, err := global.Redis.HGet(c, getUserInfoCacheKeyPrefix(), fmt.Sprintf("%d", uid)).Result()
+		res, err := global.Redis.HGet(ctx, getUserInfoCacheKeyPrefix(), fmt.Sprintf("%d", uid)).Result()
 		if err == nil && res != "" {
 			item := response.UserInfo{}
 			utils.Json2Struct(res, &item)
@@ -23,30 +23,30 @@ func CacheGetUserInfo(c context.Context, uid uint) (*response.UserInfo, bool) {
 }
 
 // set user info to cache by uid
-func CacheSetUserInfo(c context.Context, uid uint, data response.UserInfo) {
+func CacheSetUserInfo(ctx context.Context, uid uint, data response.UserInfo) {
 	if global.Conf.Redis.Enable {
-		global.Redis.HSet(c, getUserInfoCacheKeyPrefix(), fmt.Sprintf("%d", uid), utils.Struct2Json(data))
+		global.Redis.HSet(ctx, getUserInfoCacheKeyPrefix(), fmt.Sprintf("%d", uid), utils.Struct2Json(data))
 	}
 }
 
 // delete user info
-func CacheDeleteUserInfo(c context.Context, uid uint) {
+func CacheDeleteUserInfo(ctx context.Context, uid uint) {
 	if global.Conf.Redis.Enable {
-		global.Redis.HDel(c, getUserInfoCacheKeyPrefix(), fmt.Sprintf("%d", uid))
+		global.Redis.HDel(ctx, getUserInfoCacheKeyPrefix(), fmt.Sprintf("%d", uid))
 	}
 }
 
 // clear user info cache
-func CacheFlushUserInfo(c context.Context) {
+func CacheFlushUserInfo(ctx context.Context) {
 	if global.Conf.Redis.Enable {
-		global.Redis.Del(c, getUserInfoCacheKeyPrefix())
+		global.Redis.Del(ctx, getUserInfoCacheKeyPrefix())
 	}
 }
 
 // get user from cache by uid
-func CacheGetUser(c context.Context, uid uint) (*models.SysUser, bool) {
+func CacheGetUser(ctx context.Context, uid uint) (*models.SysUser, bool) {
 	if global.Conf.Redis.Enable {
-		res, err := global.Redis.HGet(c, getUserCacheKeyPrefix(), fmt.Sprintf("%d", uid)).Result()
+		res, err := global.Redis.HGet(ctx, getUserCacheKeyPrefix(), fmt.Sprintf("%d", uid)).Result()
 		if err == nil && res != "" {
 			item := models.SysUser{}
 			utils.Json2Struct(res, &item)
@@ -57,23 +57,23 @@ func CacheGetUser(c context.Context, uid uint) (*models.SysUser, bool) {
 }
 
 // set user to cache by uid
-func CacheSetUser(c context.Context, uid uint, data models.SysUser) {
+func CacheSetUser(ctx context.Context, uid uint, data models.SysUser) {
 	if global.Conf.Redis.Enable {
-		global.Redis.HSet(c, getUserCacheKeyPrefix(), fmt.Sprintf("%d", uid), utils.Struct2Json(data))
+		global.Redis.HSet(ctx, getUserCacheKeyPrefix(), fmt.Sprintf("%d", uid), utils.Struct2Json(data))
 	}
 }
 
 // delete user
-func CacheDeleteUser(c context.Context, uid uint) {
+func CacheDeleteUser(ctx context.Context, uid uint) {
 	if global.Conf.Redis.Enable {
-		global.Redis.HDel(c, getUserCacheKeyPrefix(), fmt.Sprintf("%d", uid))
+		global.Redis.HDel(ctx, getUserCacheKeyPrefix(), fmt.Sprintf("%d", uid))
 	}
 }
 
 // clear user cache
-func CacheFlushUser(c context.Context) {
+func CacheFlushUser(ctx context.Context) {
 	if global.Conf.Redis.Enable {
-		global.Redis.Del(c, getUserCacheKeyPrefix())
+		global.Redis.Del(ctx, getUserCacheKeyPrefix())
 	}
 }
 

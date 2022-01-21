@@ -59,8 +59,8 @@ func FindUser(c *gin.Context) {
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	r.CurrentRole = user.Role
-	s := cache_service.New(c)
-	list := s.FindUser(&r)
+	cs := cache_service.New(c)
+	list := cs.FindUser(&r)
 	resp.SuccessWithPageData(list, &[]response.User{}, r.Page)
 }
 
@@ -99,8 +99,8 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	if ok && oldCache.Id > constant.Zero {
 		return *oldCache
 	}
-	s := service.New(c)
-	newUser, _ = s.GetUserById(uid)
+	my := service.New(c)
+	newUser, _ = my.GetUserById(uid)
 	if newUser.Id > constant.Zero {
 		// if user id exists, set to cache
 		CacheSetUser(c, uid, newUser)
@@ -110,7 +110,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 
 func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	user := GetCurrentUser(c)
-	s := cache_service.New(c)
+	cs := cache_service.New(c)
 	var roleSort uint
 	if user.Role.Sort != nil {
 		roleSort = *user.Role.Sort
@@ -118,7 +118,7 @@ func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	pathRoleId, err := req.UintIdWithErr(c)
 	pathRoleKeyword := ""
 	if err == nil {
-		role, _ := s.GetRoleById(pathRoleId)
+		role, _ := cs.GetRoleById(pathRoleId)
 		pathRoleKeyword = role.Keyword
 	}
 	var u ms.User
@@ -156,8 +156,8 @@ func GetUserLoginStatus(c *gin.Context, r *req.UserStatus) (err error) {
 // @Router /user/list/{ids} [GET]
 func FindUserByIds(c *gin.Context) {
 	ids := req.UintIds(c)
-	s := cache_service.New(c)
-	list := s.FindUserByIds(ids)
+	cs := cache_service.New(c)
+	list := cs.FindUserByIds(ids)
 	resp.SuccessWithData(list)
 }
 
@@ -196,10 +196,10 @@ func CreateUser(c *gin.Context) {
 	var r request.CreateUser
 	req.ShouldBind(c, &r)
 	req.Validate(c, r, r.FieldTrans())
-	s := service.New(c)
+	my := service.New(c)
 	// plaintext to ciphertext
 	r.Password = utils.GenPwd(r.InitPassword)
-	err := s.Q.Create(r, new(models.SysUser))
+	err := my.Q.Create(r, new(models.SysUser))
 	resp.CheckErr(err)
 	resp.Success()
 }
@@ -246,8 +246,8 @@ func UpdateUserById(c *gin.Context) {
 		r.Wrong = &j
 	}
 
-	s := service.New(c)
-	err := s.Q.UpdateById(id, r, new(models.SysUser))
+	my := service.New(c)
+	err := my.Q.UpdateById(id, r, new(models.SysUser))
 	resp.CheckErr(err)
 	CacheDeleteUserInfo(c, user.Id)
 	CacheDeleteUser(c, user.Id)
@@ -271,8 +271,8 @@ func BatchDeleteUserByIds(c *gin.Context) {
 		resp.CheckErr("cannot remove yourself")
 	}
 
-	s := service.New(c)
-	err := s.Q.DeleteByIds(r.Uints(), new(models.SysUser))
+	my := service.New(c)
+	err := my.Q.DeleteByIds(r.Uints(), new(models.SysUser))
 	resp.CheckErr(err)
 	CacheFlushUserInfo(c)
 	CacheFlushUser(c)

@@ -20,7 +20,6 @@ func New(ctx context.Context) RedisService {
 	}
 	if global.Conf.Redis.EnableBinlog {
 		ops := []func(*query.RedisOptions){
-			query.WithRedisLogger(global.Log),
 			query.WithRedisCtx(ctx),
 			query.WithRedisClient(global.Redis),
 			query.WithRedisDatabase(global.Conf.Mysql.DSN.DBName),

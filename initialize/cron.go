@@ -5,6 +5,7 @@ import (
 	"gin-web/pkg/global"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/job"
+	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
 	"os"
 )
@@ -14,7 +15,6 @@ func Cron() {
 		job.Config{
 			RedisClient: global.Redis,
 		},
-		job.WithLogger(global.Log),
 		job.WithCtx(ctx),
 		job.WithAutoRequestId(true),
 	)
@@ -22,6 +22,7 @@ func Cron() {
 		panic(err)
 	}
 	expr := os.Getenv("CRON_RESET")
+	// expr := "@every 600s"
 	if expr != "" {
 		j.AddTask(job.GoodTask{
 			Name: "reset",
@@ -29,12 +30,12 @@ func Cron() {
 			Func: reset,
 		}).Start()
 	}
-	global.Log.Debug("initialize cron job success")
+	log.WithRequestId(ctx).Debug("initialize cron job success")
 }
 
-func reset(c context.Context) error {
-	ctx := query.NewRequestId(c, constant.MiddlewareRequestIdCtxKey)
-	global.Log.Info("[cron job][reset]starting...")
+func reset(ctx context.Context) error {
+	ctx = query.NewRequestId(ctx, constant.MiddlewareRequestIdCtxKey)
+	log.WithRequestId(ctx).Info("[cron job][reset]starting...")
 
 	if global.Conf.Redis.EnableBinlog {
 		global.Redis.Del(ctx, []string{
@@ -72,6 +73,6 @@ func reset(c context.Context) error {
 	}
 	Data()
 
-	global.Log.Info("[cron job][reset]ended")
+	log.WithRequestId(ctx).Info("[cron job][reset]ended")
 	return nil
 }

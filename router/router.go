@@ -12,6 +12,7 @@ import (
 	hv1 "github.com/piupuer/go-helper/api/v1"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/query"
 	"github.com/piupuer/go-helper/pkg/req"
@@ -27,7 +28,6 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 
 	// replace default router
 	gin.DebugPrintRouteFunc = middleware.PrintRouter(
-		middleware.WithPrintRouterLogger(global.Log),
 		middleware.WithPrintRouterCtx(ctx),
 	)
 
@@ -41,7 +41,6 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 		middleware.SecurityHeader,
 		middleware.RequestId(),
 		middleware.Sign(
-			middleware.WithSignLogger(global.Log),
 			middleware.WithSignCheckScope(false),
 			middleware.WithSignGetSignUser(func(c *gin.Context, appId string) ms.SignUser {
 				return ms.SignUser{
@@ -59,11 +58,9 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			}),
 		),
 		middleware.AccessLog(
-			middleware.WithAccessLogLogger(global.Log),
 			middleware.WithAccessLogUrlPrefix(global.Conf.System.UrlPrefix),
 		),
 		middleware.OperationLog(
-			middleware.WithOperationLogLogger(global.Log),
 			middleware.WithOperationLogRedis(global.Redis),
 			middleware.WithOperationLogCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, constant.MiddlewareOperationLogApiCacheKey)),
 			middleware.WithOperationLogUrlPrefix(global.Conf.System.UrlPrefix),
@@ -86,15 +83,14 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 	apiGroup.GET("/ping", api.Ping)
 
 	jwtOps := []func(*middleware.JwtOptions){
-		middleware.WithJwtLogger(global.Log),
 		middleware.WithJwtRealm(global.Conf.Jwt.Realm),
 		middleware.WithJwtKey(global.Conf.Jwt.Key),
 		middleware.WithJwtTimeout(global.Conf.Jwt.Timeout),
 		middleware.WithJwtMaxRefresh(global.Conf.Jwt.MaxRefresh),
 		middleware.WithJwtPrivateBytes(global.Conf.Jwt.RSAPrivateBytes),
 		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, r req.LoginCheck) (userId int64, err error) {
-			s := cache_service.New(c)
-			user, err := s.LoginCheck(r)
+			cs := cache_service.New(c)
+			user, err := cs.LoginCheck(r)
 			return int64(user.Id), err
 		}),
 	}
@@ -114,7 +110,6 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 
 	// init default routers
 	nr := hr.NewRouter(
-		hr.WithLogger(global.Log),
 		hr.WithRedis(global.Redis),
 		hr.WithRedisBinlog(global.Conf.Redis.EnableBinlog),
 		hr.WithGroup(v1Group),
@@ -169,6 +164,6 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 	InitRoleRouter(nr)
 	InitUserRouter(nr)
 
-	global.Log.Info("initialize http router success")
+	log.WithRequestId(ctx).Info("initialize http router success")
 	return r
 }

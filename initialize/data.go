@@ -8,6 +8,7 @@ import (
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/utils"
@@ -35,7 +36,7 @@ func Data() {
 	err := data(my)
 	if err != nil {
 		my.Q.Tx.Rollback()
-		global.Log.Error("initialize data failed: %v", err)
+		log.WithRequestId(ctx).Error("initialize data failed: %v", err)
 	} else {
 		my.Q.Tx.Commit()
 	}

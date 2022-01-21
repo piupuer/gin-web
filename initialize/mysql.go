@@ -9,7 +9,7 @@ import (
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/binlog"
 	"github.com/piupuer/go-helper/pkg/fsm"
-	"github.com/piupuer/go-helper/pkg/logger"
+	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
@@ -26,7 +26,7 @@ func Mysql() {
 	}
 	global.Conf.Mysql.DSN = *cfg
 
-	global.Log.Info("mysql dsn: %s", cfg.FormatDSN())
+	log.WithRequestId(ctx).Info("mysql dsn: %s", cfg.FormatDSN())
 	init := false
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
@@ -42,7 +42,7 @@ func Mysql() {
 			}
 		}
 	}()
-	l := logger.NewDefaultGormLogger()
+	l := log.NewDefaultGormLogger()
 	if global.Conf.Mysql.NoSql {
 		// not show sql log
 		l = l.LogMode(glogger.Silent)
@@ -66,7 +66,7 @@ func Mysql() {
 	global.Mysql = db
 	autoMigrate()
 	binlogListen()
-	global.Log.Info("initialize mysql success")
+	log.WithRequestId(ctx).Info("initialize mysql success")
 }
 
 func autoMigrate() {
@@ -94,11 +94,10 @@ func autoMigrate() {
 
 func binlogListen() {
 	if !global.Conf.Redis.EnableBinlog {
-		global.Log.Info("if redis is not used or binlog is not enabled, there is no need to initialize the MySQL binlog listener")
+		log.WithRequestId(ctx).Info("if redis is not used or binlog is not enabled, there is no need to initialize the MySQL binlog listener")
 		return
 	}
 	err := binlog.NewMysqlBinlog(
-		binlog.WithLogger(global.Log),
 		binlog.WithCtx(ctx),
 		binlog.WithRedis(global.Redis),
 		binlog.WithDb(global.Mysql),

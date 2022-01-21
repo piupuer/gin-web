@@ -5,6 +5,7 @@ import (
 	"github.com/casbin/casbin/v2"
 	"github.com/casbin/casbin/v2/model"
 	gormadapter "github.com/casbin/gorm-adapter/v3"
+	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/pkg/errors"
 )
 
@@ -14,7 +15,7 @@ func CasbinEnforcer() {
 		panic(errors.Wrap(err, "initialize casbin enforcer failed"))
 	}
 	global.CasbinEnforcer = e
-	global.Log.Info("initialize casbin enforcer success")
+	log.WithRequestId(ctx).Info("initialize casbin enforcer success")
 }
 
 func mysqlCasbin() (*casbin.Enforcer, error) {

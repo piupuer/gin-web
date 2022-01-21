@@ -2,7 +2,7 @@ package global
 
 import (
 	"github.com/go-sql-driver/mysql"
-	"go.uber.org/zap/zapcore"
+	"github.com/piupuer/go-helper/pkg/log"
 )
 
 // config from conf/config.dev.yml
@@ -31,14 +31,11 @@ type SystemConfiguration struct {
 }
 
 type LogsConfiguration struct {
-	Level                    zapcore.Level `mapstructure:"level" json:"level"`
-	Path                     string        `mapstructure:"path" json:"path"`
-	MaxSize                  int           `mapstructure:"max-size" json:"maxSize"`
-	MaxBackups               int           `mapstructure:"max-backups" json:"maxBackups"`
-	MaxAge                   int           `mapstructure:"max-age" json:"maxAge"`
-	Compress                 bool          `mapstructure:"compress" json:"compress"`
-	OperationKey             string        `mapstructure:"operation-key" json:"operationKey"`
-	OperationAllowedToDelete bool          `mapstructure:"operation-allowed-to-delete" json:"operationAllowedToDelete"`
+	Level                    log.Level `mapstructure:"level" json:"level"`
+	MaxAge                   int       `mapstructure:"max-age" json:"maxAge"`
+	Compress                 bool      `mapstructure:"compress" json:"compress"`
+	OperationKey             string    `mapstructure:"operation-key" json:"operationKey"`
+	OperationAllowedToDelete bool      `mapstructure:"operation-allowed-to-delete" json:"operationAllowedToDelete"`
 }
 
 type MysqlConfiguration struct {
