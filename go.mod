@@ -12,14 +12,12 @@ require (
 	github.com/golang-module/carbon v1.5.5
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.4
-	github.com/natefinch/lumberjack v2.0.0+incompatible
-	github.com/piupuer/go-helper v1.0.3-0.20220114021126-bc76bd6e793f
+	github.com/piupuer/go-helper v1.0.3-0.20220121055439-1e5933ad87df
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.3.2
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
 	github.com/swaggo/gin-swagger v1.3.3
 	github.com/swaggo/swag v1.7.8
-	go.uber.org/zap v1.19.1
 	gorm.io/driver/mysql v1.2.2
 	gorm.io/gorm v1.22.4
 )
@@ -112,10 +110,11 @@ require (
 	github.com/ulule/limiter/v3 v3.9.0 // indirect
 	go.uber.org/atomic v1.7.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
+	go.uber.org/zap v1.19.1 // indirect
 	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3 // indirect
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
-	golang.org/x/sys v0.0.0-20210809222454-d867a43fc93e // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
 	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
