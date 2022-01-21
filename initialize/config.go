@@ -7,6 +7,7 @@ import (
 	"gin-web/pkg/global"
 	"github.com/gobuffalo/packr/v2"
 	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -113,6 +114,13 @@ func Config(c context.Context) {
 	} else {
 		global.Conf.Jwt.RSAPrivateBytes = privateBytes
 	}
+
+	// change default logger
+	log.DefaultWrapper = log.NewWrapper(log.New(
+		log.WithCategory(constant.LogCategoryLogrus),
+		log.WithLevel(global.Conf.Logs.Level),
+		log.WithJson(false),
+	))
 
 	fmt.Printf("initialize config success, config env: %s_CONF: %s\n", global.ProEnvName, global.ConfBox.ConfEnv)
 }

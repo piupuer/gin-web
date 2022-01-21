@@ -22,13 +22,8 @@ system:
   amap-key: ''
 
 logs:
-  # logger level(-1:Debug, 0:Info, -1<=level<=5, refer to zap.level)
-  level: -1
-  path: logs
-  max-size: 50
-  max-backups: 100
-  max-age: 30
-  compress: false
+  # logger level(4:Info 5:Debug, 0<=level<=6, refer to go-helper log.level)
+  level: 5
   # operation log context key
   operation-key: operation_log_response
   # allow users to delete operation logs
