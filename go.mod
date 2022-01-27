@@ -8,11 +8,10 @@ require (
 	github.com/gin-gonic/gin v1.7.7
 	github.com/go-redis/redis/v8 v8.11.4
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/gobuffalo/packr/v2 v2.5.1
 	github.com/golang-module/carbon v1.5.5
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.4
-	github.com/piupuer/go-helper v1.0.3-0.20220121055439-1e5933ad87df
+	github.com/piupuer/go-helper v1.0.3-0.20220127062939-674eefe036c6
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.3.2
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
@@ -45,7 +44,6 @@ require (
 	github.com/go-playground/universal-translator v0.18.0 // indirect
 	github.com/go-playground/validator/v10 v10.4.1 // indirect
 	github.com/gobuffalo/envy v1.7.0 // indirect
-	github.com/gobuffalo/logger v1.0.0 // indirect
 	github.com/gobuffalo/packd v0.3.0 // indirect
 	github.com/gobuffalo/packr v1.30.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.2.0 // indirect
@@ -69,7 +67,6 @@ require (
 	github.com/joho/godotenv v1.3.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.10 // indirect
-	github.com/karrick/godirwalk v1.10.12 // indirect
 	github.com/klauspost/compress v1.13.5 // indirect
 	github.com/klauspost/cpuid v1.3.1 // indirect
 	github.com/leodido/go-urn v1.2.0 // indirect
@@ -115,7 +112,6 @@ require (
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
 	golang.org/x/net v0.0.0-20211112202133-69e39bad7dc2 // indirect
 	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9 // indirect
-	golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20190308202827-9d24e82272b4 // indirect
 	golang.org/x/tools v0.1.7 // indirect

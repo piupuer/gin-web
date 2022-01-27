@@ -29,7 +29,7 @@ func mysqlCasbin() (*casbin.Enforcer, error) {
 		return nil, errors.WithStack(err)
 	}
 	// read model path
-	config := global.ConfBox.Find(global.Conf.System.CasbinModelPath)
+	config := global.ConfBox.Get(global.Conf.System.CasbinModelPath)
 	cabinModel := model.NewModel()
 	err = cabinModel.LoadModelFromText(string(config))
 	if err != nil {

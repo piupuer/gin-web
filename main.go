@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"gin-web/initialize"
 	"gin-web/pkg/global"
 	"gin-web/router"
@@ -15,6 +16,9 @@ import (
 )
 
 var ctx = query.NewRequestId(nil, constant.MiddlewareRequestIdCtxKey)
+
+//go:embed conf
+var conf embed.FS
 
 // @title Gin Web
 // @version 1.2.1
@@ -36,7 +40,7 @@ func main() {
 	global.RuntimeRoot = strings.TrimSuffix(file, "main.go")
 
 	// initialize components
-	initialize.Config(ctx)
+	initialize.Config(ctx, conf)
 	initialize.Redis()
 	initialize.Mysql()
 	initialize.CasbinEnforcer()
