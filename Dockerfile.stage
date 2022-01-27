@@ -6,7 +6,7 @@ RUN echo "----------------- Gin Web building(Staging) -----------------"
 # enable go modules
 ENV GO111MODULE=on
 # set up an agent to speed up downloading resources
-ENV GOPROXY=https://goproxy.cn
+ENV GOPROXY=https://goproxy.cn,direct
 # set app home dir
 ENV APP_HOME /app/gin-web-stage
 
@@ -16,7 +16,7 @@ WORKDIR $APP_HOME
 
 # copy go.mod / go.sum to download dependent files
 COPY go.mod go.sum ./
-RUN go mod download
+RUN go mod tidy
 
 # copy source files
 COPY . .
@@ -24,12 +24,8 @@ COPY . .
 # save current git version
 RUN chmod +x version.sh && ./version.sh
 
-# packr2 package config files to binary 
-RUN go get github.com/gobuffalo/packr/v2@v2.7.1 && go mod tidy && cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2 && go build && chmod +x packr2
-RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2/packr2 build
-
 # add remote debug plugin
-RUN go get github.com/go-delve/delve@v1.7.0 && go mod tidy && cd $GOPATH/pkg/mod/github.com/go-delve/delve@v1.7.0 && go install github.com/go-delve/delve/cmd/dlv && ls -lh
+RUN go install github.com/go-delve/delve/cmd/dlv@v1.8.0 && cp $GOPATH/bin/dlv .
 
 RUN go build -gcflags "all=-N -l" -o main-stage .
 
@@ -39,6 +35,7 @@ FROM frolvlad/alpine-glibc:alpine-3.12
 
 # set project run mode
 ENV GIN_WEB_MODE staging
+ENV CFG_SYSTEM_PORT 9090
 ENV APP_HOME /app/gin-web-stage
 
 RUN mkdir -p $APP_HOME
@@ -49,7 +46,7 @@ COPY --from=gin-web $APP_HOME/conf ./conf/
 COPY --from=gin-web $APP_HOME/main-stage .
 COPY --from=gin-web $APP_HOME/gitversion .
 COPY --from=gin-web $APP_HOME/stage.sh .
-COPY --from=gin-web /go/bin/dlv .
+COPY --from=gin-web $APP_HOME/dlv .
 
 COPY docker-conf/mysql/mysqldump /usr/bin/mysqldump
 
@@ -67,9 +64,6 @@ RUN apk update \
 
 RUN chmod +x stage.sh
 
-EXPOSE 9090
-
 CMD ["./stage.sh"]
 
-HEALTHCHECK --interval=5s --timeout=3s \
-  CMD curl -fs http://127.0.0.1:9090/stage-api/ping || exit 1
+HEALTHCHECK --interval=5s --timeout=3s CMD curl -fs http://127.0.0.1:$CFG_SYSTEM_PORT/stage-api/ping || exit 1;
