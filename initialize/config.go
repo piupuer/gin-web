@@ -117,13 +117,14 @@ func Config(c context.Context) {
 
 	// change default logger
 	log.DefaultWrapper = log.NewWrapper(log.New(
-		log.WithCategory(constant.LogCategoryLogrus),
+		log.WithCategory(global.Conf.Logs.Category),
 		log.WithLevel(global.Conf.Logs.Level),
-		log.WithJson(false),
+		log.WithJson(global.Conf.Logs.Json),
 		log.WithLineNumPrefix(global.RuntimeRoot),
-		log.WithLineNumLevel(1),
-		log.WithKeepVersion(false),
-		log.WithKeepSourceDir(false),
+		log.WithLineNum(global.Conf.Logs.LineNum.Enable),
+		log.WithLineNumLevel(global.Conf.Logs.LineNum.Level),
+		log.WithLineNumVersion(global.Conf.Logs.LineNum.Version),
+		log.WithLineNumSource(global.Conf.Logs.LineNum.Source),
 	))
 
 	log.Info("initialize config success, config env: %s_CONF: %s", global.ProEnvName, global.ConfBox.ConfEnv)

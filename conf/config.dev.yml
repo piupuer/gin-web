@@ -22,8 +22,21 @@ system:
   amap-key: ''
 
 logs:
+  # logger category(zap/logrus, default logrus)
+  category: logrus
   # logger level(4:Info 5:Debug, 0<=level<=6, refer to go-helper log.level)
-  level: 5
+  level: 4
+  # normal text or json str
+  json: false
+  line-num:
+    # show line num
+    enable: true
+    # line num level(package path level)
+    level: 1
+    # keep logger source dir
+    source: false
+    # keep logger version
+    version: true
   # operation log context key
   operation-key: operation_log_response
   # allow users to delete operation logs

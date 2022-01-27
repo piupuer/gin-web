@@ -31,11 +31,19 @@ type SystemConfiguration struct {
 }
 
 type LogsConfiguration struct {
-	Level                    log.Level `mapstructure:"level" json:"level"`
-	MaxAge                   int       `mapstructure:"max-age" json:"maxAge"`
-	Compress                 bool      `mapstructure:"compress" json:"compress"`
-	OperationKey             string    `mapstructure:"operation-key" json:"operationKey"`
-	OperationAllowedToDelete bool      `mapstructure:"operation-allowed-to-delete" json:"operationAllowedToDelete"`
+	Category                 string                   `mapstructure:"category" json:"category"`
+	Level                    log.Level                `mapstructure:"level" json:"level"`
+	Json                     bool                     `mapstructure:"json" json:"json"`
+	LineNum                  LogsLineNumConfiguration `mapstructure:"line-num" json:"lineNum"`
+	OperationKey             string                   `mapstructure:"operation-key" json:"operationKey"`
+	OperationAllowedToDelete bool                     `mapstructure:"operation-allowed-to-delete" json:"operationAllowedToDelete"`
+}
+
+type LogsLineNumConfiguration struct {
+	Enable  bool `mapstructure:"enable" json:"enable"`
+	Level   int  `mapstructure:"level" json:"level"`
+	Version bool `mapstructure:"version" json:"version"`
+	Source  bool `mapstructure:"source" json:"source"`
 }
 
 type MysqlConfiguration struct {
