@@ -11,7 +11,10 @@ import (
 )
 
 var (
+	// Mode project mode: development/staging/production
+	// RuntimeRoot runtime root path prefix
 	Mode           string
+	RuntimeRoot    string
 	Conf           Configuration
 	ConfBox        *CustomConfBox
 	Mysql          *gorm.DB

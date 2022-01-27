@@ -9,7 +9,9 @@ import (
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
 	_ "net/http/pprof"
+	"runtime"
 	"runtime/debug"
+	"strings"
 )
 
 var ctx = query.NewRequestId(nil, constant.MiddlewareRequestIdCtxKey)
@@ -28,6 +30,10 @@ func main() {
 			log.WithRequestId(ctx).Error("[%s]project run failed: %v\nstack: %v", global.ProName, err, string(debug.Stack()))
 		}
 	}()
+
+	// get runtime root
+	_, file, _, _ := runtime.Caller(0)
+	global.RuntimeRoot = strings.TrimSuffix(file, "main.go")
 
 	// initialize components
 	initialize.Config(ctx)

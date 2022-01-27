@@ -120,9 +120,13 @@ func Config(c context.Context) {
 		log.WithCategory(constant.LogCategoryLogrus),
 		log.WithLevel(global.Conf.Logs.Level),
 		log.WithJson(false),
+		log.WithLineNumPrefix(global.RuntimeRoot),
+		log.WithLineNumLevel(1),
+		log.WithKeepVersion(false),
+		log.WithKeepSourceDir(false),
 	))
 
-	fmt.Printf("initialize config success, config env: %s_CONF: %s\n", global.ProEnvName, global.ConfBox.ConfEnv)
+	log.Info("initialize config success, config env: %s_CONF: %s", global.ProEnvName, global.ConfBox.ConfEnv)
 }
 
 func readConfig(v *viper.Viper, configFile string) {
