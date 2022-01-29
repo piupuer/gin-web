@@ -110,7 +110,7 @@ func Config(c context.Context, conf embed.FS) {
 		log.WithLevel(global.Conf.Logs.Level),
 		log.WithJson(global.Conf.Logs.Json),
 		log.WithLineNumPrefix(global.RuntimeRoot),
-		log.WithLineNum(global.Conf.Logs.LineNum.Enable),
+		log.WithLineNum(!global.Conf.Logs.LineNum.Disable),
 		log.WithLineNumLevel(global.Conf.Logs.LineNum.Level),
 		log.WithLineNumVersion(global.Conf.Logs.LineNum.Version),
 		log.WithLineNumSource(global.Conf.Logs.LineNum.Source),

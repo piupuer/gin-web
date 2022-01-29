@@ -29,8 +29,8 @@ logs:
   # normal text or json str
   json: false
   line-num:
-    # show line num
-    enable: true
+    # disable line num
+    disable: false
     # line num level(package path level)
     level: 1
     # keep logger source dir

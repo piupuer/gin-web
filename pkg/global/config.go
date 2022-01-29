@@ -40,7 +40,7 @@ type LogsConfiguration struct {
 }
 
 type LogsLineNumConfiguration struct {
-	Enable  bool `mapstructure:"enable" json:"enable"`
+	Disable bool `mapstructure:"disable" json:"disable"`
 	Level   int  `mapstructure:"level" json:"level"`
 	Version bool `mapstructure:"version" json:"version"`
 	Source  bool `mapstructure:"source" json:"source"`
