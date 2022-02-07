@@ -116,16 +116,16 @@ func Config(c context.Context, conf embed.FS) {
 		log.WithLineNumSource(global.Conf.Logs.LineNum.Source),
 	))
 
-	log.Info("initialize config success, config env: %s_CONF: %s", global.ProEnvName, box.Dir)
+	log.Info("initialize config success, config env: `%s_CONF: %s`", global.ProEnvName, box.Dir)
 }
 
 func readConfig(box ms.ConfBox, v *viper.Viper, configFile string) {
 	v.SetConfigType(configType)
 	config := box.Get(configFile)
 	if len(config) == 0 {
-		panic(fmt.Sprintf("initialize config failed, config env: %s_CONF: %s", global.ProEnvName, box.Dir))
+		panic(fmt.Sprintf("initialize config failed, config env: `%s_CONF: %s`", global.ProEnvName, box.Dir))
 	}
 	if err := v.ReadConfig(bytes.NewReader(config)); err != nil {
-		panic(errors.Wrapf(err, "initialize config failed, config env: %s_CONF: %s", global.ProEnvName, box.Dir))
+		panic(errors.Wrapf(err, "initialize config failed, config env: `%s_CONF: %s`", global.ProEnvName, box.Dir))
 	}
 }
