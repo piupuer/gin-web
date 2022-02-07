@@ -24,6 +24,8 @@ func Mysql() {
 	if err != nil {
 		panic(errors.Wrap(err, "initialize mysql failed"))
 	}
+	// create database if not exists
+	query.MigrateDatabase(*cfg)
 	global.Conf.Mysql.DSN = *cfg
 
 	log.WithRequestId(ctx).Info("mysql dsn: %s", cfg.FormatDSN())
@@ -70,8 +72,6 @@ func Mysql() {
 }
 
 func autoMigrate() {
-	// migrate database
-	query.MigrateDatabase(global.Conf.Mysql.DSN)
 	// migrate tables
 	global.Mysql.WithContext(ctx).AutoMigrate(
 		new(ms.SysMenu),
