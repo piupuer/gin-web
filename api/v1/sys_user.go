@@ -3,18 +3,29 @@ package v1
 import (
 	"fmt"
 	"gin-web/models"
+	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
+	"github.com/jinzhu/copier"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"strings"
 )
 
+// GetUserInfo
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description GetUserInfo
+// @Router /user/info [GET]
 func GetUserInfo(c *gin.Context) {
 	user := GetCurrentUser(c)
 	oldCache, ok := CacheGetUserInfo(c, user.Id)
@@ -23,7 +34,7 @@ func GetUserInfo(c *gin.Context) {
 		return
 	}
 
-	var rp response.UserInfoResp
+	var rp response.UserInfo
 	utils.Struct2StructByJson(user, &rp)
 	rp.Roles = []string{
 		"admin",
@@ -34,18 +45,36 @@ func GetUserInfo(c *gin.Context) {
 	resp.SuccessWithData(rp)
 }
 
+// FindUser
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description FindUser
+// @Param params query request.User true "params"
+// @Router /user/list [GET]
 func FindUser(c *gin.Context) {
-	var r request.UserReq
+	var r request.User
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	r.CurrentRole = user.Role
-	s := service.New(c)
-	list := s.FindUser(&r)
-	resp.SuccessWithPageData(list, []response.UserResp{}, r.Page)
+	cs := cache_service.New(c)
+	list := cs.FindUser(&r)
+	resp.SuccessWithPageData(list, &[]response.User{}, r.Page)
 }
 
+// ChangePwd
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description ChangePwd
+// @Param params body request.ChangePwd true "params"
+// @Router /user/changePwd [PUT]
 func ChangePwd(c *gin.Context) {
-	var r request.ChangePwdReq
+	var r request.ChangePwd
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	query := global.Mysql.Where("username = ?", user.Username).First(&user)
@@ -60,25 +89,28 @@ func ChangePwd(c *gin.Context) {
 }
 
 func GetCurrentUser(c *gin.Context) models.SysUser {
-	userId, exists := c.Get("user")
+	userId, exists := c.Get(constant.MiddlewareJwtUserCtxKey)
 	var newUser models.SysUser
 	if !exists {
 		return newUser
 	}
 	uid := utils.Str2Uint(fmt.Sprintf("%d", userId))
 	oldCache, ok := CacheGetUser(c, uid)
-	if ok {
+	if ok && oldCache.Id > constant.Zero {
 		return *oldCache
 	}
-	s := service.New(c)
-	newUser, _ = s.GetUserById(uid)
-	CacheSetUser(c, uid, newUser)
+	my := service.New(c)
+	newUser, _ = my.GetUserById(uid)
+	if newUser.Id > constant.Zero {
+		// if user id exists, set to cache
+		CacheSetUser(c, uid, newUser)
+	}
 	return newUser
 }
 
 func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	user := GetCurrentUser(c)
-	s := service.New(c)
+	cs := cache_service.New(c)
 	var roleSort uint
 	if user.Role.Sort != nil {
 		roleSort = *user.Role.Sort
@@ -86,24 +118,50 @@ func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	pathRoleId, err := req.UintIdWithErr(c)
 	pathRoleKeyword := ""
 	if err == nil {
-		role, _ := s.GetRoleById(pathRoleId)
+		role, _ := cs.GetRoleById(pathRoleId)
 		pathRoleKeyword = role.Keyword
 	}
-	return ms.User{
-		M: ms.M{
-			Id:        user.Id,
-			CreatedAt: user.CreatedAt,
-			UpdatedAt: user.UpdatedAt,
-		},
-		RoleId:          user.RoleId,
-		RoleSort:        roleSort,
-		RoleKeyword:     user.Role.Keyword,
-		PathRoleId:      pathRoleId,
-		PathRoleKeyword: pathRoleKeyword,
-	}
+	var u ms.User
+	copier.Copy(&u, user)
+	u.RoleId = user.RoleId
+	u.RoleName = user.Role.Name
+	u.RoleSort = roleSort
+	u.RoleKeyword = user.Role.Keyword
+	u.PathRoleId = pathRoleId
+	u.PathRoleKeyword = pathRoleKeyword
+	return u
 }
 
-func FindUserByIds(c *gin.Context, userIds []uint) []ms.User {
+func GetUserLoginStatus(c *gin.Context, r *req.UserStatus) (err error) {
+	my := service.New(c)
+	var u models.SysUser
+	u, err = my.GetUserByUsername(r.Username)
+	if err != nil {
+		return nil
+	}
+	r.Locked = u.Locked
+	r.LockExpire = u.LockExpire
+	r.Wrong = u.Wrong
+	return
+}
+
+// FindUserByIds
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description FindUserByIds
+// @Param ids path string true "ids"
+// @Router /user/list/{ids} [GET]
+func FindUserByIds(c *gin.Context) {
+	ids := req.UintIds(c)
+	cs := cache_service.New(c)
+	list := cs.FindUserByIds(ids)
+	resp.SuccessWithData(list)
+}
+
+func RouterFindUserByIds(c *gin.Context, userIds []uint) []ms.User {
 	users := make([]models.SysUser, 0)
 	global.Mysql.
 		Model(&models.SysUser{}).
@@ -114,20 +172,50 @@ func FindUserByIds(c *gin.Context, userIds []uint) []ms.User {
 	return newUsers
 }
 
+func RouterFindRoleByIds(c *gin.Context, roleIds []uint) []ms.Role {
+	roles := make([]models.SysRole, 0)
+	global.Mysql.
+		Model(&models.SysRole{}).
+		Where("id IN (?)", roleIds).
+		Find(&roles)
+	newRoles := make([]ms.Role, 0)
+	utils.Struct2StructByJson(roles, &newRoles)
+	return newRoles
+}
+
+// CreateUser
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description CreateUser
+// @Param params body request.CreateUser true "params"
+// @Router /user/create [POST]
 func CreateUser(c *gin.Context) {
-	var r request.CreateUserReq
+	var r request.CreateUser
 	req.ShouldBind(c, &r)
 	req.Validate(c, r, r.FieldTrans())
-	s := service.New(c)
+	my := service.New(c)
 	// plaintext to ciphertext
 	r.Password = utils.GenPwd(r.InitPassword)
-	err := s.Q.Create(r, new(models.SysUser))
+	err := my.Q.Create(r, new(models.SysUser))
 	resp.CheckErr(err)
 	resp.Success()
 }
 
+// UpdateUserById
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description UpdateUserById
+// @Param id path uint true "id"
+// @Param params body request.UpdateUser true "params"
+// @Router /user/update/{id} [PATCH]
 func UpdateUserById(c *gin.Context) {
-	var r request.UpdateUserReq
+	var r request.UpdateUser
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
 
@@ -151,14 +239,30 @@ func UpdateUserById(c *gin.Context) {
 		}
 	}
 
-	s := service.New(c)
-	err := s.Q.UpdateById(id, r, new(models.SysUser))
+	if r.Locked != nil && *r.Locked == req.NullUint(constant.One) {
+		var i int64 = 0
+		var j = 0
+		r.LockExpire = &i
+		r.Wrong = &j
+	}
+
+	my := service.New(c)
+	err := my.Q.UpdateById(id, r, new(models.SysUser))
 	resp.CheckErr(err)
 	CacheDeleteUserInfo(c, user.Id)
 	CacheDeleteUser(c, user.Id)
 	resp.Success()
 }
 
+// BatchDeleteUserByIds
+// @Security Bearer
+// @Accept json
+// @Produce json
+// @Success 201 {object} resp.Resp "success"
+// @Tags User
+// @Description BatchDeleteUserByIds
+// @Param ids body req.Ids true "ids"
+// @Router /user/delete/batch [DELETE]
 func BatchDeleteUserByIds(c *gin.Context) {
 	var r req.Ids
 	req.ShouldBind(c, &r)
@@ -167,8 +271,8 @@ func BatchDeleteUserByIds(c *gin.Context) {
 		resp.CheckErr("cannot remove yourself")
 	}
 
-	s := service.New(c)
-	err := s.Q.DeleteByIds(r.Uints(), new(models.SysUser))
+	my := service.New(c)
+	err := my.Q.DeleteByIds(r.Uints(), new(models.SysUser))
 	resp.CheckErr(err)
 	CacheFlushUserInfo(c)
 	CacheFlushUser(c)

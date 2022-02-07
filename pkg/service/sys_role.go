@@ -5,6 +5,7 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/request"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/pkg/errors"
 	"strings"
 )
 
@@ -21,28 +22,28 @@ func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) []uint {
 	return roleIds
 }
 
-func (my MysqlService) FindRole(req *request.RoleReq) []models.SysRole {
+func (my MysqlService) FindRole(r *request.Role) []models.SysRole {
 	list := make([]models.SysRole, 0)
-	query := my.Q.Tx.
+	q := my.Q.Tx.
 		Model(&models.SysRole{}).
 		Order("created_at DESC").
-		Where("sort >= ?", req.CurrentRoleSort)
-	name := strings.TrimSpace(req.Name)
+		Where("sort >= ?", r.CurrentRoleSort)
+	name := strings.TrimSpace(r.Name)
 	if name != "" {
-		query = query.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
+		q.Where("name LIKE ?", fmt.Sprintf("%%%s%%", name))
 	}
-	keyword := strings.TrimSpace(req.Keyword)
+	keyword := strings.TrimSpace(r.Keyword)
 	if keyword != "" {
-		query = query.Where("keyword LIKE ?", fmt.Sprintf("%%%s%%", keyword))
+		q.Where("keyword LIKE ?", fmt.Sprintf("%%%s%%", keyword))
 	}
-	if req.Status != nil {
-		if *req.Status > 0 {
-			query = query.Where("status = ?", 1)
+	if r.Status != nil {
+		if *r.Status > 0 {
+			q.Where("status = ?", 1)
 		} else {
-			query = query.Where("status = ?", 0)
+			q.Where("status = ?", 0)
 		}
 	}
-	my.Q.FindWithPage(query, &req.Page, &list)
+	my.Q.FindWithPage(q, &r.Page, &list)
 	return list
 }
 
@@ -56,7 +57,7 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	oldCasbins := make([]ms.SysRoleCasbin, 0)
 	for _, v := range roles {
 		if len(v.Users) > 0 {
-			return fmt.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users))
+			return errors.Errorf("role %s has %d associated users, please delete the user before deleting the role", v.Name, len(v.Users))
 		}
 		oldCasbins = append(oldCasbins, my.Q.FindRoleCasbin(ms.SysRoleCasbin{
 			Keyword: v.Keyword,
@@ -68,6 +69,7 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	}
 	if len(newIds) > 0 {
 		err = my.Q.DeleteByIds(newIds, new(models.SysRole))
+		err = errors.WithStack(err)
 	}
 	return
 }
@@ -87,7 +89,7 @@ func (my MysqlService) FindRoleByIds(ids []uint) []models.SysRole {
 	my.Q.Tx.
 		Model(&models.SysRole{}).
 		Where("id IN (?)", ids).
-		Where("status", "=", models.SysRoleStatusNormal).
+		Where("status = ?", models.SysRoleStatusNormal).
 		Find(&roles)
 	return roles
 }

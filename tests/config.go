@@ -45,12 +45,12 @@ func Config() {
 	}
 	env := strings.ToLower(os.Getenv(fmt.Sprintf("%s_MODE", global.ProEnvName)))
 	configName := ""
-	if env == global.Stage {
+	if env == constant.Stage {
 		configName = stagingConfig
-	} else if env == global.Prod {
+	} else if env == constant.Prod {
 		configName = productionConfig
 	} else {
-		env = global.Dev
+		env = constant.Dev
 	}
 	global.Mode = env
 	if configName != "" {

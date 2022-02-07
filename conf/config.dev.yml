@@ -22,17 +22,23 @@ system:
   amap-key: ''
 
 logs:
-  # logger level(-1:Debug, 0:Info, -1<=level<=5, refer to zap.level)
-  level: -1
-  path: logs
-  max-size: 50
-  max-backups: 100
-  max-age: 30
-  compress: false
+  # logger category(zap/logrus, default logrus)
+  category: logrus
+  # logger level(4:Info 5:Debug, 0<=level<=6, refer to go-helper log.level)
+  level: 4
+  # normal text or json str
+  json: false
+  line-num:
+    # disable line num
+    disable: false
+    # line num level(package path level)
+    level: 1
+    # keep logger source dir
+    source: false
+    # keep logger version
+    version: true
   # operation log context key
   operation-key: operation_log_response
-  # not record operation log when url prefix equal operation-disabled-paths
-  operation-disabled-paths: /operation/log/delete/batch,/upload/file
   # allow users to delete operation logs
   operation-allowed-to-delete: false
 
@@ -75,9 +81,3 @@ upload:
   single-max-size: 32
   # concurrent number of merged files
   merge-concurrent-count: 10
-  # refer to cron: https://en.wikipedia.org/wiki/Cron
-  compress-image-cron-task: ''
-  # default save-dir
-  compress-image-root-dir:
-  # the source file is saved in the directory. It is recommended to open it to avoid secondary compression loss of quality
-  compress-image-original-save-dir: .before

@@ -2,7 +2,7 @@ package global
 
 import (
 	"github.com/go-sql-driver/mysql"
-	"go.uber.org/zap/zapcore"
+	"github.com/piupuer/go-helper/pkg/log"
 )
 
 // config from conf/config.dev.yml
@@ -17,6 +17,7 @@ type Configuration struct {
 
 type SystemConfiguration struct {
 	MachineId            uint32 `mapstructure:"machine-id" json:"machineId"`
+	Base                 string `mapstructure:"-" json:"-"`
 	UrlPrefix            string `mapstructure:"url-prefix" json:"urlPrefix"`
 	ApiVersion           string `mapstructure:"api-version" json:"apiVersion"`
 	Port                 int    `mapstructure:"port" json:"port"`
@@ -29,16 +30,19 @@ type SystemConfiguration struct {
 }
 
 type LogsConfiguration struct {
-	Level                    zapcore.Level `mapstructure:"level" json:"level"`
-	Path                     string        `mapstructure:"path" json:"path"`
-	MaxSize                  int           `mapstructure:"max-size" json:"maxSize"`
-	MaxBackups               int           `mapstructure:"max-backups" json:"maxBackups"`
-	MaxAge                   int           `mapstructure:"max-age" json:"maxAge"`
-	Compress                 bool          `mapstructure:"compress" json:"compress"`
-	OperationKey             string        `mapstructure:"operation-key" json:"operationKey"`
-	OperationDisabledPaths   string        `mapstructure:"operation-disabled-paths" json:"operationDisabledPaths"`
-	OperationDisabledPathArr []string      `mapstructure:"-" json:"-"`
-	OperationAllowedToDelete bool          `mapstructure:"operation-allowed-to-delete" json:"operationAllowedToDelete"`
+	Category                 string                   `mapstructure:"category" json:"category"`
+	Level                    log.Level                `mapstructure:"level" json:"level"`
+	Json                     bool                     `mapstructure:"json" json:"json"`
+	LineNum                  LogsLineNumConfiguration `mapstructure:"line-num" json:"lineNum"`
+	OperationKey             string                   `mapstructure:"operation-key" json:"operationKey"`
+	OperationAllowedToDelete bool                     `mapstructure:"operation-allowed-to-delete" json:"operationAllowedToDelete"`
+}
+
+type LogsLineNumConfiguration struct {
+	Disable bool `mapstructure:"disable" json:"disable"`
+	Level   int  `mapstructure:"level" json:"level"`
+	Version bool `mapstructure:"version" json:"version"`
+	Source  bool `mapstructure:"source" json:"source"`
 }
 
 type MysqlConfiguration struct {
@@ -67,10 +71,8 @@ type JwtConfiguration struct {
 }
 
 type UploadConfiguration struct {
-	SaveDir                      string                      `mapstructure:"save-dir" json:"saveDir"`
-	SingleMaxSize                int64                       `mapstructure:"single-max-size" json:"singleMaxSize"`
-	MergeConcurrentCount         int                         `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
-	CompressImageCronTask        string                      `mapstructure:"compress-image-cron-task" json:"compressImageCronTask"`
-	CompressImageRootDir         string                      `mapstructure:"compress-image-root-dir" json:"compressImageRootDir"`
-	CompressImageOriginalSaveDir string                      `mapstructure:"compress-image-original-save-dir" json:"compressImageOriginalSaveDir"`
+	Minio                UploadOssMinioConfiguration `mapstructure:"oss-minio" json:"ossMinio"`
+	SaveDir              string                      `mapstructure:"save-dir" json:"saveDir"`
+	SingleMaxSize        int64                       `mapstructure:"single-max-size" json:"singleMaxSize"`
+	MergeConcurrentCount int                         `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
 }

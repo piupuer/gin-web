@@ -8,6 +8,9 @@ import (
 	m "github.com/go-sql-driver/mysql"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/piupuer/go-helper/pkg/log"
+	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	glogger "gorm.io/gorm/logger"
@@ -18,11 +21,11 @@ import (
 func Mysql() {
 	cfg, err := m.ParseDSN(global.Conf.Mysql.Uri)
 	if err != nil {
-		panic(fmt.Sprintf("initialize mysql failed: %v", err))
+		panic(errors.Wrap(err, "initialize mysql failed"))
 	}
 	global.Conf.Mysql.DSN = *cfg
 
-	global.Log.Info(ctx, "mysql dsn: %s", cfg.FormatDSN())
+	log.WithRequestId(ctx).Info("mysql dsn: %s", cfg.FormatDSN())
 	init := false
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
@@ -38,12 +41,12 @@ func Mysql() {
 			}
 		}
 	}()
-	var l glogger.Interface
+	l := log.NewDefaultGormLogger()
 	if global.Conf.Mysql.NoSql {
 		// not show sql log
-		l = global.Log.LogMode(glogger.Silent)
+		l = l.LogMode(glogger.Silent)
 	} else {
-		l = global.Log.LogMode(glogger.Info)
+		l = l.LogMode(glogger.Info)
 	}
 	db, err := gorm.Open(mysql.Open(cfg.FormatDSN()), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
@@ -56,15 +59,18 @@ func Mysql() {
 		Logger:      l,
 	})
 	if err != nil {
-		panic(fmt.Sprintf("initialize mysql failed: %v", err))
+		panic(errors.Wrap(err, "initialize mysql failed"))
 	}
 	init = true
 	global.Mysql = db
 	autoMigrate()
-	global.Log.Info(ctx, "initialize mysql success")
+	log.WithRequestId(ctx).Info("initialize mysql success")
 }
 
 func autoMigrate() {
+	// migrate database
+	query.MigrateDatabase(global.Conf.Mysql.DSN)
+	// migrate tables
 	global.Mysql.WithContext(ctx).AutoMigrate(
 		new(ms.SysMenu),
 		new(ms.SysMenuRoleRelation),
@@ -79,6 +85,4 @@ func autoMigrate() {
 		new(models.SysUser),
 		new(models.SysRole),
 	)
-	// auto migrate fsm
-	fsm.Migrate(global.Mysql, fsm.WithContext(ctx))
 }

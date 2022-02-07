@@ -24,12 +24,15 @@
 - `Packr` 文件打包工具, 轻松将静态文件打包到编译后的二进制应用中
 - `DCron` 分布式定时任务，同一task只在某台机器上执行一次(需要配置redis)
 - `GoFunk` 常用工具包, 某些方法无需重复造轮子
-- `Workflow` 工作流程管理(由于golang工作流相关轮子很少不太符合项目需要, 因此自己写了一个)
+- `FiniteStateMachine` 有限状态机, 常用于审批流程管理(没有使用工作流, 一是go的轮子太少, 二是有限状态机基本可以涵盖常用的审批流程)
 - `Uploader` 大文件分块上传/多文件、文件夹上传Vue组件[vue-uploader](https://github.com/simple-uploader/vue-uploader/)
 - `MessageCenter` 消息中心(websocket长连接保证实时性, 活跃用户上线时新增消息表, 不活跃用户不管, 有效降低数据量)
 - `testing` 测试标准包, 快速进行单元测试
 - `Grafana Loki` 轻量日志收集工具loki, 支持分布式日志收集(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
 - `Minio` 轻量对象存储服务(需要通过docker运行[gin-web-docker](https://github.com/piupuer/gin-web-docker))
+- `Swagger` Swagger V2接口文档
+- `Captcha` 密码输错次数过多需输入验证码
+- `Sign` API接口签名(防重放攻击、防数据篡改)
 
 ## 中间件
 
@@ -42,25 +45,27 @@
 - `Casbin` 权限访问中间件 -- 基于Cabin RBAC, 对不同角色访问不同API进行校验
 - `Idempotence` 接口幂等性中间件 -- 保证接口不受网络波动影响而重复点击或提交(目前针对create接口加了处理，可根据实际情况更改)
 
-
 ## 默认菜单
 
 - 首页
 - 系统管理
-  - 菜单管理
-  - 角色管理
-  - 用户管理
-  - 接口管理
-  - 工作流管理
-  - 操作日志
-  - 消息推送
-- 测试页面
-  - 测试用例
-  - 我的请假条
-  - 待审批列表
+    - 菜单管理
+    - 角色管理
+    - 用户管理
+    - 接口管理
+    - 数据字典
+    - 操作日志
+    - 消息推送
+    - 机器管理
+- 状态机
+    - 状态机配置
+    - 我的请假条
+    - 待审批列表
 - 上传组件
-  - 上传示例1
-  - 上传示例2(主要是针对ZIP压缩包上传及解压)
+    - 上传示例1
+    - 上传示例2(主要是针对ZIP压缩包上传及解压)
+- 测试页面
+    - 测试用例
 
 ## 在线演示(前端静态文件已上传至阿里云OSS, 访问速度飞起)
 
@@ -82,9 +87,7 @@ go run main.go
 
 > 启动成功之后, 可在浏览器中输入: [http://127.0.0.1:10000/api/ping](http://127.0.0.1:10000/api/ping), 若不能访问请检查Go环境变量或数据库配置是否正确
 
-
-## [文档](https://github.com/piupuer/gin-web/blob/dev/DOCS.md)
-
+## [文档](https://piupuer.github.io/gin-web-slate)
 
 ## 项目结构概览
 
@@ -130,13 +133,15 @@ go run main.go
 
 ## 特别感谢
 
-前端: 
+前端:
 <br/>
 [Element UI](https://github.com/ElemeFE/element): A Vue.js 2.0 UI Toolkit for Web.
 <br/>
-[vue-element-admin](https://github.com/PanJiaChen/vue-element-admin): a production-ready front-end solution for admin interfaces.
+[vue-element-admin](https://github.com/PanJiaChen/vue-element-admin): a production-ready front-end solution for admin
+interfaces.
 <br/>
-[vue-typescript-admin-template](https://github.com/Armour/vue-typescript-admin-template): a production-ready front-end solution for admin interfaces based on vue, typescript and UI Toolkit element-ui.
+[vue-typescript-admin-template](https://github.com/Armour/vue-typescript-admin-template): a production-ready front-end
+solution for admin interfaces based on vue, typescript and UI Toolkit element-ui.
 <br/>
 
 后端:
@@ -145,7 +150,8 @@ go run main.go
 <br/>
 [gin-jwt](https://github.com/appleboy/gin-jwt): a middleware for Gin framework.
 <br/>
-[casbin](https://github.com/casbin/casbin): An authorization library that supports access control models like ACL, RBAC, ABAC in Golang.
+[casbin](https://github.com/casbin/casbin): An authorization library that supports access control models like ACL, RBAC,
+ABAC in Golang.
 <br/>
 [Gorm](https://github.com/jinzhu/gorm): The fantastic ORM library for Golang.
 <br/>
@@ -157,13 +163,17 @@ go run main.go
 <br/>
 [packr](https://github.com/gobuffalo/packr): The simple and easy way to embed static files into Go binaries.
 <br/>
-[go-funk](https://github.com/thoas/go-funk): A modern Go utility library which provides helpers (map, find, contains, filter, ...).
+[go-funk](https://github.com/thoas/go-funk): A modern Go utility library which provides helpers (map, find, contains,
+filter, ...).
 <br/>
 [limiter](https://github.com/ulule/limiter): Dead simple rate limit middleware for Go.
 <br/>
-[validator](https://github.com/go-playground/validator): Go Struct and Field validation, including Cross Field, Cross Struct, Map, Slice and Array diving.
+[validator](https://github.com/go-playground/validator): Go Struct and Field validation, including Cross Field, Cross
+Struct, Map, Slice and Array diving.
 <br/>
 [dcron](https://github.com/libi/dcron): 分布式定时任务库.
+<br/>
+[fsm](https://github.com/looplab/fsm): FSM is a finite state machine for Go.
 <br/>
 
 日志搜集:
@@ -176,9 +186,11 @@ go run main.go
 <br/>
 [gin-admin](https://github.com/LyricTian/gin-admin): RBAC scaffolding based on Gin + Gorm/Mongo + Casbin + Wire.
 <br/>
-[gin-vue-admin](https://github.com/flipped-aurora/gin-vue-admin): Gin-vue-admin is a full-stack (frontend and backend separation) framework designed for management system.
+[gin-vue-admin](https://github.com/flipped-aurora/gin-vue-admin): Gin-vue-admin is a full-stack (frontend and backend
+separation) framework designed for management system.
 <br/>
-[go-admin](https://github.com/wenjianzhang/go-admin): Gin + Vue + Element UI based scaffolding for front and back separation management system.
+[go-admin](https://github.com/wenjianzhang/go-admin): Gin + Vue + Element UI based scaffolding for front and back
+separation management system.
 
 ## 互动交流
 

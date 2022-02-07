@@ -5,7 +5,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 )
 
-type RoleReq struct {
+type Role struct {
 	Name            string `json:"name" form:"name"`
 	Keyword         string `json:"keyword" form:"keyword"`
 	CurrentRoleSort uint   `json:"currentRoleSort"`
@@ -13,7 +13,7 @@ type RoleReq struct {
 	resp.Page
 }
 
-type CreateRoleReq struct {
+type CreateRole struct {
 	CurrentRoleSort uint          `json:"currentRoleSort"`
 	Name            string        `json:"name" validate:"required"`
 	Keyword         string        `json:"keyword" validate:"required"`
@@ -22,7 +22,7 @@ type CreateRoleReq struct {
 	Status          *req.NullUint `json:"status"`
 }
 
-func (s CreateRoleReq) FieldTrans() map[string]string {
+func (s CreateRole) FieldTrans() map[string]string {
 	m := make(map[string]string, 0)
 	m["Name"] = "name"
 	m["Keyword"] = "keyword"
@@ -30,7 +30,7 @@ func (s CreateRoleReq) FieldTrans() map[string]string {
 	return m
 }
 
-type UpdateRoleReq struct {
+type UpdateRole struct {
 	Name    *string       `json:"name"`
 	Keyword *string       `json:"keyword"`
 	Sort    *req.NullUint `json:"sort"`

@@ -1,10 +1,16 @@
 package initialize
 
 import (
+	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/service"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/fsm"
+	"github.com/piupuer/go-helper/pkg/log"
+	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -17,23 +23,38 @@ var (
 	noBreadcrumb = uint(0)
 )
 
+var menuTotal = 0
+
 func Data() {
 	if !global.Conf.Mysql.InitData {
 		return
 	}
-	db := global.Mysql.WithContext(ctx)
+	tx := global.Mysql.WithContext(ctx).Begin()
+	c := query.NewRequestIdReturnGinCtx(ctx, constant.MiddlewareRequestIdCtxKey)
+	c.Set(constant.MiddlewareTransactionTxCtxKey, tx)
+	my := service.New(c)
+	err := data(my)
+	if err != nil {
+		my.Q.Tx.Rollback()
+		log.WithRequestId(ctx).Error("initialize data failed: %v", err)
+	} else {
+		my.Q.Tx.Commit()
+	}
+}
+
+func data(my service.MysqlService) (err error) {
 	// 1. init roles
 	newRoles := make([]models.SysRole, 0)
 	roles := []models.SysRole{
 		{
-			Name:    "Super Admin",
+			Name:    "Super Admin Role",
 			Keyword: "super",
-			Desc:    "Super Admin",
+			Desc:    "Super administrator role",
 		},
 		{
-			Name:    "Guest",
+			Name:    "Guest Role",
 			Keyword: "guest",
-			Desc:    "foreign visitors",
+			Desc:    "External visitor role",
 		},
 	}
 	for i, role := range roles {
@@ -41,8 +62,8 @@ func Data() {
 		id := uint(i + 1)
 		roles[i].Id = id
 		oldRole := models.SysRole{}
-		err := db.Where("id = ?", id).First(&oldRole).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := my.Q.Tx.Where("id = ?", id).First(&oldRole).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
 			role.Id = id
 			role.Status = &status
 			if role.Sort == nil {
@@ -52,10 +73,14 @@ func Data() {
 		}
 	}
 	if len(newRoles) > 0 {
-		db.Create(&newRoles)
+		err = my.Q.Tx.Create(&newRoles).Error
+		if err != nil {
+			return
+		}
 	}
 
 	// 2. init menus
+	menuTotal = 0
 	menus := []ms.SysMenu{
 		{
 			Name:  "dashboardRoot",
@@ -71,24 +96,27 @@ func Data() {
 					Component: "/dashboard/index",
 				},
 			},
+			RoleIds: []uint{
+				roles[1].Id,
+			},
 		},
 		{
 			Name:  "systemRoot",
 			Title: "System Root",
-			Icon:  "component",
+			Icon:  "system",
 			Path:  "/system",
 			Children: []ms.SysMenu{
 				{
 					Name:      "menu",
 					Title:     "Menus",
-					Icon:      "tree-table",
+					Icon:      "menu",
 					Path:      "menu",
 					Component: "/system/menu",
 				},
 				{
 					Name:      "role",
 					Title:     "Roles",
-					Icon:      "peoples",
+					Icon:      "role",
 					Path:      "role",
 					Component: "/system/role",
 				},
@@ -102,35 +130,38 @@ func Data() {
 				{
 					Name:      "api",
 					Title:     "Apis",
-					Icon:      "tree",
+					Icon:      "api",
 					Path:      "api",
 					Component: "/system/api",
 				},
 				{
-					Name:      "workflow",
-					Title:     "Workflows",
-					Icon:      "example",
-					Path:      "workflow",
-					Component: "/system/workflow",
+					Name:      "dict",
+					Title:     "Dictionaries",
+					Icon:      "dict",
+					Path:      "dict",
+					Component: "/system/dict",
 				},
 				{
-					Name:      "operation-log",
+					Name:      "operationLog",
 					Title:     "Operation Logs",
-					Icon:      "example",
+					Icon:      "log",
 					Path:      "operation-log",
 					Component: "/system/operation-log",
 				},
 				{
-					Name:      "message-push",
+					Name:      "messagePush",
 					Title:     "Message Push",
-					Icon:      "guide",
+					Icon:      "push",
 					Path:      "message-push",
 					Component: "/system/message-push",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
 				},
 				{
 					Name:      "machine",
 					Title:     "Machines",
-					Icon:      "guide",
+					Icon:      "machine",
 					Path:      "machine",
 					Component: "/system/machine",
 				},
@@ -168,30 +199,39 @@ func Data() {
 		{
 			Name:  "uploader",
 			Title: "Uploader",
-			Icon:  "back-top",
+			Icon:  "upload",
 			Path:  "/uploader",
 			Children: []ms.SysMenu{
 				{
 					Name:      "uploader1",
 					Title:     "Uploader1",
-					Icon:      "guide",
+					Icon:      "image",
 					Path:      "uploader1",
 					Component: "/uploader/uploader1",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
 				},
 				{
 					Name:      "uploader2",
 					Title:     "Uploader2",
-					Icon:      "guide",
+					Icon:      "zip",
 					Path:      "uploader2",
 					Component: "/uploader/uploader2",
+					RoleIds: []uint{
+						roles[1].Id,
+					},
 				},
 			},
 		},
 	}
 	menus = genMenu(0, menus, roles[0])
-	relations := createMenu(db, menus)
+	relations := createMenu(my.Q.Tx, menus)
 	if len(relations) > 0 {
-		db.Create(relations)
+		err = my.Q.Tx.Create(relations).Error
+		if err != nil {
+			return
+		}
 	}
 
 	// 3. init users
@@ -203,7 +243,7 @@ func Data() {
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "19999999999",
 			Avatar:       avatar,
-			Nickname:     "super admin",
+			Nickname:     "Super Admin",
 			Introduction: "I'm super. Who am I afraid of ?",
 		},
 		{
@@ -211,16 +251,17 @@ func Data() {
 			Password:     utils.GenPwd("123456"),
 			Mobile:       "13999999999",
 			Avatar:       avatar,
-			Nickname:     "guest",
+			Nickname:     "Guest",
 			Introduction: "The man was lazy and left nothing",
 		},
 	}
 	newUsers := make([]models.SysUser, 0)
 	for i, user := range users {
 		id := uint(i + 1)
+		users[i].Id = id
 		oldUser := models.SysUser{}
-		err := db.Where("id = ?", id).First(&oldUser).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := my.Q.Tx.Where("id = ?", id).First(&oldUser).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
 			user.Id = id
 			if user.RoleId == 0 {
 				user.RoleId = id
@@ -229,7 +270,10 @@ func Data() {
 		}
 	}
 	if len(newUsers) > 0 {
-		db.Create(&newUsers)
+		err = my.Q.Tx.Create(&newUsers).Error
+		if err != nil {
+			return
+		}
 	}
 
 	// 4. init apis
@@ -284,7 +328,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/user/update/:userId",
+			Path:     "/v1/user/update/:id",
 			Category: "user",
 			Desc:     "update user",
 		},
@@ -308,7 +352,7 @@ func Data() {
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/menu/all/:roleId",
+			Path:     "/v1/menu/all/:id",
 			Category: "menu",
 			Desc:     "get all menu by role id",
 		},
@@ -320,9 +364,15 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/menu/update/:menuId",
+			Path:     "/v1/menu/update/:id",
 			Category: "menu",
 			Desc:     "update menu",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/menu/role/update/:id",
+			Category: "menu",
+			Desc:     "update role menus",
 		},
 		{
 			Method:   "DELETE",
@@ -344,7 +394,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/role/update/:roleId",
+			Path:     "/v1/role/update/:id",
 			Category: "role",
 			Desc:     "update role",
 		},
@@ -368,7 +418,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/api/update/:roleId",
+			Path:     "/v1/api/update/:id",
 			Category: "api",
 			Desc:     "update api",
 		},
@@ -380,21 +430,99 @@ func Data() {
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/api/all/category/:roleId",
+			Path:     "/v1/api/all/category/:id",
 			Category: "api",
 			Desc:     "get all api by role id",
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/role/menus/update/:roleId",
-			Category: "role",
-			Desc:     "update role menus",
+			Path:     "/v1/api/role/update/:id",
+			Category: "api",
+			Desc:     "update role apis",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/fsm/list",
+			Category: "fsm",
+			Desc:     "find fsm machines",
+		},
+		{
+			Method:   "POST",
+			Path:     "/v1/fsm/create",
+			Category: "fsm",
+			Desc:     "create fsm machine",
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/role/apis/update/:roleId",
-			Category: "role",
-			Desc:     "update role apis",
+			Path:     "/v1/fsm/update/:id",
+			Category: "fsm",
+			Desc:     "update fsm machine",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/fsm/approving/list",
+			Category: "fsm",
+			Desc:     "find fsm pending approve logs",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/fsm/log/track",
+			Category: "fsm",
+			Desc:     "find fsm log history track",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/fsm/submitter/detail",
+			Category: "fsm",
+			Desc:     "get submitter fsm log detail",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/fsm/submitter/detail",
+			Category: "fsm",
+			Desc:     "update submitter fsm log detail",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/fsm/approve",
+			Category: "fsm",
+			Desc:     "approved/refused fsm log",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/fsm/cancel",
+			Category: "fsm",
+			Desc:     "cancelled fsm log",
+		},
+		{
+			Method:   "DELETE",
+			Path:     "/v1/fsm/delete/batch",
+			Category: "fsm",
+			Desc:     "batch delete fsm log",
+		},
+		{
+			Method:   "GET",
+			Path:     "/v1/leave/list",
+			Category: "leave",
+			Desc:     "find leaves",
+		},
+		{
+			Method:   "POST",
+			Path:     "/v1/leave/create",
+			Category: "leave",
+			Desc:     "create leave",
+		},
+		{
+			Method:   "PATCH",
+			Path:     "/v1/leave/update/:id",
+			Category: "leave",
+			Desc:     "update leave",
+		},
+		{
+			Method:   "DELETE",
+			Path:     "/v1/leave/delete/batch",
+			Category: "leave",
+			Desc:     "batch delete leave",
 		},
 		{
 			Method:   "GET",
@@ -434,7 +562,7 @@ func Data() {
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/message/all",
+			Path:     "/v1/message/list",
 			Category: "message",
 			Desc:     "find messages",
 		},
@@ -500,13 +628,13 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/machine/update/:machineId",
+			Path:     "/v1/machine/update/:id",
 			Category: "machine",
 			Desc:     "update machine",
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/machine/connect/:machineId",
+			Path:     "/v1/machine/connect/:id",
 			Category: "machine",
 			Desc:     "connect or refresh machine status",
 		},
@@ -530,7 +658,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/dict/update/:dictId",
+			Path:     "/v1/dict/update/:id",
 			Category: "dict",
 			Desc:     "update dict",
 		},
@@ -554,7 +682,7 @@ func Data() {
 		},
 		{
 			Method:   "PATCH",
-			Path:     "/v1/dict/data/update/:dictDataId",
+			Path:     "/v1/dict/data/update/:id",
 			Category: "dict",
 			Desc:     "update dict data",
 		},
@@ -570,8 +698,8 @@ func Data() {
 	for i, api := range apis {
 		id := uint(i + 1)
 		oldApi := ms.SysApi{}
-		err := db.Where("id = ?", id).First(&oldApi).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+		e := my.Q.Tx.Where("id = ?", id).First(&oldApi).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
 			api.Id = id
 			newApis = append(newApis, api)
 			// super has all api permission
@@ -587,7 +715,7 @@ func Data() {
 				"/base/idempotenceToken",
 				"/user/info",
 				"/menu/tree",
-				"/message/all",
+				"/message/list",
 				"/message/unRead/count",
 				"/message/read/batch",
 				"/message/deleted/batch",
@@ -608,15 +736,116 @@ func Data() {
 		}
 	}
 	if len(newApis) > 0 {
-		db.Create(&newApis)
+		err = my.Q.Tx.Create(&newApis).Error
+		if err != nil {
+			return
+		}
 	}
 	if len(newRoleCasbins) > 0 {
-		s := service.New(nil)
-		s.Q.BatchCreateRoleCasbin(newRoleCasbins)
+		my.Q.BatchCreateRoleCasbin(newRoleCasbins)
 	}
-}
 
-var menuTotal = 0
+	// 6. init dict
+	dicts := []ms.SysDict{
+		{
+			Name: constant.UserLoginDict,
+			Desc: "User login dictionary",
+			DictDatas: []ms.SysDictData{
+				{
+					Key:      constant.UserLoginCaptcha,
+					Val:      "3",
+					Addition: "The password is wrong for 3 times. You need to enter the verification code",
+				},
+			},
+		},
+		{
+			Name: constant.UserResetPwdDict,
+			Desc: "User reset password dictionary",
+			DictDatas: []ms.SysDictData{
+				{
+					Key:      constant.UserResetPwdFirstLogin,
+					Val:      "1",
+					Addition: "Reset password for first login",
+				},
+				{
+					Key: constant.UserResetPwdAfterSomeTime,
+					Val: "3",
+					// Regular reset password(carbon time duration/month/year)
+					Addition: constant.UserResetPwdAfterSomeTimeAdditionMonth,
+				},
+				{
+					Key: constant.UserResetPwdWeakLen,
+					Val: "8",
+					// Minimum length of weak password rule
+					Addition: "The password must be at least 8 digits",
+				},
+				{
+					Key:      constant.UserResetPwdWeakContainsChinese,
+					Val:      "3",
+					Addition: "The password cannot contain Chinese",
+				},
+				{
+					Key:      constant.UserResetPwdWeakCaseSensitive,
+					Val:      "1",
+					Addition: "The password must contain upper and lower case letters such as (Aa, Bb)",
+				},
+				{
+					Key:      constant.UserResetPwdWeakSpecialChar,
+					Val:      "[`~!@#$%^&*()_\\-+=<>?:\"{}|,.\\/;'\\\\[\\]·~！@#￥%……&*\\-+={}|]",
+					Addition: "The password must contain special characters, such as (._+=)",
+				},
+				{
+					Key:      constant.UserResetPwdWeakContinuousNum,
+					Val:      "3",
+					Addition: "The password cannot contain more than 3 continuous num, such as (1234, 8765)",
+				},
+			},
+		},
+		{
+			Name: constant.MiddlewareOperationLogSkipPathDict,
+			Desc: "Operation log skip path dictionary",
+			DictDatas: []ms.SysDictData{
+				{
+					Key: "1",
+					Val: "/operation/log/delete/batch",
+				},
+				{
+					Key: "2",
+					Val: "/upload/file",
+				},
+				{
+					Key: "3",
+					Val: "/ping",
+				},
+				{
+					Key: "4",
+					Val: "/message/ws",
+				},
+				{
+					Key: "5",
+					Val: "/operation/log/list",
+				},
+			},
+		},
+	}
+	newDicts := make([]ms.SysDict, 0)
+	for i, dict := range dicts {
+		id := uint(i + 1)
+		oldDict := ms.SysDict{}
+		e := my.Q.Tx.Where("id = ?", id).First(&oldDict).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
+			dict.Id = id
+			newDicts = append(newDicts, dict)
+		}
+	}
+	if len(newDicts) > 0 {
+		err = my.Q.Tx.Create(&newDicts).Error
+		if err != nil {
+			return
+		}
+	}
+	return
+}
 
 func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.SysMenu {
 	newMenus := make([]ms.SysMenu, len(menus))
@@ -648,7 +877,8 @@ func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.S
 			menu.Component = ""
 			menu.Breadcrumb = &noBreadcrumb
 		}
-		if len(menu.RoleIds) == 0 {
+		// add super role
+		if !utils.ContainsUint(menu.RoleIds, superRole.Id) {
 			menu.RoleIds = append(menu.RoleIds, superRole.Id)
 		}
 		newMenus[i] = menu
@@ -656,13 +886,13 @@ func genMenu(parentId uint, menus []ms.SysMenu, superRole models.SysRole) []ms.S
 	return newMenus
 }
 
-func createMenu(db *gorm.DB, menus []ms.SysMenu) []ms.SysMenuRoleRelation {
+func createMenu(tx *gorm.DB, menus []ms.SysMenu) []ms.SysMenuRoleRelation {
 	relations := make([]ms.SysMenuRoleRelation, 0)
 	for _, menu := range menus {
 		oldMenu := ms.SysMenu{}
-		err := db.Where("id = ?", menu.Id).First(&oldMenu).Error
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			db.Create(&menu)
+		e := tx.Where("id = ?", menu.Id).First(&oldMenu).Error
+		if errors.Is(e, gorm.ErrRecordNotFound) {
+			tx.Create(&menu)
 			for _, id := range menu.RoleIds {
 				relations = append(relations, ms.SysMenuRoleRelation{
 					MenuId: menu.Id,
@@ -671,7 +901,7 @@ func createMenu(db *gorm.DB, menus []ms.SysMenu) []ms.SysMenuRoleRelation {
 			}
 		}
 		if len(menu.Children) > 0 {
-			childrenRelations := createMenu(db, menu.Children)
+			childrenRelations := createMenu(tx, menu.Children)
 			if len(childrenRelations) > 0 {
 				relations = append(relations, childrenRelations...)
 			}

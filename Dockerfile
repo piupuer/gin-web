@@ -6,7 +6,7 @@ RUN echo "----------------- Gin Web building(Production) -----------------"
 # enable go modules
 ENV GO111MODULE=on
 # set up an agent to speed up downloading resources
-ENV GOPROXY=https://goproxy.cn
+ENV GOPROXY=https://goproxy.cn,direct
 # set app home dir
 ENV APP_HOME /app/gin-web-prod
 
@@ -16,17 +16,13 @@ WORKDIR $APP_HOME
 
 # copy go.mod / go.sum to download dependent files
 COPY go.mod go.sum ./
-RUN go mod download
+RUN go mod tidy
 
 # copy source files
 COPY . .
 
 # save current git version
 RUN chmod +x version.sh && ./version.sh
-
-# packr2 package config files to binary 
-RUN go get github.com/gobuffalo/packr/v2@v2.7.1 && go mod tidy && cd $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2 && go build && chmod +x packr2
-RUN cd $APP_HOME && $GOPATH/pkg/mod/github.com/gobuffalo/packr/v2@v2.7.1/packr2/packr2 build
 
 RUN go build -o main-prod .
 
@@ -36,6 +32,7 @@ FROM frolvlad/alpine-glibc:alpine-3.12
 
 # set project run mode
 ENV GIN_WEB_MODE production
+ENV CFG_SYSTEM_PORT 8080
 ENV APP_HOME /app/gin-web-prod
 
 RUN mkdir -p $APP_HOME
@@ -58,9 +55,6 @@ RUN apk update \
 # verify that the time zone has been modified
 # RUN date -R
 
-EXPOSE 8080
-
 CMD ["./main-prod"]
 
-HEALTHCHECK --interval=5s --timeout=3s \
-  CMD curl -fs http://127.0.0.1:8080/api/ping || exit 1
+HEALTHCHECK --interval=5s --timeout=3s CMD curl -fs http://127.0.0.1:$CFG_SYSTEM_PORT/api/ping || exit 1;

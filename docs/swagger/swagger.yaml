@@ -1,0 +1,2566 @@
+definitions:
+  middleware.User:
+    properties:
+      password:
+        type: string
+      username:
+        type: string
+    type: object
+  req.CreateApi:
+    properties:
+      category:
+        type: string
+      desc:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+      roleIds:
+        items:
+          type: integer
+        type: array
+      roleKeywords:
+        items:
+          type: string
+        type: array
+      title:
+        type: string
+    required:
+    - category
+    - method
+    - path
+    type: object
+  req.CreateDict:
+    properties:
+      desc:
+        type: string
+      name:
+        type: string
+      remark:
+        type: string
+      status:
+        type: integer
+    required:
+    - desc
+    - name
+    type: object
+  req.CreateDictData:
+    properties:
+      addition:
+        type: string
+      attr:
+        type: string
+      dictId:
+        type: integer
+      key:
+        type: string
+      remark:
+        type: string
+      sort:
+        type: integer
+      status:
+        type: integer
+      val:
+        type: string
+    required:
+    - dictId
+    - key
+    - val
+    type: object
+  req.CreateMachine:
+    properties:
+      arch:
+        type: string
+      cpu:
+        type: string
+      disk:
+        type: string
+      host:
+        type: string
+      loginName:
+        type: string
+      loginPwd:
+        type: string
+      memory:
+        type: string
+      name:
+        type: string
+      remark:
+        type: string
+      sshPort:
+        type: integer
+      status:
+        type: integer
+      version:
+        type: string
+    required:
+    - host
+    - loginName
+    - loginPwd
+    - sshPort
+    type: object
+  req.CreateMenu:
+    properties:
+      breadcrumb:
+        type: integer
+      component:
+        type: string
+      icon:
+        type: string
+      name:
+        type: string
+      parentId:
+        type: integer
+      path:
+        type: string
+      permission:
+        type: string
+      redirect:
+        type: string
+      sort:
+        type: integer
+      status:
+        type: integer
+      title:
+        type: string
+      visible:
+        type: integer
+    required:
+    - name
+    type: object
+  req.FilePartInfo:
+    properties:
+      chunkNumber:
+        type: integer
+      chunkSize:
+        type: integer
+      complete:
+        description: whether transfer complete
+        type: boolean
+      filename:
+        type: string
+      identifier:
+        type: string
+      totalSize:
+        type: integer
+      uploaded:
+        description: uploaded block numbers
+        items:
+          type: integer
+        type: array
+    type: object
+  req.FsmCreateEvent:
+    properties:
+      edit:
+        type: integer
+      editFields:
+        type: string
+      name:
+        type: string
+      roles:
+        type: string
+      users:
+        type: string
+    type: object
+  req.FsmCreateMachine:
+    properties:
+      category:
+        type: integer
+      levels:
+        items:
+          $ref: '#/definitions/req.FsmCreateEvent'
+        type: array
+      name:
+        type: string
+      submitterConfirm:
+        type: integer
+      submitterConfirmEditFields:
+        type: string
+      submitterEditFields:
+        type: string
+      submitterName:
+        type: string
+    type: object
+  req.FsmSubmitterDetailField:
+    properties:
+      key:
+        type: string
+      val:
+        type: string
+    type: object
+  req.FsmUpdateMachine:
+    properties:
+      levels:
+        items:
+          $ref: '#/definitions/req.FsmCreateEvent'
+        type: array
+      name:
+        type: string
+      submitterConfirm:
+        type: integer
+      submitterConfirmEditFields:
+        type: string
+      submitterEditFields:
+        type: string
+      submitterName:
+        type: string
+    type: object
+  req.Ids:
+    properties:
+      ids:
+        description: id array string, split by comma
+        type: string
+    type: object
+  req.PushMessage:
+    properties:
+      content:
+        type: string
+      fromUserId:
+        type: integer
+      idempotenceToken:
+        type: string
+      title:
+        type: string
+      toRoleIds:
+        items:
+          type: integer
+        type: array
+      toUserIds:
+        items:
+          type: integer
+        type: array
+      type:
+        type: integer
+    required:
+    - content
+    - title
+    - type
+    type: object
+  req.UpdateApi:
+    properties:
+      category:
+        type: string
+      desc:
+        type: string
+      method:
+        type: string
+      path:
+        type: string
+      roleIds:
+        items:
+          type: integer
+        type: array
+      title:
+        type: string
+    type: object
+  req.UpdateDict:
+    properties:
+      desc:
+        type: string
+      name:
+        type: string
+      remark:
+        type: string
+      status:
+        type: integer
+    type: object
+  req.UpdateDictData:
+    properties:
+      addition:
+        type: string
+      attr:
+        type: string
+      dictId:
+        type: integer
+      key:
+        type: string
+      remark:
+        type: string
+      sort:
+        type: integer
+      status:
+        type: integer
+      val:
+        type: string
+    type: object
+  req.UpdateFsmSubmitterDetail:
+    properties:
+      category:
+        type: integer
+      fields:
+        items:
+          $ref: '#/definitions/req.FsmSubmitterDetailField'
+        type: array
+      uuid:
+        type: string
+    type: object
+  req.UpdateMachine:
+    properties:
+      arch:
+        type: string
+      cpu:
+        type: string
+      disk:
+        type: string
+      host:
+        type: string
+      loginName:
+        type: string
+      loginPwd:
+        type: string
+      memory:
+        type: string
+      name:
+        type: string
+      remark:
+        type: string
+      sshPort:
+        type: integer
+      status:
+        type: integer
+      version:
+        type: string
+    type: object
+  req.UpdateMenu:
+    properties:
+      breadcrumb:
+        type: integer
+      component:
+        type: string
+      icon:
+        type: string
+      name:
+        type: string
+      parentId:
+        type: integer
+      path:
+        type: string
+      permission:
+        type: string
+      redirect:
+        type: string
+      sort:
+        type: integer
+      status:
+        type: integer
+      title:
+        type: string
+      visible:
+        type: integer
+    type: object
+  req.UpdateMenuIncrementalIds:
+    properties:
+      create:
+        items:
+          type: integer
+        type: array
+      delete:
+        items:
+          type: integer
+        type: array
+    type: object
+  request.ChangePwd:
+    properties:
+      newPassword:
+        type: string
+      oldPassword:
+        type: string
+    type: object
+  request.CreateLeave:
+    properties:
+      desc:
+        type: string
+      endTime:
+        type: string
+      startTime:
+        type: string
+    required:
+    - desc
+    type: object
+  request.CreateRole:
+    properties:
+      currentRoleSort:
+        type: integer
+      desc:
+        type: string
+      keyword:
+        type: string
+      name:
+        type: string
+      sort:
+        type: integer
+      status:
+        type: integer
+    required:
+    - keyword
+    - name
+    - sort
+    type: object
+  request.CreateUser:
+    properties:
+      avatar:
+        type: string
+      initPassword:
+        type: string
+      introduction:
+        type: string
+      mobile:
+        type: string
+      newPassword:
+        type: string
+      nickname:
+        type: string
+      password:
+        type: string
+      roleId:
+        type: integer
+      status:
+        type: integer
+      username:
+        type: string
+    required:
+    - initPassword
+    - mobile
+    - roleId
+    - username
+    type: object
+  request.UpdateLeave:
+    properties:
+      desc:
+        type: string
+      endTime:
+        type: string
+      startTime:
+        type: string
+    type: object
+  request.UpdateRole:
+    properties:
+      desc:
+        type: string
+      keyword:
+        type: string
+      name:
+        type: string
+      sort:
+        type: integer
+      status:
+        type: integer
+    type: object
+  request.UpdateUser:
+    properties:
+      avatar:
+        type: string
+      initPassword:
+        type: string
+      introduction:
+        type: string
+      mobile:
+        type: string
+      newPassword:
+        type: string
+      nickname:
+        type: string
+      password:
+        type: string
+      roleId:
+        type: integer
+      status:
+        type: integer
+      username:
+        type: string
+    type: object
+  resp.Resp:
+    properties:
+      code:
+        description: response code
+        enum:
+        - 201
+        - 401
+        - 403
+        - 405
+        - 500
+        type: integer
+      data:
+        description: response data if code=201
+        example: '{}'
+        type: string
+      msg:
+        description: response msg
+        example: success
+        type: string
+      requestId:
+        description: request id
+        example: 4cb6e3f6-1f52-4fba-9b7d-e65098600f02
+        type: string
+    type: object
+info:
+  contact: {}
+  description: A simple RBAC admin system written by golang
+  license:
+    name: MIT
+    url: https://github.com/piupuer/gin-web/blob/dev/LICENSE
+  title: Gin Web
+  version: 1.2.1
+paths:
+  /api/all/category/{id}:
+    get:
+      consumes:
+      - application/json
+      description: FindApiGroupByCategoryByRoleKeyword
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - in: query
+        name: category
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: method
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: path
+        type: string
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Api'
+  /api/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateApi
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.CreateApi'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Api'
+  /api/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteApiByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Api'
+  /api/list:
+    get:
+      consumes:
+      - application/json
+      description: FindApi
+      parameters:
+      - in: query
+        name: category
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: method
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: path
+        type: string
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Api'
+  /api/role/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateApiByRoleId
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateMenuIncrementalIds'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Api'
+  /api/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateApiById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateApi'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Api'
+  /base/idempotenceToken:
+    get:
+      consumes:
+      - application/json
+      description: IdempotenceToken
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Base'
+  /base/login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/middleware.User'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      tags:
+      - '*Base'
+  /base/logout:
+    post:
+      consumes:
+      - application/json
+      description: Logout
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      tags:
+      - '*Base'
+  /base/refreshToken:
+    post:
+      consumes:
+      - application/json
+      description: RefreshToken
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Base'
+  /dict/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateDict
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.CreateDict'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Dict'
+  /dict/data/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateDictData
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.CreateDictData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Dict'
+  /dict/data/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteDictDataByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Dict'
+  /dict/data/list:
+    get:
+      consumes:
+      - application/json
+      description: FindDictData
+      parameters:
+      - in: query
+        name: attr
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: dictId
+        type: integer
+      - in: query
+        name: key
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: status
+        type: integer
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      - in: query
+        name: val
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Dict'
+  /dict/data/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateDictDataById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateDictData'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Dict'
+  /dict/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteDictByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Dict'
+  /dict/list:
+    get:
+      consumes:
+      - application/json
+      description: FindDict
+      parameters:
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: desc
+        type: string
+      - in: query
+        name: name
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: status
+        type: integer
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Dict'
+  /dict/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateDictById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateDict'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Dict'
+  /fsm/approve:
+    patch:
+      consumes:
+      - application/json
+      description: FsmApproveLog
+      parameters:
+      - in: query
+        name: approvalOpinion
+        type: string
+      - in: query
+        name: approvalRoleId
+        type: integer
+      - in: query
+        name: approvalUserId
+        type: integer
+      - in: query
+        name: approved
+        type: integer
+      - in: query
+        name: category
+        type: integer
+      - in: query
+        name: uuid
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/approving/list:
+    get:
+      consumes:
+      - application/json
+      description: FindFsmApprovingLog
+      parameters:
+      - in: query
+        name: approvalRoleId
+        type: integer
+      - in: query
+        name: approvalUserId
+        type: integer
+      - in: query
+        name: category
+        type: integer
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/cancel:
+    patch:
+      consumes:
+      - application/json
+      description: FsmCancelLogByUuids
+      parameters:
+      - in: query
+        name: approvalRoleId
+        type: integer
+      - in: query
+        name: approvalUserId
+        type: integer
+      - in: query
+        items:
+          type: string
+        name: uuids
+        type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateFsm
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.FsmCreateMachine'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteFsmByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/list:
+    get:
+      consumes:
+      - application/json
+      description: FindFsm
+      parameters:
+      - in: query
+        name: category
+        type: integer
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: name
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: submitterConfirm
+        type: integer
+      - in: query
+        name: submitterName
+        type: string
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/log/track:
+    get:
+      consumes:
+      - application/json
+      description: FindFsmLogTrack
+      parameters:
+      - in: query
+        name: category
+        type: integer
+      - in: query
+        name: uuid
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/submitter/detail:
+    get:
+      consumes:
+      - application/json
+      description: GetFsmSubmitterDetail
+      parameters:
+      - in: query
+        name: category
+        type: integer
+      - in: query
+        name: uuid
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+    patch:
+      consumes:
+      - application/json
+      description: UpdateFsmSubmitterDetail
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateFsmSubmitterDetail'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateFsmById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.FsmUpdateMachine'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /leave/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateLeave
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateLeave'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Leave
+  /leave/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteLeaveByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Leave
+  /leave/list:
+    get:
+      consumes:
+      - application/json
+      description: FindLeave
+      parameters:
+      - in: query
+        name: approvalOpinion
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: desc
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: status
+        type: integer
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Leave
+  /leave/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateLeaveById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateLeave'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Leave
+  /machine/connect/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: ConnectMachineById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Machine'
+  /machine/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateMachine
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.CreateMachine'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Machine'
+  /machine/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteMachineByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Machine'
+  /machine/list:
+    get:
+      consumes:
+      - application/json
+      description: FindMachine
+      parameters:
+      - in: query
+        name: arch
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: cpu
+        type: string
+      - in: query
+        name: disk
+        type: string
+      - in: query
+        name: host
+        type: string
+      - in: query
+        name: id
+        type: integer
+      - in: query
+        name: loginName
+        type: string
+      - in: query
+        name: loginPwd
+        type: string
+      - in: query
+        name: memory
+        type: string
+      - in: query
+        name: name
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: remark
+        type: string
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: sshPort
+        type: integer
+      - in: query
+        name: status
+        type: integer
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      - in: query
+        name: version
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Machine'
+  /machine/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateMachineById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateMachine'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Machine'
+  /menu/all/{id}:
+    get:
+      consumes:
+      - application/json
+      description: FindMenuByRoleId
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Menu'
+  /menu/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateMenu
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.CreateMenu'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Menu'
+  /menu/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteMenuByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Menu'
+  /menu/list:
+    get:
+      consumes:
+      - application/json
+      description: FindMenu
+      parameters:
+      - in: query
+        name: breadcrumb
+        type: integer
+      - in: query
+        name: component
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: name
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: path
+        type: string
+      - in: query
+        name: redirect
+        type: string
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: status
+        type: integer
+      - in: query
+        name: title
+        type: string
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      - in: query
+        name: visible
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Menu'
+  /menu/role/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateMenuByRoleId
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateMenuIncrementalIds'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Menu'
+  /menu/tree:
+    get:
+      consumes:
+      - application/json
+      description: GetMenuTree
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Menu'
+  /menu/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateMenuById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.UpdateMenu'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Menu'
+  /message/deleted/all:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateAllMessageDeleted
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Message'
+  /message/deleted/batch:
+    patch:
+      consumes:
+      - application/json
+      description: BatchUpdateMessageDeleted
+      parameters:
+      - description: id array string, split by comma
+        in: query
+        name: ids
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Message'
+  /message/list:
+    get:
+      consumes:
+      - application/json
+      description: FindMessage
+      parameters:
+      - in: query
+        name: content
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: status
+        type: integer
+      - in: query
+        name: title
+        type: string
+      - in: query
+        name: toUserId
+        type: integer
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      - in: query
+        name: type
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Message'
+  /message/read/all:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateAllMessageRead
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Message'
+  /message/read/batch:
+    post:
+      consumes:
+      - application/json
+      description: BatchUpdateMessageRead
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Message'
+  /message/unRead/count:
+    get:
+      consumes:
+      - application/json
+      description: GetUnReadMessageCount
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Message'
+    post:
+      consumes:
+      - application/json
+      description: PushMessage
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.PushMessage'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Message'
+  /operation/log/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteOperationLogByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*OperationLog'
+  /operation/log/list:
+    get:
+      consumes:
+      - application/json
+      description: FindOperationLog
+      parameters:
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: ip
+        type: string
+      - in: query
+        name: method
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: path
+        type: string
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: status
+        type: string
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      - in: query
+        name: username
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*OperationLog'
+  /role/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateRole
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateRole'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Role
+  /role/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteRoleByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Role
+  /role/list:
+    get:
+      consumes:
+      - application/json
+      description: FindRole
+      parameters:
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: currentRoleSort
+        type: integer
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: name
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: status
+        type: integer
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Role
+  /role/list/{ids}:
+    get:
+      consumes:
+      - application/json
+      description: FindRoleByIds
+      parameters:
+      - description: ids
+        in: path
+        name: ids
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Role
+  /role/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateRoleById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateRole'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - Role
+  /upload/file:
+    get:
+      consumes:
+      - application/json
+      description: UploadFileChunkExists
+      parameters:
+      - in: query
+        name: chunkNumber
+        type: integer
+      - in: query
+        name: chunkSize
+        type: integer
+      - description: whether transfer complete
+        in: query
+        name: complete
+        type: boolean
+      - in: query
+        name: filename
+        type: string
+      - in: query
+        name: identifier
+        type: string
+      - in: query
+        name: totalSize
+        type: integer
+      - description: uploaded block numbers
+        in: query
+        items:
+          type: integer
+        name: uploaded
+        type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Upload'
+    post:
+      consumes:
+      - multipart/form-data
+      description: UploadFile
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.FilePartInfo'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Upload'
+  /upload/merge:
+    post:
+      consumes:
+      - application/json
+      description: UploadMerge
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.FilePartInfo'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Upload'
+  /upload/unzip:
+    post:
+      consumes:
+      - application/json
+      description: UploadUnZip
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.FilePartInfo'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Upload'
+  /user/changePwd:
+    put:
+      consumes:
+      - application/json
+      description: ChangePwd
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.ChangePwd'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - User
+  /user/create:
+    post:
+      consumes:
+      - application/json
+      description: CreateUser
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.CreateUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - User
+  /user/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteUserByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - User
+  /user/info:
+    get:
+      consumes:
+      - application/json
+      description: GetUserInfo
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - User
+  /user/list:
+    get:
+      consumes:
+      - application/json
+      description: FindUser
+      parameters:
+      - in: query
+        name: avatar
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: introduction
+        type: string
+      - in: query
+        name: mobile
+        type: string
+      - in: query
+        name: mobileOr
+        type: string
+      - in: query
+        name: nickname
+        type: string
+      - in: query
+        name: nicknameOr
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - in: query
+        name: roleId
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - in: query
+        name: status
+        type: integer
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      - in: query
+        name: username
+        type: string
+      - in: query
+        name: usernameOr
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - User
+  /user/list/{ids}:
+    get:
+      consumes:
+      - application/json
+      description: FindUserByIds
+      parameters:
+      - description: ids
+        in: path
+        name: ids
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - User
+  /user/update/{id}:
+    patch:
+      consumes:
+      - application/json
+      description: UpdateUserById
+      parameters:
+      - description: id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateUser'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - User
+securityDefinitions:
+  Bearer:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
