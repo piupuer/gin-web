@@ -3,7 +3,6 @@ package v1
 import (
 	"fmt"
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
@@ -59,8 +58,8 @@ func FindUser(c *gin.Context) {
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
 	r.CurrentRole = user.Role
-	cs := cache_service.New(c)
-	list := cs.FindUser(&r)
+	my := service.New(c)
+	list := my.FindUser(&r)
 	resp.SuccessWithPageData(list, &[]response.User{}, r.Page)
 }
 
@@ -110,7 +109,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 
 func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	user := GetCurrentUser(c)
-	cs := cache_service.New(c)
+	my := service.New(c)
 	var roleSort uint
 	if user.Role.Sort != nil {
 		roleSort = *user.Role.Sort
@@ -118,7 +117,7 @@ func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	pathRoleId, err := req.UintIdWithErr(c)
 	pathRoleKeyword := ""
 	if err == nil {
-		role, _ := cs.GetRoleById(pathRoleId)
+		role, _ := my.GetRoleById(pathRoleId)
 		pathRoleKeyword = role.Keyword
 	}
 	var u ms.User
@@ -156,8 +155,8 @@ func GetUserLoginStatus(c *gin.Context, r *req.UserStatus) (err error) {
 // @Router /user/list/{ids} [GET]
 func FindUserByIds(c *gin.Context) {
 	ids := req.UintIds(c)
-	cs := cache_service.New(c)
-	list := cs.FindUserByIds(ids)
+	my := service.New(c)
+	list := my.FindUserByIds(ids)
 	resp.SuccessWithData(list)
 }
 

@@ -1,16 +1,13 @@
 package initialize
 
 import (
-	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
 	"gin-web/pkg/service"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
-	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
-	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"gorm.io/gorm"
@@ -147,80 +144,6 @@ func data(my service.MysqlService) (err error) {
 					Icon:      "log",
 					Path:      "operation-log",
 					Component: "/system/operation-log",
-				},
-				{
-					Name:      "messagePush",
-					Title:     "Message Push",
-					Icon:      "push",
-					Path:      "message-push",
-					Component: "/system/message-push",
-					RoleIds: []uint{
-						roles[1].Id,
-					},
-				},
-				{
-					Name:      "machine",
-					Title:     "Machines",
-					Icon:      "machine",
-					Path:      "machine",
-					Component: "/system/machine",
-				},
-			},
-		},
-		{
-			Name:  "testRoot",
-			Title: "Tests",
-			Icon:  "bug",
-			Path:  "/test",
-			Children: []ms.SysMenu{
-				{
-					Name:      "test",
-					Title:     "Test Case",
-					Icon:      "bug",
-					Path:      "index",
-					Component: "/test/index",
-				},
-				{
-					Name:      "leave",
-					Title:     "My Leave",
-					Icon:      "skill",
-					Path:      "leave",
-					Component: "/test/leave",
-				},
-				{
-					Name:      "approving",
-					Title:     "Approving",
-					Icon:      "form",
-					Path:      "approving",
-					Component: "/test/approving",
-				},
-			},
-		},
-		{
-			Name:  "uploader",
-			Title: "Uploader",
-			Icon:  "upload",
-			Path:  "/uploader",
-			Children: []ms.SysMenu{
-				{
-					Name:      "uploader1",
-					Title:     "Uploader1",
-					Icon:      "image",
-					Path:      "uploader1",
-					Component: "/uploader/uploader1",
-					RoleIds: []uint{
-						roles[1].Id,
-					},
-				},
-				{
-					Name:      "uploader2",
-					Title:     "Uploader2",
-					Icon:      "zip",
-					Path:      "uploader2",
-					Component: "/uploader/uploader2",
-					RoleIds: []uint{
-						roles[1].Id,
-					},
 				},
 			},
 		},
@@ -442,108 +365,6 @@ func data(my service.MysqlService) (err error) {
 		},
 		{
 			Method:   "GET",
-			Path:     "/v1/fsm/list",
-			Category: "fsm",
-			Desc:     "find fsm machines",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/fsm/create",
-			Category: "fsm",
-			Desc:     "create fsm machine",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/fsm/update/:id",
-			Category: "fsm",
-			Desc:     "update fsm machine",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/fsm/approving/list",
-			Category: "fsm",
-			Desc:     "find fsm pending approve logs",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/fsm/log/track",
-			Category: "fsm",
-			Desc:     "find fsm log history track",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/fsm/submitter/detail",
-			Category: "fsm",
-			Desc:     "get submitter fsm log detail",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/fsm/submitter/detail",
-			Category: "fsm",
-			Desc:     "update submitter fsm log detail",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/fsm/approve",
-			Category: "fsm",
-			Desc:     "approved/refused fsm log",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/fsm/cancel",
-			Category: "fsm",
-			Desc:     "cancelled fsm log",
-		},
-		{
-			Method:   "DELETE",
-			Path:     "/v1/fsm/delete/batch",
-			Category: "fsm",
-			Desc:     "batch delete fsm log",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/leave/list",
-			Category: "leave",
-			Desc:     "find leaves",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/leave/create",
-			Category: "leave",
-			Desc:     "create leave",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/leave/update/:id",
-			Category: "leave",
-			Desc:     "update leave",
-		},
-		{
-			Method:   "DELETE",
-			Path:     "/v1/leave/delete/batch",
-			Category: "leave",
-			Desc:     "batch delete leave",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/upload/file",
-			Category: "upload",
-			Desc:     "get uploaded file info",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/upload/file",
-			Category: "upload",
-			Desc:     "upload file",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/upload/merge",
-			Category: "upload",
-			Desc:     "merge file",
-		},
-		{
-			Method:   "GET",
 			Path:     "/v1/operation/log/list",
 			Category: "operation-log",
 			Desc:     "find operation logs",
@@ -553,96 +374,6 @@ func data(my service.MysqlService) (err error) {
 			Path:     "/v1/operation/log/delete/batch",
 			Category: "operation-log",
 			Desc:     "batch delete operation log",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/upload/unzip",
-			Category: "upload",
-			Desc:     "unzip",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/message/list",
-			Category: "message",
-			Desc:     "find messages",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/message/unRead/count",
-			Category: "message",
-			Desc:     "get unread message count",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/message/push",
-			Category: "message",
-			Desc:     "push new message",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/message/read/batch",
-			Category: "message",
-			Desc:     "batch marked as read",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/message/deleted/batch",
-			Category: "message",
-			Desc:     "batch marked as deleted",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/message/read/all",
-			Category: "message",
-			Desc:     "all marked as read",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/message/deleted/all",
-			Category: "message",
-			Desc:     "batch marked as deleted",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/message/ws",
-			Category: "message",
-			Desc:     "message websocket",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/machine/shell/ws",
-			Category: "machine",
-			Desc:     "machine shell websocket",
-		},
-		{
-			Method:   "GET",
-			Path:     "/v1/machine/list",
-			Category: "machine",
-			Desc:     "find machines",
-		},
-		{
-			Method:   "POST",
-			Path:     "/v1/machine/create",
-			Category: "machine",
-			Desc:     "create machine",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/machine/update/:id",
-			Category: "machine",
-			Desc:     "update machine",
-		},
-		{
-			Method:   "PATCH",
-			Path:     "/v1/machine/connect/:id",
-			Category: "machine",
-			Desc:     "connect or refresh machine status",
-		},
-		{
-			Method:   "DELETE",
-			Path:     "/v1/machine/delete/batch",
-			Category: "machine",
-			Desc:     "batch delete machine",
 		},
 		{
 			Method:   "GET",
@@ -715,12 +446,6 @@ func data(my service.MysqlService) (err error) {
 				"/base/idempotenceToken",
 				"/user/info",
 				"/menu/tree",
-				"/message/list",
-				"/message/unRead/count",
-				"/message/read/batch",
-				"/message/deleted/batch",
-				"/message/read/all",
-				"/message/ws",
 			}
 			p := strings.TrimPrefix(api.Path, "/"+global.Conf.System.ApiVersion)
 			if utils.Contains(basePaths, p) {
@@ -816,10 +541,6 @@ func data(my service.MysqlService) (err error) {
 				{
 					Key: "3",
 					Val: "/ping",
-				},
-				{
-					Key: "4",
-					Val: "/message/ws",
 				},
 				{
 					Key: "5",

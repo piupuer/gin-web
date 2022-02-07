@@ -90,11 +90,6 @@ func Config(c context.Context, conf embed.FS) {
 		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")
 	}
 
-	global.Conf.Logs.OperationDisabledPathArr = make([]string, 0)
-	if strings.TrimSpace(global.Conf.Logs.OperationDisabledPaths) != "" {
-		global.Conf.Logs.OperationDisabledPathArr = strings.Split(global.Conf.Logs.OperationDisabledPaths, ",")
-	}
-
 	// read rsa files
 	publicBytes := box.Get(global.Conf.Jwt.RSAPublicKey)
 	if len(publicBytes) == 0 {

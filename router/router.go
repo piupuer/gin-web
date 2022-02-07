@@ -6,8 +6,8 @@ import (
 	"gin-web/api"
 	v1 "gin-web/api/v1"
 	"gin-web/docs/swagger"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/global"
+	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
 	hv1 "github.com/piupuer/go-helper/api/v1"
 	"github.com/piupuer/go-helper/ms"
@@ -51,8 +51,6 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			middleware.WithSignFindSkipPath(func(c *gin.Context) []string {
 				return []string{
 					fmt.Sprintf("%s/ping", global.Conf.System.UrlPrefix),
-					fmt.Sprintf("%s/message/ws", global.Conf.System.Base),
-					fmt.Sprintf("%s/upload/file", global.Conf.System.Base),
 					"swagger/index.html",
 				}
 			}),
@@ -89,8 +87,8 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 		middleware.WithJwtMaxRefresh(global.Conf.Jwt.MaxRefresh),
 		middleware.WithJwtPrivateBytes(global.Conf.Jwt.RSAPrivateBytes),
 		middleware.WithJwtLoginPwdCheck(func(c *gin.Context, r req.LoginCheck) (userId int64, err error) {
-			cs := cache_service.New(c)
-			user, err := cs.LoginCheck(r)
+			my := service.New(c)
+			user, err := my.LoginCheck(r)
 			return int64(user.Id), err
 		}),
 	}
@@ -127,7 +125,6 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			hv1.WithCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, "v1")),
 			hv1.WithDbOps(
 				query.WithMysqlDb(global.Mysql),
-				query.WithMysqlFsmTransition(v1.LeaveTransition),
 				query.WithMysqlCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, constant.QueryCachePrefix)),
 			),
 			hv1.WithBinlogOps(
@@ -139,11 +136,6 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			hv1.WithFindRoleByIds(v1.RouterFindRoleByIds),
 			hv1.WithFindUserByIds(v1.RouterFindUserByIds),
 			hv1.WithGetUserLoginStatus(v1.GetUserLoginStatus),
-			hv1.WithFsmGetFsmSubmitterDetail(v1.GetLeaveFsmDetail),
-			hv1.WithFsmUpdateFsmSubmitterDetail(v1.UpdateLeaveFsmDetail),
-			hv1.WithUploadSaveDir(global.Conf.Upload.SaveDir),
-			hv1.WithUploadSingleMaxSize(global.Conf.Upload.SingleMaxSize),
-			hv1.WithUploadMergeConcurrentCount(global.Conf.Upload.MergeConcurrentCount),
 			hv1.WithMessageHub(false),
 		),
 	)
@@ -151,7 +143,7 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 	nr.Base()
 	nr.Dict()
 	nr.Menu()
-	nr.Upload()
+	nr.OperationLog()
 
 	// init custom routers
 	InitRoleRouter(nr)

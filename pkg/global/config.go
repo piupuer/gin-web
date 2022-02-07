@@ -12,7 +12,6 @@ type Configuration struct {
 	Mysql  MysqlConfiguration  `mapstructure:"mysql" json:"mysql"`
 	Redis  RedisConfiguration  `mapstructure:"redis" json:"redis"`
 	Jwt    JwtConfiguration    `mapstructure:"jwt" json:"jwt"`
-	Upload UploadConfiguration `mapstructure:"upload" json:"upload"`
 }
 
 type SystemConfiguration struct {
@@ -55,8 +54,8 @@ type MysqlConfiguration struct {
 }
 
 type RedisConfiguration struct {
-	Uri          string `mapstructure:"uri" json:"uri"`
-	Enable       bool   `mapstructure:"enable" json:"enable"`
+	Uri    string `mapstructure:"uri" json:"uri"`
+	Enable bool   `mapstructure:"enable" json:"enable"`
 }
 
 type JwtConfiguration struct {
@@ -68,11 +67,4 @@ type JwtConfiguration struct {
 	RSAPrivateKey   string `mapstructure:"rsa-private-key" json:"rsaPrivateKey"`
 	RSAPublicBytes  []byte `mapstructure:"-" json:"-"`
 	RSAPrivateBytes []byte `mapstructure:"-" json:"-"`
-}
-
-type UploadConfiguration struct {
-	Minio                UploadOssMinioConfiguration `mapstructure:"oss-minio" json:"ossMinio"`
-	SaveDir              string                      `mapstructure:"save-dir" json:"saveDir"`
-	SingleMaxSize        int64                       `mapstructure:"single-max-size" json:"singleMaxSize"`
-	MergeConcurrentCount int                         `mapstructure:"merge-concurrent-count" json:"mergeConcurrentCount"`
 }

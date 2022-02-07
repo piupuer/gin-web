@@ -73,11 +73,3 @@ jwt:
   # rsa file path
   rsa-public-key: gin-web-rsa.pub
   rsa-private-key: gin-web-rsa
-
-upload:
-  # file save dir
-  save-dir: upload
-  # MB
-  single-max-size: 32
-  # concurrent number of merged files
-  merge-concurrent-count: 10

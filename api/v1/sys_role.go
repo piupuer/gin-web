@@ -2,7 +2,6 @@ package v1
 
 import (
 	"gin-web/models"
-	"gin-web/pkg/cache_service"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
@@ -23,8 +22,8 @@ import (
 // @Router /role/list/{ids} [GET]
 func FindRoleByIds(c *gin.Context) {
 	ids := req.UintIds(c)
-	cs := cache_service.New(c)
-	list := cs.FindRoleByIds(ids)
+	my := service.New(c)
+	list := my.FindRoleByIds(ids)
 	resp.SuccessWithData(list, &[]response.Role{})
 }
 
@@ -44,8 +43,8 @@ func FindRole(c *gin.Context) {
 	// bind current user role sort(low level cannot view high level)
 	r.CurrentRoleSort = *user.Role.Sort
 
-	cs := cache_service.New(c)
-	list := cs.FindRole(&r)
+	my := service.New(c)
+	list := my.FindRole(&r)
 	resp.SuccessWithPageData(list, &[]response.Role{}, r.Page)
 }
 
@@ -107,8 +106,8 @@ func UpdateRoleById(c *gin.Context) {
 }
 
 func RouterFindRoleKeywordByRoleIds(c *gin.Context, roleIds []uint) []string {
-	cs := cache_service.New(c)
-	roles := cs.FindRoleByIds(roleIds)
+	my := service.New(c)
+	roles := my.FindRoleByIds(roleIds)
 	keywords := make([]string, 0)
 	for _, role := range roles {
 		keywords = append(keywords, role.Keyword)

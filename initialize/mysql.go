@@ -7,7 +7,6 @@ import (
 	"gin-web/pkg/global"
 	m "github.com/go-sql-driver/mysql"
 	"github.com/piupuer/go-helper/ms"
-	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
 	"github.com/pkg/errors"
@@ -77,9 +76,6 @@ func autoMigrate() {
 		new(ms.SysApi),
 		new(ms.SysCasbin),
 		new(ms.SysOperationLog),
-		new(ms.SysMessage),
-		new(ms.SysMessageLog),
-		new(ms.SysMachine),
 		new(ms.SysDict),
 		new(ms.SysDictData),
 		new(models.SysUser),
