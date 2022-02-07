@@ -363,10 +363,8 @@ github.com/pingcap/log v0.0.0-20210317133921-96f4fcab92a4 h1:ERrF0fTuIOnwfGbt71J
 github.com/pingcap/log v0.0.0-20210317133921-96f4fcab92a4/go.mod h1:4rbK1p9ILyIfb6hU7OG2CiWSqMXnp3JMbiaVJ6mvoY8=
 github.com/pingcap/parser v0.0.0-20210415081931-48e7f467fd74 h1:FkVEC3Fck3fD16hMObMl/IWs72jR9FmqPn0Bdf728Sk=
 github.com/pingcap/parser v0.0.0-20210415081931-48e7f467fd74/go.mod h1:xZC8I7bug4GJ5KtHhgAikjTfU4kBv1Sbo3Pf1MZ6lVw=
-github.com/piupuer/go-helper v1.0.3-0.20220127033823-6739cbbd90ea h1:pdQ5efxsqbbjIxaZYN7ctNqhJqfML+GWu2+ohRca+G0=
-github.com/piupuer/go-helper v1.0.3-0.20220127033823-6739cbbd90ea/go.mod h1:09j/Ms9Anaa1b9KzgrKj5UkC6QkSoG97ftDtcFm0t5c=
-github.com/piupuer/go-helper v1.0.3-0.20220127062939-674eefe036c6 h1:eGzH6YSpJRAjVMhXL6J0UlPpkzJQ34m2hvi5kAa73CY=
-github.com/piupuer/go-helper v1.0.3-0.20220127062939-674eefe036c6/go.mod h1:09j/Ms9Anaa1b9KzgrKj5UkC6QkSoG97ftDtcFm0t5c=
+github.com/piupuer/go-helper v1.0.3 h1:5OBNuwRciba+BJPpVUfmQPJfUiCxMK9ygVe2XmVkG/Y=
+github.com/piupuer/go-helper v1.0.3/go.mod h1:09j/Ms9Anaa1b9KzgrKj5UkC6QkSoG97ftDtcFm0t5c=
 github.com/pkg/errors v0.8.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=

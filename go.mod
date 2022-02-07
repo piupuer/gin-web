@@ -11,7 +11,7 @@ require (
 	github.com/golang-module/carbon v1.5.5
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.4
-	github.com/piupuer/go-helper v1.0.3-0.20220127062939-674eefe036c6
+	github.com/piupuer/go-helper v1.0.3
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.3.2
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
