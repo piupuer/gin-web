@@ -65,7 +65,11 @@ func Config(c context.Context, conf embed.FS) {
 	}
 
 	// read env to global.Conf: config.yml system.port => CFG_SYSTEM_PORT
-	utils.EnvToInterface(&global.Conf, "CFG")
+	envPrefix := strings.ToUpper(os.Getenv(fmt.Sprintf("%s_ENV", global.ProEnvName)))
+	if envPrefix == "" {
+		envPrefix = "CFG"
+	}
+	utils.EnvToInterface(&global.Conf, envPrefix)
 
 	if global.Conf.System.ConnectTimeout < 1 {
 		global.Conf.System.ConnectTimeout = defaultConnectTimeout
