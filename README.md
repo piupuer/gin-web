@@ -19,9 +19,9 @@
 - `Casbin` 基于角色的访问控制模型(RBAC)
 - `Gorm` 数据库ORM管理框架, 可自行扩展多种数据库类型(主分支已支持gorm 2.0)
 - `Validator` 请求参数校验, 版本V9
-- `Lumberjack` 日志切割工具, 高效分离大日志文件, 按日期保存文件
+- `Log` v1.2.2升级后日志支持两种常见的高性能日志 logrus / zap (移除日志写入本地文件, 强烈建议使用docker日志或其他日志收集工具)
 - `Viper` 配置管理工具, 支持多种配置文件类型
-- `Packr` 文件打包工具, 轻松将静态文件打包到编译后的二进制应用中
+- `Embed` go 1.16文件嵌入属性, 轻松将静态文件打包到编译后的二进制应用中
 - `DCron` 分布式定时任务，同一task只在某台机器上执行一次(需要配置redis)
 - `GoFunk` 常用工具包, 某些方法无需重复造轮子
 - `FiniteStateMachine` 有限状态机, 常用于审批流程管理(没有使用工作流, 一是go的轮子太少, 二是有限状态机基本可以涵盖常用的审批流程)
@@ -97,7 +97,6 @@ go run main.go
 ├── conf # 配置文件目录(包含测试/预发布/生产环境配置参数及casbin模型配置)
 ├── docker-conf # docker相关配置文件
 ├── initialize # 数据初始化目录
-├── logs # 日志文件默认目录(运行代码是生成)
 ├── middleware # 中间件目录
 ├── models # 存储层模型定义目录
 ├── pkg # 公共模块目录
@@ -154,6 +153,8 @@ solution for admin interfaces based on vue, typescript and UI Toolkit element-ui
 ABAC in Golang.
 <br/>
 [Gorm](https://github.com/jinzhu/gorm): The fantastic ORM library for Golang.
+<br/>
+[logrus](https://github.com/sirupsen/logrus): Logrus is a structured logger for Go (golang), completely API compatible with the standard library logger.
 <br/>
 [zap](https://github.com/uber-go/zap): Blazing fast, structured, leveled logging in Go.
 <br/>
