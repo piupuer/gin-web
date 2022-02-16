@@ -3,7 +3,6 @@ package initialize
 import (
 	"context"
 	"gin-web/pkg/global"
-	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/job"
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
@@ -34,7 +33,7 @@ func Cron() {
 }
 
 func reset(ctx context.Context) error {
-	ctx = query.NewRequestId(ctx, constant.MiddlewareRequestIdCtxKey)
+	ctx = query.NewRequestId(ctx)
 	log.WithRequestId(ctx).Info("[cron job][reset]starting...")
 
 	if global.Conf.Redis.EnableBinlog {

@@ -5,7 +5,6 @@ import (
 	"gin-web/initialize"
 	"gin-web/pkg/global"
 	"gin-web/router"
-	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/listen"
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
@@ -15,7 +14,7 @@ import (
 	"strings"
 )
 
-var ctx = query.NewRequestId(nil, constant.MiddlewareRequestIdCtxKey)
+var ctx = query.NewRequestId(nil)
 
 //go:embed conf
 var conf embed.FS

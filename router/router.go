@@ -39,7 +39,8 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 		),
 		middleware.Cors,
 		middleware.SecurityHeader,
-		middleware.RequestId(),
+		middleware.RequestId,
+		middleware.Params,
 		middleware.Sign(
 			middleware.WithSignCheckScope(false),
 			middleware.WithSignGetSignUser(func(c *gin.Context, appId string) ms.SignUser {
@@ -71,10 +72,9 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			middleware.WithOperationLogSave(v1.OperationLogSave),
 			middleware.WithOperationLogFindApi(v1.OperationLogFindApi),
 		),
-		middleware.Exception(),
+		middleware.Exception,
 		middleware.Transaction(
 			middleware.WithTransactionDbNoTx(global.Mysql),
-			middleware.WithTransactionTxCtxKey(constant.MiddlewareTransactionTxCtxKey),
 		),
 	)
 

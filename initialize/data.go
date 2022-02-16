@@ -30,7 +30,7 @@ func Data() {
 		return
 	}
 	tx := global.Mysql.WithContext(ctx).Begin()
-	c := query.NewRequestIdReturnGinCtx(ctx, constant.MiddlewareRequestIdCtxKey)
+	c := query.NewRequestIdReturnGinCtx(ctx)
 	c.Set(constant.MiddlewareTransactionTxCtxKey, tx)
 	my := service.New(c)
 	err := data(my)
@@ -801,7 +801,7 @@ func data(my service.MysqlService) (err error) {
 
 	// 5. init leave fsm machine
 	// auto migrate fsm
-	f := fsm.New(global.Mysql, fsm.WithCtx(ctx))
+	f := fsm.New(fsm.WithDb(global.Mysql), fsm.WithCtx(ctx))
 	_, err = f.CreateMachine(req.FsmCreateMachine{
 		Category:            req.NullUint(global.FsmCategoryLeave),
 		Name:                "Leave approval workflow",

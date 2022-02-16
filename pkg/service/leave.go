@@ -37,7 +37,10 @@ func (my MysqlService) FindLeave(r *request.Leave) []models.Leave {
 // query leave fsm track
 func (my MysqlService) FindLeaveApprovalLog(leaveId uint) ([]fsm.Log, error) {
 	fsmUuid := my.GetLeaveFsmUuid(leaveId)
-	f := fsm.New(my.Q.Tx)
+	f := fsm.New(
+		fsm.WithCtx(my.Q.Ctx),
+		fsm.WithDb(my.Q.Tx),
+	)
 	return f.FindLog(req.FsmLog{
 		Category: req.NullUint(global.FsmCategoryLeave),
 		Uuid:     fsmUuid,
@@ -47,7 +50,10 @@ func (my MysqlService) FindLeaveApprovalLog(leaveId uint) ([]fsm.Log, error) {
 // query leave fsm track
 func (my MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, error) {
 	fsmUuid := my.GetLeaveFsmUuid(leaveId)
-	f := fsm.New(my.Q.Tx)
+	f := fsm.New(
+		fsm.WithCtx(my.Q.Ctx),
+		fsm.WithDb(my.Q.Tx),
+	)
 	logs, err := f.FindLog(req.FsmLog{
 		Category: req.NullUint(global.FsmCategoryLeave),
 		Uuid:     fsmUuid,
@@ -60,7 +66,10 @@ func (my MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, erro
 
 // create leave
 func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
-	f := fsm.New(my.Q.Tx)
+	f := fsm.New(
+		fsm.WithCtx(my.Q.Ctx),
+		fsm.WithDb(my.Q.Tx),
+	)
 	fsmUuid := uuid.NewString()
 	// submit fsm log
 	_, err := f.SubmitLog(req.FsmCreateLog{
@@ -139,7 +148,10 @@ func (my MysqlService) ApprovedLeaveById(r request.ApproveLeave) (err error) {
 	if err != nil {
 		return errors.WithStack(err)
 	}
-	f := fsm.New(my.Q.Tx)
+	f := fsm.New(
+		fsm.WithCtx(my.Q.Ctx),
+		fsm.WithDb(my.Q.Tx),
+	)
 	var log *resp.FsmApprovalLog
 	log, err = f.ApproveLog(req.FsmApproveLog{
 		Category:       req.NullUint(global.FsmCategoryLeave),
@@ -162,7 +174,10 @@ func (my MysqlService) DeleteLeaveByIds(ids []uint, u models.SysUser) (err error
 		Where("id IN (?)", ids).
 		Pluck("fsm_uuid", &list)
 	if len(list) > 0 {
-		f := fsm.New(my.Q.Tx)
+		f := fsm.New(
+		fsm.WithCtx(my.Q.Ctx),
+		fsm.WithDb(my.Q.Tx),
+	)
 		err = f.CancelLogByUuids(req.FsmCancelLog{
 			ApprovalRoleId: u.RoleId,
 			ApprovalUserId: u.Id,
