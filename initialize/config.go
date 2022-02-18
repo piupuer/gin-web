@@ -69,7 +69,24 @@ func Config(c context.Context, conf embed.FS) {
 	if envPrefix == "" {
 		envPrefix = "CFG"
 	}
-	utils.EnvToInterface(&global.Conf, envPrefix)
+	utils.EnvToInterface(
+		utils.WithEnvObj(&global.Conf),
+		utils.WithEnvPrefix(envPrefix),
+		utils.WithEnvFormat(func(key string, val interface{}) string {
+			if utils.Contains([]string{
+				// hidden val
+				"CFG_MYSQL_URI",
+				"CFG_REDIS_URI",
+				"CFG_JWT_REALM",
+				"CFG_JWT_KEY",
+				"CFG_UPLOAD_OSS_MINIO_SECRET",
+			}, key) {
+				val = "******"
+			}
+			return fmt.Sprintf("%s: %v", key, val)
+		}),
+	)
+
 
 	if global.Conf.System.ConnectTimeout < 1 {
 		global.Conf.System.ConnectTimeout = defaultConnectTimeout

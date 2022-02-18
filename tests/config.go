@@ -22,7 +22,7 @@ const (
 	productionConfig  = "config.prod.yml"
 )
 
-var ctx = query.NewRequestId(nil, constant.MiddlewareRequestIdCtxKey)
+var ctx = query.NewRequestId(nil)
 
 func Config() {
 	if os.Getenv("TEST_CONF") == "" {
@@ -62,8 +62,10 @@ func Config() {
 	if envPrefix == "" {
 		envPrefix = "CFG"
 	}
-	utils.EnvToInterface(&global.Conf, envPrefix)
-
+	utils.EnvToInterface(
+		utils.WithEnvObj(&global.Conf),
+		utils.WithEnvPrefix(envPrefix),
+	)
 	// remove suffix "_"
 	if strings.TrimSpace(global.Conf.Mysql.TablePrefix) != "" && strings.HasSuffix(global.Conf.Mysql.TablePrefix, "_") {
 		global.Conf.Mysql.TablePrefix = strings.TrimSuffix(global.Conf.Mysql.TablePrefix, "_")
