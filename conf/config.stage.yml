@@ -1,6 +1,6 @@
 # staging
 system:
-  url-path-prefix: stage-api
+  url-prefix: stage-api
   port: 9090
   pprof-port: 9005
 

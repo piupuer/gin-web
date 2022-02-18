@@ -31,6 +31,7 @@ func Config(c context.Context, conf embed.FS) {
 	ctx = c
 	confDir := os.Getenv(fmt.Sprintf("%s_CONF", global.ProEnvName))
 	var box ms.ConfBox
+	box.Ctx = ctx
 	box.Fs = conf
 	if confDir == "" {
 		confDir = configDir
@@ -87,6 +88,17 @@ func Config(c context.Context, conf embed.FS) {
 		}),
 	)
 
+	// change default logger
+	log.DefaultWrapper = log.NewWrapper(log.New(
+		log.WithCategory(global.Conf.Logs.Category),
+		log.WithLevel(global.Conf.Logs.Level),
+		log.WithJson(global.Conf.Logs.Json),
+		log.WithLineNumPrefix(global.RuntimeRoot),
+		log.WithLineNum(!global.Conf.Logs.LineNum.Disable),
+		log.WithLineNumLevel(global.Conf.Logs.LineNum.Level),
+		log.WithLineNumVersion(global.Conf.Logs.LineNum.Version),
+		log.WithLineNumSource(global.Conf.Logs.LineNum.Source),
+	))
 
 	if global.Conf.System.ConnectTimeout < 1 {
 		global.Conf.System.ConnectTimeout = defaultConnectTimeout
@@ -114,30 +126,18 @@ func Config(c context.Context, conf embed.FS) {
 	// read rsa files
 	publicBytes := box.Get(global.Conf.Jwt.RSAPublicKey)
 	if len(publicBytes) == 0 {
-		fmt.Println("read rsa public file failed, please check path: ", global.Conf.Jwt.RSAPublicKey)
+		log.WithRequestId(ctx).Warn("read rsa public file failed, please check path: %s", global.Conf.Jwt.RSAPublicKey)
 	} else {
 		global.Conf.Jwt.RSAPublicBytes = publicBytes
 	}
 	privateBytes := box.Get(global.Conf.Jwt.RSAPrivateKey)
 	if len(privateBytes) == 0 {
-		fmt.Println("read rsa private file failed, please check path: ", global.Conf.Jwt.RSAPrivateKey)
+		log.WithRequestId(ctx).Warn("read rsa private file failed, please check path: ", global.Conf.Jwt.RSAPrivateKey)
 	} else {
 		global.Conf.Jwt.RSAPrivateBytes = privateBytes
 	}
 
-	// change default logger
-	log.DefaultWrapper = log.NewWrapper(log.New(
-		log.WithCategory(global.Conf.Logs.Category),
-		log.WithLevel(global.Conf.Logs.Level),
-		log.WithJson(global.Conf.Logs.Json),
-		log.WithLineNumPrefix(global.RuntimeRoot),
-		log.WithLineNum(!global.Conf.Logs.LineNum.Disable),
-		log.WithLineNumLevel(global.Conf.Logs.LineNum.Level),
-		log.WithLineNumVersion(global.Conf.Logs.LineNum.Version),
-		log.WithLineNumSource(global.Conf.Logs.LineNum.Source),
-	))
-
-	log.Info("initialize config success, config env: `%s_CONF: %s`", global.ProEnvName, box.Dir)
+	log.WithRequestId(ctx).Info("initialize config success, config env: `%s_CONF: %s`", global.ProEnvName, box.Dir)
 }
 
 func readConfig(box ms.ConfBox, v *viper.Viper, configFile string) {
