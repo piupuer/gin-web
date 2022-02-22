@@ -8,6 +8,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/listen"
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/pkg/errors"
 	_ "net/http/pprof"
 	"runtime"
 	"runtime/debug"
@@ -30,7 +31,7 @@ var conf embed.FS
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			log.WithRequestId(ctx).Error("[%s]project run failed: %v\nstack: %v", global.ProName, err, string(debug.Stack()))
+			log.WithRequestId(ctx).WithError(errors.Errorf("%v", err)).Error("[%s]project run failed, stack: %s", global.ProName, string(debug.Stack()))
 		}
 	}()
 

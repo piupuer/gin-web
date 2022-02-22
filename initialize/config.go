@@ -132,7 +132,7 @@ func Config(c context.Context, conf embed.FS) {
 	}
 	privateBytes := box.Get(global.Conf.Jwt.RSAPrivateKey)
 	if len(privateBytes) == 0 {
-		log.WithRequestId(ctx).Warn("read rsa private file failed, please check path: ", global.Conf.Jwt.RSAPrivateKey)
+		log.WithRequestId(ctx).Warn("read rsa private file failed, please check path: %s", global.Conf.Jwt.RSAPrivateKey)
 	} else {
 		global.Conf.Jwt.RSAPrivateBytes = privateBytes
 	}

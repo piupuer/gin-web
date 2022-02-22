@@ -175,9 +175,9 @@ func (my MysqlService) DeleteLeaveByIds(ids []uint, u models.SysUser) (err error
 		Pluck("fsm_uuid", &list)
 	if len(list) > 0 {
 		f := fsm.New(
-		fsm.WithCtx(my.Q.Ctx),
-		fsm.WithDb(my.Q.Tx),
-	)
+			fsm.WithCtx(my.Q.Ctx),
+			fsm.WithDb(my.Q.Tx),
+		)
 		err = f.CancelLogByUuids(req.FsmCancelLog{
 			ApprovalRoleId: u.RoleId,
 			ApprovalUserId: u.Id,

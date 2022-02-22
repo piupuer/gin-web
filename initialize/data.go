@@ -36,7 +36,7 @@ func Data() {
 	err := data(my)
 	if err != nil {
 		my.Q.Tx.Rollback()
-		log.WithRequestId(ctx).Error("initialize data failed: %v", err)
+		log.WithRequestId(ctx).WithError(err).Error("initialize data failed")
 	} else {
 		my.Q.Tx.Commit()
 	}
