@@ -35,12 +35,19 @@ func Mysql() {
 		migrate.WithUri(uri),
 		migrate.WithFs(sqlFs),
 		migrate.WithFsRoot("db"),
+		migrate.WithBefore(beforeMigrate),
 	)
 	if err != nil {
 		panic(errors.Wrap(err, "initialize mysql failed"))
 	}
+
+	log.WithRequestId(ctx).Info("initialize mysql success")
+}
+
+func beforeMigrate(ctx context.Context) (err error) {
 	init := false
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
+	var cancel context.CancelFunc
+	ctx, cancel = context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
 	go func() {
 		for {
@@ -61,7 +68,8 @@ func Mysql() {
 	} else {
 		l = l.LogMode(glogger.Info)
 	}
-	db, err := gorm.Open(mysql.Open(uri), &gorm.Config{
+	var db *gorm.DB
+	db, err = gorm.Open(mysql.Open(global.Conf.Mysql.DSN.FormatDSN()), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   global.Conf.Mysql.TablePrefix + "_",
@@ -72,13 +80,13 @@ func Mysql() {
 		Logger:      l,
 	})
 	if err != nil {
-		panic(errors.Wrap(err, "initialize mysql failed"))
+		return
 	}
 	init = true
 	global.Mysql = db
 	autoMigrate()
-	binlogListen()
-	log.WithRequestId(ctx).Info("initialize mysql success")
+	err = binlogListen()
+	return
 }
 
 func autoMigrate() {
@@ -102,12 +110,12 @@ func autoMigrate() {
 	fsm.Migrate(fsm.WithDb(global.Mysql), fsm.WithCtx(ctx))
 }
 
-func binlogListen() {
+func binlogListen() (err error) {
 	if !global.Conf.Redis.EnableBinlog {
 		log.WithRequestId(ctx).Info("if redis is not used or binlog is not enabled, there is no need to initialize the MySQL binlog listener")
 		return
 	}
-	err := binlog.NewMysqlBinlog(
+	err = binlog.NewMysqlBinlog(
 		binlog.WithCtx(ctx),
 		binlog.WithRedis(global.Redis),
 		binlog.WithDb(global.Mysql),
@@ -134,7 +142,5 @@ func binlogListen() {
 			new(models.Leave),
 		),
 	)
-	if err != nil {
-		panic(err)
-	}
+	return
 }
