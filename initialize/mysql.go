@@ -2,6 +2,7 @@ package initialize
 
 import (
 	"context"
+	"embed"
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/global"
@@ -10,7 +11,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/binlog"
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/log"
-	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/piupuer/go-helper/pkg/migrate"
 	"github.com/pkg/errors"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -19,16 +20,25 @@ import (
 	"time"
 )
 
+//go:embed db/*.sql
+var sqlFs embed.FS
+
 func Mysql() {
 	cfg, err := m.ParseDSN(global.Conf.Mysql.Uri)
 	if err != nil {
 		panic(errors.Wrap(err, "initialize mysql failed"))
 	}
-	// create database if not exists
-	query.MigrateDatabase(*cfg)
 	global.Conf.Mysql.DSN = *cfg
-
-	log.WithRequestId(ctx).Info("mysql dsn: %s", cfg.FormatDSN())
+	uri := global.Conf.Mysql.Uri
+	err = migrate.Do(
+		migrate.WithCtx(ctx),
+		migrate.WithUri(uri),
+		migrate.WithFs(sqlFs),
+		migrate.WithFsRoot("db"),
+	)
+	if err != nil {
+		panic(errors.Wrap(err, "initialize mysql failed"))
+	}
 	init := false
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(global.Conf.System.ConnectTimeout)*time.Second)
 	defer cancel()
@@ -51,7 +61,7 @@ func Mysql() {
 	} else {
 		l = l.LogMode(glogger.Info)
 	}
-	db, err := gorm.Open(mysql.Open(cfg.FormatDSN()), &gorm.Config{
+	db, err := gorm.Open(mysql.Open(uri), &gorm.Config{
 		DisableForeignKeyConstraintWhenMigrating: true,
 		NamingStrategy: schema.NamingStrategy{
 			TablePrefix:   global.Conf.Mysql.TablePrefix + "_",
