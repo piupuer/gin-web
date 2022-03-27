@@ -97,6 +97,8 @@ go run main.go
 ├── conf # 配置文件目录(包含测试/预发布/生产环境配置参数及casbin模型配置)
 ├── docker-conf # docker相关配置文件
 ├── initialize # 数据初始化目录
+│   ├── db # 数据库初始化脚本目录, 遵循sql-migrate规范
+│   └── xxx.go # 包含各种需要初始化的全局变量, 如mysql/redis
 ├── middleware # 中间件目录
 ├── models # 存储层模型定义目录
 ├── pkg # 公共模块目录
@@ -175,6 +177,8 @@ Struct, Map, Slice and Array diving.
 [dcron](https://github.com/libi/dcron): 分布式定时任务库.
 <br/>
 [fsm](https://github.com/looplab/fsm): FSM is a finite state machine for Go.
+<br/>
+[sql-migrate](https://github.com/rubenv/sql-migrate): SQL Schema migration tool for Go. Based on gorp and goose.
 <br/>
 
 日志搜集:
