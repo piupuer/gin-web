@@ -40,6 +40,10 @@ func Mysql() {
 	if err != nil {
 		panic(errors.Wrap(err, "initialize mysql failed"))
 	}
+	err = binlogListen()
+	if err != nil {
+		panic(errors.Wrap(err, "initialize mysql binlog failed"))
+	}
 
 	log.WithRequestId(ctx).Info("initialize mysql success")
 }
@@ -85,27 +89,12 @@ func beforeMigrate(ctx context.Context) (err error) {
 	init = true
 	global.Mysql = db
 	autoMigrate()
-	err = binlogListen()
 	return
 }
 
 func autoMigrate() {
-	// migrate tables
-	global.Mysql.WithContext(ctx).AutoMigrate(
-		new(ms.SysMenu),
-		new(ms.SysMenuRoleRelation),
-		new(ms.SysApi),
-		new(ms.SysCasbin),
-		new(ms.SysOperationLog),
-		new(ms.SysMessage),
-		new(ms.SysMessageLog),
-		new(ms.SysMachine),
-		new(ms.SysDict),
-		new(ms.SysDictData),
-		new(models.SysUser),
-		new(models.SysRole),
-		new(models.Leave),
-	)
+	// migrate tables change to sql-migrate: initialize/db/***.sql
+	
 	// auto migrate fsm
 	fsm.Migrate(fsm.WithDb(global.Mysql), fsm.WithCtx(ctx))
 }

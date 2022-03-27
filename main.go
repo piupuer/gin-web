@@ -44,7 +44,6 @@ func main() {
 	initialize.Redis()
 	initialize.Mysql()
 	initialize.CasbinEnforcer()
-	initialize.Data()
 	initialize.Cron()
 	initialize.Oss()
 

@@ -5,6 +5,7 @@ import (
 	"gin-web/pkg/global"
 	"github.com/piupuer/go-helper/pkg/job"
 	"github.com/piupuer/go-helper/pkg/log"
+	"github.com/piupuer/go-helper/pkg/migrate"
 	"github.com/piupuer/go-helper/pkg/query"
 	"os"
 )
@@ -51,6 +52,7 @@ func reset(ctx context.Context) error {
 			global.Conf.Mysql.DSN.DBName + "_tb_fsm_user",
 			global.Conf.Mysql.DSN.DBName + "_tb_leave",
 			global.Conf.Mysql.DSN.DBName + "_tb_sys_api",
+			global.Conf.Mysql.DSN.DBName + "_tb_sys_casbin",
 			global.Conf.Mysql.DSN.DBName + "_tb_sys_dict",
 			global.Conf.Mysql.DSN.DBName + "_tb_sys_dict_data",
 			global.Conf.Mysql.DSN.DBName + "_tb_sys_machine",
@@ -65,13 +67,19 @@ func reset(ctx context.Context) error {
 	tables := make([]string, 0)
 	global.Mysql.Raw("show tables").Scan(&tables)
 	for _, item := range tables {
-		if item == "tb_sys_operation_log" || item == "tb_sys_casbin" {
+		if item == "tb_sys_operation_log" {
 			continue
 		}
 		global.Mysql.Exec("TRUNCATE TABLE " + item)
 	}
-	Data()
-
+	// reset data
+	uri := global.Conf.Mysql.Uri
+	migrate.Do(
+		migrate.WithCtx(ctx),
+		migrate.WithUri(uri),
+		migrate.WithFs(sqlFs),
+		migrate.WithFsRoot("db"),
+	)
 	log.WithRequestId(ctx).Info("[cron job][reset]ended")
 	return nil
 }
