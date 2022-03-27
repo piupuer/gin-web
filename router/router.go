@@ -37,7 +37,7 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			middleware.WithRateRedis(global.Redis),
 			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
 		),
-		middleware.Cors,
+		middleware.Cors(),
 		middleware.SecurityHeader,
 		middleware.RequestId,
 		middleware.Params,
