@@ -32,7 +32,6 @@ FROM frolvlad/alpine-glibc:alpine-3.12
 
 # set project run mode
 ENV GIN_WEB_MODE production
-ENV CFG_SYSTEM_PORT 8080
 ENV APP_HOME /app/gin-web-prod
 
 RUN mkdir -p $APP_HOME
@@ -58,5 +57,3 @@ RUN apk update \
 # RUN date -R
 
 CMD ["./main-prod"]
-
-HEALTHCHECK --interval=5s --timeout=3s CMD curl -fs http://127.0.0.1:$CFG_SYSTEM_PORT/api/ping || exit 1;

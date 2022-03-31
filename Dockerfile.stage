@@ -35,7 +35,6 @@ FROM frolvlad/alpine-glibc:alpine-3.12
 
 # set project run mode
 ENV GIN_WEB_MODE staging
-ENV CFG_SYSTEM_PORT 9090
 ENV APP_HOME /app/gin-web-stage
 
 RUN mkdir -p $APP_HOME
@@ -65,5 +64,3 @@ RUN apk update \
 RUN chmod +x stage.sh
 
 CMD ["./stage.sh"]
-
-HEALTHCHECK --interval=5s --timeout=3s CMD curl -fs http://127.0.0.1:$CFG_SYSTEM_PORT/stage-api/ping || exit 1;
