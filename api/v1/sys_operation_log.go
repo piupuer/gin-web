@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"gin-web/pkg/global"
 	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/ms"
@@ -19,6 +20,8 @@ func OperationLogSave(c *gin.Context, list []middleware.OperationRecord) {
 
 // operation log find skip path callback
 func OperationLogFindSkipPath(c *gin.Context) []string {
+	// override tx
+	c.Set(constant.MiddlewareTransactionTxCtxKey, global.Mysql)
 	my := service.New(c)
 	return my.Q.FindDictDataValByName(constant.MiddlewareOperationLogSkipPathDict)
 }
