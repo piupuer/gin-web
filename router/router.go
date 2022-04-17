@@ -54,7 +54,7 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 					fmt.Sprintf("%s/ping", global.Conf.System.UrlPrefix),
 					fmt.Sprintf("%s/message/ws", global.Conf.System.Base),
 					fmt.Sprintf("%s/upload/file", global.Conf.System.Base),
-					"swagger/index.html",
+					"swagger/*",
 				}
 			}),
 		),
