@@ -16,7 +16,7 @@ func Oss() {
 
 func Minio() {
 	if !global.Conf.Upload.Minio.Enable {
-		log.WithRequestId(ctx).Info("if minio is not enabled, there is no need to initialize minio")
+		log.WithContext(ctx).Info("if minio is not enabled, there is no need to initialize minio")
 		return
 	}
 	init := false
@@ -48,5 +48,5 @@ func Minio() {
 	minio.MakeBucket(ctx, global.Conf.Upload.Minio.Bucket)
 	init = true
 	global.Minio = minio
-	log.WithRequestId(ctx).Info("initialize object storage minio success")
+	log.WithContext(ctx).Info("initialize object storage minio success")
 }

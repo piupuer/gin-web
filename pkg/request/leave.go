@@ -2,7 +2,7 @@ package request
 
 import (
 	"gin-web/models"
-	"github.com/golang-module/carbon"
+	"github.com/golang-module/carbon/v2"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
 )
@@ -16,10 +16,10 @@ type Leave struct {
 }
 
 type CreateLeave struct {
-	User      models.SysUser          `json:"user" swaggerignore:"true"`
-	Desc      string                  `json:"desc" validate:"required"`
-	StartTime carbon.ToDateTimeString `json:"startTime" swaggertype:"string"`
-	EndTime   carbon.ToDateTimeString `json:"endTime" swaggertype:"string"`
+	User      models.SysUser  `json:"user" swaggerignore:"true"`
+	Desc      string          `json:"desc" validate:"required"`
+	StartTime carbon.DateTime `json:"startTime" swaggertype:"string"`
+	EndTime   carbon.DateTime `json:"endTime" swaggertype:"string"`
 }
 
 func (s CreateLeave) FieldTrans() map[string]string {
@@ -29,9 +29,9 @@ func (s CreateLeave) FieldTrans() map[string]string {
 }
 
 type UpdateLeave struct {
-	Desc      *string                  `json:"desc"`
-	StartTime *carbon.ToDateTimeString `json:"startTime" swaggertype:"string"`
-	EndTime   *carbon.ToDateTimeString `json:"endTime" swaggertype:"string"`
+	Desc      *string          `json:"desc"`
+	StartTime *carbon.DateTime `json:"startTime" swaggertype:"string"`
+	EndTime   *carbon.DateTime `json:"endTime" swaggertype:"string"`
 }
 
 type ApproveLeave struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"gin-web/models"
 	"gin-web/pkg/request"
-	"github.com/golang-module/carbon"
+	"github.com/golang-module/carbon/v2"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
@@ -56,9 +56,9 @@ func (my MysqlService) UserWrongPwd(user models.SysUser) (err error) {
 	if newWrong >= 10 {
 		m["locked"] = constant.One
 		if newWrong == 10 {
-			m["lock_expire"] = carbon.Now().AddDuration("10m").Time.Unix()
+			m["lock_expire"] = carbon.Now().AddDuration("10m").Carbon2Time().Unix()
 		} else if newWrong == 20 {
-			m["lock_expire"] = carbon.Now().AddDuration("60m").Time.Unix()
+			m["lock_expire"] = carbon.Now().AddDuration("60m").Carbon2Time().Unix()
 		} else if newWrong >= 30 {
 			m["lock_expire"] = 0
 		}

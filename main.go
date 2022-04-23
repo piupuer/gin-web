@@ -31,7 +31,7 @@ var conf embed.FS
 func main() {
 	defer func() {
 		if err := recover(); err != nil {
-			log.WithRequestId(ctx).WithError(errors.Errorf("%v", err)).Error("[%s]project run failed, stack: %s", global.ProName, string(debug.Stack()))
+			log.WithContext(ctx).WithError(errors.Errorf("%v", err)).Error("[%s]project run failed, stack: %s", global.ProName, string(debug.Stack()))
 		}
 	}()
 

@@ -126,18 +126,18 @@ func Config(c context.Context, conf embed.FS) {
 	// read rsa files
 	publicBytes := box.Get(global.Conf.Jwt.RSAPublicKey)
 	if len(publicBytes) == 0 {
-		log.WithRequestId(ctx).Warn("read rsa public file failed, please check path: %s", global.Conf.Jwt.RSAPublicKey)
+		log.WithContext(ctx).Warn("read rsa public file failed, please check path: %s", global.Conf.Jwt.RSAPublicKey)
 	} else {
 		global.Conf.Jwt.RSAPublicBytes = publicBytes
 	}
 	privateBytes := box.Get(global.Conf.Jwt.RSAPrivateKey)
 	if len(privateBytes) == 0 {
-		log.WithRequestId(ctx).Warn("read rsa private file failed, please check path: %s", global.Conf.Jwt.RSAPrivateKey)
+		log.WithContext(ctx).Warn("read rsa private file failed, please check path: %s", global.Conf.Jwt.RSAPrivateKey)
 	} else {
 		global.Conf.Jwt.RSAPrivateBytes = privateBytes
 	}
 
-	log.WithRequestId(ctx).Info("initialize config success, config env: `%s_CONF: %s`", global.ProEnvName, box.Dir)
+	log.WithContext(ctx).Info("initialize config success, config env: `%s_CONF: %s`", global.ProEnvName, box.Dir)
 }
 
 func readConfig(box ms.ConfBox, v *viper.Viper, configFile string) {

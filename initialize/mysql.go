@@ -45,7 +45,7 @@ func Mysql() {
 		panic(errors.Wrap(err, "initialize mysql binlog failed"))
 	}
 
-	log.WithRequestId(ctx).Info("initialize mysql success")
+	log.WithContext(ctx).Info("initialize mysql success")
 }
 
 func beforeMigrate(ctx context.Context) (err error) {
@@ -94,14 +94,14 @@ func beforeMigrate(ctx context.Context) (err error) {
 
 func autoMigrate() {
 	// migrate tables change to sql-migrate: initialize/db/***.sql
-	
+
 	// auto migrate fsm
 	fsm.Migrate(fsm.WithDb(global.Mysql), fsm.WithCtx(ctx))
 }
 
 func binlogListen() (err error) {
 	if !global.Conf.Redis.EnableBinlog {
-		log.WithRequestId(ctx).Info("if redis is not used or binlog is not enabled, there is no need to initialize the MySQL binlog listener")
+		log.WithContext(ctx).Info("if redis is not used or binlog is not enabled, there is no need to initialize the MySQL binlog listener")
 		return
 	}
 	err = binlog.NewMysqlBinlog(

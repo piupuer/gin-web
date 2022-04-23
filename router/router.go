@@ -164,6 +164,6 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 	InitRoleRouter(nr)
 	InitUserRouter(nr)
 
-	log.WithRequestId(ctx).Info("initialize http router success")
+	log.WithContext(ctx).Info("initialize http router success")
 	return r
 }

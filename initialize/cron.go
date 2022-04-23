@@ -30,12 +30,12 @@ func Cron() {
 			Func: reset,
 		}).Start()
 	}
-	log.WithRequestId(ctx).Debug("initialize cron job success")
+	log.WithContext(ctx).Debug("initialize cron job success")
 }
 
 func reset(ctx context.Context) error {
 	ctx = query.NewRequestId(ctx)
-	log.WithRequestId(ctx).Info("[cron job][reset]starting...")
+	log.WithContext(ctx).Info("[cron job][reset]starting...")
 
 	if global.Conf.Redis.EnableBinlog {
 		global.Redis.Del(ctx, []string{
@@ -80,6 +80,6 @@ func reset(ctx context.Context) error {
 		migrate.WithFs(sqlFs),
 		migrate.WithFsRoot("db"),
 	)
-	log.WithRequestId(ctx).Info("[cron job][reset]ended")
+	log.WithContext(ctx).Info("[cron job][reset]ended")
 	return nil
 }

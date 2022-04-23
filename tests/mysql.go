@@ -21,7 +21,7 @@ func Mysql() {
 	}
 	global.Conf.Mysql.DSN = *cfg
 
-	log.WithRequestId(ctx).Info("[unit test]mysql dsn: %s", cfg.FormatDSN())
+	log.WithContext(ctx).Info("[unit test]mysql dsn: %s", cfg.FormatDSN())
 	l := log.NewDefaultGormLogger()
 	if global.Conf.Mysql.NoSql {
 		// not show sql log
@@ -44,7 +44,7 @@ func Mysql() {
 	}
 	global.Mysql = db
 	autoMigrate()
-	log.WithRequestId(ctx).Debug("[unit test]initialize mysql success")
+	log.WithContext(ctx).Debug("[unit test]initialize mysql success")
 }
 
 func autoMigrate() {
