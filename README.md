@@ -33,6 +33,7 @@
 - `Swagger` Swagger V2接口文档
 - `Captcha` 密码输错次数过多需输入验证码
 - `Sign` API接口签名(防重放攻击、防数据篡改)
+- `Opentelemetry` 链路追踪, 快速分析接口耗时
 
 ## 中间件
 
@@ -69,11 +70,15 @@
 
 ## 在线演示(前端静态文件已上传至阿里云OSS, 访问速度飞起)
 
-[传送门](http://106.75.132.201/)
+
+1. [Demo](http://106.75.132.201/)
+1. [Docs](https://piupuer.github.io/gin-web-slate)
 <br/>
-[日志收集器Grafana传送门](http://106.75.132.201:3000/) (test/123456)
-<br/>
-[Minio对象存储](http://106.75.132.201:9005/) (minio/minio123)
+2. [Opentelemetry链路追踪](http://106.75.132.201:3301/application/gin-web)
+
+奈何服务器太辣鸡, 下列服务已被关闭, 请本地搭建~
+1. Loki日志收集器~~(http://106.75.132.201:3000/) (test/123456)~~
+2. Minio对象存储~~(http://106.75.132.201:9005/)(minio/minio123)~~
 
 ## 快速开始
 
