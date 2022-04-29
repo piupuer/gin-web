@@ -70,15 +70,15 @@
 
 ## 在线演示(前端静态文件已上传至阿里云OSS, 访问速度飞起)
 
-
+### 传送门
 1. [Demo](http://106.75.132.201/)
-1. [Docs](https://piupuer.github.io/gin-web-slate)
-<br/>
-2. [Opentelemetry链路追踪](http://106.75.132.201:3301/application/gin-web)
+2. [Docs](https://piupuer.github.io/gin-web-slate)
+3. [Opentelemetry链路追踪](http://106.75.132.201:3301/application/gin-web)
 
-奈何服务器太辣鸡, 下列服务已被关闭, 请本地搭建~
-1. Loki日志收集器~~(http://106.75.132.201:3000/) (test/123456)~~
-2. Minio对象存储~~(http://106.75.132.201:9005/)(minio/minio123)~~
+### 奈何服务器太辣鸡, 下列服务已被关闭, 请本地搭建～
+
+* Loki日志收集器(http://106.75.132.201:3000/) (test/123456)
+* Minio对象存储(http://106.75.132.201:9005/) (minio/minio123)
 
 ## 快速开始
 
