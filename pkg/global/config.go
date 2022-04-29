@@ -8,6 +8,7 @@ import (
 // config from conf/config.dev.yml
 type Configuration struct {
 	System SystemConfiguration `mapstructure:"system" json:"system"`
+	Tracer TracerConfiguration `mapstructure:"tracer" json:"tracer"`
 	Logs   LogsConfiguration   `mapstructure:"logs" json:"logs"`
 	Mysql  MysqlConfiguration  `mapstructure:"mysql" json:"mysql"`
 	Redis  RedisConfiguration  `mapstructure:"redis" json:"redis"`
@@ -28,6 +29,13 @@ type SystemConfiguration struct {
 	CasbinModelPath      string `mapstructure:"casbin-model-path" json:"casbinModelPath"`
 	RateLimitMax         int64  `mapstructure:"rate-limit-max" json:"rateLimitMax"`
 	AmapKey              string `mapstructure:"amap-key" json:"amapKey"`
+}
+
+type TracerConfiguration struct {
+	Enable   bool              `mapstructure:"enable" json:"enable"`
+	Insecure bool              `mapstructure:"insecure" json:"insecure"`
+	Endpoint string            `mapstructure:"endpoint" json:"endpoint"`
+	Headers  map[string]string `mapstructure:"headers" json:"headers"`
 }
 
 type LogsConfiguration struct {

@@ -11,6 +11,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"strings"
@@ -18,6 +19,8 @@ import (
 
 // find leave by current user id
 func (my MysqlService) FindLeave(r *request.Leave) []models.Leave {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindLeave"))
+	defer span.End()
 	list := make([]models.Leave, 0)
 	q := my.Q.Tx.
 		Model(&models.Leave{}).
@@ -36,6 +39,8 @@ func (my MysqlService) FindLeave(r *request.Leave) []models.Leave {
 
 // query leave fsm track
 func (my MysqlService) FindLeaveApprovalLog(leaveId uint) ([]fsm.Log, error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindLeaveApprovalLog"))
+	defer span.End()
 	fsmUuid := my.GetLeaveFsmUuid(leaveId)
 	f := fsm.New(
 		fsm.WithCtx(my.Q.Ctx),
@@ -49,6 +54,8 @@ func (my MysqlService) FindLeaveApprovalLog(leaveId uint) ([]fsm.Log, error) {
 
 // query leave fsm track
 func (my MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindLeaveFsmTrack"))
+	defer span.End()
 	fsmUuid := my.GetLeaveFsmUuid(leaveId)
 	f := fsm.New(
 		fsm.WithCtx(my.Q.Ctx),
@@ -66,6 +73,8 @@ func (my MysqlService) FindLeaveFsmTrack(leaveId uint) ([]resp.FsmLogTrack, erro
 
 // create leave
 func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "CreateLeave"))
+	defer span.End()
 	f := fsm.New(
 		fsm.WithCtx(my.Q.Ctx),
 		fsm.WithDb(my.Q.Tx),
@@ -94,6 +103,8 @@ func (my MysqlService) CreateLeave(r *request.CreateLeave) error {
 }
 
 func (my MysqlService) UpdateLeaveById(id uint, r request.UpdateLeave, u models.SysUser) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "UpdateLeaveById"))
+	defer span.End()
 	var leave models.Leave
 	err = my.Q.Tx.
 		Where("id = ?", id).
@@ -130,6 +141,8 @@ func (my MysqlService) GetLeaveFsmUuid(leaveId uint) string {
 
 // query leave by fsm uuids
 func (my MysqlService) FindLevelByFsmUuids(uuids []string) []models.Leave {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindLevelByFsmUuids"))
+	defer span.End()
 	// create leave to db
 	leaves := make([]models.Leave, 0)
 	my.Q.Tx.
@@ -140,6 +153,8 @@ func (my MysqlService) FindLevelByFsmUuids(uuids []string) []models.Leave {
 }
 
 func (my MysqlService) ApprovedLeaveById(r request.ApproveLeave) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "ApprovedLeaveById"))
+	defer span.End()
 	var leave models.Leave
 	q := my.Q.Tx.
 		Model(&models.Leave{}).
@@ -168,6 +183,8 @@ func (my MysqlService) ApprovedLeaveById(r request.ApproveLeave) (err error) {
 }
 
 func (my MysqlService) DeleteLeaveByIds(ids []uint, u models.SysUser) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "DeleteLeaveByIds"))
+	defer span.End()
 	list := make([]string, 0)
 	my.Q.Tx.
 		Model(&models.Leave{}).
@@ -191,6 +208,8 @@ func (my MysqlService) DeleteLeaveByIds(ids []uint, u models.SysUser) (err error
 }
 
 func (my MysqlService) LeaveTransition(logs ...resp.FsmApprovalLog) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "LeaveTransition"))
+	defer span.End()
 	m := make(map[uint][]string)
 	for _, log := range logs {
 		if log.Category == global.FsmCategoryLeave {
@@ -240,6 +259,8 @@ func (my MysqlService) LeaveTransition(logs ...resp.FsmApprovalLog) (err error) 
 }
 
 func (my MysqlService) GetLeaveFsmDetail(detail req.FsmSubmitterDetail) []resp.FsmSubmitterDetail {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetLeaveFsmDetail"))
+	defer span.End()
 	arr := make([]resp.FsmSubmitterDetail, 0)
 	switch uint(detail.Category) {
 	case global.FsmCategoryLeave:
@@ -274,6 +295,8 @@ func (my MysqlService) GetLeaveFsmDetail(detail req.FsmSubmitterDetail) []resp.F
 }
 
 func (my MysqlService) UpdateLeaveFsmDetail(detail req.UpdateFsmSubmitterDetail) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "UpdateLeaveFsmDetail"))
+	defer span.End()
 	switch uint(detail.Category) {
 	case global.FsmCategoryLeave:
 		detail.Parse()

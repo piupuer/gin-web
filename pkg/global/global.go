@@ -5,6 +5,7 @@ import (
 	"github.com/go-redis/redis/v8"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/oss"
+	"go.opentelemetry.io/otel/sdk/trace"
 	"gorm.io/gorm"
 )
 
@@ -15,6 +16,7 @@ var (
 	RuntimeRoot    string
 	Conf           Configuration
 	ConfBox        ms.ConfBox
+	Tracer         *trace.TracerProvider
 	Mysql          *gorm.DB
 	Redis          redis.UniversalClient
 	CasbinEnforcer *casbin.Enforcer

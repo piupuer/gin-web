@@ -21,6 +21,13 @@ system:
   # amap key for request real ip(https://lbs.amap.com/)
   amap-key: ''
 
+# tracer
+tracer:
+  enable: 'true'
+  insecure: 'true'
+  endpoint: '127.0.0.1:4318'
+  headers:
+
 logs:
   # logger category(zap/logrus, default logrus)
   category: logrus

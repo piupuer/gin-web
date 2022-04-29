@@ -1,12 +1,14 @@
 package v1
 
 import (
+	"context"
 	"gin-web/pkg/global"
 	"gin-web/pkg/service"
 	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/middleware"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/piupuer/go-helper/pkg/utils"
 )
 
@@ -15,7 +17,9 @@ func OperationLogSave(c *gin.Context, list []middleware.OperationRecord) {
 	arr := make([]ms.SysOperationLog, len(list))
 	utils.Struct2StructByJson(list, &arr)
 	my := service.New(c)
-	my.Q.Db.Create(arr)
+	// running in goroutine, not use old ctx
+	ctx := context.Background()
+	my.Q.Db.WithContext(tracing.NewId(ctx)).Create(arr)
 }
 
 // operation log find skip path callback

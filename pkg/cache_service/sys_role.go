@@ -3,6 +3,7 @@ package cache_service
 import (
 	"gin-web/models"
 	"gin-web/pkg/request"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"strings"
 )
 
@@ -10,6 +11,8 @@ func (rd RedisService) FindRoleIdBySort(currentRoleSort uint) []uint {
 	if !rd.binlog {
 		return rd.mysql.FindRoleIdBySort(currentRoleSort)
 	}
+	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "FindRoleIdBySort"))
+	defer span.End()
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
 	rd.Q.
@@ -26,6 +29,8 @@ func (rd RedisService) FindRole(r *request.Role) []models.SysRole {
 	if !rd.binlog {
 		return rd.mysql.FindRole(r)
 	}
+	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "FindRole"))
+	defer span.End()
 	list := make([]models.SysRole, 0)
 	q := rd.Q.
 		Table("sys_role").
@@ -54,6 +59,8 @@ func (rd RedisService) GetRoleById(id uint) (models.SysRole, error) {
 	if !rd.binlog {
 		return rd.mysql.GetRoleById(id)
 	}
+	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "GetRoleById"))
+	defer span.End()
 	var role models.SysRole
 	var err error
 	err = rd.Q.
@@ -68,6 +75,8 @@ func (rd RedisService) FindRoleByIds(ids []uint) []models.SysRole {
 	if !rd.binlog {
 		return rd.mysql.FindRoleByIds(ids)
 	}
+	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "FindRoleByIds"))
+	defer span.End()
 	roles := make([]models.SysRole, 0)
 	rd.Q.
 		Table("sys_role").

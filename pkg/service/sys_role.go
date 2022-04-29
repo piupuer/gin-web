@@ -5,11 +5,14 @@ import (
 	"gin-web/models"
 	"gin-web/pkg/request"
 	"github.com/piupuer/go-helper/ms"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/pkg/errors"
 	"strings"
 )
 
 func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) []uint {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindRoleIdBySort"))
+	defer span.End()
 	roles := make([]models.SysRole, 0)
 	roleIds := make([]uint, 0)
 	my.Q.Tx.
@@ -23,6 +26,8 @@ func (my MysqlService) FindRoleIdBySort(currentRoleSort uint) []uint {
 }
 
 func (my MysqlService) FindRole(r *request.Role) []models.SysRole {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindRole"))
+	defer span.End()
 	list := make([]models.SysRole, 0)
 	q := my.Q.Tx.
 		Model(&models.SysRole{}).
@@ -48,6 +53,8 @@ func (my MysqlService) FindRole(r *request.Role) []models.SysRole {
 }
 
 func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "DeleteRoleByIds"))
+	defer span.End()
 	var roles []models.SysRole
 	my.Q.Tx.
 		Preload("Users").
@@ -75,6 +82,8 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 }
 
 func (my MysqlService) GetRoleById(id uint) (models.SysRole, error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetRoleById"))
+	defer span.End()
 	var role models.SysRole
 	var err error
 	err = my.Q.Tx.
@@ -85,6 +94,8 @@ func (my MysqlService) GetRoleById(id uint) (models.SysRole, error) {
 }
 
 func (my MysqlService) FindRoleByIds(ids []uint) []models.SysRole {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindRoleByIds"))
+	defer span.End()
 	roles := make([]models.SysRole, 0)
 	my.Q.Tx.
 		Model(&models.SysRole{}).

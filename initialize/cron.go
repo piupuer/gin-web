@@ -6,7 +6,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/job"
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/migrate"
-	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"os"
 )
 
@@ -34,7 +34,7 @@ func Cron() {
 }
 
 func reset(ctx context.Context) error {
-	ctx = query.NewRequestId(ctx)
+	ctx = tracing.NewId(ctx)
 	log.WithContext(ctx).Info("[cron job][reset]starting...")
 
 	if global.Conf.Redis.EnableBinlog {

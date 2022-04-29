@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/piupuer/go-helper/pkg/utils"
 )
 
@@ -22,6 +23,9 @@ import (
 // @Param ids path string true "ids"
 // @Router /role/list/{ids} [GET]
 func FindRoleByIds(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "FindRoleByIds"))
+	defer span.End()
 	ids := req.UintIds(c)
 	cs := cache_service.New(c)
 	list := cs.FindRoleByIds(ids)
@@ -38,6 +42,9 @@ func FindRoleByIds(c *gin.Context) {
 // @Param params query request.Role true "params"
 // @Router /role/list [GET]
 func FindRole(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "FindRole"))
+	defer span.End()
 	var r request.Role
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
@@ -59,6 +66,9 @@ func FindRole(c *gin.Context) {
 // @Param params body request.CreateRole true "params"
 // @Router /role/create [POST]
 func CreateRole(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "CreateRole"))
+	defer span.End()
 	user := GetCurrentUser(c)
 	var r request.CreateRole
 	req.ShouldBind(c, &r)
@@ -85,6 +95,9 @@ func CreateRole(c *gin.Context) {
 // @Param params body request.UpdateRole true "params"
 // @Router /role/update/{id} [PATCH]
 func UpdateRoleById(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "UpdateRoleById"))
+	defer span.End()
 	var r request.UpdateRole
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
@@ -126,6 +139,9 @@ func RouterFindRoleKeywordByRoleIds(c *gin.Context, roleIds []uint) []string {
 // @Param ids body req.Ids true "ids"
 // @Router /role/delete/batch [DELETE]
 func BatchDeleteRoleByIds(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "BatchDeleteRoleByIds"))
+	defer span.End()
 	var r req.Ids
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)

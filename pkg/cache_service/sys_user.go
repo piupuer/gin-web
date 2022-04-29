@@ -6,6 +6,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"strings"
@@ -17,6 +18,8 @@ func (rd RedisService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error
 	if !rd.binlog {
 		return rd.mysql.LoginCheck(r)
 	}
+	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "LoginCheck"))
+	defer span.End()
 	// Does the user exist
 	err = rd.Q.Table("sys_user").Preload("Role").Where("username", "=", r.Username).First(&u).Error
 	if err != nil {
@@ -56,6 +59,8 @@ func (rd RedisService) FindUser(r *request.User) []models.SysUser {
 	if !rd.binlog {
 		return rd.mysql.FindUser(r)
 	}
+	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "FindUser"))
+	defer span.End()
 	list := make([]models.SysUser, 0)
 	q := rd.Q.
 		Table("sys_user").
@@ -87,6 +92,8 @@ func (rd RedisService) GetUserById(id uint) (models.SysUser, error) {
 	if !rd.binlog {
 		return rd.mysql.GetUserById(id)
 	}
+	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "GetUserById"))
+	defer span.End()
 	var user models.SysUser
 	var err error
 	err = rd.Q.
@@ -102,6 +109,8 @@ func (rd RedisService) FindUserByIds(ids []uint) []models.SysUser {
 	if !rd.binlog {
 		return rd.mysql.FindUserByIds(ids)
 	}
+	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "FindUserByIds"))
+	defer span.End()
 	list := make([]models.SysUser, 0)
 	rd.Q.
 		Table("sys_user").

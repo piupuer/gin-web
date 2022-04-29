@@ -19,6 +19,7 @@ import (
 	hr "github.com/piupuer/go-helper/router"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 )
 
 func RegisterServers(ctx context.Context) *gin.Engine {
@@ -37,9 +38,9 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			middleware.WithRateRedis(global.Redis),
 			middleware.WithRateMaxLimit(global.Conf.System.RateLimitMax),
 		),
+		otelgin.Middleware(global.ProName),
 		middleware.Cors(),
 		middleware.SecurityHeader,
-		middleware.RequestId,
 		middleware.Params,
 		middleware.Sign(
 			middleware.WithSignCheckScope(false),

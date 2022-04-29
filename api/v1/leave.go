@@ -8,6 +8,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/tracing"
 )
 
 // FindLeave
@@ -20,6 +21,9 @@ import (
 // @Param params query request.Leave true "params"
 // @Router /leave/list [GET]
 func FindLeave(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "FindLeave"))
+	defer span.End()
 	var r request.Leave
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
@@ -39,6 +43,9 @@ func FindLeave(c *gin.Context) {
 // @Param params body request.CreateLeave true "params"
 // @Router /leave/create [POST]
 func CreateLeave(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "CreateLeave"))
+	defer span.End()
 	user := GetCurrentUser(c)
 	var r request.CreateLeave
 	req.ShouldBind(c, &r)
@@ -61,6 +68,9 @@ func CreateLeave(c *gin.Context) {
 // @Param params body request.UpdateLeave true "params"
 // @Router /leave/update/{id} [PATCH]
 func UpdateLeaveById(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "UpdateLeaveById"))
+	defer span.End()
 	var r request.UpdateLeave
 	req.ShouldBind(c, &r)
 	id := req.UintId(c)
@@ -81,6 +91,9 @@ func UpdateLeaveById(c *gin.Context) {
 // @Param ids body req.Ids true "ids"
 // @Router /leave/delete/batch [DELETE]
 func BatchDeleteLeaveByIds(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "BatchDeleteLeaveByIds"))
+	defer span.End()
 	var r req.Ids
 	req.ShouldBind(c, &r)
 	my := service.New(c)

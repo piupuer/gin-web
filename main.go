@@ -7,7 +7,7 @@ import (
 	"gin-web/router"
 	"github.com/piupuer/go-helper/pkg/listen"
 	"github.com/piupuer/go-helper/pkg/log"
-	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/pkg/errors"
 	_ "net/http/pprof"
 	"runtime"
@@ -15,7 +15,7 @@ import (
 	"strings"
 )
 
-var ctx = query.NewRequestId(nil)
+var ctx = tracing.NewId(nil)
 
 //go:embed conf
 var conf embed.FS
@@ -41,6 +41,7 @@ func main() {
 
 	// initialize components
 	initialize.Config(ctx, conf)
+	initialize.Tracer()
 	initialize.Redis()
 	initialize.Mysql()
 	initialize.CasbinEnforcer()
@@ -54,5 +55,8 @@ func main() {
 		listen.WithHttpPort(global.Conf.System.Port),
 		listen.WithHttpPprofPort(global.Conf.System.PprofPort),
 		listen.WithHttpHandler(router.RegisterServers(ctx)),
+		listen.WithHttpExit(func() {
+			global.Tracer.Shutdown(ctx)
+		}),
 	)
 }

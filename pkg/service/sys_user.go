@@ -8,6 +8,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"strings"
@@ -15,6 +16,8 @@ import (
 )
 
 func (my MysqlService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "LoginCheck"))
+	defer span.End()
 	err = my.Q.Tx.Preload("Role").Where("username = ?", r.Username).First(&u).Error
 	if err != nil {
 		err = errors.Errorf(resp.LoginCheckErrorMsg)
@@ -47,6 +50,8 @@ func (my MysqlService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error
 }
 
 func (my MysqlService) UserWrongPwd(user models.SysUser) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "UserWrongPwd"))
+	defer span.End()
 	// do not use transaction
 	q := my.Q.Db.
 		Model(&models.SysUser{}).
@@ -69,6 +74,8 @@ func (my MysqlService) UserWrongPwd(user models.SysUser) (err error) {
 }
 
 func (my MysqlService) UserLastLogin(id uint) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "UserLastLogin"))
+	defer span.End()
 	m := make(map[string]interface{})
 	m["wrong"] = constant.Zero
 	m["last_login"] = carbon.Now()
@@ -82,6 +89,8 @@ func (my MysqlService) UserLastLogin(id uint) (err error) {
 }
 
 func (my MysqlService) FindUser(r *request.User) []models.SysUser {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindUser"))
+	defer span.End()
 	list := make([]models.SysUser, 0)
 	q := my.Q.Tx.
 		Model(&models.SysUser{}).
@@ -114,6 +123,8 @@ func (my MysqlService) FindUser(r *request.User) []models.SysUser {
 }
 
 func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetUserById"))
+	defer span.End()
 	var user models.SysUser
 	var err error
 	err = my.Q.Tx.Preload("Role").
@@ -124,6 +135,8 @@ func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
 }
 
 func (my MysqlService) GetUserByUsername(username string) (models.SysUser, error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetUserByUsername"))
+	defer span.End()
 	var user models.SysUser
 	var err error
 	err = my.Q.Tx.Preload("Role").
@@ -134,6 +147,8 @@ func (my MysqlService) GetUserByUsername(username string) (models.SysUser, error
 }
 
 func (my MysqlService) FindUserByIds(ids []uint) []models.SysUser {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindUserByIds"))
+	defer span.End()
 	list := make([]models.SysUser, 0)
 	my.Q.Tx.
 		Model(&models.SysUser{}).

@@ -14,6 +14,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
 	"github.com/piupuer/go-helper/pkg/resp"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"strings"
 )
@@ -27,8 +28,11 @@ import (
 // @Description GetUserInfo
 // @Router /user/info [GET]
 func GetUserInfo(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "GetUserInfo"))
+	defer span.End()
 	user := GetCurrentUser(c)
-	oldCache, ok := CacheGetUserInfo(c, user.Id)
+	oldCache, ok := CacheGetUserInfo(ctx, user.Id)
 	if ok {
 		resp.SuccessWithData(oldCache)
 		return
@@ -41,7 +45,7 @@ func GetUserInfo(c *gin.Context) {
 	}
 	rp.Keyword = user.Role.Keyword
 	rp.RoleSort = *user.Role.Sort
-	CacheSetUserInfo(c, user.Id, rp)
+	CacheSetUserInfo(ctx, user.Id, rp)
 	resp.SuccessWithData(rp)
 }
 
@@ -55,6 +59,9 @@ func GetUserInfo(c *gin.Context) {
 // @Param params query request.User true "params"
 // @Router /user/list [GET]
 func FindUser(c *gin.Context) {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "FindUser"))
+	defer span.End()
 	var r request.User
 	req.ShouldBind(c, &r)
 	user := GetCurrentUser(c)
@@ -89,13 +96,16 @@ func ChangePwd(c *gin.Context) {
 }
 
 func GetCurrentUser(c *gin.Context) models.SysUser {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "GetCurrentUser"))
+	defer span.End()
 	userId, exists := c.Get(constant.MiddlewareJwtUserCtxKey)
 	var newUser models.SysUser
 	if !exists {
 		return newUser
 	}
 	uid := utils.Str2Uint(fmt.Sprintf("%d", userId))
-	oldCache, ok := CacheGetUser(c, uid)
+	oldCache, ok := CacheGetUser(ctx, uid)
 	if ok && oldCache.Id > constant.Zero {
 		return *oldCache
 	}
@@ -109,6 +119,9 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 }
 
 func GetCurrentUserAndRole(c *gin.Context) ms.User {
+	ctx := tracing.RealCtx(c)
+	_, span := tracer.Start(ctx, tracing.Name(tracing.Rest, "GetCurrentUserAndRole"))
+	defer span.End()
 	user := GetCurrentUser(c)
 	cs := cache_service.New(c)
 	var roleSort uint
