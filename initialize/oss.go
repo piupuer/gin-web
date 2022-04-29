@@ -16,7 +16,7 @@ func Oss() {
 
 func Minio() {
 	if !global.Conf.Upload.Minio.Enable {
-		log.WithContext(ctx).Info("if minio is not enabled, there is no need to initialize minio")
+		log.WithContext(ctx).Info("minio is not enabled")
 		return
 	}
 	init := false

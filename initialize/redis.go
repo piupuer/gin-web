@@ -12,7 +12,7 @@ import (
 
 func Redis() {
 	if !global.Conf.Redis.Enable {
-		log.WithContext(ctx).Info("if redis is not used, there is no need to initialize redis")
+		log.WithContext(ctx).Info("redis is not enabled")
 		return
 	}
 	init := false
