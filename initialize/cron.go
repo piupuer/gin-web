@@ -13,6 +13,7 @@ import (
 func Cron() {
 	qu := delay.NewQueue(
 		delay.WithQueueName(global.ProName),
+		delay.WithQueueRedisUri(global.Conf.Redis.Uri),
 		delay.WithQueueHandler(taskHandler),
 	)
 	if qu.Error != nil {
