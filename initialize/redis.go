@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 	"gin-web/pkg/global"
-	"github.com/piupuer/go-helper/pkg/job"
 	"github.com/piupuer/go-helper/pkg/log"
+	"github.com/piupuer/go-helper/pkg/query"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -30,7 +30,7 @@ func Redis() {
 		}
 	}()
 	// parse redis URI
-	client, err := job.ParseRedisURI(global.Conf.Redis.Uri)
+	client, err := query.ParseRedisURI(global.Conf.Redis.Uri)
 	if err != nil {
 		panic(errors.Wrap(err, "initialize redis failed"))
 	}
