@@ -31,7 +31,7 @@ func Cron() {
 			panic(errors.Wrap(err, "initialize cron job failed"))
 		}
 	}
-	log.WithContext(ctx).Debug("initialize cron job success")
+	log.WithContext(ctx).Info("initialize cron job success")
 }
 
 func taskHandler(ctx context.Context, t delay.Task) (err error) {
