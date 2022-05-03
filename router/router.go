@@ -42,6 +42,7 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 		middleware.Cors(),
 		middleware.SecurityHeader,
 		middleware.Params,
+		middleware.RequestId,
 		middleware.Sign(
 			middleware.WithSignCheckScope(false),
 			middleware.WithSignGetSignUser(func(c *gin.Context, appId string) ms.SignUser {
