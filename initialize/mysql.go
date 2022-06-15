@@ -110,11 +110,6 @@ func binlogListen() (err error) {
 		binlog.WithDb(global.Mysql),
 		binlog.WithDsn(&global.Conf.Mysql.DSN),
 		binlog.WithBinlogPos(global.Conf.Redis.BinlogPos),
-		binlog.WithIgnore(
-			// The following tables will have more and more data over time
-			// It is not suitable to store the entire table JSON in redis
-			"sys_operation_log",
-		),
 		binlog.WithModels(
 			// The following tables will be sync to redis
 			new(ms.SysMenu),
