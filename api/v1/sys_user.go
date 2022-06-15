@@ -44,7 +44,11 @@ func GetUserInfo(c *gin.Context) {
 		"admin",
 	}
 	rp.Keyword = user.Role.Keyword
-	rp.RoleSort = *user.Role.Sort
+	if user.Role.Sort != nil {
+		rp.RoleSort = *user.Role.Sort
+	} else {
+		rp.RoleSort = 9999
+	}
 	CacheSetUserInfo(ctx, user.Id, rp)
 	resp.SuccessWithData(rp)
 }
