@@ -1,12 +1,7 @@
 FROM golang:1.17 AS gin-web
 #FROM registry.cn-shenzhen.aliyuncs.com/piupuer/golang:1.17-alpine AS gin-web
 
-ENV PROD_MODE production
-
-RUN if [ "m$PROD_MODE" = "m" ] ; \
-    then echo "----------------- Gin Web building(development) -----------------" ; \
-    else echo echo "----------------- Gin Web building($PROD_MODE) -----------------" ;  \
-    fi
+RUN echo "----------------- Gin Web building -----------------"
 
 # set environments
 # enable go modules
