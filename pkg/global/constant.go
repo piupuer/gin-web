@@ -1,8 +1,9 @@
 package global
 
 const (
-	ProName    = "gin-web"
-	ProEnvName = "GIN_WEB"
+	ProName     = "gin-web"
+	ProEnvName  = "GIN_WEB"
+	ProProdName = "PROD"
 )
 
 // fsm categories

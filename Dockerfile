@@ -1,14 +1,20 @@
 FROM golang:1.17 AS gin-web
 #FROM registry.cn-shenzhen.aliyuncs.com/piupuer/golang:1.17-alpine AS gin-web
 
-RUN echo "----------------- Gin Web building(Production) -----------------"
+ENV PROD_MODE production
+
+RUN if [ "m$PROD_MODE" = "m" ] ; \
+    then echo "----------------- Gin Web building(development) -----------------" ; \
+    else echo echo "----------------- Gin Web building($PROD_MODE) -----------------" ;  \
+    fi
+
 # set environments
 # enable go modules
 ENV GO111MODULE=on
 # set up an agent to speed up downloading resources
 ENV GOPROXY=https://goproxy.cn,direct
 # set app home dir
-ENV APP_HOME /app/gin-web-prod
+ENV APP_HOME /app/gin-web
 
 RUN mkdir -p $APP_HOME
 
@@ -24,25 +30,22 @@ COPY . .
 # save current git version
 RUN chmod +x version.sh && ./version.sh
 
-RUN go build -o main-prod .
+RUN go build -o main .
 
 # mysqldump need to use alpine-glibc
 FROM frolvlad/alpine-glibc:alpine-3.12
 #FROM registry.cn-shenzhen.aliyuncs.com/piupuer/frolvlad-alpine-glibc:alpine-3.12
 
 # set project run mode
-ENV GIN_WEB_MODE production
-ENV APP_HOME /app/gin-web-prod
+ENV APP_HOME /app/gin-web
 
 RUN mkdir -p $APP_HOME
 
 WORKDIR $APP_HOME
 
 COPY --from=gin-web $APP_HOME/conf ./conf/
-COPY --from=gin-web $APP_HOME/main-prod .
+COPY --from=gin-web $APP_HOME/main .
 COPY --from=gin-web $APP_HOME/gitversion .
-
-COPY docker-conf/mysql/mysqldump /usr/bin/mysqldump
 
 # use ali apk mirros
 # change timezone to Shanghai
@@ -56,4 +59,4 @@ RUN apk update \
 # verify that the time zone has been modified
 # RUN date -R
 
-CMD ["./main-prod"]
+CMD ["./main"]

@@ -39,7 +39,7 @@ func Config() {
 	for index, setting := range settings {
 		v.SetDefault(index, setting)
 	}
-	env := strings.ToLower(os.Getenv(fmt.Sprintf("%s_MODE", global.ProEnvName)))
+	env := strings.ToLower(os.Getenv(fmt.Sprintf("%s_MODE", global.ProProdName)))
 	configName := ""
 	if env == constant.Stage {
 		configName = stagingConfig
