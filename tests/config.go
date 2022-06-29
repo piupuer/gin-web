@@ -7,7 +7,7 @@ import (
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/log"
-	"github.com/piupuer/go-helper/pkg/query"
+	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/piupuer/go-helper/pkg/utils"
 	"github.com/pkg/errors"
 	"github.com/spf13/viper"
@@ -22,7 +22,7 @@ const (
 	productionConfig  = "config.prod.yml"
 )
 
-var ctx = query.NewRequestId(nil)
+var ctx = tracing.NewId(nil)
 
 func Config() {
 	if os.Getenv("TEST_CONF") == "" {
