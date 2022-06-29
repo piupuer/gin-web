@@ -25,7 +25,7 @@ COPY . .
 # save current git version
 RUN chmod +x version.sh && ./version.sh
 
-RUN go build -o main .
+RUN go build -o gin-web .
 
 # mysqldump need to use alpine-glibc
 FROM frolvlad/alpine-glibc:alpine-3.12
@@ -39,7 +39,7 @@ RUN mkdir -p $APP_HOME
 WORKDIR $APP_HOME
 
 COPY --from=gin-web $APP_HOME/conf ./conf/
-COPY --from=gin-web $APP_HOME/main .
+COPY --from=gin-web $APP_HOME/gin-web .
 COPY --from=gin-web $APP_HOME/gitversion .
 
 # use ali apk mirros
@@ -54,4 +54,4 @@ RUN apk update \
 # verify that the time zone has been modified
 # RUN date -R
 
-CMD ["./main"]
+CMD ["./gin-web"]
