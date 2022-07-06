@@ -2,11 +2,8 @@ package tests
 
 import (
 	"fmt"
-	"gin-web/models"
 	"gin-web/pkg/global"
 	m "github.com/go-sql-driver/mysql"
-	"github.com/piupuer/go-helper/ms"
-	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/log"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -48,21 +45,5 @@ func Mysql() {
 }
 
 func autoMigrate() {
-	global.Mysql.WithContext(ctx).AutoMigrate(
-		new(ms.SysMenu),
-		new(ms.SysMenuRoleRelation),
-		new(ms.SysApi),
-		new(ms.SysCasbin),
-		new(ms.SysOperationLog),
-		new(ms.SysMessage),
-		new(ms.SysMessageLog),
-		new(ms.SysMachine),
-		new(ms.SysDict),
-		new(ms.SysDictData),
-		new(models.Leave),
-		new(models.SysUser),
-		new(models.SysRole),
-	)
-	// auto migrate fsm
-	fsm.Migrate(fsm.WithDb(global.Mysql), fsm.WithCtx(ctx))
+
 }
