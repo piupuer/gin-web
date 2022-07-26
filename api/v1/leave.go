@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"gin-web/pkg/request"
 	"gin-web/pkg/response"
 	"gin-web/pkg/service"
@@ -101,19 +100,4 @@ func BatchDeleteLeaveByIds(c *gin.Context) {
 	err := my.DeleteLeaveByIds(r.Uints(), user)
 	resp.CheckErr(err)
 	resp.Success()
-}
-
-func LeaveTransition(ctx context.Context, logs ...resp.FsmApprovalLog) error {
-	my := service.New(ctx)
-	return my.LeaveTransition(logs...)
-}
-
-func GetLeaveFsmDetail(c *gin.Context, detail req.FsmSubmitterDetail) []resp.FsmSubmitterDetail {
-	my := service.New(c)
-	return my.GetLeaveFsmDetail(detail)
-}
-
-func UpdateLeaveFsmDetail(c *gin.Context, detail req.UpdateFsmSubmitterDetail) error {
-	my := service.New(c)
-	return my.UpdateLeaveFsmDetail(detail)
 }

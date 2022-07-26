@@ -130,7 +130,7 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			hv1.WithCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, "v1")),
 			hv1.WithDbOps(
 				query.WithMysqlDb(global.Mysql),
-				query.WithMysqlFsmTransition(v1.LeaveTransition),
+				query.WithMysqlFsmTransition(v1.FsmTransition),
 				query.WithMysqlCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, constant.QueryCachePrefix)),
 			),
 			hv1.WithBinlogOps(
@@ -142,8 +142,8 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			hv1.WithFindRoleByIds(v1.RouterFindRoleByIds),
 			hv1.WithFindUserByIds(v1.RouterFindUserByIds),
 			hv1.WithGetUserLoginStatus(v1.GetUserLoginStatus),
-			hv1.WithFsmGetFsmSubmitterDetail(v1.GetLeaveFsmDetail),
-			hv1.WithFsmUpdateFsmSubmitterDetail(v1.UpdateLeaveFsmDetail),
+			hv1.WithFsmGetFsmSubmitterDetail(v1.GetFsmDetail),
+			hv1.WithFsmUpdateFsmSubmitterDetail(v1.UpdateFsmDetail),
 			hv1.WithUploadSaveDir(global.Conf.Upload.SaveDir),
 			hv1.WithUploadSingleMaxSize(global.Conf.Upload.SingleMaxSize),
 			hv1.WithUploadMergeConcurrentCount(global.Conf.Upload.MergeConcurrentCount),
