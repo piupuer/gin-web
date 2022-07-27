@@ -114,7 +114,7 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 		return oldCache
 	}
 	my := service.New(c)
-	newUser, _ = my.GetUserById(uid)
+	newUser = my.GetUserById(uid)
 	if newUser.Id > constant.Zero {
 		// if user id exists, set to cache
 		CacheSetUser(c, uid, newUser)
@@ -135,7 +135,7 @@ func GetCurrentUserAndRole(c *gin.Context) ms.User {
 	pathRoleId, err := req.UintIdWithErr(c)
 	pathRoleKeyword := ""
 	if err == nil {
-		role, _ := cs.GetRoleById(pathRoleId)
+		role := cs.GetRoleById(pathRoleId)
 		pathRoleKeyword = role.Keyword
 	}
 	var u ms.User

@@ -122,16 +122,14 @@ func (my MysqlService) FindUser(r *request.User) []models.SysUser {
 	return list
 }
 
-func (my MysqlService) GetUserById(id uint) (models.SysUser, error) {
+func (my MysqlService) GetUserById(id uint) (rp models.SysUser) {
 	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetUserById"))
 	defer span.End()
-	var user models.SysUser
-	var err error
-	err = my.Q.Tx.Preload("Role").
+	my.Q.Tx.Preload("Role").
 		Where("id = ?", id).
 		Where("status = ?", models.SysUserStatusEnable).
-		First(&user).Error
-	return user, err
+		First(&rp)
+	return
 }
 
 func (my MysqlService) GetUserByUsername(username string) (models.SysUser, error) {

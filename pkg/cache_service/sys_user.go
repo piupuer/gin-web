@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// user login check
+// LoginCheck user login check
 func (rd RedisService) LoginCheck(r req.LoginCheck) (u models.SysUser, err error) {
 	if !rd.binlog {
 		return rd.mysql.LoginCheck(r)
@@ -88,21 +88,19 @@ func (rd RedisService) FindUser(r *request.User) []models.SysUser {
 	return list
 }
 
-func (rd RedisService) GetUserById(id uint) (models.SysUser, error) {
+func (rd RedisService) GetUserById(id uint) (rp models.SysUser) {
 	if !rd.binlog {
 		return rd.mysql.GetUserById(id)
 	}
 	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "GetUserById"))
 	defer span.End()
-	var user models.SysUser
-	var err error
-	err = rd.Q.
+	rd.Q.
 		Table("sys_user").
 		Preload("Role").
 		Where("id", "=", id).
 		Where("status", "=", models.SysUserStatusEnable).
-		First(&user).Error
-	return user, err
+		First(&rp)
+	return
 }
 
 func (rd RedisService) FindUserByIds(ids []uint) []models.SysUser {

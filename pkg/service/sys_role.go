@@ -81,16 +81,14 @@ func (my MysqlService) DeleteRoleByIds(ids []uint) (err error) {
 	return
 }
 
-func (my MysqlService) GetRoleById(id uint) (models.SysRole, error) {
+func (my MysqlService) GetRoleById(id uint) (rp models.SysRole) {
 	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetRoleById"))
 	defer span.End()
-	var role models.SysRole
-	var err error
-	err = my.Q.Tx.
+	my.Q.Tx.
 		Where("id = ?", id).
 		Where("status = ?", models.SysRoleStatusNormal).
-		First(&role).Error
-	return role, err
+		First(&rp)
+	return
 }
 
 func (my MysqlService) FindRoleByIds(ids []uint) []models.SysRole {

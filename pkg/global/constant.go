@@ -6,7 +6,7 @@ const (
 	ProProdName = "PROD"
 )
 
-// fsm categories
+// FsmCategoryLeave fsm categories
 const (
 	FsmCategoryLeave uint = iota + 1
 )

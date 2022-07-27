@@ -55,20 +55,18 @@ func (rd RedisService) FindRole(r *request.Role) []models.SysRole {
 	return list
 }
 
-func (rd RedisService) GetRoleById(id uint) (models.SysRole, error) {
+func (rd RedisService) GetRoleById(id uint) (rp models.SysRole) {
 	if !rd.binlog {
 		return rd.mysql.GetRoleById(id)
 	}
 	_, span := tracer.Start(rd.Q.Ctx, tracing.Name(tracing.Cache, "GetRoleById"))
 	defer span.End()
-	var role models.SysRole
-	var err error
-	err = rd.Q.
+	rd.Q.
 		Table("sys_role").
 		Where("id", "=", id).
 		Where("status", "=", models.SysRoleStatusNormal).
-		First(&role).Error
-	return role, err
+		First(&rp)
+	return
 }
 
 func (rd RedisService) FindRoleByIds(ids []uint) []models.SysRole {

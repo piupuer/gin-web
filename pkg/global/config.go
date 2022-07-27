@@ -5,7 +5,7 @@ import (
 	"github.com/piupuer/go-helper/pkg/log"
 )
 
-// config from conf/config.dev.yml
+// Configuration config from conf/config.dev.yml
 type Configuration struct {
 	System SystemConfiguration `mapstructure:"system" json:"system"`
 	Tracer TracerConfiguration `mapstructure:"tracer" json:"tracer"`
