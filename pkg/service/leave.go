@@ -9,7 +9,6 @@ import (
 	"github.com/jinzhu/copier"
 	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/req"
-	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/tracing"
 	"gorm.io/gorm"
 	"strings"
@@ -33,17 +32,6 @@ func (my MysqlService) FindLeave(r *request.Leave) []models.Leave {
 	}
 	my.Q.FindWithPage(q, &r.Page, &list)
 	return list
-}
-
-// FindLeaveFsmTrack query leave fsm track
-func (my MysqlService) FindLeaveFsmTrack(leaveId uint) []resp.FsmLogTrack {
-	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindLeaveFsmTrack"))
-	defer span.End()
-	fsmUuid := my.GetLeaveFsmUuid(leaveId)
-	return my.Q.FindFsmLogTrack(req.FsmLog{
-		Category: req.NullUint(global.FsmCategoryLeave),
-		Uuid:     fsmUuid,
-	})
 }
 
 // CreateLeave create leave
@@ -97,48 +85,6 @@ func (my MysqlService) UpdateLeaveById(id uint, r request.UpdateLeave, u models.
 	}
 	// update
 	my.Q.UpdateById(id, r, new(models.Leave))
-	return
-}
-
-// GetLeaveFsmUuid query leave fsm uuid by id
-func (my MysqlService) GetLeaveFsmUuid(leaveId uint) string {
-	// create leave to db
-	var leave models.Leave
-	my.Q.Tx.
-		Model(&models.Leave{}).
-		Where("id = ?", leaveId).
-		First(&leave)
-	return leave.FsmUuid
-}
-
-// FindLevelByFsmUuids query leave by fsm uuids
-func (my MysqlService) FindLevelByFsmUuids(uuids []string) (rp []models.Leave) {
-	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FindLevelByFsmUuids"))
-	defer span.End()
-	// create leave to db
-	rp = make([]models.Leave, 0)
-	my.Q.Tx.
-		Model(&models.Leave{}).
-		Where("uuid IN (?)", uuids).
-		Find(&rp)
-	return
-}
-
-func (my MysqlService) ApprovedLeaveById(r request.ApproveLeave) (err error) {
-	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "ApprovedLeaveById"))
-	defer span.End()
-	var leave models.Leave
-	q := my.Q.Tx.
-		Model(&models.Leave{}).
-		Where("id = ?", r.Id)
-	q.First(&leave)
-	err = my.Q.FsmApproveLog(req.FsmApproveLog{
-		Category:       req.NullUint(global.FsmCategoryLeave),
-		Uuid:           leave.FsmUuid,
-		ApprovalRoleId: r.User.RoleId,
-		ApprovalUserId: r.User.Id,
-		Approved:       req.NullUint(r.Approved),
-	})
 	return
 }
 
