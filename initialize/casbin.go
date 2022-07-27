@@ -14,11 +14,11 @@ func CasbinEnforcer() {
 	if err != nil {
 		panic(errors.Wrap(err, "initialize casbin enforcer failed"))
 	}
-	global.CasbinEnforcer = e
+	global.CasbinEnforcer = &e
 	log.WithContext(ctx).Info("initialize casbin enforcer success")
 }
 
-func mysqlCasbin() (*casbin.Enforcer, error) {
+func mysqlCasbin() (en casbin.Enforcer, err error) {
 	a, err := gormadapter.NewAdapterByDBUseTableName(
 		global.Mysql.WithContext(ctx),
 		// add mysql table prefix config
@@ -26,22 +26,24 @@ func mysqlCasbin() (*casbin.Enforcer, error) {
 		"sys_casbin",
 	)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return
 	}
 	// read model path
 	config := global.ConfBox.Get(global.Conf.System.CasbinModelPath)
 	cabinModel := model.NewModel()
 	err = cabinModel.LoadModelFromText(string(config))
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return
 	}
-	e, err := casbin.NewEnforcer(cabinModel, a)
+	var e *casbin.Enforcer
+	e, err = casbin.NewEnforcer(cabinModel, a)
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return
 	}
 	err = e.LoadPolicy()
 	if err != nil {
-		return nil, errors.WithStack(err)
+		return
 	}
-	return e, nil
+	en = *e
+	return
 }

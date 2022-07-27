@@ -110,8 +110,8 @@ func GetCurrentUser(c *gin.Context) models.SysUser {
 	}
 	uid := utils.Str2Uint(fmt.Sprintf("%d", userId))
 	oldCache, ok := CacheGetUser(ctx, uid)
-	if ok && oldCache.Id > constant.Zero {
-		return *oldCache
+	if ok {
+		return oldCache
 	}
 	my := service.New(c)
 	newUser, _ = my.GetUserById(uid)
@@ -154,7 +154,8 @@ func GetUserLoginStatus(c *gin.Context, r *req.UserStatus) (err error) {
 	var u models.SysUser
 	u, err = my.GetUserByUsername(r.Username)
 	if err != nil {
-		return nil
+		err = nil
+		return
 	}
 	r.Locked = u.Locked
 	r.LockExpire = u.LockExpire

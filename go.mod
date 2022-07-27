@@ -11,7 +11,7 @@ require (
 	github.com/golang-module/carbon/v2 v2.1.2
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.4
-	github.com/piupuer/go-helper v1.1.1-0.20220624065514-0ea82d022958
+	github.com/piupuer/go-helper v1.1.1-0.20220727082312-411899a9856a
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.8.1
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
@@ -78,7 +78,6 @@ require (
 	github.com/klauspost/compress v1.13.6 // indirect
 	github.com/klauspost/cpuid v1.3.1 // indirect
 	github.com/leodido/go-urn v1.2.1 // indirect
-	github.com/libi/dcron v0.2.2 // indirect
 	github.com/looplab/fsm v0.3.0 // indirect
 	github.com/magiconair/properties v1.8.5 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect

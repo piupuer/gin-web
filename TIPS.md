@@ -13,6 +13,8 @@
 - [ ] gorm的unique标签最好配合index使用, 指定具体的索引名称
 - [ ] gorm标签属性冒号后不能跟空格
 - [ ] 使用gorm.Updates方法进行map[string]interface{}增量更新, key为蛇形而不是驼峰, 如user_mobile
+- [ ] 使用gorm.Find方法建议不调用Error, 通过列表len来处理返回值
+- [ ] 使用gorm.First方法建议不调用Error, 通过id>0来处理返回值
 - [ ] 建议定义更新结构体时(request.UpdateXxxRequestStruct)全部使用指针变量, 避免零值被赋值到数据库, 如request.UpdateRoleRequestStruct
 - [ ] gorm中的tag, column后面的值大小写敏感
 - [ ] GET请求绑定时间字符串不能用models.LocalTime而是用string, c.Bind源码中使用form tag, 还没用到自定义UnmarshalJSON就已经报错
