@@ -8,64 +8,61 @@ import (
 	"github.com/piupuer/go-helper/pkg/resp"
 	"github.com/piupuer/go-helper/pkg/tracing"
 	"github.com/piupuer/go-helper/pkg/utils"
-	"github.com/pkg/errors"
 )
 
 func (my MysqlService) FsmTransition(logs ...resp.FsmApprovalLog) (err error) {
 	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "FsmTransition"))
 	defer span.End()
 	m := make(map[uint][]string)
-	for _, log := range logs {
-		if log.Category == global.FsmCategoryLeave {
-			if log.Resubmit == constant.One {
+	for _, item := range logs {
+		switch item.Category {
+		case global.FsmCategoryLeave:
+			if item.Resubmit == constant.One {
 				arr := make([]string, 0)
-				if item, ok := m[models.LevelStatusWaitingConfirm]; ok {
-					arr = item
+				if v, ok := m[models.LevelStatusWaitingConfirm]; ok {
+					arr = v
 				}
-				m[models.LevelStatusRefused] = append(arr, log.Uuid)
-			} else if log.Cancel == constant.One {
+				m[models.LevelStatusRefused] = append(arr, item.Uuid)
+			} else if item.Cancel == constant.One {
 				arr := make([]string, 0)
-				if item, ok := m[models.LevelStatusCancelled]; ok {
-					arr = item
+				if v, ok := m[models.LevelStatusCancelled]; ok {
+					arr = v
 				}
-				m[models.LevelStatusCancelled] = append(arr, log.Uuid)
-			} else if log.Confirm == constant.One {
+				m[models.LevelStatusCancelled] = append(arr, item.Uuid)
+			} else if item.Confirm == constant.One {
 				arr := make([]string, 0)
-				if item, ok := m[models.LevelStatusWaitingConfirm]; ok {
-					arr = item
+				if v, ok := m[models.LevelStatusWaitingConfirm]; ok {
+					arr = v
 				}
-				m[models.LevelStatusWaitingConfirm] = append(arr, log.Uuid)
-			} else if log.End == constant.One {
+				m[models.LevelStatusWaitingConfirm] = append(arr, item.Uuid)
+			} else if item.End == constant.One {
 				arr := make([]string, 0)
-				if item, ok := m[models.LevelStatusApproved]; ok {
-					arr = item
+				if v, ok := m[models.LevelStatusApproved]; ok {
+					arr = v
 				}
-				m[models.LevelStatusApproved] = append(arr, log.Uuid)
+				m[models.LevelStatusApproved] = append(arr, item.Uuid)
 			} else {
 				arr := make([]string, 0)
-				if item, ok := m[models.LevelStatusApproving]; ok {
-					arr = item
+				if v, ok := m[models.LevelStatusApproving]; ok {
+					arr = v
 				}
-				m[models.LevelStatusApproving] = append(arr, log.Uuid)
+				m[models.LevelStatusApproving] = append(arr, item.Uuid)
 			}
 		}
 	}
 	for status, uuids := range m {
-		err = my.Q.Tx.
+		my.Q.Tx.
 			Model(&models.Leave{}).
 			Where("fsm_uuid IN (?)", uuids).
-			Update("status", status).Error
-		if err != nil {
-			return errors.WithStack(err)
-		}
+			Update("status", status)
 	}
-	return nil
+	return
 }
 
-func (my MysqlService) GetFsmDetail(detail req.FsmSubmitterDetail) []resp.FsmSubmitterDetail {
+func (my MysqlService) GetFsmDetail(detail req.FsmSubmitterDetail) (rp []resp.FsmSubmitterDetail) {
 	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetFsmDetail"))
 	defer span.End()
-	arr := make([]resp.FsmSubmitterDetail, 0)
+	rp = make([]resp.FsmSubmitterDetail, 0)
 	switch uint(detail.Category) {
 	case global.FsmCategoryLeave:
 		var leave models.Leave
@@ -73,21 +70,21 @@ func (my MysqlService) GetFsmDetail(detail req.FsmSubmitterDetail) []resp.FsmSub
 			Model(&models.Leave{}).
 			Where("fsm_uuid = ?", detail.Uuid).
 			First(&leave)
-		if leave.Id > 0 {
-			arr = append(arr, resp.FsmSubmitterDetail{
+		if leave.Id > constant.Zero {
+			rp = append(rp, resp.FsmSubmitterDetail{
 				Name: "leave desc",
 				Key:  "desc",
 				Val:  leave.Desc,
 			})
 			if !leave.StartTime.IsZero() {
-				arr = append(arr, resp.FsmSubmitterDetail{
+				rp = append(rp, resp.FsmSubmitterDetail{
 					Name: "leave start time",
 					Key:  "startTime",
 					Val:  leave.StartTime.String(),
 				})
 			}
 			if !leave.EndTime.IsZero() {
-				arr = append(arr, resp.FsmSubmitterDetail{
+				rp = append(rp, resp.FsmSubmitterDetail{
 					Name: "leave end time",
 					Key:  "endTime",
 					Val:  leave.EndTime.String(),
@@ -95,7 +92,7 @@ func (my MysqlService) GetFsmDetail(detail req.FsmSubmitterDetail) []resp.FsmSub
 			}
 		}
 	}
-	return arr
+	return
 }
 
 func (my MysqlService) UpdateFsmDetail(detail req.UpdateFsmSubmitterDetail) (err error) {
@@ -113,10 +110,10 @@ func (my MysqlService) UpdateFsmDetail(detail req.UpdateFsmSubmitterDetail) (err
 			Model(&models.Leave{}).
 			Where("fsm_uuid = ?", detail.Uuid)
 		q.First(&leave)
-		if leave.Id > 0 {
-			err = q.Updates(&m).Error
-			return errors.WithStack(err)
+		if leave.Id > constant.Zero {
+			q.Updates(&m)
+			return
 		}
 	}
-	return nil
+	return
 }
