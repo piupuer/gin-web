@@ -13,12 +13,12 @@ func FsmTransition(ctx context.Context, logs ...resp.FsmApprovalLog) error {
 	return my.FsmTransition(logs...)
 }
 
-func GetFsmDetail(c *gin.Context, detail req.FsmSubmitterDetail) []resp.FsmSubmitterDetail {
+func GetFsmLogDetail(c *gin.Context, detail req.FsmLogSubmitterDetail) []resp.FsmLogSubmitterDetail {
 	my := service.New(c)
-	return my.GetFsmDetail(detail)
+	return my.GetFsmLogDetail(detail)
 }
 
-func UpdateFsmDetail(c *gin.Context, detail req.UpdateFsmSubmitterDetail) error {
+func UpdateFsmLogDetail(c *gin.Context, detail req.UpdateFsmLogSubmitterDetail) error {
 	my := service.New(c)
-	return my.UpdateFsmDetail(detail)
+	return my.UpdateFsmLogDetail(detail)
 }

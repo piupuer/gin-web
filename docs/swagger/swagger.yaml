@@ -1,11 +1,4 @@
 definitions:
-  middleware.User:
-    properties:
-      password:
-        type: string
-      username:
-        type: string
-    type: object
   req.CreateApi:
     properties:
       category:
@@ -37,8 +30,6 @@ definitions:
         type: string
       name:
         type: string
-      remark:
-        type: string
       status:
         type: integer
     required:
@@ -49,13 +40,9 @@ definitions:
     properties:
       addition:
         type: string
-      attr:
-        type: string
       dictId:
         type: integer
       key:
-        type: string
-      remark:
         type: string
       sort:
         type: integer
@@ -191,6 +178,8 @@ definitions:
     type: object
   req.FsmUpdateMachine:
     properties:
+      category:
+        type: integer
       levels:
         items:
           $ref: '#/definitions/req.FsmCreateEvent'
@@ -210,6 +199,17 @@ definitions:
     properties:
       ids:
         description: id array string, split by comma
+        type: string
+    type: object
+  req.LoginCheck:
+    properties:
+      captchaAnswer:
+        type: string
+      captchaId:
+        type: string
+      password:
+        type: string
+      username:
         type: string
     type: object
   req.PushMessage:
@@ -237,6 +237,13 @@ definitions:
     - title
     - type
     type: object
+  req.ResetUserPwd:
+    properties:
+      newPassword:
+        type: string
+      username:
+        type: string
+    type: object
   req.UpdateApi:
     properties:
       category:
@@ -260,8 +267,6 @@ definitions:
         type: string
       name:
         type: string
-      remark:
-        type: string
       status:
         type: integer
     type: object
@@ -269,13 +274,9 @@ definitions:
     properties:
       addition:
         type: string
-      attr:
-        type: string
       dictId:
         type: integer
       key:
-        type: string
-      remark:
         type: string
       sort:
         type: integer
@@ -284,7 +285,7 @@ definitions:
       val:
         type: string
     type: object
-  req.UpdateFsmSubmitterDetail:
+  req.UpdateFsmLogSubmitterDetail:
     properties:
       category:
         type: integer
@@ -455,6 +456,10 @@ definitions:
         type: string
       introduction:
         type: string
+      lockExpire:
+        type: integer
+      locked:
+        type: integer
       mobile:
         type: string
       newPassword:
@@ -469,6 +474,8 @@ definitions:
         type: integer
       username:
         type: string
+      wrong:
+        type: integer
     type: object
   resp.Resp:
     properties:
@@ -710,6 +717,20 @@ paths:
       - Bearer: []
       tags:
       - '*Api'
+  /base/captcha:
+    get:
+      consumes:
+      - application/json
+      description: GetCaptcha
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      tags:
+      - '*Base'
   /base/idempotenceToken:
     get:
       consumes:
@@ -737,7 +758,7 @@ paths:
         name: params
         required: true
         schema:
-          $ref: '#/definitions/middleware.User'
+          $ref: '#/definitions/req.LoginCheck'
       produces:
       - application/json
       responses:
@@ -777,6 +798,129 @@ paths:
       - Bearer: []
       tags:
       - '*Base'
+  /base/user/reset:
+    patch:
+      consumes:
+      - application/json
+      description: ResetUserPwd
+      parameters:
+      - description: params
+        in: body
+        name: params
+        required: true
+        schema:
+          $ref: '#/definitions/req.ResetUserPwd'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Base'
+  /base/user/status:
+    post:
+      consumes:
+      - application/json
+      description: GetUserStatus
+      parameters:
+      - in: query
+        name: lockExpire
+        type: integer
+      - in: query
+        name: locked
+        type: integer
+      - in: query
+        name: username
+        type: string
+      - in: query
+        name: wrong
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      tags:
+      - '*Base'
+  /delay/export/delete/batch:
+    delete:
+      consumes:
+      - application/json
+      description: BatchDeleteDelayExportByIds
+      parameters:
+      - description: ids
+        in: body
+        name: ids
+        required: true
+        schema:
+          $ref: '#/definitions/req.Ids'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Delay'
+  /delay/export/list:
+    get:
+      consumes:
+      - application/json
+      description: FindDelayExport
+      parameters:
+      - in: query
+        name: category
+        type: string
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - in: query
+        name: end
+        type: integer
+      - in: query
+        name: name
+        type: string
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Delay'
   /dict/create:
     post:
       consumes:
@@ -852,9 +996,6 @@ paths:
       - application/json
       description: FindDictData
       parameters:
-      - in: query
-        name: attr
-        type: string
       - description: use count cache
         in: query
         name: countCache
@@ -1031,119 +1172,6 @@ paths:
       - Bearer: []
       tags:
       - '*Dict'
-  /fsm/approve:
-    patch:
-      consumes:
-      - application/json
-      description: FsmApproveLog
-      parameters:
-      - in: query
-        name: approvalOpinion
-        type: string
-      - in: query
-        name: approvalRoleId
-        type: integer
-      - in: query
-        name: approvalUserId
-        type: integer
-      - in: query
-        name: approved
-        type: integer
-      - in: query
-        name: category
-        type: integer
-      - in: query
-        name: uuid
-        type: string
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: success
-          schema:
-            $ref: '#/definitions/resp.Resp'
-      security:
-      - Bearer: []
-      tags:
-      - '*Fsm'
-  /fsm/approving/list:
-    get:
-      consumes:
-      - application/json
-      description: FindFsmApprovingLog
-      parameters:
-      - in: query
-        name: approvalRoleId
-        type: integer
-      - in: query
-        name: approvalUserId
-        type: integer
-      - in: query
-        name: category
-        type: integer
-      - description: use count cache
-        in: query
-        name: countCache
-        type: boolean
-      - description: query all data
-        in: query
-        name: noPagination
-        type: boolean
-      - description: current page
-        in: query
-        name: pageNum
-        type: integer
-      - description: page per count
-        in: query
-        name: pageSize
-        type: integer
-      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
-        in: query
-        name: skipCount
-        type: boolean
-      - description: all data count
-        in: query
-        name: total
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: success
-          schema:
-            $ref: '#/definitions/resp.Resp'
-      security:
-      - Bearer: []
-      tags:
-      - '*Fsm'
-  /fsm/cancel:
-    patch:
-      consumes:
-      - application/json
-      description: FsmCancelLogByUuids
-      parameters:
-      - in: query
-        name: approvalRoleId
-        type: integer
-      - in: query
-        name: approvalUserId
-        type: integer
-      - in: query
-        items:
-          type: string
-        name: uuids
-        type: array
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: success
-          schema:
-            $ref: '#/definitions/resp.Resp'
-      security:
-      - Bearer: []
-      tags:
-      - '*Fsm'
   /fsm/create:
     post:
       consumes:
@@ -1243,12 +1271,24 @@ paths:
       - Bearer: []
       tags:
       - '*Fsm'
-  /fsm/log/track:
-    get:
+  /fsm/log/approve:
+    patch:
       consumes:
       - application/json
-      description: FindFsmLogTrack
+      description: FsmApproveLog
       parameters:
+      - in: query
+        name: approvalOpinion
+        type: string
+      - in: query
+        name: approvalRoleId
+        type: integer
+      - in: query
+        name: approvalUserId
+        type: integer
+      - in: query
+        name: approved
+        type: integer
       - in: query
         name: category
         type: integer
@@ -1266,11 +1306,89 @@ paths:
       - Bearer: []
       tags:
       - '*Fsm'
-  /fsm/submitter/detail:
+  /fsm/log/approving/list:
     get:
       consumes:
       - application/json
-      description: GetFsmSubmitterDetail
+      description: FindFsmApprovingLog
+      parameters:
+      - in: query
+        name: approvalRoleId
+        type: integer
+      - in: query
+        name: approvalUserId
+        type: integer
+      - in: query
+        name: category
+        type: integer
+      - description: use count cache
+        in: query
+        name: countCache
+        type: boolean
+      - description: query all data
+        in: query
+        name: noPagination
+        type: boolean
+      - description: current page
+        in: query
+        name: pageNum
+        type: integer
+      - description: page per count
+        in: query
+        name: pageSize
+        type: integer
+      - description: not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'
+        in: query
+        name: skipCount
+        type: boolean
+      - description: all data count
+        in: query
+        name: total
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/log/cancel:
+    patch:
+      consumes:
+      - application/json
+      description: FsmCancelLogByUuids
+      parameters:
+      - in: query
+        name: approvalRoleId
+        type: integer
+      - in: query
+        name: approvalUserId
+        type: integer
+      - in: query
+        items:
+          type: string
+        name: uuids
+        type: array
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/log/submitter/detail:
+    get:
+      consumes:
+      - application/json
+      description: GetFsmLogSubmitterDetail
       parameters:
       - in: query
         name: category
@@ -1292,14 +1410,37 @@ paths:
     patch:
       consumes:
       - application/json
-      description: UpdateFsmSubmitterDetail
+      description: UpdateFsmLogSubmitterDetail
       parameters:
       - description: params
         in: body
         name: params
         required: true
         schema:
-          $ref: '#/definitions/req.UpdateFsmSubmitterDetail'
+          $ref: '#/definitions/req.UpdateFsmLogSubmitterDetail'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: success
+          schema:
+            $ref: '#/definitions/resp.Resp'
+      security:
+      - Bearer: []
+      tags:
+      - '*Fsm'
+  /fsm/log/track:
+    get:
+      consumes:
+      - application/json
+      description: FindFsmLogTrack
+      parameters:
+      - in: query
+        name: category
+        type: integer
+      - in: query
+        name: uuid
+        type: string
       produces:
       - application/json
       responses:

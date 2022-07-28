@@ -360,6 +360,28 @@ var doc = `{
                 }
             }
         },
+        "/base/captcha": {
+            "get": {
+                "description": "GetCaptcha",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "*Base"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/resp.Resp"
+                        }
+                    }
+                }
+            }
+        },
         "/base/idempotenceToken": {
             "get": {
                 "security": [
@@ -406,7 +428,7 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/middleware.User"
+                            "$ref": "#/definitions/req.LoginCheck"
                         }
                     }
                 ],
@@ -458,6 +480,206 @@ var doc = `{
                 ],
                 "tags": [
                     "*Base"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/resp.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/base/user/reset": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "ResetUserPwd",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "*Base"
+                ],
+                "parameters": [
+                    {
+                        "description": "params",
+                        "name": "params",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/req.ResetUserPwd"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/resp.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/base/user/status": {
+            "post": {
+                "description": "GetUserStatus",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "*Base"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "lockExpire",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "locked",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "username",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "wrong",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/resp.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/delay/export/delete/batch": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "BatchDeleteDelayExportByIds",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "*Delay"
+                ],
+                "parameters": [
+                    {
+                        "description": "ids",
+                        "name": "ids",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/req.Ids"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/resp.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/delay/export/list": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "FindDelayExport",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "*Delay"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "use count cache",
+                        "name": "countCache",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "end",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "query all data",
+                        "name": "noPagination",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "current page",
+                        "name": "pageNum",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page per count",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'",
+                        "name": "skipCount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "all data count",
+                        "name": "total",
+                        "in": "query"
+                    }
                 ],
                 "responses": {
                     "201": {
@@ -601,11 +823,6 @@ var doc = `{
                     "*Dict"
                 ],
                 "parameters": [
-                    {
-                        "type": "string",
-                        "name": "attr",
-                        "in": "query"
-                    },
                     {
                         "type": "boolean",
                         "description": "use count cache",
@@ -881,192 +1098,6 @@ var doc = `{
                 }
             }
         },
-        "/fsm/approve": {
-            "patch": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "FsmApproveLog",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "*Fsm"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "approvalOpinion",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "approvalRoleId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "approvalUserId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "approved",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "category",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "uuid",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "success",
-                        "schema": {
-                            "$ref": "#/definitions/resp.Resp"
-                        }
-                    }
-                }
-            }
-        },
-        "/fsm/approving/list": {
-            "get": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "FindFsmApprovingLog",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "*Fsm"
-                ],
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "approvalRoleId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "approvalUserId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "category",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "use count cache",
-                        "name": "countCache",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "query all data",
-                        "name": "noPagination",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "current page",
-                        "name": "pageNum",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "page per count",
-                        "name": "pageSize",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
-                        "description": "not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'",
-                        "name": "skipCount",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "all data count",
-                        "name": "total",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "success",
-                        "schema": {
-                            "$ref": "#/definitions/resp.Resp"
-                        }
-                    }
-                }
-            }
-        },
-        "/fsm/cancel": {
-            "patch": {
-                "security": [
-                    {
-                        "Bearer": []
-                    }
-                ],
-                "description": "FsmCancelLogByUuids",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "*Fsm"
-                ],
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "name": "approvalRoleId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "name": "approvalUserId",
-                        "in": "query"
-                    },
-                    {
-                        "type": "array",
-                        "items": {
-                            "type": "string"
-                        },
-                        "name": "uuids",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "success",
-                        "schema": {
-                            "$ref": "#/definitions/resp.Resp"
-                        }
-                    }
-                }
-            }
-        },
         "/fsm/create": {
             "post": {
                 "security": [
@@ -1228,14 +1259,14 @@ var doc = `{
                 }
             }
         },
-        "/fsm/log/track": {
-            "get": {
+        "/fsm/log/approve": {
+            "patch": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "FindFsmLogTrack",
+                "description": "FsmApproveLog",
                 "consumes": [
                     "application/json"
                 ],
@@ -1246,6 +1277,26 @@ var doc = `{
                     "*Fsm"
                 ],
                 "parameters": [
+                    {
+                        "type": "string",
+                        "name": "approvalOpinion",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "approvalRoleId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "approvalUserId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "approved",
+                        "in": "query"
+                    },
                     {
                         "type": "integer",
                         "name": "category",
@@ -1267,14 +1318,141 @@ var doc = `{
                 }
             }
         },
-        "/fsm/submitter/detail": {
+        "/fsm/log/approving/list": {
             "get": {
                 "security": [
                     {
                         "Bearer": []
                     }
                 ],
-                "description": "GetFsmSubmitterDetail",
+                "description": "FindFsmApprovingLog",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "*Fsm"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "approvalRoleId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "approvalUserId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "use count cache",
+                        "name": "countCache",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "query all data",
+                        "name": "noPagination",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "current page",
+                        "name": "pageNum",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "page per count",
+                        "name": "pageSize",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "not use 'SELECT count(*) FROM ...' before 'SELECT * FROM ...'",
+                        "name": "skipCount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "all data count",
+                        "name": "total",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/resp.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/fsm/log/cancel": {
+            "patch": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "FsmCancelLogByUuids",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "*Fsm"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "approvalRoleId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "approvalUserId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        },
+                        "name": "uuids",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/resp.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/fsm/log/submitter/detail": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "GetFsmLogSubmitterDetail",
                 "consumes": [
                     "application/json"
                 ],
@@ -1311,7 +1489,7 @@ var doc = `{
                         "Bearer": []
                     }
                 ],
-                "description": "UpdateFsmSubmitterDetail",
+                "description": "UpdateFsmLogSubmitterDetail",
                 "consumes": [
                     "application/json"
                 ],
@@ -1328,8 +1506,47 @@ var doc = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/req.UpdateFsmSubmitterDetail"
+                            "$ref": "#/definitions/req.UpdateFsmLogSubmitterDetail"
                         }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/resp.Resp"
+                        }
+                    }
+                }
+            }
+        },
+        "/fsm/log/track": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "FindFsmLogTrack",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "*Fsm"
+                ],
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "name": "category",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "uuid",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -3379,17 +3596,6 @@ var doc = `{
         }
     },
     "definitions": {
-        "middleware.User": {
-            "type": "object",
-            "properties": {
-                "password": {
-                    "type": "string"
-                },
-                "username": {
-                    "type": "string"
-                }
-            }
-        },
         "req.CreateApi": {
             "type": "object",
             "required": [
@@ -3440,9 +3646,6 @@ var doc = `{
                 "name": {
                     "type": "string"
                 },
-                "remark": {
-                    "type": "string"
-                },
                 "status": {
                     "type": "integer"
                 }
@@ -3459,16 +3662,10 @@ var doc = `{
                 "addition": {
                     "type": "string"
                 },
-                "attr": {
-                    "type": "string"
-                },
                 "dictId": {
                     "type": "integer"
                 },
                 "key": {
-                    "type": "string"
-                },
-                "remark": {
                     "type": "string"
                 },
                 "sort": {
@@ -3667,6 +3864,9 @@ var doc = `{
         "req.FsmUpdateMachine": {
             "type": "object",
             "properties": {
+                "category": {
+                    "type": "integer"
+                },
                 "levels": {
                     "type": "array",
                     "items": {
@@ -3695,6 +3895,23 @@ var doc = `{
             "properties": {
                 "ids": {
                     "description": "id array string, split by comma",
+                    "type": "string"
+                }
+            }
+        },
+        "req.LoginCheck": {
+            "type": "object",
+            "properties": {
+                "captchaAnswer": {
+                    "type": "string"
+                },
+                "captchaId": {
+                    "type": "string"
+                },
+                "password": {
+                    "type": "string"
+                },
+                "username": {
                     "type": "string"
                 }
             }
@@ -3736,6 +3953,17 @@ var doc = `{
                 }
             }
         },
+        "req.ResetUserPwd": {
+            "type": "object",
+            "properties": {
+                "newPassword": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
+        },
         "req.UpdateApi": {
             "type": "object",
             "properties": {
@@ -3771,9 +3999,6 @@ var doc = `{
                 "name": {
                     "type": "string"
                 },
-                "remark": {
-                    "type": "string"
-                },
                 "status": {
                     "type": "integer"
                 }
@@ -3785,16 +4010,10 @@ var doc = `{
                 "addition": {
                     "type": "string"
                 },
-                "attr": {
-                    "type": "string"
-                },
                 "dictId": {
                     "type": "integer"
                 },
                 "key": {
-                    "type": "string"
-                },
-                "remark": {
                     "type": "string"
                 },
                 "sort": {
@@ -3808,7 +4027,7 @@ var doc = `{
                 }
             }
         },
-        "req.UpdateFsmSubmitterDetail": {
+        "req.UpdateFsmLogSubmitterDetail": {
             "type": "object",
             "properties": {
                 "category": {
@@ -4067,6 +4286,12 @@ var doc = `{
                 "introduction": {
                     "type": "string"
                 },
+                "lockExpire": {
+                    "type": "integer"
+                },
+                "locked": {
+                    "type": "integer"
+                },
                 "mobile": {
                     "type": "string"
                 },
@@ -4087,6 +4312,9 @@ var doc = `{
                 },
                 "username": {
                     "type": "string"
+                },
+                "wrong": {
+                    "type": "integer"
                 }
             }
         },

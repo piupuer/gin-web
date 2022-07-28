@@ -59,10 +59,10 @@ func (my MysqlService) FsmTransition(logs ...resp.FsmApprovalLog) (err error) {
 	return
 }
 
-func (my MysqlService) GetFsmDetail(detail req.FsmSubmitterDetail) (rp []resp.FsmSubmitterDetail) {
-	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetFsmDetail"))
+func (my MysqlService) GetFsmLogDetail(detail req.FsmLogSubmitterDetail) (rp []resp.FsmLogSubmitterDetail) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "GetFsmLogDetail"))
 	defer span.End()
-	rp = make([]resp.FsmSubmitterDetail, 0)
+	rp = make([]resp.FsmLogSubmitterDetail, 0)
 	switch uint(detail.Category) {
 	case global.FsmCategoryLeave:
 		var leave models.Leave
@@ -71,20 +71,20 @@ func (my MysqlService) GetFsmDetail(detail req.FsmSubmitterDetail) (rp []resp.Fs
 			Where("fsm_uuid = ?", detail.Uuid).
 			First(&leave)
 		if leave.Id > constant.Zero {
-			rp = append(rp, resp.FsmSubmitterDetail{
+			rp = append(rp, resp.FsmLogSubmitterDetail{
 				Name: "leave desc",
 				Key:  "desc",
 				Val:  leave.Desc,
 			})
 			if !leave.StartTime.IsZero() {
-				rp = append(rp, resp.FsmSubmitterDetail{
+				rp = append(rp, resp.FsmLogSubmitterDetail{
 					Name: "leave start time",
 					Key:  "startTime",
 					Val:  leave.StartTime.String(),
 				})
 			}
 			if !leave.EndTime.IsZero() {
-				rp = append(rp, resp.FsmSubmitterDetail{
+				rp = append(rp, resp.FsmLogSubmitterDetail{
 					Name: "leave end time",
 					Key:  "endTime",
 					Val:  leave.EndTime.String(),
@@ -95,8 +95,8 @@ func (my MysqlService) GetFsmDetail(detail req.FsmSubmitterDetail) (rp []resp.Fs
 	return
 }
 
-func (my MysqlService) UpdateFsmDetail(detail req.UpdateFsmSubmitterDetail) (err error) {
-	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "UpdateFsmDetail"))
+func (my MysqlService) UpdateFsmLogDetail(detail req.UpdateFsmLogSubmitterDetail) (err error) {
+	_, span := tracer.Start(my.Q.Ctx, tracing.Name(tracing.Db, "UpdateFsmLogDetail"))
 	defer span.End()
 	switch uint(detail.Category) {
 	case global.FsmCategoryLeave:
