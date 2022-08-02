@@ -12,6 +12,7 @@ import (
 	hv1 "github.com/piupuer/go-helper/api/v1"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/constant"
+	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/middleware"
 	"github.com/piupuer/go-helper/pkg/query"
@@ -130,7 +131,10 @@ func RegisterServers(ctx context.Context) *gin.Engine {
 			hv1.WithCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, "v1")),
 			hv1.WithDbOps(
 				query.WithMysqlDb(global.Mysql),
-				query.WithMysqlFsmTransition(v1.FsmTransition),
+				query.WithMysqlFsmOps(
+					fsm.WithPrefix(constant.FsmPrefix),
+					fsm.WithTransition(v1.FsmTransition),
+				),
 				query.WithMysqlCachePrefix(fmt.Sprintf("%s_%s", global.Conf.Mysql.DSN.DBName, constant.QueryCachePrefix)),
 			),
 			hv1.WithBinlogOps(

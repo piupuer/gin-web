@@ -9,6 +9,7 @@ import (
 	m "github.com/go-sql-driver/mysql"
 	"github.com/piupuer/go-helper/ms"
 	"github.com/piupuer/go-helper/pkg/binlog"
+	"github.com/piupuer/go-helper/pkg/constant"
 	"github.com/piupuer/go-helper/pkg/fsm"
 	"github.com/piupuer/go-helper/pkg/log"
 	"github.com/piupuer/go-helper/pkg/migrate"
@@ -96,7 +97,11 @@ func autoMigrate() {
 	// migrate tables change to sql-migrate: initialize/db/***.sql
 
 	// auto migrate fsm
-	fsm.Migrate(fsm.WithDb(global.Mysql), fsm.WithCtx(ctx))
+	fsm.Migrate(
+		fsm.WithDb(global.Mysql),
+		fsm.WithCtx(ctx),
+		fsm.WithPrefix(constant.FsmPrefix),
+	)
 }
 
 func binlogListen() (err error) {
