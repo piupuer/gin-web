@@ -15,7 +15,7 @@ import (
 
 func Tracer() {
 	if !global.Conf.Tracer.Enable {
-		log.WithContext(ctx).Info("")
+		log.WithContext(ctx).Info("tracer is not enabled")
 		return
 	}
 	driverOpts := []otlptracehttp.Option{

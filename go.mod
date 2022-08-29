@@ -11,7 +11,7 @@ require (
 	github.com/golang-module/carbon/v2 v2.1.2
 	github.com/google/uuid v1.3.0
 	github.com/jinzhu/copier v0.3.4
-	github.com/piupuer/go-helper v1.1.1-0.20220802025534-007a9bf83acf
+	github.com/piupuer/go-helper v1.1.2-0.20220829083012-e30571f881c5
 	github.com/pkg/errors v0.9.1
 	github.com/spf13/viper v1.8.1
 	github.com/swaggo/files v0.0.0-20210815190702-a29dd2bc99b2
@@ -28,7 +28,7 @@ require (
 )
 
 require (
-	github.com/BurntSushi/toml v0.3.1 // indirect
+	github.com/BurntSushi/toml v1.0.0 // indirect
 	github.com/Knetic/govaluate v3.0.1-0.20171022003610-9aa49832a739+incompatible // indirect
 	github.com/KyleBanks/depth v1.2.1 // indirect
 	github.com/PuerkitoBio/purell v1.1.1 // indirect
@@ -91,6 +91,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/mojocn/base64Captcha v1.3.5 // indirect
 	github.com/nfnt/resize v0.0.0-20180221191011-83c6a9932646 // indirect
+	github.com/nicksnyder/go-i18n/v2 v2.2.0 // indirect
 	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pelletier/go-toml v1.9.3 // indirect
 	github.com/pingcap/errors v0.11.5-0.20201126102027-b0a155152ca3 // indirect
