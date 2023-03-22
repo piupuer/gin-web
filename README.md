@@ -68,17 +68,9 @@
 - 测试页面
     - 测试用例
 
-## 在线演示(前端静态文件已上传至阿里云OSS, 访问速度飞起)
+## 在线演示
 
-### 传送门
-1. [Demo](http://106.75.132.201/)
-2. [Docs](https://piupuer.github.io/gin-web-slate)
-3. [Opentelemetry链路追踪](http://106.75.132.201:3301/application/gin-web)
-
-### 奈何服务器太辣鸡, 下列服务已被关闭, 请本地搭建～
-
-* Loki日志收集器(http://106.75.132.201:3000/) (test/123456)
-* Minio对象存储(http://106.75.132.201:9005/) (minio/minio123)
+### 目前单体架构不满足业务需要, 已转至[Go Cinch](https://go-cinch.github.io/docs/#/README), 本项目不再提供在线演示.
 
 ## 快速开始
 
@@ -111,7 +103,7 @@ go run main.go
 │   ├── global # 全局变量目录
 │   ├── redis # redis查询工具目录
 │   ├── request # 请求相关结构体目录
-│   ├── request # 响应相关结构体目录
+│   ├── response # 响应相关结构体目录
 │   ├── service # 数据DAO服务目录
 │   ├── utils # 工具包目录
 │   └── wechat # 微信接口目录
